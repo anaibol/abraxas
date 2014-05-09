@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<!-- saved from url=(0059)http://www.kobaltic.com/webGames/COR/public_html/index.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>City Of Relics</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width">
+        <link rel="stylesheet" type="text/css" href="./City Of Relics_files/cor.css">
+        <script type="text/javascript" src="./City Of Relics_files/phaser.min.1.1.4.js"></script><style type="text/css"></style>
+        <script type="text/javascript" src="./City Of Relics_files/animations.js"></script>
+        <script type="text/javascript" src="./City Of Relics_files/playerMovement.js"></script>
+        <script type="text/javascript" src="./City Of Relics_files/people.js"></script>
+        <script type="text/javascript" src="./City Of Relics_files/camera.js"></script>
+        <script type="text/javascript" src="./City Of Relics_files/tilemap.js"></script>
+        <script type="text/javascript" src="./City Of Relics_files/enemyMovement.js"></script>
+        <script type="text/javascript" src="./City Of Relics_files/gamlib-ai.js"></script>
+        <script type="text/javascript" src="./City Of Relics_files/attack.js"></script>
+         <script type="text/javascript" src="./City Of Relics_files/weather.js"></script>
+       
+    </head>
+    <body>
+        <div id="random">player = 80 enemy = 0</div>
+        <div id="gameCenter" style="overflow: hidden;">
+     <script type="text/javascript">
+
+//setup our game world
+
+randomID = document.getElementById("random");
+
+var orgeNumber = 12; // number of enemies
+var orge = new Array();
+var debugButton; 
+
+width = 800;
+height = 600;
+
+playerStartX = width / 2;
+playerStartY = height / 2;
+var game = new Phaser.Game(width, height, Phaser.CANVAS, 'gameCenter', { preload: preload, create: create, update: update, render:render});
+
+//preload all images
+function preload() {
+loadZoneOneImages();
+   loadPlayerImage();
+   loadZoneOneEnemyImages();
+    game.load.spritesheet('rain', "assets/enviroment/rain.png", 16, 16);
+    game.load.spritesheet('water', "assets/enviroment/waterA.png", 64, 64);
+
+}
+
+
+
+//setup our varibles for the tile map to load
+var map;
+var tileset;
+var layer;
+var layer1;
+var player;
+var enemyGroup;
+var randomX = 0;
+var randomY = 0;
+var cursors;
+var playerSpeed = 450;
+var playerLevel = 1;
+
+var minX = 0;
+var minY = 0;
+var maxX = 1400;
+var maxY = 1400;
+
+/*
+ * timer needs a new value for each enemy we setup
+ * The value we enter will be that many seconds ahead of the other 
+ * enemies but only on the start.
+ */
+ 
+var timer = new Array();
+ for (i=0;i<orgeNumber;i++){
+     timer.push(0);
+ }
+
+
+var rest = [0,0,0];
+
+
+function create() {    
+     
+    //  For browsers that support it, this keeps our pixel art looking crisp
+    // This only works when you use Phaser.CANVAS as the renderer
+    Phaser.Canvas.setSmoothingEnabled(game.context, true);
+    
+   //  Make the world larger than the actual canvas
+   game.world.setBounds(minX, minY, maxX, maxY);
+
+   // game.add.sprite(0,0, 'floor');
+   cursors = game.input.keyboard.createCursorKeys();
+   //load first for sprite depth
+        loadZoneOneMaps();
+   
+   loadPlayer();   
+   loadPlayerAnimations(); 
+    enemyGroup = game.add.group();
+    
+   loadZoneOneEnemy(); 
+   for (i=0;i<orgeNumber;i++){
+   loadZoneOneEnemyAnimations(orge[i]); 
+   orge[i].hp = enemyHP();
+   }
+   //load player first to have anchor for camera to attach to
+   loadCamera(); 
+   
+   setWorldBounds();
+   player.hp = playerHP();
+   
+var water = game.add.sprite(50,50, 'water');
+var water1 = game.add.sprite(114,50, 'water');
+var water2 = game.add.sprite(50,114, 'water');
+var water3 = game.add.sprite(114,114, 'water');
+water.animations.add('flow');
+water.animations.play('flow', 10, true);
+water1.animations.add('flow1');
+water1.animations.play('flow1', 10, true);
+water2.animations.add('flow2');
+water2.animations.play('flow2', 10, true);
+water3.animations.add('flow3');
+water3.animations.play('flow3', 10, true);
+    
+    rain();
+}
+
+function update() {
+   game.physics.collide(player, layer);
+    game.physics.collide(enemyGroup, layer);
+   movePlayer(); 
+     game.physics.collide(player, enemyGroup);
+     game.physics.collide(enemyGroup);
+     game.physics.collide(enemyGroup, player);
+    
+ for (i=0;i<orgeNumber;i++){
+        moveEnemy(orge[i],i);
+        }
+}
+
+function render() {
+/*
+  game.debug.renderPhysicsBody(player.body);
+   
+        for (i=0;i<orgeNumber;i++){
+       game.debug.renderPhysicsBody(orge[i].body);
+    }
+*/
+}
+</script>
+
+
+<canvas width="800" height="600" style="display: block; -webkit-user-select: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); background-color: rgb(0, 0, 0); cursor: default;"></canvas></div>
+    
+
+</body></html>
