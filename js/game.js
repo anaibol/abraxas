@@ -12,6 +12,8 @@ var minY = 0;
 var maxX = 1400;
 var maxY = 1400;
 
+var grass;
+
 window.addEventListener("deviceorientation", handleOrientation, true);
 
 
@@ -22,7 +24,7 @@ function handleOrientation(e) {
 
 function preload() {
     game.load.image('grass', 'img/grass.png');
-     game.load.spritesheet('player', 'img/dude.png', 32, 32);
+     game.load.spritesheet('player', 'img/dude.png', 27, 49);
 }
  
 function create() {
@@ -101,5 +103,6 @@ function update() {
 
 function render() {
    game.debug.text('FPS: ' + game.time.fps, 32, 32);
-   game.debug.text('HP: ' + player.minHP + ' / ' + player.maxHp, 32, 32);
+   // game.debug.text('HP: ' + player.minHP + ' / ' + player.maxHp, 32, 32);
+    game.debug.text('X: ' + grass.tilePosition.x + ' Y: ' + grass.tilePosition.y, 32, 64);
 }
