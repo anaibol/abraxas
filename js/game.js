@@ -1,3 +1,8 @@
+function rnd(min,max)
+{
+    return Math.floor(Math.random()*(max-min+1)+min);
+}
+
 var width = 800;
 var height = 600;
 
@@ -36,7 +41,7 @@ function handleOrientation(e) {
 
 function preload() {
 
-  game.load.tilemap('desert', 'map.json', null, Phaser.Tilemap.TILED_JSON);
+  // game.load.tilemap('desert', 'map.json', null, Phaser.Tilemap.TILED_JSON);
   game.load.image('grass', 'img/grass.png');
   game.load.spritesheet('player', 'img/dude.png', 27, 49);
 }
@@ -44,38 +49,39 @@ function preload() {
 
 
 function create() {
-  // game.world.setBounds(minX, minY, maxX, maxY);
-  // game.add.sprite(0, 0, 'grass');
+  game.world.setBounds(minX, minY, maxX, maxY);
+  game.add.sprite(0, 0, 'grass');
 
-  // map = game.add.tileSprite(0, 0, width, height, 'grass');
+  grass = game.add.tileSprite(0, 0, width, height, 'grass');
 
+  // map = game.add.tilemap('grass');
+  // map.addTilesetImage('Grass');
 
-  map = game.add.tilemap('grass');
-  map.addTilesetImage('Grass');
-
-  layer = map.createLayer('Ground');
-  layer.resizeWorld();
+  // layer = map.createLayer('Ground');
+  // layer.resizeWorld();
 
   // grass = map.createLayer('grass');
   // grass.resizeWorld();
 
 
   // map.fixedToCamera = true;
+  
+   var p1, p2;
 
   me = new Player({x: game.world.width / 2, y: game.world.height / 2, id: 1}); //game.world.width / 2, y: game.world.height / 2
 
   me.player.anchor.setTo(0.5, 0.5);
-  me.player.animations.add('east', [16,17,18,19,20,21,22,23], 8, true);
-  me.player.animations.add('north', [0,1,2,3,4,5,6,7], 8, true);
-  me.player.animations.add('west', [48,49,50,51,52,53,54,55], 8, true);
-  me.player.animations.add('south', [32,33,34,35,36,37,38, 39], 8, true);
+  // me.player.animations.add('east', [16,17,18,19,20,21,22,23], 8, true);
+  // me.player.animations.add('north', [0,1,2,3,4,5,6,7], 8, true);
+  // me.player.animations.add('west', [48,49,50,51,52,53,54,55], 8, true);
+  // me.player.animations.add('south', [32,33,34,35,36,37,38, 39], 8, true);
 
 
   //  This will force it to decelerate and limit its speed
   game.physics.enable(me.player, Phaser.Physics.ARCADE);
-  me.player.body.drag.set(0.2);
-  me.player.body.maxVelocity.setTo(400, 400);
-  me.player.body.collideWorldBounds = true;
+  // me.player.body.drag.set(0.2);
+  // me.player.body.maxVelocity.setTo(400, 400);
+  // me.player.body.collideWorldBounds = true;
 
   // player.bringToTop();
 
