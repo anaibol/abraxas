@@ -23,10 +23,12 @@ var player;
 var players = [];
 var cursors; 
 
+var tileSize = 32;
+
 var minX = 0;
 var minY = 0;
-var maxX = 1400;
-var maxY = 1400;
+var maxX = 100;
+var maxY = 100;
 
 var grass;
 
@@ -53,6 +55,7 @@ function create() {
   game.add.sprite(0, 0, 'grass');
 
   grass = game.add.tileSprite(0, 0, width, height, 'grass');
+  grass.fixedToCamera = true;
 
   // map = game.add.tilemap('grass');
   // map.addTilesetImage('Grass');
@@ -63,69 +66,23 @@ function create() {
   // grass = map.createLayer('grass');
   // grass.resizeWorld();
 
-
-  // map.fixedToCamera = true;
-  
-   var p1, p2;
-
-  me = new Player({x: game.world.width / 2, y: game.world.height / 2, id: 1}); //game.world.width / 2, y: game.world.height / 2
-
-  me.player.anchor.setTo(0.5, 0.5);
-  // me.player.animations.add('east', [16,17,18,19,20,21,22,23], 8, true);
-  // me.player.animations.add('north', [0,1,2,3,4,5,6,7], 8, true);
-  // me.player.animations.add('west', [48,49,50,51,52,53,54,55], 8, true);
-  // me.player.animations.add('south', [32,33,34,35,36,37,38, 39], 8, true);
-
-
-  //  This will force it to decelerate and limit its speed
-  game.physics.enable(me.player, Phaser.Physics.ARCADE);
-  // me.player.body.drag.set(0.2);
-  // me.player.body.maxVelocity.setTo(400, 400);
-  // me.player.body.collideWorldBounds = true;
-
-  // player.bringToTop();
-
-  game.camera.follow(me.player);
-  // game.camera.focusOnXY(0, 0);
-
   cursors = game.input.keyboard.createCursorKeys();
 }
  
 function update() {
+  if (!me) return;
   // game.physics.arcade.overlap(player, null, this);
-   
-  currentSpeed = 200
 
-  if (cursors.right.isDown) {
-      me.player.angle = 0;
-      me.player.animations.play('east');
-      socket.emit('move player', 'east');
-  } else if (cursors.left.isDown) {
-      me.player.angle = 180;
-      me.player.animations.play('west');
-      socket.emit('move player', 'west');
-  } else if (cursors.up.isDown) {       
-      me.player.angle = 270;
-      me.player.animations.play('north');
-      socket.emit('move player', 'north');
-  } else if (cursors.down.isDown) {       
-      me.player.angle = 90;
-      me.player.animations.play('south');
-      socket.emit('move player', 'south');
-  } else {
-      me.player.animations.stop();
-      currentSpeed = 0;
-  }
+  checkKeys();
+  renderMoving();
 
-  if (currentSpeed > 0) {
-    game.physics.arcade.velocityFromRotation(me.player.rotation, currentSpeed, me.player.body.velocity);
-    grass.tilePosition.x = -game.camera.x;
-    grass.tilePosition.y = -game.camera.y;
-  }
+  me.player.animations.stop();
+  currentSpeed = 0;
 }
 
 
 function render() {
+  if (!me) return;
   game.debug.text('FPS: ' + game.time.fps, 32, 32);
   // game.debug.text('HP: ' + player.minHP + ' / ' + player.maxHp, 32, 32);
   game.debug.text('X: ' + me.x + ' Y: ' + me.y, 32, 64);
@@ -150,7 +107,8 @@ function setEventHandlers() {
 function onSocketConnected() {
   console.log("Connected to socket server");
 
-  me = new Player({x: game.world.width / 2, y: game.world.height / 2, id: 1}); //game.world.width / 2, y: game.world.height / 2
+  createMe();
+
   socket.emit("new player", {x: me.x, y: me.y});
 };
 
@@ -198,12 +156,11 @@ function onRemovePlayer(data) {
   remotePlayers.splice(remotePlayers.indexOf(removePlayer), 1);
 };
 
-Player = function(data) {
-  this.id = data.id;
-  this.x = data.x;
-  this.y = data.y;
+function Player(x, y) {
+  this.x = x;
+  this.y = y;
 
-  this.player = game.add.sprite(data.x, data.y, 'player');
+  this.player = game.add.sprite(this.x, this.y, 'player');
 
   this.player.animations.add('east', [16,17,18,19,20,21,22,23], 8, true);
   this.player.animations.add('north', [0,1,2,3,4,5,6,7], 8, true);
@@ -212,3 +169,70 @@ Player = function(data) {
 
   return this;
 };
+
+function createMe() {
+  me = new Player(game.world.width / tileSize / 2, game.world.height / tileSize / 2); //game.world.width / 2, y: game.world.height / 2
+
+  game.physics.enable(me.player, Phaser.Physics.ARCADE);
+  me.player.body.drag.set(0.2);
+  me.player.body.maxVelocity.setTo(200, 200);
+  me.player.body.collideWorldBounds = true;
+  game.camera.follow(me.player);
+  // player.bringToTop();  
+}
+
+function checkKeys() {
+  if (!checkBounds()) {
+    stopPlayer();
+    return;
+  };
+
+  if (cursors.right.isDown) {
+      me.player.angle = 0;
+      me.x++
+      moveMe('east');
+  } else if (cursors.left.isDown) {
+      me.player.angle = 180;
+      moveMe('west');
+      me.x--
+  } else if (cursors.up.isDown) {       
+      me.player.angle = 270;
+      moveMe('north');
+      me.y++
+  } else if (cursors.down.isDown) {       
+      me.player.angle = 90;
+      moveMe('south');
+      me.y--
+  } else {
+    stopPlayer();
+  }
+}
+
+function moveMe(direction) {
+  me.moving = true
+
+  me.direction = direction;
+
+  socket.emit('move player', me.direction);
+}
+
+function renderMoving() {
+  if (!me.moving) return;
+
+  currentSpeed = 200
+
+  me.player.animations.play(me.direction);
+  game.physics.arcade.velocityFromRotation(me.player.rotation, currentSpeed, me.player.body.velocity);
+  grass.tilePosition.x = -game.camera.x;
+  grass.tilePosition.y = -game.camera.y;
+}
+
+function stopPlayer() {
+  me.moving = false
+  me.player.animations.stop();
+  currentSpeed = 0;
+}
+
+function checkBounds() {
+  return !(me.x < minX || me.x > maxX || me.y < minY || me.y > maxY);
+}

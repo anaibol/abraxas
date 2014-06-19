@@ -58,7 +58,7 @@ function onSocketConnection(client) {
 
 function onClientDisconnect() {
   var removePlayer = playerById(this.id);
-
+  console.log(this.id)
   // Player not found
   if (!removePlayer) {
     return;
@@ -73,7 +73,7 @@ function onClientDisconnect() {
 
 function onNewPlayer(data) {
   // Create a new player
-  var newPlayer = new Player(data);
+  var newPlayer = new Player(data.x, data.y, this.id);
 
   // Broadcast new player to connected socket clients
   this.broadcast.emit("new player", {id: newPlayer.id, x: newPlayer.getX(), y: newPlayer.getY()});
@@ -115,7 +115,7 @@ function onMovePlayer(direction) {
   }
 
   // Broadcast updated position to connected socket clients
-  this.broadcast.emit("move player", {playerId: id, x: movePlayer.getX(), y: movePlayer.getY()});
+  this.broadcast.emit("move player", {playerId: this.id, x: movePlayer.getX(), y: movePlayer.getY()});
 };
 
 function playerById(id) {
