@@ -1,19 +1,25 @@
 var util = require("util");
 
-var io = require('socket.io');
+// var WebSocketServer = require('ws').Server;
+// var wss = new WebSocketServer({port: 8000});
 
 var players;
 
-var db = require('monk')('localhost/mydb')
-  , users = db.get('users')
 
-users.index('name last');
-users.insert({ name: 'Tobi', bigdata: {} });
-users.find({ name: 'Loki' }, '-bigdata', function () {
-  // exclude bigdata field
-});
+var io = require('socket.io')();
 
-db.close();
+io.listen(3000);
+
+// var db = require('monk')('localhost/mydb')
+//   , users = db.get('users')
+
+// users.index('name last');
+// users.insert({ name: 'Tobi', bigdata: {} });
+// users.find({ name: 'Loki' }, '-bigdata', function () {
+//   // exclude bigdata field
+// });
+
+// db.close();
 
 // Socket.io: Setting up event handlers for all the messages that come
 // in from the client (check out /public/js/game.js and /views/game.jade
@@ -25,24 +31,13 @@ function init() {
   // Create an empty array to store players
   players = [];
 
-  // Set up Socket.IO to listen on port 8000
-  socket = io.listen(8000);
-
-  // Configure Socket.IO
-  socket.configure(function() {
-    // Only use WebSockets
-    socket.set("transports", ["websocket"]);
-
-    // Restrict log output
-    socket.set("log level", 2);
-  });
-
   // Start listening for events
   setEventHandlers();
 };
 
+
 var setEventHandlers = function() {
-    socket.sockets.on("connection", onSocketConnection);
+    io.on("connection", onSocketConnection);
 };
 
 function onSocketConnection(client) {
@@ -76,11 +71,11 @@ function onNewPlayer(data) {
   var newPlayer = new Player(data.x, data.y, this.id);
 
   // Broadcast new player to connected socket clients
-  this.broadcast.emit("new player", {id: newPlayer.id, x: newPlayer.getX(), y: newPlayer.getY()});
+  this.broadcast.emit("new player", {id: data.id, x: data.x, y: data.y});
 
   // Send existing players to the new player
   for (var i = 0; i < players.length; i++) {
-    this.emit("new player", players[i]);
+    this.emit("new player", {x: players[i].x, y: players[i].y});
   };
 
   // Add new player to the players array

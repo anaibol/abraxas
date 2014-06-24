@@ -13,6 +13,7 @@
     "tests"
   ],
   "dependencies": {
-    "phaser": "~2.0.4"
+    "phaser": "~2.0.4",
+    "socket.io-client": "~1.0.6"
   }
 }
