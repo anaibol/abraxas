@@ -1,4 +1,4 @@
-var Player = function(x, y, id) {    
+var Player = function(id, x, y) {    
     var getX = function() {
         return x;
     };
@@ -20,7 +20,9 @@ var Player = function(x, y, id) {
         getY: getY,
         setX: setX,
         setY: setY,
-        id: id
+        id: id,
+        x: x,
+        y: y
     }
 };
 

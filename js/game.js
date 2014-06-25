@@ -45,13 +45,13 @@ for (var x = 0; x < maxMapX; x++) {
   mapData[x] = [];
 }
 
-//window.addEventListener("deviceorientation", handleOrientation, true);
+window.addEventListener("deviceorientation", handleOrientation, true);
 
 
-// function handleOrientation(e) {
-//     var x = e.gamma;    var y = e.beta;     player.body.velocity.x -= x*2;
-//     player.body.velocity.y -= y*4;
-// }
+function handleOrientation(e) {
+    var x = e.gamma;    var y = e.beta;     player.body.velocity.x -= x*2;
+    player.body.velocity.y -= y*4;
+}
 
 function preload() {
     game.load.image('grass', 'img/grass.png');
@@ -92,22 +92,23 @@ function render() {
 
     if (newPlayer) {
     game.debug.text(game.time.physicsElapsed, 32, 32);
-    game.debug.body(me.player);
-    game.debug.bodyInfo(me.player, 16, 24);
+    game.debug.body(newPlayer.player);
+    game.debug.bodyInfo(newPlayer.player, 16, 24);
     }
 
 }
 
 
-function Player(x, y, id) {
+function Player(id, x, y) {
+  this.id = id;
   this.x = x;
   this.y = y;
-  this.id = id;
 
 
   //game.world.width / tileSize / 2
 
   this.player = game.add.sprite(this.x * tileSize, this.y * tileSize, 'player');
+  //this.player = game.add.sprite(this.x * tileSize, this.y * tileSize, 'player');
 
   this.player.animations.add('east', [16,17,18,19,20,21,22,23], 8, true);
   this.player.animations.add('north', [0,1,2,3,4,5,6,7], 8, true);
@@ -117,10 +118,10 @@ function Player(x, y, id) {
   return this;
 };
 
-function createMe() {
+function createMe(id, x, y) {
   mapData[5][5] = 1;
-  me = new Player(rnd(1, 5), rnd(1, 5), 1); //game.world.width / 2, y: game.world.height / 2
-
+  me = new Player(id, x, y); //game.world.width / 2, y: game.world.height / 2
+ 
   game.physics.enable(me.player, Phaser.Physics.ARCADE);
   me.player.body.drag.set(0.2);
   me.player.body.maxVelocity.setTo(200, 200);
@@ -139,7 +140,7 @@ function checkKeys() {
 
 
   if (!checkBounds()) {
-    stopPlayer();
+    stopPlayer(me);
     return;
   };
 
@@ -167,25 +168,25 @@ function checkKeys() {
     switch (me.direction) {
       case 'east':
         if(me.player.x >= move_to_x){
-          stopPlayer()
+          stopPlayer(me)
         }
 
         break;
       case 'west':
         if(me.player.x <= move_to_x){
-          stopPlayer()
+          stopPlayer(me)
         }
 
         break;
       case 'north':
         if(me.player.y >= move_to_y){
-          stopPlayer()
+          stopPlayer(me)
         }
 
         break;
       case 'south':
         if(me.player.y <= move_to_y){
-          stopPlayer()
+          stopPlayer(me)
         }
 
         break;
@@ -226,10 +227,16 @@ function moveMe(direction) {
       break;
   }
 
+  // if (!me.moving) {
+  //   game.add.tween(me.player).to({x: (me.x + 2) * tileSize, y: (me.y + 2) * tileSize}, 2000, Phaser.Easing.Quadratic.InOut, true).onComplete.add(function() { me.moving = false;}, this);
+  //   me.moving = true;
+  // }
+
   if (!me.moving || me.direction !== direction) {
     me.moving = true;
     me.direction = direction;
-    socket.emit('move player', {x: me.x, y: me.y});
+
+    socket.emit('move player', direction);
 
 
     currentSpeed = 32;
@@ -240,11 +247,47 @@ function moveMe(direction) {
   }
 }
 
-function stopPlayer() {
-  me.moving = false;
-  me.player.animations.stop();
+function movePlayer(player, direction) {
+  switch (direction) {
+    case 'east':
+      me.x++
+
+      break;
+    case 'west':
+      me.x--
+
+      break;
+    case 'north':
+      me.y++
+
+      break;
+    case 'south':
+      me.y--
+
+      break;
+  }
+
+  // if (!me.moving) {
+  //   game.add.tween(me.player).to({x: (me.x + 2) * tileSize, y: (me.y + 2) * tileSize}, 2000, Phaser.Easing.Quadratic.InOut, true).onComplete.add(function() { me.moving = false;}, this);
+  //   me.moving = true;
+  // }
+
+  if (!player.moving || player.direction !== direction) {
+    player.moving = true;
+    player.direction = direction;
+    console.log({x: player.x, y: player.y})
+
+    currentSpeed = 32;
+    player.player.animations.play(player.direction);
+    game.physics.arcade.velocityFromRotation(player.player.rotation, currentSpeed, player.player.body.velocity);
+  }
+}
+
+function stopPlayer(player) {
+  player.moving = false;
+  player.player.animations.stop();
   currentSpeed = 0;
-  game.physics.arcade.velocityFromRotation(me.player.rotation, currentSpeed, me.player.body.velocity);
+  game.physics.arcade.velocityFromRotation(player.player.rotation, currentSpeed, player.player.body.velocity);
   // me.player.frame = 0;
 }
 
@@ -265,14 +308,13 @@ function setEventHandlers() {
   socket.on("new player", onNewPlayer);
   socket.on("move player", onMovePlayer);
   socket.on("remove player", onRemovePlayer);
+  socket.on("logged in", onLoggedIn);
 };
 
 // Socket connected
 function onSocketConnected() {
   console.log("Connected to socket server");
-
-  createMe();
-  socket.emit("new player", {x: me.x, y: me.y});
+  socket.emit("log in", {x: rnd(0, 10), y: rnd(0, 10)});
 };
 
 // Socket disconnected
@@ -280,12 +322,16 @@ function onSocketDisconnect() {
   console.log("Disconnected from socket server");
 };
 
+function onLoggedIn(data) {
+  createMe(data.id, data.x, data.y);
+  console.log(data.id)
+};
+
 
 // New player
 function onNewPlayer(data) {
-  console.log("New player connected: "+data.id);
-  // Initialise the new player
-  newPlayer = new Player(data.x, data.y);
+  console.log("New player connected: " + data.id);
+  newPlayer = new Player(data.id, data.x, data.y);
 
   game.physics.enable(newPlayer.player, Phaser.Physics.ARCADE);
   newPlayer.player.body.drag.set(0.2);
@@ -298,17 +344,15 @@ function onNewPlayer(data) {
 
 // Move player
 function onMovePlayer(data) {
-  var movePlayer = playerById(data.id);
+  var player = playerById(data.id);
 
   // Player not found
-  if (!movePlayer) {
+  if (!player) {
     console.log("Player not found: "+data.id);
     return;
   };
 
-  // Update player position
-  movePlayer.x = data.x;
-  movePlayer.y = data.y;
+  movePlayer(player, data.direction)
 };
 
 function onRemovePlayer(data) {
@@ -324,4 +368,17 @@ function onRemovePlayer(data) {
   remotePlayers.splice(remotePlayers.indexOf(removePlayer), 1);
 
   newPlayer.player.kill()
+  console.log(remotePlayers.length)
+};
+
+
+function playerById(id) {
+  var i;
+
+  for (i = 0; i < remotePlayers.length; i++) {
+    if (remotePlayers[i].id == id)
+    return remotePlayers[i];
+  };
+
+  return false;
 };

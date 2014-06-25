@@ -1,14 +1,16 @@
+var express = require('express');
+var app = express();
+
+app.use(express.static(__dirname + '/'));
+
+app.listen(process.env.PORT || 3000);
+
 var util = require("util");
 
 // var WebSocketServer = require('ws').Server;
 // var wss = new WebSocketServer({port: 8000});
 
 var players;
-
-
-var io = require('socket.io')();
-
-io.listen(3000);
 
 // var db = require('monk')('localhost/mydb')
 //   , users = db.get('users')
@@ -36,24 +38,43 @@ function init() {
 };
 
 
+var io = require('socket.io')();
+
+
+ io.set('log level', 1); 
+
+io.listen(3000);
+
 var setEventHandlers = function() {
     io.on("connection", onSocketConnection);
 };
 
 function onSocketConnection(client) {
-  // Listen for client disconnected
+  client.on("log in", onClientLogin);
   client.on("disconnect", onClientDisconnect);
-
-  // Listen for new player message
-  client.on("new player", onNewPlayer);
-
-  // Listen for move player message
   client.on("move player", onMovePlayer);
+};
+
+function onClientLogin(data) {
+  var newPlayer = new Player(this.id, data.x, data.y);
+
+  this.broadcast.emit("new player", {id: this.id, x: data.x, y: data.y});
+
+  this.emit("logged in", {id: this.id, x: data.x, y: data.y});
+
+  // Send existing players to the new player
+
+  for (var i = 0; i < players.length; i++) {
+    this.emit("new player", {id: players[i].id, x: players[i].x, y: players[i].y});
+  };
+
+  // Add new player to the players array
+  players.push(newPlayer);
 };
 
 function onClientDisconnect() {
   var removePlayer = playerById(this.id);
-  console.log(this.id)
+
   // Player not found
   if (!removePlayer) {
     return;
@@ -66,51 +87,43 @@ function onClientDisconnect() {
   this.broadcast.emit("remove player", {id: this.id});
 };
 
-function onNewPlayer(data) {
-  // Create a new player
-  var newPlayer = new Player(data.x, data.y, this.id);
-
-  // Broadcast new player to connected socket clients
-  this.broadcast.emit("new player", {id: data.id, x: data.x, y: data.y});
-
-  // Send existing players to the new player
-  for (var i = 0; i < players.length; i++) {
-    this.emit("new player", {x: players[i].x, y: players[i].y});
-  };
-
-  // Add new player to the players array
-  players.push(newPlayer);
-  console.log(players.length)
-};
-
 function onMovePlayer(direction) {
   // Find player in array
-  var movePlayer = playerById(this.id);
 
+  var movePlayer = playerById(this.id);
+  
   // Player not found
   if (!movePlayer) {
     return;
   };
 
+
   // Update player position
 
   switch (direction) {
     case 'east':
-      movePlayer.setX(movePlayer.getX() + 1);
+      movePlayer.x++
+
       break;
     case 'west':
-      movePlayer.setX(movePlayer.getX() - 1);
+      movePlayer.x--
+
       break;
     case 'north':
-      movePlayer.setY(movePlayer.getY() + 1);
+      movePlayer.y++
+
       break;
     case 'south':
-      movePlayer.setY(movePlayer.getY() - 1);
+      movePlayer.y--
+
       break;
   }
 
+  // io.sockets.socket('4NomV7rh6MMetdPgAAAA').emit('');
+
   // Broadcast updated position to connected socket clients
-  this.broadcast.emit("move player", {playerId: this.id, x: movePlayer.getX(), y: movePlayer.getY()});
+  this.broadcast.emit("move player", {id: this.id, direction: direction});
+  // this.broadcast.emit("move player", {id: this.id, x: movePlayer.x, y: movePlayer.y});
 };
 
 function playerById(id) {
