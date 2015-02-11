@@ -1,6 +1,6 @@
 {
-  "name": "Example2",
-  "version": "0.0.0",
+  "name": "abraxas",
+  "version": "0.0.1",
   "authors": [
     "anaibol <juananibal.micheli@gmail.com>"
   ],
@@ -13,7 +13,7 @@
     "tests"
   ],
   "dependencies": {
-    "phaser": "~2.0.4",
+    "phaser": "~2.2.2",
     "socket.io-client": "~1.0.6"
   }
 }
