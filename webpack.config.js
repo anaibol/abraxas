@@ -10,12 +10,20 @@ module.exports = {
     },
     output: {
         path: __dirname,
-        filename: 'build/bundle.js',
+        filename: 'app.js',
         publicPath: 'http://localhost:8080/assets'
     },
     module: {
         loaders: [
-            {test: path.join(__dirname, 'src'), loader: 'babel-loader?stage=0'}
+          {
+            test: /\.js$/,
+            exclude: /(node_modules)/,
+            loader: 'babel',
+            query: {
+              optional: ['runtime'],
+              stage: 0
+            }
+          }
         ]
     },
     plugins: [
