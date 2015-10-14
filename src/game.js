@@ -1,3 +1,5 @@
+alert(1)
+
 function rnd(min,max)
 {
     return Math.floor(Math.random()*(max-min+1)+min);
@@ -27,7 +29,7 @@ var phaser = {
 };
 
 var game = new Phaser.Game(screenWidth, screenHeight, Phaser.AUTO, '', phaser);
- 
+
 // var map;
 var me;
 var newPlayer;
@@ -57,7 +59,7 @@ function preload() {
     game.load.image('grass', 'img/grass.png');
     game.load.spritesheet('player', 'img/dude.png', 27, 49);
 }
- 
+
 function create() {
     game.world.setBounds(0, 0, maxX, maxY);
     game.add.sprite(0, 0, 'grass');
@@ -121,7 +123,7 @@ function Player(id, x, y) {
 function createMe(id, x, y) {
   mapData[5][5] = 1;
   me = new Player(id, x, y); //game.world.width / 2, y: game.world.height / 2
- 
+
   game.physics.enable(me.player, Phaser.Physics.ARCADE);
   me.player.body.drag.set(0.2);
   me.player.body.maxVelocity.setTo(200, 200);
@@ -129,7 +131,7 @@ function createMe(id, x, y) {
   me.player.body.setSize(32, 32, 5, 16);
   game.camera.follow(me.player);
 
-  // player.bringToTop();  
+  // player.bringToTop();
 }
 
 var move_to_x;
@@ -157,10 +159,10 @@ function checkKeys() {
       me.player.angle = 180;
       moveMe('west');
 
-  } else if (cursors.up.isDown) {       
+  } else if (cursors.up.isDown) {
       me.player.angle = 270;
       moveMe('north');
-  } else if (cursors.down.isDown) {       
+  } else if (cursors.down.isDown) {
       me.player.angle = 90;
       moveMe('south');
 
