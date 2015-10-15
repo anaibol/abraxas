@@ -5,7 +5,7 @@ module.exports = {
     entry: {
       App: [
         'webpack-dev-server/client?http://localhost:8080/assets/',
-        './src/game.js'
+        './src/app.js'
       ]
     },
     output: {
@@ -17,7 +17,7 @@ module.exports = {
         loaders: [
           {
             test: /\.js$/,
-            exclude: /(node_modules)/,
+            exclude: /(node_modules||bower_modules)/,
             loader: 'babel',
             query: {
               stage: 0
@@ -36,5 +36,4 @@ module.exports = {
     },
     // Create Sourcemaps for the bundle
     devtool: 'source-map'
-
 };

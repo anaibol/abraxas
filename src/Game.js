@@ -1,7 +1,7 @@
-import preload fom './states/preload'
-import create fom './states/create'
-import updaate fom './states/updaate'
-import render fom './states/render'
+import preload from './states/preload'
+import create from './states/create'
+import update from './states/update'
+import render from './states/render'
 
 const phaser = { preload, create, update, render }
 

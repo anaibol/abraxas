@@ -3,7 +3,6 @@ import Game from './Game'
 new Game
 
 // export default function() {
-console.log(1)
 
 const rnd = (min,max) => {
   Math.floor(Math.random()*(max-min+1)+min)
@@ -30,39 +29,39 @@ for (let x = 0; x < maxMapX; x++) {
 window.addEventListener("deviceorientation", handleOrientation, true)
 
 
-function handleOrientation(e) {
-  const x = e.gamma
-  const y = e.beta
-  player.body.velocity.x -= x*2
-  player.body.velocity.y -= y*4
-}
+// function handleOrientation(e) {
+//   const x = e.gamma
+//   const y = e.beta
+//   player.body.velocity.x -= x*2
+//   player.body.velocity.y -= y*4
+// }
 
-function createMe(id, x, y) {
-  mapData[5][5] = 1
-  me = new Player(id, x, y) //game.world.width / 2, y: game.world.height / 2
-
-  game.physics.enable(me.player, Phaser.Physics.ARCADE)
-  me.player.body.drag.set(0.2)
-  me.player.body.maxVelocity.setTo(200, 200)
-  me.player.body.collideWorldBounds = true
-  me.player.body.setSize(32, 32, 5, 16)
-  game.camera.follow(me.player)
-
-  // player.bringToTop()
-}
-
-let move_to_x
-let move_to_y
+// function createMe(id, x, y) {
+//   mapData[5][5] = 1
+//   me = new Player(id, x, y) //game.world.width / 2, y: game.world.height / 2
+//
+//   game.physics.enable(me.player, Phaser.Physics.ARCADE)
+//   me.player.body.drag.set(0.2)
+//   me.player.body.maxVelocity.setTo(200, 200)
+//   me.player.body.collideWorldBounds = true
+//   me.player.body.setSize(32, 32, 5, 16)
+//   game.camera.follow(me.player)
+//
+//   // player.bringToTop()
+// }
+//
+// let move_to_x
+// let move_to_y
 
 // function checkKeys() {
   // console.log(me.player.x )
 
 
-  if (!checkBounds()) {
-    stopPlayer(me)
-    return
-  }
-
+  // if (!checkBounds()) {
+  //   stopPlayer(me)
+  //   return
+  // }
+  //
 
   // console.log(grass.tilePosition.x)
   // console.log(game.camera.x)
@@ -116,7 +115,7 @@ let move_to_y
   // console.log(game.camera.x)
   // console.log(game.camera.x % tileSize)
 
-}
+// }
 
 // function moveMe(direction) {
 //   switch (direction) {

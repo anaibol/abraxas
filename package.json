@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "abraxas =======",
   "dependencies": {
-    "phaser": "*"
+    "phaser": "*",
+    "pixi.js": "^3.0.7"
   },
   "devDependencies": {
     "phaser": "*",

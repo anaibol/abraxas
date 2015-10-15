@@ -1,0 +1,16 @@
+{
+  "name": "abraxas",
+  "version": "0.0.0",
+  "homepage": "https://github.com/anaibol/abraxas",
+  "authors": [
+    "anaibol <hey@anib.al>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
