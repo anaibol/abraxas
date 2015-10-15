@@ -9,7 +9,7 @@ module.exports = {
       ]
     },
     output: {
-        path: __dirname,
+        path: './src',
         filename: 'app.js',
         publicPath: 'http://localhost:8080/assets'
     },
@@ -20,7 +20,6 @@ module.exports = {
             exclude: /(node_modules)/,
             loader: 'babel',
             query: {
-              optional: ['runtime'],
               stage: 0
             }
           }

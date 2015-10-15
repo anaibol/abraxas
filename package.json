@@ -3,16 +3,12 @@
   "version": "1.0.0",
   "description": "abraxas =======",
   "dependencies": {
-    "babel-loader": "^5.3.2",
-    "express": "^4.4.4",
-    "monk": "^0.9.0",
-    "socket.io": "^1.0.6",
-    "ws": "^0.4.31"
+    "phaser": "*"
   },
   "devDependencies": {
+    "phaser": "*",
     "babel-core": "*",
     "babel-loader": "*",
-    "node-libs-browser": "*",
     "webpack": "*",
     "webpack-dev-server": "*"
   },
