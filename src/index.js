@@ -1,6 +1,57 @@
-import Game from './Game'
+import Config from './config'
 
-new Game
+import preload from './states/preload'
+import create from './states/create'
+import update from './states/update'
+import render from './states/render'
+
+const phaser = { preload, create, update, render }
+
+const screenWidth = 800
+const screenHeight = 600
+
+const tileSize = 32
+
+const minMapX = 0
+const minMapY = 0
+const maxMapX = 100
+const maxMapY = 100
+
+const viewPortTileWidth = screenWidth / tileSize
+const viewPortTileHeight = screenHeight / tileSize
+
+const maxX = maxMapX * tileSize
+const maxY = maxMapY * tileSize
+
+
+class Game extends Phaser.Game {
+
+	constructor() {
+    super(Config.GAME_WIDTH, Config.GAME_HEIGHT, Phaser.Canvas, Config.GAME_RENDER_ID)
+    console.log(this)
+    // this.cursors = this.input.keyboard.createCursorKeys()
+
+		this.state.add('GameState', GameState, false);
+		this.state.start('GameState');
+	}
+
+}
+
+class GameState extends Phaser.State {
+
+    // let mapData = []
+    //
+    // for (let x = 0 x < maxMapX x++) {
+    //   mapData[x] = []
+    // }
+
+
+    // function checkBounds() {
+    //   return !(me.x < minMapX || me.x > maxMapX || me.y < minMapY || me.y > maxMapY)
+    // }
+}
+
+new Game()
 
 // export default function() {
 
@@ -14,19 +65,13 @@ let me
 let newPlayer
 let him
 let player
-let cursors
 
 let grass
 
 let currentSpeed
 
-let mapData = []
 
-for (let x = 0; x < maxMapX; x++) {
-  mapData[x] = []
-}
-
-window.addEventListener("deviceorientation", handleOrientation, true)
+// window.addEventListener("deviceorientation", handleOrientation, true)
 
 
 // function handleOrientation(e) {
@@ -209,10 +254,6 @@ window.addEventListener("deviceorientation", handleOrientation, true)
 //   // me.player.frame = 0
 // }
 
-function checkBounds() {
-  return !(me.x < minMapX || me.x > maxMapX || me.y < minMapY || me.y > maxMapY)
-}
-
 
 // const socket = io('http://localhost:3000')
 
@@ -290,12 +331,12 @@ function onRemovePlayer(data) {
 }
 
 
-function playerById(id) {
-  for (let i = 0; i < remotePlayers.length; i++) {
-    if (remotePlayers[i].id == id) {
-      return remotePlayers[i]
-    }
-  }
-
-  return false
-}
+// function playerById(id) {
+//   for (let i = 0 i < remotePlayers.length i++) {
+//     if (remotePlayers[i].id == id) {
+//       return remotePlayers[i]
+//     }
+//   }
+//
+//   return false
+// }

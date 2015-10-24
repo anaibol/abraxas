@@ -1,12 +1,14 @@
 var path = require('path');
 var webpack = require('webpack');
+var WebpackErrorNotificationPlugin = require('webpack-error-notification');
 
 module.exports = {
-    entry: './src/app.js',
+    entry: './src',
     output: {
-      filename: 'build/app.js'
+      path: 'src',
+      publicPath: 'assets',
+      filename: 'game.js'
     },
-    devtool: "source-map",
     module: {
       loaders: [
   			{
@@ -23,13 +25,19 @@ module.exports = {
     },
     plugins: [
         new webpack.HotModuleReplacementPlugin(),
-        // Avoid publishing files when compilation failed
+        new WebpackErrorNotificationPlugin(),
         new webpack.NoErrorsPlugin()
     ],
+    watch: true,
     stats: {
         // Nice colored output
-        colors: true
+        colors: true,
+        hash: false,
+        timings: false,
+        chunks: false,
+        chunkModules: false,
+        modules: false
     },
     // Create Sourcemaps for the bundle
-    devtool: 'source-map'
+    devtool: '#cheap-module-inline-eval-source-map'
 };
