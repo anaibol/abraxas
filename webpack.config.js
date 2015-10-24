@@ -2,28 +2,24 @@ var path = require('path');
 var webpack = require('webpack');
 
 module.exports = {
-    entry: {
-      App: [
-        'webpack-dev-server/client?http://localhost:8080/assets/',
-        './src/app.js'
-      ]
-    },
+    entry: './src/app.js',
     output: {
-        path: './src',
-        filename: 'app.js',
-        publicPath: 'http://localhost:8080/assets'
+      filename: 'build/app.js'
     },
+    devtool: "source-map",
     module: {
-        loaders: [
-          {
-            test: /\.js$/,
-            exclude: /(node_modules||bower_modules)/,
-            loader: 'babel',
-            query: {
-              stage: 0
-            }
-          }
-        ]
+      loaders: [
+  			{
+  				test: /\.json$/,
+  				exclude: /node_modules/,
+  				loader: 'json',
+  			},
+  			{
+  				test: /\.js$/,
+  				exclude: /node_modules/,
+  				loader: 'babel'
+  			}
+  		]
     },
     plugins: [
         new webpack.HotModuleReplacementPlugin(),
