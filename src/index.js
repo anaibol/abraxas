@@ -1,36 +1,11 @@
 import Config from './config'
-
-import preload from './states/preload'
-import create from './states/create'
-import update from './states/update'
-import render from './states/render'
-
-const phaser = { preload, create, update, render }
-
-const screenWidth = 800
-const screenHeight = 600
-
-const tileSize = 32
-
-const minMapX = 0
-const minMapY = 0
-const maxMapX = 100
-const maxMapY = 100
-
-const viewPortTileWidth = screenWidth / tileSize
-const viewPortTileHeight = screenHeight / tileSize
-
-const maxX = maxMapX * tileSize
-const maxY = maxMapY * tileSize
-
+// import Boot from './boot'
+import Player from './Player'
 
 class Game extends Phaser.Game {
-
 	constructor() {
-    super(Config.GAME_WIDTH, Config.GAME_HEIGHT, Phaser.Canvas, Config.GAME_RENDER_ID)
+    super(Config.SCREEN_WIDTH, Config.SCREEN_HEIGHT, Phaser.Canvas, Config.RENDER_ID)
     console.log(this)
-    // this.cursors = this.input.keyboard.createCursorKeys()
-
 		this.state.add('GameState', GameState, false);
 		this.state.start('GameState');
 	}
@@ -39,23 +14,45 @@ class Game extends Phaser.Game {
 
 class GameState extends Phaser.State {
 	preload() {
-		this.game.load.image('grass', 'assets/img/grass.png')
-		this.game.load.spritesheet('player', 'assets/img/dude.png', 27, 49)
+		this.game.load.tilemap('map', 'assets/maps/1.json', null, Phaser.Tilemap.TILED_JSON);
+
+		// this.game.load.image('grass', 'assets/img/grass.png')
+		// this.game.load.spritesheet('player', 'assets/img/dude.png', 27, 49)
+//
 	}
 	create() {
-		this.game.world.setBounds(0, 0, maxX, maxY)
-	  this.game.add.sprite(0, 0, 'grass')
+		this.cursors = this.game.input.keyboard.createCursorKeys()
+		// this.game.world.setBounds(0, 0, Config.MAX_MAP_X, Config.MAX_MAP_Y)
+	  // this.game.add.sprite(0, 0, 'grass')
+		this.map = this.game.add.tilemap('map')
+		this.map.addTilesetImage('grass');
 
-		grass = this.game.add.tileSprite(0, 0, maxX, maxY, 'grass')
-		grass.fixedToCamera = true
+		console.log(this.map);
 
-		this.game.camera.focusOnXY(0, 0)
+		// grass = this.game.add.tileSprite(0, 0, Config.MAX_MAP_X, Config.MAX_MAP_Y, 'map')
+		// grass.fixedToCamera = true
+
+		// this.game.camera.focusOnXY(0, 0)
+		// this.game.camera.follow(this.player.mainSprite);
+
+		//
+		// this.backgroundlayer = this.map.createLayer('background');
+    // this.blockedLayer = this.map.createLayer('blockedLayer');
+
+		// this.map.setCollisionBetween(1, 100, true, 'blockedLayer');
+
+    //resizes the game world to match the layer dimensions
+    // this.backgroundlayer.resizeWorld();
+
+		this.coinPickupSound = this.game.add.audio('coins',1,true);
+
+		new Player()
 	}
 
 	render() {
 		this.game.debug.text('FPS: ' + this.game.time.fps, 32, 32)
 	  // this.game.debug.text('HP: ' + player.minHP + ' / ' + player.maxHp, 32, 32)
-	  this.game.debug.text('X: ' + grass.tilePosition.x + ' Y: ' + grass.tilePosition.y, 32, 64)
+	  // this.game.debug.text('X: ' + grass.tilePosition.x + ' Y: ' + grass.tilePosition.y, 32, 64)
 
 	  // if (me) {
 	    // this.game.debug.text(this.game.time.physicsElapsed, 32, 32)
@@ -86,20 +83,9 @@ new Game()
 
 // export default function() {
 
-const rnd = (min,max) => {
-  Math.floor(Math.random()*(max-min+1)+min)
-}
-
-
-// const map
-let me
-let newPlayer
-let him
-let player
-
-let grass
-
-let currentSpeed
+// const rnd = (min,max) => {
+//   Math.floor(Math.random()*(max-min+1)+min)
+// }
 
 
 // window.addEventListener("deviceorientation", handleOrientation, true)
