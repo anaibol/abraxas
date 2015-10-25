@@ -38,6 +38,37 @@ class Game extends Phaser.Game {
 }
 
 class GameState extends Phaser.State {
+	preload() {
+		this.game.load.image('grass', 'assets/img/grass.png')
+		this.game.load.spritesheet('player', 'assets/img/dude.png', 27, 49)
+	}
+	create() {
+		this.game.world.setBounds(0, 0, maxX, maxY)
+	  this.game.add.sprite(0, 0, 'grass')
+
+		grass = this.game.add.tileSprite(0, 0, maxX, maxY, 'grass')
+		grass.fixedToCamera = true
+
+		this.game.camera.focusOnXY(0, 0)
+	}
+
+	render() {
+		this.game.debug.text('FPS: ' + this.game.time.fps, 32, 32)
+	  // this.game.debug.text('HP: ' + player.minHP + ' / ' + player.maxHp, 32, 32)
+	  this.game.debug.text('X: ' + grass.tilePosition.x + ' Y: ' + grass.tilePosition.y, 32, 64)
+
+	  // if (me) {
+	    // this.game.debug.text(this.game.time.physicsElapsed, 32, 32)
+	    // this.game.debug.body(me.player)
+	    // this.game.debug.bodyInfo(me.player, 16, 24)
+	  // }
+
+	  // if (newPlayer) {
+	  //   this.game.debug.text(this.game.time.physicsElapsed, 32, 32)
+	  //   this.game.debug.body(newPlayer.player)
+	  //   this.game.debug.bodyInfo(newPlayer.player, 16, 24)
+	  // }
+	}
 
     // let mapData = []
     //
@@ -112,49 +143,49 @@ let currentSpeed
   // console.log(game.camera.x)
   // console.log(game.camera.x % tileSize)
 
-  if (cursors.right.isDown) {
-    me.player.angle = 0
-    moveMe('east')
-
-  } else if (cursors.left.isDown) {
-    me.player.angle = 180
-    moveMe('west')
-
-  } else if (cursors.up.isDown) {
-    me.player.angle = 270
-    moveMe('north')
-  } else if (cursors.down.isDown) {
-    me.player.angle = 90
-    moveMe('south')
-
-  } else {
-    switch (me.direction) {
-      case 'east':
-      if(me.player.x >= move_to_x){
-        stopPlayer(me)
-      }
-
-      break
-      case 'west':
-      if(me.player.x <= move_to_x){
-        stopPlayer(me)
-      }
-
-      break
-      case 'north':
-      if(me.player.y >= move_to_y){
-        stopPlayer(me)
-      }
-
-      break
-      case 'south':
-      if(me.player.y <= move_to_y){
-        stopPlayer(me)
-      }
-
-      break
-    }
-  }
+  // if (cursors.right.isDown) {
+  //   me.player.angle = 0
+  //   moveMe('east')
+	//
+  // } else if (cursors.left.isDown) {
+  //   me.player.angle = 180
+  //   moveMe('west')
+	//
+  // } else if (cursors.up.isDown) {
+  //   me.player.angle = 270
+  //   moveMe('north')
+  // } else if (cursors.down.isDown) {
+  //   me.player.angle = 90
+  //   moveMe('south')
+	//
+  // } else {
+  //   switch (me.direction) {
+  //     case 'east':
+  //     if(me.player.x >= move_to_x){
+  //       stopPlayer(me)
+  //     }
+	//
+  //     break
+  //     case 'west':
+  //     if(me.player.x <= move_to_x){
+  //       stopPlayer(me)
+  //     }
+	//
+  //     break
+  //     case 'north':
+  //     if(me.player.y >= move_to_y){
+  //       stopPlayer(me)
+  //     }
+	//
+  //     break
+  //     case 'south':
+  //     if(me.player.y <= move_to_y){
+  //       stopPlayer(me)
+  //     }
+	//
+  //     break
+  //   }
+  // }
 
 
   // console.log(game.camera.x)
@@ -302,33 +333,33 @@ let currentSpeed
 // }
 
 // Move player
-function onMovePlayer(data) {
-  const player = playerById(data.id)
-
-  // Player not found
-  if (!player) {
-    console.log("Player not found: "+data.id)
-    return
-  }
-
-  movePlayer(player, data.direction)
-}
-
-function onRemovePlayer(data) {
-  const removePlayer = playerById(data.id)
-
-  // Player not found
-  if (!removePlayer) {
-    console.log("Player not found: "+data.id)
-    return
-  }
-
-  // Remove player from array
-  remotePlayers.splice(remotePlayers.indexOf(removePlayer), 1)
-
-  newPlayer.player.kill()
-  console.log(remotePlayers.length)
-}
+// function onMovePlayer(data) {
+//   const player = playerById(data.id)
+//
+//   // Player not found
+//   if (!player) {
+//     console.log("Player not found: "+data.id)
+//     return
+//   }
+//
+//   movePlayer(player, data.direction)
+// }
+//
+// function onRemovePlayer(data) {
+//   const removePlayer = playerById(data.id)
+//
+//   // Player not found
+//   if (!removePlayer) {
+//     console.log("Player not found: "+data.id)
+//     return
+//   }
+//
+//   // Remove player from array
+//   remotePlayers.splice(remotePlayers.indexOf(removePlayer), 1)
+//
+//   newPlayer.player.kill()
+//   console.log(remotePlayers.length)
+// }
 
 
 // function playerById(id) {
