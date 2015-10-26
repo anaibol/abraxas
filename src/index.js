@@ -14,20 +14,24 @@ class Game extends Phaser.Game {
 
 class GameState extends Phaser.State {
 	preload() {
-		this.game.load.tilemap('map', 'assets/maps/1.json', null, Phaser.Tilemap.TILED_JSON);
-
+		this.game.load.tilemap('tiles', '/assets/maps/1.json', null, Phaser.Tilemap.TILED_JSON)
+		this.game.load.image('tiles', 'assets/img/terrain_atlas.png');
 		// this.game.load.image('grass', 'assets/img/grass.png')
 		// this.game.load.spritesheet('player', 'assets/img/dude.png', 27, 49)
 //
 	}
 	create() {
-		this.cursors = this.game.input.keyboard.createCursorKeys()
 		// this.game.world.setBounds(0, 0, Config.MAX_MAP_X, Config.MAX_MAP_Y)
-	  // this.game.add.sprite(0, 0, 'grass')
-		this.map = this.game.add.tilemap('map')
-		this.map.addTilesetImage('grass');
 
-		console.log(this.map);
+		let map = this.game.add.tilemap('tiles')
+		map.addTilesetImage('tiles', 'tiles')
+
+		let layer = map.createLayer('floor')
+		// layer.resizeWorld()
+		// layer.debug = true
+		// layer.wrap = true
+
+		// this.cursors = this.game.input.keyboard.createCursorKeys()
 
 		// grass = this.game.add.tileSprite(0, 0, Config.MAX_MAP_X, Config.MAX_MAP_Y, 'map')
 		// grass.fixedToCamera = true
@@ -44,9 +48,9 @@ class GameState extends Phaser.State {
     //resizes the game world to match the layer dimensions
     // this.backgroundlayer.resizeWorld();
 
-		this.coinPickupSound = this.game.add.audio('coins',1,true);
-
-		new Player()
+		// this.coinPickupSound = this.game.add.audio('coins',1,true);
+		//
+		// new Player()
 	}
 
 	render() {
