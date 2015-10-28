@@ -14,7 +14,7 @@ class Game extends Phaser.Game {
 
 class GameState extends Phaser.State {
 	preload() {
-		this.game.load.tilemap('tiles', '/assets/maps/1.json', null, Phaser.Tilemap.TILED_JSON)
+		this.game.load.tilemap('tiles', 'assets/maps/1.json', null, Phaser.Tilemap.TILED_JSON)
 		this.game.load.image('tiles', 'assets/img/terrain_atlas.png');
 		// this.game.load.image('grass', 'assets/img/grass.png')
 		// this.game.load.spritesheet('player', 'assets/img/dude.png', 27, 49)
