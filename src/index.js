@@ -15,7 +15,7 @@ class Game extends Phaser.Game {
 class GameState extends Phaser.State {
 	preload() {
 		this.game.load.tilemap('tiles', 'assets/maps/1.json', null, Phaser.Tilemap.TILED_JSON)
-		this.game.load.image('tiles', 'assets/img/terrain_atlas.png');
+		this.game.load.image('tilesImage', 'assets/img/terrain_atlas.png');
 		// this.game.load.image('grass', 'assets/img/grass.png')
 		// this.game.load.spritesheet('player', 'assets/img/dude.png', 27, 49)
 //
@@ -24,7 +24,7 @@ class GameState extends Phaser.State {
 		// this.game.world.setBounds(0, 0, Config.MAX_MAP_X, Config.MAX_MAP_Y)
 
 		let map = this.game.add.tilemap('tiles')
-		map.addTilesetImage('tiles', 'tiles')
+		map.addTilesetImage('tileSet', 'tilesImage')
 
 		let layer = map.createLayer('floor')
 		// layer.resizeWorld()
