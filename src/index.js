@@ -1,89 +1,14 @@
-import Config from './config'
+import config from './config'
 // import Boot from './boot'
+import Game from './Game'
+import Map from './Map'
 import Player from './Player'
 
-class Game extends Phaser.Game {
-	constructor() {
-    super(Config.SCREEN_WIDTH, Config.SCREEN_HEIGHT, Phaser.Canvas, Config.RENDER_ID)
-    console.log(this)
-		this.state.add('GameState', GameState, false);
-		this.state.start('GameState');
-	}
+let game = new Game()
 
-}
-
-class GameState extends Phaser.State {
-	preload() {
-		this.game.load.tilemap('tiles', 'assets/maps/1.json', null, Phaser.Tilemap.TILED_JSON)
-		this.game.load.image('tilesImage', 'assets/img/terrain_atlas.png');
-		// this.game.load.image('grass', 'assets/img/grass.png')
-		// this.game.load.spritesheet('player', 'assets/img/dude.png', 27, 49)
-//
-	}
-	create() {
-		// this.game.world.setBounds(0, 0, Config.MAX_MAP_X, Config.MAX_MAP_Y)
-
-		let map = this.game.add.tilemap('tiles')
-		map.addTilesetImage('tileSet', 'tilesImage')
-
-		let layer = map.createLayer('floor')
-		// layer.resizeWorld()
-		// layer.debug = true
-		// layer.wrap = true
-
-		// this.cursors = this.game.input.keyboard.createCursorKeys()
-
-		// grass = this.game.add.tileSprite(0, 0, Config.MAX_MAP_X, Config.MAX_MAP_Y, 'map')
-		// grass.fixedToCamera = true
-
-		// this.game.camera.focusOnXY(0, 0)
-		// this.game.camera.follow(this.player.mainSprite);
-
-		//
-		// this.backgroundlayer = this.map.createLayer('background');
-    // this.blockedLayer = this.map.createLayer('blockedLayer');
-
-		// this.map.setCollisionBetween(1, 100, true, 'blockedLayer');
-
-    //resizes the game world to match the layer dimensions
-    // this.backgroundlayer.resizeWorld();
-
-		// this.coinPickupSound = this.game.add.audio('coins',1,true);
-		//
-		// new Player()
-	}
-
-	render() {
-		this.game.debug.text('FPS: ' + this.game.time.fps, 32, 32)
-	  // this.game.debug.text('HP: ' + player.minHP + ' / ' + player.maxHp, 32, 32)
-	  // this.game.debug.text('X: ' + grass.tilePosition.x + ' Y: ' + grass.tilePosition.y, 32, 64)
-
-	  // if (me) {
-	    // this.game.debug.text(this.game.time.physicsElapsed, 32, 32)
-	    // this.game.debug.body(me.player)
-	    // this.game.debug.bodyInfo(me.player, 16, 24)
-	  // }
-
-	  // if (newPlayer) {
-	  //   this.game.debug.text(this.game.time.physicsElapsed, 32, 32)
-	  //   this.game.debug.body(newPlayer.player)
-	  //   this.game.debug.bodyInfo(newPlayer.player, 16, 24)
-	  // }
-	}
-
-    // let mapData = []
-    //
-    // for (let x = 0 x < maxMapX x++) {
-    //   mapData[x] = []
-    // }
-
-
-    // function checkBounds() {
-    //   return !(me.x < minMapX || me.x > maxMapX || me.y < minMapY || me.y > maxMapY)
-    // }
-}
-
-new Game()
+game.state.add('Map', Map, false)
+game.state.add('Player', Player)
+game.state.start('Map')
 
 // export default function() {
 
