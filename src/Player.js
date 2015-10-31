@@ -1,15 +1,13 @@
 import Char from './Char'
 
 class Player extends Char {
-  constructor(id, x, y) {
+  constructor(game, id, x, y) {
     super()
 
+    this.game = game
+
     this.id = id
-    this.x = x
-    this.y = y
   }
-
-
 }
 
 export default Player

@@ -1,14 +1,13 @@
 import config from './config'
 // import Boot from './boot'
 import Game from './Game'
-import Map from './Map'
-import Player from './Player'
+import Play from './states/Play'
 
-let game = new Game()
+window.game = new Game()
 
-game.state.add('Map', Map, false)
-game.state.add('Player', Player)
-game.state.start('Map')
+game.state.add('Play', Play)
+game.state.start('Play')
+// game.state.start('Char')
 
 // export default function() {
 
