@@ -10,6 +10,8 @@ class Play extends Phaser.State {
 	}
 
 	create() {
+		game.plugins.add(Phaser.Plugin.Inspector)
+
 		// game.world.setBounds(0, 0, config.MAX_MAP_X, config.MAX_MAP_Y)
 
 		const map = game.add.tilemap('tiles')
@@ -80,6 +82,10 @@ class Play extends Phaser.State {
 	  //   game.debug.body(newPlayer.player)
 	  //   game.debug.bodyInfo(newPlayer.player, 16, 24)
 	  // }
+	}
+
+	update() {
+		this.checkKeys()
 	}
 
     // let mapData = []
