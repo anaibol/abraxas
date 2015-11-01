@@ -10,9 +10,9 @@ class Play extends Phaser.State {
 	}
 
 	create() {
-		game.plugins.add(Phaser.Plugin.Inspector)
+		// game.plugins.add(Phaser.Plugin.Inspector)
 
-		// game.world.setBounds(0, 0, config.MAX_MAP_X, config.MAX_MAP_Y)
+		game.world.setBounds(0, 0, config.MAX_MAP_X, config.MAX_MAP_Y)
 
 		const map = game.add.tilemap('tiles')
 		map.addTilesetImage('tileSet', 'tilesImage')
@@ -27,54 +27,38 @@ class Play extends Phaser.State {
 
 		game.cursors = game.input.keyboard.createCursorKeys()
 
-		const player = new Player(game, 10, 10)
+		// const player = new Player(game, 10, 10)
 
-		this.mainSprite = game.add.sprite( this.x * config.TILE_SIZE, this.y * config.TILE_SIZE, 'player')
-    // this.mainSprite.animations.add('east', [16,17,18,19,20,21,22,23], 8, true)
-    // this.mainSprite.animations.add('north', [0,1,2,3,4,5,6,7], 8, true)
-    // this.mainSprite.animations.add('west', [48,49,50,51,52,53,54,55], 8, true)
-    // this.mainSprite.animations.add('south', [32,33,34,35,36,37,38, 39], 8, true)
+		this.player = game.add.sprite( this.x * config.TILE_SIZE, this.y * config.TILE_SIZE, 'player')
+    // this.player.animations.add('east', [16,17,18,19,20,21,22,23], 8, true)
+    // this.player.animations.add('north', [0,1,2,3,4,5,6,7], 8, true)
+    // this.player.animations.add('west', [48,49,50,51,52,53,54,55], 8, true)
+    // this.player.animations.add('south', [32,33,34,35,36,37,38, 39], 8, true)
 
-    this.physics.enable(this.mainSprite, Phaser.Physics.ARCADE);
-    game.camera.follow(this.mainSprite);
+		this.physics.arcade.enable(this.player)
+		this.player.body.collideWorldBounds = true;
+    game.camera.follow(this.player)
 
-		this.marker = this.game.add.graphics();
-		this.marker.lineStyle(2, 0x000000, 1);
+		// this.player = Object.assign(this.player, new Player(10, 10))
 
-		this.input.onDown.add(function(event){
-			// this.updateCursorPosition();
-			player.moveTo(this.marker.x, this.marker.y, function(path){
+		this.player.pos = {
+			x: config.SCREEN_WIDTH / config.TILE_SIZE / 2,
+			y: config.SCREEN_HEIGHT / config.TILE_SIZE / 2
+		}
 
-			});
-		}, this);
-
-		// grass = game.add.tileSprite(0, 0, config.MAX_MAP_X, config.MAX_MAP_Y, 'map')
-		// grass.fixedToCamera = true
-
-		// game.camera.focusOnXY(0, 0)
-		//
-		// this.backgroundlayer = this.map.createLayer('background');
-    // this.blockedLayer = this.map.createLayer('blockedLayer');
-
-		// this.map.setCollisionBetween(1, 100, true, 'blockedLayer');
-
-    //resizes the game world to match the layer dimensions
-    // this.backgroundlayer.resizeWorld();
-
-		// this.coinPickupSound = game.add.audio('coins',1,true);
-		//
-
+		this.player.x = this.player.pos.x * config.TILE_SIZE
+		this.player.y = this.player.pos.y * config.TILE_SIZE
 	}
 
 	render() {
-		game.debug.text('FPS: ' + game.time.fps, 32, 32)
+		// game.debug.text('FPS: ' + game.time.fps, 32, 32)
 	  // game.debug.text('HP: ' + player.minHP + ' / ' + player.maxHp, 32, 32)
-	  // game.debug.text('X: ' + grass.tilePosition.x + ' Y: ' + grass.tilePosition.y, 32, 64)
+	  // game.debug.text('X: ' + this.player.x + ' Y: ' + this.player.y, 32, 64)
 
 	  // if (me) {
 	    // game.debug.text(game.time.physicsElapsed, 32, 32)
-	    // game.debug.body(me.player)
-	    // game.debug.bodyInfo(me.player, 16, 24)
+	    game.debug.body(this.player)
+	    game.debug.bodyInfo(this.player, 16, 24)
 	  // }
 
 	  // if (newPlayer) {
@@ -86,18 +70,93 @@ class Play extends Phaser.State {
 
 	update() {
 		this.checkKeys()
+		// this.player.marker.x = this.math.snapToFloor(Math.floor(this.player.x), 32) / 32;
+		// this.player.marker.y = this.math.snapToFloor(Math.floor(this.player.y), 32) / 32;
+
 	}
 
-    // let mapData = []
-    //
-    // for (let x = 0 x < maxMapX x++) {
-    //   mapData[x] = []
-    // }
+	checkKeys() {
+	  if (game.cursors.left.isDown) {
+	    this.moveMe(Phaser.LEFT)
+	  } else if (game.cursors.right.isDown) {
+	    this.moveMe(Phaser.RIGHT)
+	  } else if (game.cursors.up.isDown) {
+	    this.moveMe(Phaser.UP)
+	  } else if (game.cursors.down.isDown) {
+	    this.moveMe(Phaser.DOWN)
+		} else {
+			// this.stopMe()
+		}
+	}
+
+	moveMe(direction) {
+		// if (direction !== this.player.direction) {
+		// 	return
+		// }
+
+		if (this.player.isMoving) return
+
+	 	let pos = Object.assign({}, this.player.pos)
 
 
-    // function checkBounds() {
-    //   return !(me.x < minMapX || me.x > maxMapX || me.y < minMapY || me.y > maxMapY)
-    // }
+		switch (direction) {
+			case Phaser.LEFT:
+				pos.x--
+				break
+
+			case Phaser.RIGHT:
+				pos.x++
+				break
+
+			case Phaser.UP:
+				pos.y--
+				break
+
+			case Phaser.DOWN:
+				pos.y++
+				break
+
+		}
+
+		if (pos.x < config.SCREEN_WIDTH / config.TILE_SIZE / 2 * config.MIN_MAP_X - 1 ||
+			pos.x > config.SCREEN_WIDTH / config.TILE_SIZE / 2 * config.MAX_MAP_X - 1 ||
+			pos.y < config.SCREEN_HEIGHT / config.TILE_SIZE / 2 * config.MIN_MAP_Y - 1 ||
+			pos.x > config.SCREEN_HEIGHT / config.TILE_SIZE / 2 * config.MAX_MAP_Y - 1) {
+				return
+		}
+
+		this.player.pos = pos;
+
+		this.moveChar(this.player)
+	}
+
+	stopMe() {
+		// this.player.body.velocity.x = 0
+		// this.player.body.velocity.y = 0
+	}
+
+	moveChar(char) {
+		char.isMoving = true
+
+		game.add.tween(char).to({
+			x: char.pos.x * config.TILE_SIZE,
+			y: char.pos.y * config.TILE_SIZE
+		}, config.USERS_MOVE_SPEED, null, true).onComplete.add(function() {
+			// Phaser.Easing.Quadratic.InOut
+			char.isMoving = false
+		}, this)
+	}
+
+  // let mapData = []
+  //
+  // for (let x = 0 x < maxMapX x++) {
+  //   mapData[x] = []
+  // }
+
+
+  // function checkBounds() {
+  //   return !(me.x < minMapX || me.x > maxMapX || me.y < minMapY || me.y > maxMapY)
+  // }
 }
 
 export default Play

@@ -43,69 +43,6 @@ game.state.start('Play')
 // let move_to_x
 // let move_to_y
 
-// function checkKeys() {
-  // console.log(me.player.x )
-
-
-  // if (!checkBounds()) {
-  //   stopPlayer(me)
-  //   return
-  // }
-  //
-
-  // console.log(grass.tilePosition.x)
-  // console.log(game.camera.x)
-  // console.log(game.camera.x % tileSize)
-
-  // if (cursors.right.isDown) {
-  //   me.player.angle = 0
-  //   moveMe('east')
-	//
-  // } else if (cursors.left.isDown) {
-  //   me.player.angle = 180
-  //   moveMe('west')
-	//
-  // } else if (cursors.up.isDown) {
-  //   me.player.angle = 270
-  //   moveMe('north')
-  // } else if (cursors.down.isDown) {
-  //   me.player.angle = 90
-  //   moveMe('south')
-	//
-  // } else {
-  //   switch (me.direction) {
-  //     case 'east':
-  //     if(me.player.x >= move_to_x){
-  //       stopPlayer(me)
-  //     }
-	//
-  //     break
-  //     case 'west':
-  //     if(me.player.x <= move_to_x){
-  //       stopPlayer(me)
-  //     }
-	//
-  //     break
-  //     case 'north':
-  //     if(me.player.y >= move_to_y){
-  //       stopPlayer(me)
-  //     }
-	//
-  //     break
-  //     case 'south':
-  //     if(me.player.y <= move_to_y){
-  //       stopPlayer(me)
-  //     }
-	//
-  //     break
-  //   }
-  // }
-
-
-  // console.log(game.camera.x)
-  // console.log(game.camera.x % tileSize)
-
-// }
 
 // function moveMe(direction) {
 //   switch (direction) {
