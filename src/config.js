@@ -1,6 +1,6 @@
 const Config = {
     SCREEN_WIDTH: 800,
-    SCREEN_HEIGHT: 600,
+    SCREEN_HEIGHT: 640,
     RENDER_ID: 'game',
 
     TILE_SIZE: 32,

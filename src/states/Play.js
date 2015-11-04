@@ -29,36 +29,38 @@ class Play extends Phaser.State {
 
 		// const player = new Player(game, 10, 10)
 
-		this.player = game.add.sprite( this.x * config.TILE_SIZE, this.y * config.TILE_SIZE, 'player')
+		let players = []
+
+
+
+		let pos = {
+			x: config.SCREEN_WIDTH / config.TILE_SIZE / 2,
+			y: config.SCREEN_HEIGHT / config.TILE_SIZE / 2 - 1
+		}
+
+		this.player = new Player(1, 'player', pos.x, pos.y)
+
+		players.push(this.player)
+
     // this.player.animations.add('east', [16,17,18,19,20,21,22,23], 8, true)
     // this.player.animations.add('north', [0,1,2,3,4,5,6,7], 8, true)
     // this.player.animations.add('west', [48,49,50,51,52,53,54,55], 8, true)
     // this.player.animations.add('south', [32,33,34,35,36,37,38, 39], 8, true)
 
-		this.physics.arcade.enable(this.player)
-		this.player.body.collideWorldBounds = true;
-    game.camera.follow(this.player)
-
-		// this.player = Object.assign(this.player, new Player(10, 10))
-
-		this.player.pos = {
-			x: config.SCREEN_WIDTH / config.TILE_SIZE / 2,
-			y: config.SCREEN_HEIGHT / config.TILE_SIZE / 2
-		}
-
-		this.player.x = this.player.pos.x * config.TILE_SIZE
-		this.player.y = this.player.pos.y * config.TILE_SIZE
+		this.physics.arcade.enable(this.player.body)
+		// this.player.body.body.collideWorldBounds = true;
+    game.camera.follow(this.player.body)
 	}
 
 	render() {
 		// game.debug.text('FPS: ' + game.time.fps, 32, 32)
 	  // game.debug.text('HP: ' + player.minHP + ' / ' + player.maxHp, 32, 32)
-	  // game.debug.text('X: ' + this.player.x + ' Y: ' + this.player.y, 32, 64)
+	  // game.debug.text('X: ' + this.player.body.x + ' Y: ' + this.player.body.y, 32, 64)
 
 	  // if (me) {
 	    // game.debug.text(game.time.physicsElapsed, 32, 32)
-	    game.debug.body(this.player)
-	    game.debug.bodyInfo(this.player, 16, 24)
+	    game.debug.body(this.player.body)
+	    game.debug.bodyInfo(this.player.body, 32, 24)
 	  // }
 
 	  // if (newPlayer) {
@@ -70,8 +72,8 @@ class Play extends Phaser.State {
 
 	update() {
 		this.checkKeys()
-		// this.player.marker.x = this.math.snapToFloor(Math.floor(this.player.x), 32) / 32;
-		// this.player.marker.y = this.math.snapToFloor(Math.floor(this.player.y), 32) / 32;
+		// this.player.body.marker.x = this.math.snapToFloor(Math.floor(this.player.body.x), 32) / 32;
+		// this.player.body.marker.y = this.math.snapToFloor(Math.floor(this.player.body.y), 32) / 32;
 
 	}
 
@@ -90,14 +92,12 @@ class Play extends Phaser.State {
 	}
 
 	moveMe(direction) {
-		// if (direction !== this.player.direction) {
+		// if (direction !== this.player.body.direction) {
 		// 	return
 		// }
-
 		if (this.player.isMoving) return
 
-	 	let pos = Object.assign({}, this.player.pos)
-
+	 	let pos = this.player.pos
 
 		switch (direction) {
 			case Phaser.LEFT:
@@ -115,19 +115,9 @@ class Play extends Phaser.State {
 			case Phaser.DOWN:
 				pos.y++
 				break
-
 		}
 
-		if (pos.x < config.SCREEN_WIDTH / config.TILE_SIZE / 2 * config.MIN_MAP_X - 1 ||
-			pos.x > config.SCREEN_WIDTH / config.TILE_SIZE / 2 * config.MAX_MAP_X - 1 ||
-			pos.y < config.SCREEN_HEIGHT / config.TILE_SIZE / 2 * config.MIN_MAP_Y - 1 ||
-			pos.x > config.SCREEN_HEIGHT / config.TILE_SIZE / 2 * config.MAX_MAP_Y - 1) {
-				return
-		}
-
-		this.player.pos = pos;
-
-		this.moveChar(this.player)
+		this.moveChar(this.player.body, pos.x, pos.y)
 	}
 
 	stopMe() {
@@ -135,12 +125,12 @@ class Play extends Phaser.State {
 		// this.player.body.velocity.y = 0
 	}
 
-	moveChar(char) {
+	moveChar(char, x, y) {
 		char.isMoving = true
 
 		game.add.tween(char).to({
-			x: char.pos.x * config.TILE_SIZE,
-			y: char.pos.y * config.TILE_SIZE
+			x: x * config.TILE_SIZE,
+			y: y * config.TILE_SIZE
 		}, config.USERS_MOVE_SPEED, null, true).onComplete.add(function() {
 			// Phaser.Easing.Quadratic.InOut
 			char.isMoving = false
@@ -156,6 +146,12 @@ class Play extends Phaser.State {
 
   // function checkBounds() {
   //   return !(me.x < minMapX || me.x > maxMapX || me.y < minMapY || me.y > maxMapY)
+			// if (pos.x < config.SCREEN_WIDTH / config.TILE_SIZE / 2 * config.MIN_MAP_X - 1 ||
+			// 	pos.x > config.SCREEN_WIDTH / config.TILE_SIZE / 2 * config.MAX_MAP_X - 1 ||
+			// 	pos.y < config.SCREEN_HEIGHT / config.TILE_SIZE / 2 * config.MIN_MAP_Y - 1 ||
+			// 	pos.x > config.SCREEN_HEIGHT / config.TILE_SIZE / 2 * config.MAX_MAP_Y - 1) {
+			// 		return
+			// }
   // }
 }
 

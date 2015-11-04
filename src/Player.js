@@ -1,16 +1,21 @@
 import Char from './Char'
+import config from './config'
 
-class Player extends Char {
-  constructor(id, x, y) {
+class Player extends Phaser.Sprite {
+  constructor(id, name, x, y) {
     super()
 
-    this.game = game
+    this.pos = {x, y}
 
     this.id = id
-    this.x = x
-    this.y = y
 
-    console.log(this);
+    this.body = game.add.sprite(x * config.TILE_SIZE, y * config.TILE_SIZE, 'player')
+
+
+    // game.add.sprite(x, y, 'player')
+
+    // Phaser.Sprite.call(game, x, y, 'bunny');
+
     return this
   }
 }
