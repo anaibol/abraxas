@@ -11,6 +11,7 @@ class Play extends Phaser.State {
 
 	create() {
 		// game.plugins.add(Phaser.Plugin.Inspector)
+		game.time.events.loop(250, this.checkKeys, this);
 
 		game.world.setBounds(0, 0, config.MAX_MAP_X, config.MAX_MAP_Y)
 
@@ -55,13 +56,15 @@ class Play extends Phaser.State {
 	render() {
 		// game.debug.text('FPS: ' + game.time.fps, 32, 32)
 	  // game.debug.text('HP: ' + player.minHP + ' / ' + player.maxHp, 32, 32)
-	  // game.debug.text('X: ' + this.player.body.x + ' Y: ' + this.player.body.y, 32, 64)
+	  game.debug.text('X: ' + this.player.pos.x + ' Y: ' + this.player.pos.y, 32, 64)
 
 	  // if (me) {
 	    // game.debug.text(game.time.physicsElapsed, 32, 32)
 	    game.debug.body(this.player.body)
 	    game.debug.bodyInfo(this.player.body, 32, 24)
 	  // }
+
+			this.checkKeys()
 
 	  // if (newPlayer) {
 	  //   game.debug.text(game.time.physicsElapsed, 32, 32)
@@ -71,7 +74,7 @@ class Play extends Phaser.State {
 	}
 
 	update() {
-		this.checkKeys()
+
 		// this.player.body.marker.x = this.math.snapToFloor(Math.floor(this.player.body.x), 32) / 32;
 		// this.player.body.marker.y = this.math.snapToFloor(Math.floor(this.player.body.y), 32) / 32;
 
@@ -87,6 +90,7 @@ class Play extends Phaser.State {
 	  } else if (game.cursors.down.isDown) {
 	    this.moveMe(Phaser.DOWN)
 		} else {
+
 			// this.stopMe()
 		}
 	}
@@ -97,6 +101,7 @@ class Play extends Phaser.State {
 		// }
 		if (this.player.isMoving) return
 
+		console.log(1);
 	 	let pos = this.player.pos
 
 		switch (direction) {
@@ -121,6 +126,8 @@ class Play extends Phaser.State {
 	}
 
 	stopMe() {
+		console.log('stop me');
+		this.player.isMoving = false
 		// this.player.body.velocity.x = 0
 		// this.player.body.velocity.y = 0
 	}
@@ -132,8 +139,9 @@ class Play extends Phaser.State {
 			x: x * config.TILE_SIZE,
 			y: y * config.TILE_SIZE
 		}, config.USERS_MOVE_SPEED, null, true).onComplete.add(function() {
-			// Phaser.Easing.Quadratic.InOut
-			char.isMoving = false
+			console.log('cbf');
+			Phaser.Easing.Quadratic.InOut
+			// char.isMoving = false
 		}, this)
 	}
 

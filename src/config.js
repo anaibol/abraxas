@@ -9,7 +9,7 @@ const Config = {
     MIN_MAP_Y: 1,
     MAX_MAP_Y: 100,
 
-    USERS_MOVE_SPEED: 100
+    USERS_MOVE_SPEED: 250
 };
 
 Config.VIEWPORT_TILE_WIDTH = Config.SCREEN_WIDTH / Config.TILE_SIZE
