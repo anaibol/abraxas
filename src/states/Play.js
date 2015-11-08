@@ -28,11 +28,7 @@ class Play extends Phaser.State {
 
 		game.cursors = game.input.keyboard.createCursorKeys()
 
-		// const player = new Player(game, 10, 10)
-
 		let players = []
-
-
 
 		let pos = {
 			x: config.SCREEN_WIDTH / config.TILE_SIZE / 2,
@@ -43,18 +39,13 @@ class Play extends Phaser.State {
 
 		players.push(this.player)
 
-    // this.player.animations.add('east', [16,17,18,19,20,21,22,23], 8, true)
-    // this.player.animations.add('north', [0,1,2,3,4,5,6,7], 8, true)
-    // this.player.animations.add('west', [48,49,50,51,52,53,54,55], 8, true)
-    // this.player.animations.add('south', [32,33,34,35,36,37,38, 39], 8, true)
-
 		this.physics.arcade.enable(this.player.body)
 		// this.player.body.body.collideWorldBounds = true;
     game.camera.follow(this.player.body)
 	}
 
 	render() {
-		// game.debug.text('FPS: ' + game.time.fps, 32, 32)
+		game.debug.text('FPS: ' + game.time.fps, 32, 32)
 	  // game.debug.text('HP: ' + player.minHP + ' / ' + player.maxHp, 32, 32)
 	  game.debug.text('X: ' + this.player.pos.x + ' Y: ' + this.player.pos.y, 32, 64)
 
@@ -89,9 +80,8 @@ class Play extends Phaser.State {
 	    this.moveMe(Phaser.UP)
 	  } else if (game.cursors.down.isDown) {
 	    this.moveMe(Phaser.DOWN)
-		} else {
-
-			// this.stopMe()
+		} else if (this.player.isMoving) {
+			this.stopMe()
 		}
 	}
 
@@ -101,7 +91,6 @@ class Play extends Phaser.State {
 		// }
 		if (this.player.isMoving) return
 
-		console.log(1);
 	 	let pos = this.player.pos
 
 		switch (direction) {
@@ -122,7 +111,7 @@ class Play extends Phaser.State {
 				break
 		}
 
-		this.moveChar(this.player.body, pos.x, pos.y)
+		this.moveChar(this.player, pos.x, pos.y)
 	}
 
 	stopMe() {
@@ -135,13 +124,14 @@ class Play extends Phaser.State {
 	moveChar(char, x, y) {
 		char.isMoving = true
 
-		game.add.tween(char).to({
+		game.add.tween(char.body).to({
 			x: x * config.TILE_SIZE,
 			y: y * config.TILE_SIZE
 		}, config.USERS_MOVE_SPEED, null, true).onComplete.add(function() {
-			console.log('cbf');
-			Phaser.Easing.Quadratic.InOut
-			// char.isMoving = false
+			console.log(char.isMoving);
+			// Phaser.Easing.Quadratic.InOut
+			char.isMoving = false
+			this.checkKeys()
 		}, this)
 	}
 
