@@ -5,23 +5,27 @@ var WebpackErrorNotificationPlugin = require('webpack-error-notification');
 module.exports = {
     entry: './src',
     output: {
-      path: 'src',
-      publicPath: 'assets',
-      filename: 'game.js'
+        path: 'src',
+        publicPath: 'assets',
+        filename: 'game.js'
     },
     module: {
-      loaders: [
-  			{
-  				test: /\.json$/,
-  				exclude: /node_modules/,
-  				loader: 'json',
-  			},
-  			{
-  				test: /\.js$/,
-  				exclude: /node_modules/,
-  				loader: 'babel'
-  			}
-  		]
+        loaders: [
+            {
+                test: /\.json$/,
+                exclude: /node_modules/,
+                loader: 'json',
+            },
+            {
+                test: /\.js$/,
+                exclude: /node_modules/,
+                loader: 'babel'
+            },
+            {
+                loader: 'script',// script-loader
+                test: /(pixi|phaser).js/
+            }
+        ]
     },
     plugins: [
         new webpack.HotModuleReplacementPlugin(),

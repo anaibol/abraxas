@@ -1,6 +1,6 @@
 const Config = {
-    SCREEN_WIDTH: 800,
-    SCREEN_HEIGHT: 640,
+    SCREEN_WIDTH: 320,
+    SCREEN_HEIGHT: 240,
     RENDER_ID: 'game',
 
     TILE_SIZE: 32,
@@ -9,7 +9,7 @@ const Config = {
     MIN_MAP_Y: 1,
     MAX_MAP_Y: 100,
 
-    USERS_MOVE_SPEED: 250
+    USERS_MOVE_SPEED: 150
 };
 
 Config.VIEWPORT_TILE_WIDTH = Config.SCREEN_WIDTH / Config.TILE_SIZE

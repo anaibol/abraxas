@@ -1,9 +1,7 @@
-import config from './config'
+import Phaser from 'phaser-shim'
 
-class Game extends Phaser.Game {
-	constructor() {
-    super(config.SCREEN_WIDTH, config.SCREEN_HEIGHT, Phaser.Canvas, config.RENDER_ID)
+export default class Game extends Phaser.Game {
+	constructor(width, height) {
+    super(width, height)
 	}
 }
-
-export default Game

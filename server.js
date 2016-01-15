@@ -41,7 +41,7 @@ function init() {
 var io = require('socket.io')();
 
 
- io.set('log level', 1); 
+ io.set('log level', 1);
 
 io.listen(3000);
 
@@ -91,7 +91,7 @@ function onMovePlayer(direction) {
   // Find player in array
 
   var movePlayer = playerById(this.id);
-  
+
   // Player not found
   if (!movePlayer) {
     return;

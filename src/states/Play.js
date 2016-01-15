@@ -31,8 +31,8 @@ class Play extends Phaser.State {
 		let players = []
 
 		let pos = {
-			x: config.SCREEN_WIDTH / config.TILE_SIZE / 2,
-			y: config.SCREEN_HEIGHT / config.TILE_SIZE / 2 - 1
+			x: (config.SCREEN_WIDTH / config.TILE_SIZE) / 2,
+			y: (config.SCREEN_HEIGHT / config.TILE_SIZE) / 2
 		}
 
 		this.player = new Player(1, 'player', pos.x, pos.y)
@@ -51,8 +51,8 @@ class Play extends Phaser.State {
 
 	  // if (me) {
 	    // game.debug.text(game.time.physicsElapsed, 32, 32)
-	    game.debug.body(this.player.body)
-	    game.debug.bodyInfo(this.player.body, 32, 24)
+	    // game.debug.body(this.player.body)
+	    // game.debug.bodyInfo(this.player.body, 32, 24)
 	  // }
 
 			this.checkKeys()
@@ -131,7 +131,7 @@ class Play extends Phaser.State {
 			console.log(char.isMoving);
 			// Phaser.Easing.Quadratic.InOut
 			char.isMoving = false
-			this.checkKeys()
+			// this.checkKeys()
 		}, this)
 	}
 
