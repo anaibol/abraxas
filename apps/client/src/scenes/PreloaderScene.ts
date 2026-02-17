@@ -41,8 +41,8 @@ export class PreloaderScene extends Phaser.Scene {
     this.load.json("idx-fxs", "indices/fxs.json");
 
     // Tile images
-    this.load.image("tile-grass", "graficos/12052.png");
-    this.load.image("tile-wall", "graficos/12046.png");
+    this.load.image("tile-grass", "graficos/12052.webp");
+    this.load.image("tile-wall", "graficos/12046.webp");
 
     // Audio — original AO file numbering
     this.load.audio("sfx-step1", "audio/sonidos/23.webm");
@@ -112,7 +112,7 @@ export class PreloaderScene extends Phaser.Scene {
 
     // Load all needed PNGs
     for (const pngNum of neededPngs) {
-      this.load.image(`ao-${pngNum}`, `graficos/${pngNum}.png`);
+      this.load.image(`ao-${pngNum}`, `graficos/${pngNum}.webp`);
     }
 
     // Start second load phase

@@ -25,6 +25,7 @@ const MIME_TYPES: Record<string, string> = {
   ".css": "text/css",
   ".json": "application/json",
   ".png": "image/png",
+  ".webp": "image/webp",
   ".jpg": "image/jpeg",
   ".svg": "image/svg+xml",
   ".woff": "font/woff",
