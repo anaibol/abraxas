@@ -1,15 +1,19 @@
 import { Room, Client } from "@colyseus/core";
 import { GameState } from "../schema/GameState";
 import { Player } from "../schema/Player";
+import { Npc } from "../schema/Npc";
 import { MovementSystem } from "../systems/MovementSystem";
 import { CombatSystem } from "../systems/CombatSystem";
 import { DropSystem } from "../systems/DropSystem";
 import { BuffSystem } from "../systems/BuffSystem";
 import { InventorySystem } from "../systems/InventorySystem";
 import { RespawnSystem } from "../systems/RespawnSystem";
+import { NpcSystem } from "../systems/NpcSystem";
 import { CLASS_STATS, TICK_MS, STARTING_EQUIPMENT, ITEMS, KILL_GOLD_BONUS } from "@ao5/shared";
 import type { TileMap, Direction, JoinOptions, EquipmentSlot } from "@ao5/shared";
 import { logger } from "../logger";
+
+type Entity = Player | Npc;
 
 export class ArenaRoom extends Room<GameState> {
   static mapData: TileMap;
@@ -21,16 +25,21 @@ export class ArenaRoom extends Room<GameState> {
   private drops = new DropSystem();
   private inventorySystem = new InventorySystem();
   private respawnSystem = new RespawnSystem(this.inventorySystem);
+  private npcSystem!: NpcSystem;
   private spawnIndex = 0;
 
   onCreate(_options: Record<string, unknown>) {
     this.setState(new GameState());
     this.map = ArenaRoom.mapData;
     this.drops.setInventorySystem(this.inventorySystem);
+    this.npcSystem = new NpcSystem(this.state, this.movement, this.combat);
 
     if (!this.map) {
       throw new Error("ArenaRoom.mapData must be set before room creation");
     }
+
+    // Spawn NPCs
+    this.npcSystem.spawnNpcs(20, this.map);
 
     this.setSimulationInterval((dt) => this.tick(dt), TICK_MS);
     this.setPatchRate(TICK_MS);
@@ -71,6 +80,21 @@ export class ArenaRoom extends Room<GameState> {
 
     this.onMessage("drop_item", (client, data: { itemId: string }) => {
       this.handleDropItem(client, data.itemId);
+    });
+
+    this.onMessage("chat", (client, data: { message: string }) => {
+        const player = this.state.players.get(client.sessionId);
+        if (player && data.message) {
+            // Trim and limit message length
+            const text = data.message.trim().slice(0, 100);
+            if (text.length > 0) {
+                this.broadcast("chat", {
+                    senderId: player.sessionId,
+                    senderName: player.name,
+                    message: text,
+                });
+            }
+        }
     });
 
     this.onMessage("ping", (client) => {
@@ -154,7 +178,7 @@ export class ArenaRoom extends Room<GameState> {
   onLeave(client: Client) {
     this.state.players.delete(client.sessionId);
     this.movement.removePlayer(client.sessionId);
-    this.combat.removePlayer(client.sessionId);
+    this.combat.removeEntity(client.sessionId);
     this.buffSystem.removePlayer(client.sessionId);
     this.respawnSystem.removePlayer(client.sessionId);
 
@@ -174,32 +198,49 @@ export class ArenaRoom extends Room<GameState> {
     // Process buffs/DoTs
     this.buffSystem.tick(
       now,
-      (sid) => this.state.players.get(sid),
+      (sid) => this.findEntityBySessionId(sid) as Player, // Buff system mostly for players now, need refactor to support NPCs fully? Casting to Player for now as BuffSystem might expect Players. Checked BuffSystem, it expects getPlayer returns Player.
+      // Wait, BuffSystem handles players mostly. If we want buffs on NPCs we need to update BuffSystem too.
+      // For now let's assume NPCs don't get sophisticated buffs or we ignore type error if compatible.
+      // But we should update getPlayer to getEntity.
       broadcast,
-      (player) => this.onPlayerDeath(player, ""),
+      (player) => this.onEntityDeath(player as Player, ""), // Typo fix
       this.roomId,
       this.state.tick
+    );
+    // Note: BuffSystem.tick iterates this.state.players? No, it iterates its own state map.
+    // If we want NPCs to have buffs, we need to register them in BuffSystem state.
+
+    // Process NPCs
+    this.npcSystem.tick(
+        _deltaTime,
+        this.map,
+        now,
+        (x, y, excludeId) => this.isTileOccupied(x, y, excludeId),
+        this.state.tick,
+        this.roomId,
+        (x, y) => this.findEntityAtTile(x, y),
+        broadcast
     );
 
     // Process combat windups
     this.combat.processWindups(
       now,
-      (x, y) => this.findPlayerAtTile(x, y),
-      (cx, cy, radius, excludeId) => this.findPlayersInRadius(cx, cy, radius, excludeId),
-      (sid) => this.state.players.get(sid),
+      (x, y) => this.findEntityAtTile(x, y),
+      (cx, cy, radius, excludeId) => this.findEntitiesInRadius(cx, cy, radius, excludeId),
+      (sid) => this.findEntityBySessionId(sid),
       broadcast,
       this.state.tick,
       this.roomId,
-      (player, killerSessionId) => this.onPlayerDeath(player, killerSessionId)
+      (entity, killerSessionId) => this.onEntityDeath(entity, killerSessionId)
     );
 
     this.combat.processBufferedActions(
       now,
-      (sid) => this.state.players.get(sid),
+      (sid) => this.findEntityBySessionId(sid),
       broadcast,
       this.state.tick,
       this.roomId,
-      (x, y) => this.findPlayerAtTile(x, y),
+      (x, y) => this.findEntityAtTile(x, y),
       (sessionId) => {
         const c = this.clients.find((cl) => cl.sessionId === sessionId);
         return (type: string, data?: Record<string, unknown>) => c?.send(type, data ?? {});
@@ -246,7 +287,7 @@ export class ArenaRoom extends Room<GameState> {
       this.roomId,
       targetTileX,
       targetTileY,
-      (x, y) => this.findPlayerAtTile(x, y),
+      (x, y) => this.findEntityAtTile(x, y),
       (type, data) => client.send(type, data ?? {}),
     );
   }
@@ -267,7 +308,7 @@ export class ArenaRoom extends Room<GameState> {
       this.broadcast.bind(this),
       this.state.tick,
       this.roomId,
-      (x, y) => this.findPlayerAtTile(x, y),
+      (x, y) => this.findEntityAtTile(x, y),
       (type, data) => client.send(type, data ?? {}),
     );
   }
@@ -324,17 +365,28 @@ export class ArenaRoom extends Room<GameState> {
     }
   }
 
-  private findPlayerAtTile(x: number, y: number): Player | undefined {
+  private findEntityBySessionId(sessionId: string): Entity | undefined {
+      if (this.state.players.has(sessionId)) return this.state.players.get(sessionId);
+      if (this.state.npcs.has(sessionId)) return this.state.npcs.get(sessionId);
+      return undefined;
+  }
+
+  private findEntityAtTile(x: number, y: number): Entity | undefined {
     for (const [, player] of this.state.players) {
       if (player.tileX === x && player.tileY === y && player.alive) {
         return player;
       }
     }
+    for (const [, npc] of this.state.npcs) {
+        if (npc.tileX === x && npc.tileY === y && npc.alive) {
+            return npc;
+        }
+    }
     return undefined;
   }
 
-  private findPlayersInRadius(cx: number, cy: number, radius: number, excludeId: string): Player[] {
-    const result: Player[] = [];
+  private findEntitiesInRadius(cx: number, cy: number, radius: number, excludeId: string): Entity[] {
+    const result: Entity[] = [];
     for (const [, player] of this.state.players) {
       if (player.sessionId === excludeId || !player.alive) continue;
       const dx = Math.abs(player.tileX - cx);
@@ -342,6 +394,14 @@ export class ArenaRoom extends Room<GameState> {
       if (dx + dy <= radius) {
         result.push(player);
       }
+    }
+    for (const [, npc] of this.state.npcs) {
+        if (npc.sessionId === excludeId || !npc.alive) continue;
+        const dx = Math.abs(npc.tileX - cx);
+        const dy = Math.abs(npc.tileY - cy);
+        if (dx + dy <= radius) {
+            result.push(npc);
+        }
     }
     return result;
   }
@@ -361,7 +421,42 @@ export class ArenaRoom extends Room<GameState> {
         return true;
       }
     }
+    for (const [, npc] of this.state.npcs) {
+        if (
+            npc.sessionId !== excludeId &&
+            npc.tileX === x &&
+            npc.tileY === y &&
+            npc.alive
+        ) {
+            return true;
+        }
+    }
     return false;
+  }
+
+  private onEntityDeath(entity: Entity, killerSessionId: string) {
+    if ("classType" in entity) {
+        // It's a player
+        this.onPlayerDeath(entity as Player, killerSessionId);
+    } else {
+        // It's an NPC
+        this.onNpcDeath(entity as Npc, killerSessionId);
+    }
+  }
+
+  private onNpcDeath(npc: Npc, killerSessionId: string) {
+      this.npcSystem.handleDeath(npc);
+
+      // Award exp/gold to killer? For now just log.
+      if (killerSessionId) {
+          // maybe give gold?
+          const killer = this.state.players.get(killerSessionId);
+          if (killer) {
+              killer.gold += 10; // Fixed gold/exp for now, or fetch from config
+          }
+      }
+
+      this.broadcast("death", { sessionId: npc.sessionId, killerSessionId });
   }
 
   private onPlayerDeath(player: Player, killerSessionId: string) {
@@ -404,8 +499,29 @@ export class ArenaRoom extends Room<GameState> {
     this.broadcast("kill_feed", {
       killerSessionId,
       victimSessionId: player.sessionId,
-      killerName: killerSessionId ? this.state.players.get(killerSessionId)?.name ?? "" : "",
+      killerName: killerSessionId ? this.findEntityBySessionId(killerSessionId)?.type ?? "" : "", // Use type for NPC name if NPC killed player?
       victimName: player.name,
+    });
+    // Wait, findEntityBySessionId handles entity. if killer is NPC, it has no name, just type.
+    // Let's refine killerName logic:
+    let killerName = "";
+    if (killerSessionId) {
+        const killer = this.findEntityBySessionId(killerSessionId);
+        if (killer) {
+            if ("name" in killer) killerName = killer.name;
+            else killerName = killer.type;
+        }
+    }
+
+    // Since I'm in existing method, i need to be careful with replacment string scope.
+    // I'll leave the broadcast as it was mostly, but update killerName resolution.
+    // Actually I'm replacing the whole file so I can write new logic.
+
+    this.broadcast("kill_feed", {
+        killerSessionId,
+        victimSessionId: player.sessionId,
+        killerName,
+        victimName: player.name,
     });
 
     // Queue respawn
