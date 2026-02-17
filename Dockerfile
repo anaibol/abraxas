@@ -16,8 +16,12 @@ COPY tsconfig.json ./
 # Build the client
 RUN bun run --cwd apps/client build
 
+# Generate Prisma Client
+RUN bunx prisma generate --schema apps/server/prisma/schema.prisma
+
 # Production stage
 FROM oven/bun:1-slim
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 COPY --from=base /app/package.json /app/bun.lock ./
