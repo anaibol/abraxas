@@ -117,8 +117,7 @@ export class ArenaRoom extends Room<GameState> {
 
   async onJoin(client: Client, options: JoinOptions, auth: any) {
     const classType = options?.classType || "warrior";
-    const stats = CLASS_STATS[classType];
-    if (!stats) {
+    if (!classType || !CLASS_STATS[classType]) {
       logger.warn({ room: this.roomId, clientId: client.sessionId, intent: "join", result: "error", message: `Invalid classType: ${classType}` });
       client.leave();
       return;
@@ -237,7 +236,7 @@ export class ArenaRoom extends Room<GameState> {
             str: player.str,
             agi: player.agi,
             intStat: player.intStat,
-            facing: Direction[player.facing].toLowerCase(),
+            facing: player.facing,
             gold: player.gold,
             level: player.level,
             xp: player.xp,

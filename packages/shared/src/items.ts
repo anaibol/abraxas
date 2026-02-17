@@ -1,3 +1,5 @@
+import { ClassType } from "./types";
+
 export type ItemSlot = "weapon" | "armor" | "shield" | "helmet" | "ring" | "consumable";
 export type ItemRarity = "common" | "uncommon" | "rare";
 
@@ -15,7 +17,7 @@ export interface ItemDef {
     armor?: number;
   };
   goldValue: number;
-  requiredClass?: string[];
+  requiredClass?: ClassType[];
   consumeEffect?: {
     healHp?: number;
     healMana?: number;
@@ -197,6 +199,26 @@ export const ITEMS: Record<string, ItemDef> = {
     goldValue: 70,
     requiredClass: ["druid"],
     aoWeaponId: 10, // Báculo Engarzado
+  },
+  bronze_axe: {
+    id: "bronze_axe",
+    name: "Bronze Axe",
+    slot: "weapon",
+    rarity: "common",
+    stats: { str: 4 },
+    goldValue: 18,
+    requiredClass: ["warrior", "paladin"],
+    aoWeaponId: 15, // Hacha de Madera (basic placeholder)
+  },
+  iron_dagger: {
+    id: "iron_dagger",
+    name: "Iron Dagger",
+    slot: "weapon",
+    rarity: "common",
+    stats: { agi: 3, str: 1 },
+    goldValue: 15,
+    requiredClass: ["assassin", "archer"],
+    aoWeaponId: 12, // Daga
   },
 
   // ── Armor ──

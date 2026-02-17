@@ -182,20 +182,20 @@ export interface DropTableEntry {
 
 export const NPC_DROPS: Record<string, DropTableEntry[]> = {
     orc: [
-        { itemId: "potion_hp_medium", chance: 0.1, min: 1, max: 2 },
-        { itemId: "potion_mana_medium", chance: 0.1, min: 1, max: 2 },
-        { itemId: "sword_iron", chance: 0.05, min: 1, max: 1 },
-        { itemId: "armor_chain", chance: 0.02, min: 1, max: 1 },
+        { itemId: "great_health_potion", chance: 0.1, min: 1, max: 2 },
+        { itemId: "great_mana_potion", chance: 0.1, min: 1, max: 2 },
+        { itemId: "iron_sword", chance: 0.05, min: 1, max: 1 },
+        { itemId: "chainmail", chance: 0.02, min: 1, max: 1 },
         { itemId: "gold", chance: 0.5, min: 10, max: 30 },
     ],
     skeleton: [
-        { itemId: "potion_hp_small", chance: 0.2, min: 1, max: 1 },
-        { itemId: "axe_bronze", chance: 0.05, min: 1, max: 1 },
+        { itemId: "health_potion", chance: 0.2, min: 1, max: 1 },
+        { itemId: "bronze_axe", chance: 0.05, min: 1, max: 1 },
         { itemId: "gold", chance: 0.3, min: 5, max: 15 },
     ],
     goblin: [
-        { itemId: "potion_hp_small", chance: 0.15, min: 1, max: 1 },
-        { itemId: "dagger_iron", chance: 0.05, min: 1, max: 1 },
+        { itemId: "health_potion", chance: 0.15, min: 1, max: 1 },
+        { itemId: "iron_dagger", chance: 0.05, min: 1, max: 1 },
         { itemId: "gold", chance: 0.6, min: 10, max: 20 },
     ],
     wolf: [
