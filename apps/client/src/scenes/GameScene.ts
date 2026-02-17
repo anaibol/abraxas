@@ -159,6 +159,15 @@ export class GameScene extends Phaser.Scene {
       this.removeDrop(id);
     });
 
+    // NPCs
+    this.room.state.npcs.onAdd((npc: any, id: string) => {
+        this.addNpc(npc, id);
+    });
+
+    this.room.state.npcs.onRemove((_npc: any, id: string) => {
+        this.removeNpc(id);
+    });
+
     // Debug text
     this.debugText = this.add.text(10, 10, "", {
       fontSize: "16px",
@@ -175,27 +184,34 @@ export class GameScene extends Phaser.Scene {
     // Process input
     this.inputHandler.update(time, () => this.getMouseTile());
 
-    // Update all player sprites (interpolation)
+    // Update all player/npc sprites (interpolation)
     for (const [sessionId, sprite] of this.playerSprites) {
-      const serverPlayer = this.room.state.players.get(sessionId);
-      if (serverPlayer) {
+      let entity = this.room.state.players.get(sessionId) || this.room.state.npcs.get(sessionId);
+      
+      if (entity) {
         if (sprite.isLocal) {
-          sprite.reconcileServer(serverPlayer.tileX, serverPlayer.tileY);
+          sprite.reconcileServer(entity.tileX, entity.tileY);
         } else {
-          sprite.setTilePosition(serverPlayer.tileX, serverPlayer.tileY);
+          sprite.setTilePosition(entity.tileX, entity.tileY);
         }
-        sprite.setFacing(serverPlayer.facing);
-        sprite.updateHpMana(serverPlayer.hp, serverPlayer.mana);
-        sprite.updateEquipment(
-          serverPlayer.equipWeapon ?? "",
-          serverPlayer.equipShield ?? "",
-          serverPlayer.equipHelmet ?? ""
-        );
-        if (!serverPlayer.alive) {
+        
+        // NPC might not have facing? Add default.
+        sprite.setFacing(entity.facing ?? 2); 
+        sprite.updateHpMana(entity.hp, entity.maxHp); // NPC doesn't have mana? PlayerSprite might expect it.
+        
+        if ("classType" in entity) { // It's a player
+            sprite.updateEquipment(
+            entity.equipWeapon ?? "",
+            entity.equipShield ?? "",
+            entity.equipHelmet ?? ""
+            );
+        }
+
+        if (!entity.alive) {
           sprite.container.setAlpha(0.3);
-        } else if (serverPlayer.stealthed && !sprite.isLocal) {
+        } else if (entity.stealthed && !sprite.isLocal) {
           sprite.container.setAlpha(0.15);
-        } else if (serverPlayer.stealthed && sprite.isLocal) {
+        } else if (entity.stealthed && sprite.isLocal) {
           sprite.container.setAlpha(0.5);
         }
       }
@@ -440,6 +456,31 @@ export class GameScene extends Phaser.Scene {
       sprite.destroy();
       this.playerSprites.delete(sessionId);
     }
+  }
+
+  private addNpc(npc: any, sessionId: string) {
+      if (this.playerSprites.has(sessionId)) return;
+      
+      // Use NpcType as classType for now, assuming PlayerSprite & Resolver can handle it or we map it.
+      // Need to ensure "orc", "skeleton" etc are handled by Resolver -> Body/Head lookup.
+      // If not, they might be invisible or error. 
+      // For now, let's pass the type and hope Resolver has entries or default.
+      
+      const sprite = new PlayerSprite(
+          this,
+          sessionId,
+          npc.tileX,
+          npc.tileY,
+          npc.type, // Treat type as classType for visual resolution
+          npc.type.toUpperCase(), // Name
+          false
+      );
+      
+      this.playerSprites.set(sessionId, sprite);
+  }
+
+  private removeNpc(sessionId: string) {
+      this.removePlayer(sessionId); // Same logic
   }
 
   private getMouseTile(): { x: number; y: number } {
