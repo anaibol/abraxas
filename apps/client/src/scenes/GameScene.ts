@@ -1,7 +1,6 @@
 import Phaser from "phaser";
 import type { Room } from "colyseus.js";
 import type { NetworkManager, WelcomeData } from "../network/NetworkManager";
-import { PlayerSprite } from "../entities/PlayerSprite";
 import { InputHandler } from "../systems/InputHandler";
 import { CameraController } from "../systems/CameraController";
 import { SoundManager } from "../assets/SoundManager";
@@ -9,6 +8,8 @@ import type { AoGrhResolver } from "../assets/AoGrhResolver";
 import { TILE_SIZE, DIRECTION_DELTA } from "@abraxas/shared";
 import type { Direction } from "@abraxas/shared";
 import type { PlayerState } from "../ui/Sidebar";
+import { SpriteManager } from "../managers/SpriteManager";
+import { EffectManager } from "../managers/EffectManager";
 
 export type StateCallback = (state: PlayerState) => void;
 export type KillFeedCallback = (killer: string, victim: string) => void;
@@ -23,12 +24,12 @@ export class GameScene extends Phaser.Scene {
   private welcome!: WelcomeData;
   private resolver!: AoGrhResolver;
 
-  private playerSprites = new Map<string, PlayerSprite>();
+  private spriteManager!: SpriteManager;
+  private effectManager!: EffectManager;
   private inputHandler!: InputHandler;
   private cameraController!: CameraController;
   private soundManager!: SoundManager;
 
-  private damageTexts: { text: Phaser.GameObjects.Text; expireAt: number }[] = [];
   private collisionGrid: number[][] = [];
   private lastSidebarUpdate = 0;
 
@@ -40,6 +41,9 @@ export class GameScene extends Phaser.Scene {
   private lastOverlayCenterY = -1;
 
   private debugText?: Phaser.GameObjects.Text;
+
+  // Drop rendering
+  private dropGraphics = new Map<string, Phaser.GameObjects.Arc>();
 
   constructor(
     network: NetworkManager,
@@ -79,6 +83,15 @@ export class GameScene extends Phaser.Scene {
       worldH
     );
 
+    // Managers
+    this.spriteManager = new SpriteManager(
+        this, 
+        this.cameraController, 
+        () => this.room.state, 
+        () => this.room.sessionId
+    );
+    this.effectManager = new EffectManager(this, this.resolver, this.spriteManager);
+
     // Input setup
     const localPlayer = this.room.state.players.get(this.room.sessionId);
     const classType = localPlayer?.classType ?? "warrior";
@@ -94,11 +107,11 @@ export class GameScene extends Phaser.Scene {
 
     // Listen for player add/remove/change
     this.room.state.players.onAdd((player: any, sessionId: string) => {
-      this.addPlayer(player, sessionId);
+      this.spriteManager.addPlayer(player, sessionId);
     });
 
     this.room.state.players.onRemove((_player: any, sessionId: string) => {
-      this.removePlayer(sessionId);
+      this.spriteManager.removePlayer(sessionId);
     });
 
     // Listen for game events
@@ -161,11 +174,11 @@ export class GameScene extends Phaser.Scene {
 
     // NPCs
     this.room.state.npcs.onAdd((npc: any, id: string) => {
-        this.addNpc(npc, id);
+        this.spriteManager.addNpc(npc, id);
     });
 
     this.room.state.npcs.onRemove((_npc: any, id: string) => {
-        this.removeNpc(id);
+        this.spriteManager.removeNpc(id);
     });
 
     // Debug text
@@ -184,39 +197,8 @@ export class GameScene extends Phaser.Scene {
     // Process input
     this.inputHandler.update(time, () => this.getMouseTile());
 
-    // Update all player/npc sprites (interpolation)
-    for (const [sessionId, sprite] of this.playerSprites) {
-      let entity = this.room.state.players.get(sessionId) || this.room.state.npcs.get(sessionId);
-      
-      if (entity) {
-        if (sprite.isLocal) {
-          sprite.reconcileServer(entity.tileX, entity.tileY);
-        } else {
-          sprite.setTilePosition(entity.tileX, entity.tileY);
-        }
-        
-        // NPC might not have facing? Add default.
-        sprite.setFacing(entity.facing ?? 2); 
-        sprite.updateHpMana(entity.hp, entity.maxHp); // NPC doesn't have mana? PlayerSprite might expect it.
-        
-        if ("classType" in entity) { // It's a player
-            sprite.updateEquipment(
-            entity.equipWeapon ?? "",
-            entity.equipShield ?? "",
-            entity.equipHelmet ?? ""
-            );
-        }
-
-        if (!entity.alive) {
-          sprite.container.setAlpha(0.3);
-        } else if (entity.stealthed && !sprite.isLocal) {
-          sprite.container.setAlpha(0.15);
-        } else if (entity.stealthed && sprite.isLocal) {
-          sprite.container.setAlpha(0.5);
-        }
-      }
-      sprite.update(delta);
-    }
+    // Update sprites
+    this.spriteManager.update(time, delta);
 
     // Cancel targeting on death or stun
     if (this.inputHandler.targeting) {
@@ -275,21 +257,13 @@ export class GameScene extends Phaser.Scene {
     }
 
     // Camera
-    const localSprite = this.playerSprites.get(this.room.sessionId);
+    const localSprite = this.spriteManager.getSprite(this.room.sessionId);
     if (localSprite) {
       this.cameraController.update(localSprite);
     }
 
-    // Expire damage texts
-    this.damageTexts = this.damageTexts.filter((dt) => {
-      if (time > dt.expireAt) {
-        dt.text.destroy();
-        return false;
-      }
-      dt.text.y -= 0.5;
-      dt.text.setAlpha(Math.max(0, (dt.expireAt - time) / 1000));
-      return true;
-    });
+    // Update effects
+    this.effectManager.update(time);
 
     // Update debug text
     if (this.debugText && localSprite) {
@@ -332,7 +306,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private updateTargetingOverlay() {
-    const localSprite = this.playerSprites.get(this.room.sessionId);
+    const localSprite = this.spriteManager.getSprite(this.room.sessionId);
     if (!localSprite) return;
 
     const cx = localSprite.predictedTileX;
@@ -375,36 +349,20 @@ export class GameScene extends Phaser.Scene {
   }
 
   private onInvalidTarget() {
-    const localSprite = this.playerSprites.get(this.room.sessionId);
+    const localSprite = this.spriteManager.getSprite(this.room.sessionId);
     if (!localSprite) return;
 
-    const text = this.add.text(
-      localSprite.renderX,
-      localSprite.renderY - 40,
-      "Invalid target",
-      {
-        fontSize: "12px",
-        color: "#ff8800",
-        fontFamily: "'Friz Quadrata', Georgia, serif",
-        fontStyle: "bold",
-      }
-    );
-    text.setOrigin(0.5);
-    text.setDepth(20);
-    this.damageTexts.push({ text, expireAt: this.time.now + 1200 });
+    this.effectManager.showFloatingText(this.room.sessionId, "Invalid target", "#ff8800");
   }
 
   private drawMap() {
     const { mapWidth, mapHeight, collision } = this.welcome;
 
-    // Use the grass tile sheet (512×128) — crop 4 variants at (0,0), (32,0), (64,0), (96,0)
-    // We create cropped textures from the grass tile sheet
     const grassTex = this.textures.get("tile-grass");
     for (let v = 0; v < 4; v++) {
       grassTex.add(v, 0, v * 32, 0, 32, 32);
     }
 
-    // Wall tile: crop at (0,0) 32×32 from 64×64 image
     const wallTex = this.textures.get("tile-wall");
     wallTex.add(1, 0, 0, 0, 32, 32);
 
@@ -419,7 +377,6 @@ export class GameScene extends Phaser.Scene {
           tile.setOrigin(0, 0);
           tile.setDepth(0);
         } else {
-          // Use seeded variant based on position for consistency
           const variant = ((x * 7 + y * 13) & 0x7fffffff) % 4;
           const tile = this.add.image(px, py, "tile-grass", variant);
           tile.setOrigin(0, 0);
@@ -427,60 +384,6 @@ export class GameScene extends Phaser.Scene {
         }
       }
     }
-  }
-
-  private addPlayer(player: any, sessionId: string) {
-    if (this.playerSprites.has(sessionId)) return;
-
-    const isLocal = sessionId === this.room.sessionId;
-    const sprite = new PlayerSprite(
-      this,
-      sessionId,
-      player.tileX,
-      player.tileY,
-      player.classType,
-      player.name,
-      isLocal
-    );
-
-    this.playerSprites.set(sessionId, sprite);
-
-    if (isLocal) {
-      this.cameraController.follow(sprite);
-    }
-  }
-
-  private removePlayer(sessionId: string) {
-    const sprite = this.playerSprites.get(sessionId);
-    if (sprite) {
-      sprite.destroy();
-      this.playerSprites.delete(sessionId);
-    }
-  }
-
-  private addNpc(npc: any, sessionId: string) {
-      if (this.playerSprites.has(sessionId)) return;
-      
-      // Use NpcType as classType for now, assuming PlayerSprite & Resolver can handle it or we map it.
-      // Need to ensure "orc", "skeleton" etc are handled by Resolver -> Body/Head lookup.
-      // If not, they might be invisible or error. 
-      // For now, let's pass the type and hope Resolver has entries or default.
-      
-      const sprite = new PlayerSprite(
-          this,
-          sessionId,
-          npc.tileX,
-          npc.tileY,
-          npc.type, // Treat type as classType for visual resolution
-          npc.type.toUpperCase(), // Name
-          false
-      );
-      
-      this.playerSprites.set(sessionId, sprite);
-  }
-
-  private removeNpc(sessionId: string) {
-      this.removePlayer(sessionId); // Same logic
   }
 
   private getMouseTile(): { x: number; y: number } {
@@ -493,7 +396,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private onLocalMove(direction: Direction) {
-    const sprite = this.playerSprites.get(this.room.sessionId);
+    const sprite = this.spriteManager.getSprite(this.room.sessionId);
     if (!sprite) return;
 
     const delta = DIRECTION_DELTA[direction];
@@ -504,10 +407,13 @@ export class GameScene extends Phaser.Scene {
     if (nextX < 0 || nextX >= mapWidth || nextY < 0 || nextY >= mapHeight) return;
     if (this.collisionGrid[nextY]?.[nextX] === 1) return;
 
-    for (const [sid, _] of this.playerSprites) {
-      if (sid === this.room.sessionId) continue;
-      const other = this.room.state.players.get(sid);
-      if (other && other.alive && other.tileX === nextX && other.tileY === nextY) return;
+    // Check collision with other entities (using room state as source of truth)
+    for (const [sid, p] of this.room.state.players) {
+        if (sid === this.room.sessionId) continue;
+        if (p.alive && p.tileX === nextX && p.tileY === nextY) return;
+    }
+    for (const [sid, n] of this.room.state.npcs) {
+        if (n.alive && n.tileX === nextX && n.tileY === nextY) return;
     }
 
     sprite.predictMove(direction);
@@ -517,7 +423,7 @@ export class GameScene extends Phaser.Scene {
   // --- Event handlers ---
 
   private onAttackStart(data: any) {
-    const sprite = this.playerSprites.get(data.sessionId);
+    const sprite = this.spriteManager.getSprite(data.sessionId);
     if (sprite) {
       sprite.container.setAlpha(0.7);
       this.time.delayedCall(100, () => {
@@ -532,15 +438,12 @@ export class GameScene extends Phaser.Scene {
 
   private onAttackHit(data: any) {
     if (data.targetSessionId) {
-      const target = this.playerSprites.get(data.targetSessionId);
-      if (target) {
-        this.flashSprite(target, 0xff0000);
-      }
+      this.spriteManager.flashSprite(data.targetSessionId, 0xff0000);
     }
   }
 
   private onCastStart(data: any) {
-    const sprite = this.playerSprites.get(data.sessionId);
+    const sprite = this.spriteManager.getSprite(data.sessionId);
     if (sprite) {
       sprite.container.setAlpha(0.8);
       this.time.delayedCall(140, () => {
@@ -554,74 +457,20 @@ export class GameScene extends Phaser.Scene {
   }
 
   private onCastHit(data: any) {
-    const px = data.targetTileX * TILE_SIZE + TILE_SIZE / 2;
-    const py = data.targetTileY * TILE_SIZE + TILE_SIZE / 2;
-
-    // Use resolver-based FX: pick FX 1 (default spell impact) or from data.fxId
-    const fxId = data.fxId ?? 1;
-    const fxEntry = this.resolver.getFxEntry(fxId);
-    if (!fxEntry) return;
-
-    const animKey = this.resolver.ensureFxAnimation(this, fxEntry.animacion);
-    if (!animKey) return;
-
-    // Get first frame for initial texture
-    const firstStatic = this.resolver.resolveStaticGrh(fxEntry.animacion);
-    if (!firstStatic) return;
-
-    const fxSprite = this.add.sprite(
-      px + (fxEntry.offX ?? 0),
-      py + (fxEntry.offY ?? 0),
-      `ao-${firstStatic.grafico}`,
-      `grh-${firstStatic.id}`
-    );
-    fxSprite.setDepth(15);
-    fxSprite.setOrigin(0.5, 0.5);
-    fxSprite.play(animKey);
-    fxSprite.once("animationcomplete", () => {
-      fxSprite.destroy();
-    });
+    this.effectManager.playEffect(data.fxId ?? 1, data.targetTileX, data.targetTileY);
   }
 
   private onDamage(data: any) {
-    const sprite = this.playerSprites.get(data.targetSessionId);
-    if (sprite) {
-      const color = data.type === "magic" ? "#bb44ff"
-        : data.type === "dot" ? "#44cc44"
-        : "#ff4444";
-      const text = this.add.text(
-        sprite.renderX,
-        sprite.renderY - 30,
-        `-${data.amount}`,
-        {
-          fontSize: "14px",
-          color,
-          fontFamily: "'Friz Quadrata', Georgia, serif",
-          fontStyle: "bold",
-        }
-      );
-      text.setOrigin(0.5);
-      text.setDepth(20);
-
-      this.damageTexts.push({
-        text,
-        expireAt: this.time.now + 1200,
-      });
-
-      // Console log
-      if (data.targetSessionId === this.room.sessionId) {
-        // I took damage
-        this.onConsoleMessage?.(`You took ${data.amount} damage!`, "#ff4444");
-      } else if (data.sessionId === this.room.sessionId) { // Assuming data.sessionId is source
-        // I dealt damage (if we had source info here easily)
-        // For now, let's just log if I am the source, or if I am the target
-      }
-    }
+    this.effectManager.showDamage(data.targetSessionId, data.amount, data.type);
     this.soundManager.playHit();
+
+    if (data.targetSessionId === this.room.sessionId) {
+      this.onConsoleMessage?.(`You took ${data.amount} damage!`, "#ff4444");
+    }
   }
 
   private onDeath(data: any) {
-    const sprite = this.playerSprites.get(data.sessionId);
+    const sprite = this.spriteManager.getSprite(data.sessionId);
     if (sprite) {
       sprite.container.setAlpha(0.3);
     }
@@ -633,7 +482,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private onRespawn(data: any) {
-    const sprite = this.playerSprites.get(data.sessionId);
+    const sprite = this.spriteManager.getSprite(data.sessionId);
     if (sprite) {
       sprite.container.setAlpha(1);
       sprite.setTilePosition(data.tileX, data.tileY);
@@ -646,83 +495,23 @@ export class GameScene extends Phaser.Scene {
   }
 
   private onHeal(data: any) {
-    const sprite = this.playerSprites.get(data.sessionId);
-    if (sprite) {
-      const text = this.add.text(
-        sprite.renderX,
-        sprite.renderY - 30,
-        `+${data.amount}`,
-        {
-          fontSize: "14px",
-          color: "#33cc33",
-          fontFamily: "'Friz Quadrata', Georgia, serif",
-          fontStyle: "bold",
-        }
-      );
-      text.setOrigin(0.5);
-      text.setDepth(20);
-      this.damageTexts.push({ text, expireAt: this.time.now + 1200 });
-
-      if (data.sessionId === this.room.sessionId) {
-        this.onConsoleMessage?.(`You healed for ${data.amount}!`, "#33cc33");
-      }
-    }
+    this.effectManager.showHeal(data.sessionId, data.amount);
     this.soundManager.playHeal();
+    if (data.sessionId === this.room.sessionId) {
+      this.onConsoleMessage?.(`You healed for ${data.amount}!`, "#33cc33");
+    }
   }
 
   private onBuffApplied(data: any) {
-    const sprite = this.playerSprites.get(data.sessionId);
-    if (sprite) {
-      const text = this.add.text(
-        sprite.renderX,
-        sprite.renderY - 40,
-        "BUFF",
-        {
-          fontSize: "10px",
-          color: "#d4a843",
-          fontFamily: "'Friz Quadrata', Georgia, serif",
-          fontStyle: "bold",
-        }
-      );
-      text.setOrigin(0.5);
-      text.setDepth(20);
-      this.damageTexts.push({ text, expireAt: this.time.now + 1000 });
-    }
+    this.effectManager.showFloatingText(data.sessionId, "BUFF", "#d4a843");
   }
 
   private onStunApplied(data: any) {
-    const sprite = this.playerSprites.get(data.targetSessionId);
-    if (sprite) {
-      const text = this.add.text(
-        sprite.renderX,
-        sprite.renderY - 40,
-        "STUNNED",
-        {
-          fontSize: "10px",
-          color: "#cccc33",
-          fontFamily: "'Friz Quadrata', Georgia, serif",
-          fontStyle: "bold",
-        }
-      );
-      text.setOrigin(0.5);
-      text.setDepth(20);
-      this.damageTexts.push({ text, expireAt: this.time.now + 1500 });
-      
-      if (data.targetSessionId === this.room.sessionId) {
+    this.effectManager.showFloatingText(data.targetSessionId, "STUNNED", "#cccc33");
+    if (data.targetSessionId === this.room.sessionId) {
          this.onConsoleMessage?.("You are stunned!", "#cccc33");
-      }
     }
   }
-
-  private flashSprite(sprite: PlayerSprite, _color: number) {
-    sprite.container.setAlpha(0.5);
-    this.time.delayedCall(80, () => {
-      sprite.container.setAlpha(1);
-    });
-  }
-
-  // Drop rendering
-  private dropGraphics = new Map<string, Phaser.GameObjects.Arc>();
 
   private addDrop(drop: any, id: string) {
     const px = drop.tileX * TILE_SIZE + TILE_SIZE / 2;

@@ -99,7 +99,9 @@ export function App() {
       if (game) {
           game.input.enabled = !isChatOpen;
           if (isChatOpen) {
-               game.input.keyboard?.resetKeys();
+              // Reset keys to avoid stuck inputs
+              // @ts-ignore
+              game.input.keyboard?.resetKeys();
           }
       }
   }, [isChatOpen]);

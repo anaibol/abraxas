@@ -1,6 +1,12 @@
 import React, { useEffect, useRef } from "react";
 import { TileMap } from "@abraxas/shared";
-import { Player } from "../../../server/src/schema/Player"; // Note: Importing from server schema might be tricky in client if not shared properly. Usually we use Colyseus client types or just generic types. 
+
+interface Player {
+    tileX: number;
+    tileY: number;
+    // Add other needed props
+}
+ 
 // Ideally we should have shared types or use the schema definition if available to client build. 
 // Given the monorepo structure, let's see how other files import Player. 
 // GameScene uses it from schema? or just treats as any? 

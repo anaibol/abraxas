@@ -2,7 +2,9 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src"
+    "paths": {
+      "@abraxas/shared": ["../../packages/shared/src/index.ts"]
+    }
   },
   "include": ["src", "test"]
 }

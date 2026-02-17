@@ -51,14 +51,13 @@ export class InventorySystem {
   removeItem(player: Player, itemId: string, quantity: number = 1): boolean {
     for (let i = 0; i < player.inventory.length; i++) {
       const item = player.inventory[i];
-      if (item.itemId === itemId) {
+      if (item && item.itemId === itemId) {
         if (item.quantity > quantity) {
           item.quantity -= quantity;
-          return true;
         } else {
-          player.inventory.splice(i, 1);
-          return true;
+             player.inventory.splice(i, 1);
         }
+        return true;
       }
     }
     return false;

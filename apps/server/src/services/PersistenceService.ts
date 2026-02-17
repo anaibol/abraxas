@@ -1,12 +1,10 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../generated/prisma";
 import { CLASS_STATS, STARTING_EQUIPMENT, ITEMS, NPC_STATS, EXP_TABLE, NPC_DROPS } from "@abraxas/shared";
 import type { ClassStats } from "@abraxas/shared";
 
 // Initialize Prisma Client
 // In a real app, this might be a singleton exported from a db module
-const prisma = new PrismaClient({
-  datasourceUrl: process.env.DATABASE_URL
-});
+const prisma = new PrismaClient();
 
 export class PersistenceService {
     static async authenticateUser(usernameInput: string | undefined): Promise<any> {
