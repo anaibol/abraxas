@@ -7,8 +7,15 @@ import { CombatSystem } from "../systems/CombatSystem";
 import { InventorySystem } from "../systems/InventorySystem";
 import { DropSystem } from "../systems/DropSystem";
 import type { TileMap, Direction, EquipmentSlot } from "@abraxas/shared";
+import { ServerMessages } from "@abraxas/shared";
 
 type Entity = Player | Npc;
+
+type BroadcastCallback = <T extends keyof ServerMessages>(
+  type: T, 
+  message?: ServerMessages[T], 
+  options?: { except?: Client }
+) => void;
 
 export class MessageHandler {
     constructor(
@@ -19,7 +26,7 @@ export class MessageHandler {
         private combat: CombatSystem,
         private inventorySystem: InventorySystem,
         private drops: DropSystem,
-        private broadcast: (type: string | number, message?: any, options?: any) => void,
+        private broadcast: BroadcastCallback,
         private findEntityAtTile: (x: number, y: number) => Entity | undefined,
         private isTileOccupied: (x: number, y: number, excludeId: string) => boolean
     ) {}

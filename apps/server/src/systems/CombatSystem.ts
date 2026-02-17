@@ -42,8 +42,10 @@ interface EntityCombatState {
   windupAction: WindupAction | null;
 }
 
+import { ServerMessages } from "@abraxas/shared";
+
 interface BroadcastFn {
-  (type: string, data: Record<string, unknown>): void;
+  <T extends keyof ServerMessages>(type: T, data: ServerMessages[T]): void;
 }
 
 type FindEntityAtTileFn = (x: number, y: number) => Entity | undefined;
@@ -176,7 +178,7 @@ export class CombatSystem {
 
     broadcast("attack_start", {
       sessionId: attacker.sessionId,
-      facing: attacker.facing,
+      facing: attacker.facing as Direction,
     });
 
     return true;
@@ -493,7 +495,7 @@ export class CombatSystem {
 
     broadcast("cast_hit", {
       sessionId: attacker.sessionId,
-      spellId: windup.spellId,
+      spellId: windup.spellId ?? "",
       targetTileX: windup.targetTileX,
       targetTileY: windup.targetTileY,
     });

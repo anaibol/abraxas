@@ -59,3 +59,51 @@ export const DIRECTION_DELTA: Record<Direction, { dx: number; dy: number }> = {
   left:  { dx: -1, dy:  0 },
   right: { dx:  1, dy:  0 },
 };
+
+export interface EntityState {
+  sessionId: string;
+  tileX: number;
+  tileY: number;
+  classType?: ClassType; // Players only
+  type?: NpcType;       // NPCs only
+  name: string;
+  facing: Direction;
+  hp: number;
+  maxHp: number;
+  alive: boolean;
+  stealthed?: boolean;
+  stunned?: boolean;
+  equipWeapon?: string;
+  equipShield?: string;
+  equipHelmet?: string;
+}
+
+export type ServerMessages = {
+  welcome: {
+    sessionId: string;
+    tileX: number;
+    tileY: number;
+    mapWidth: number;
+    mapHeight: number;
+    tileSize: number;
+    collision: number[][];
+  };
+  attack_start: { sessionId: string; facing: Direction };
+  attack_hit: { sessionId: string; targetSessionId: string | null; dodged?: boolean };
+  cast_start: { sessionId: string; spellId: string; targetTileX: number; targetTileY: number };
+  cast_hit: { sessionId: string; spellId: string; targetTileX: number; targetTileY: number; fxId?: number };
+  damage: { targetSessionId: string; amount: number; hpAfter: number; type: "physical" | "magic" };
+  heal: { sessionId: string; amount: number; hpAfter: number };
+  death: { sessionId: string; killerSessionId?: string };
+  respawn: { sessionId: string; tileX: number; tileY: number };
+  buff_applied: { sessionId: string; spellId: string; durationMs: number };
+  stealth_applied: { sessionId: string; durationMs: number };
+  stun_applied: { targetSessionId: string; durationMs: number };
+  kill_feed: { killerName: string; victimName: string; killerSessionId?: string; victimSessionId: string };
+  chat: { senderId: string; senderName: string; message: string };
+  notification: { message: string };
+  item_used: { sessionId: string; itemId: string };
+  invalid_target: undefined;
+  pong: { serverTime: number };
+  level_up: { sessionId: string; level: number };
+};

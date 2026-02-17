@@ -10,6 +10,7 @@ import type { Direction } from "@abraxas/shared";
 import type { PlayerState } from "../ui/Sidebar";
 import { SpriteManager } from "../managers/SpriteManager";
 import { EffectManager } from "../managers/EffectManager";
+import { GameEventHandler } from "../handlers/GameEventHandler";
 
 export type StateCallback = (state: PlayerState) => void;
 export type KillFeedCallback = (killer: string, victim: string) => void;
@@ -114,54 +115,17 @@ export class GameScene extends Phaser.Scene {
       this.spriteManager.removePlayer(sessionId);
     });
 
-    // Listen for game events
-    this.room.onMessage("attack_start", (data: any) => {
-      this.onAttackStart(data);
-    });
-
-    this.room.onMessage("attack_hit", (data: any) => {
-      this.onAttackHit(data);
-    });
-
-    this.room.onMessage("cast_start", (data: any) => {
-      this.onCastStart(data);
-    });
-
-    this.room.onMessage("cast_hit", (data: any) => {
-      this.onCastHit(data);
-    });
-
-    this.room.onMessage("damage", (data: any) => {
-      this.onDamage(data);
-    });
-
-    this.room.onMessage("death", (data: any) => {
-      this.onDeath(data);
-    });
-
-    this.room.onMessage("heal", (data: any) => {
-      this.onHeal(data);
-    });
-
-    this.room.onMessage("buff_applied", (data: any) => {
-      this.onBuffApplied(data);
-    });
-
-    this.room.onMessage("stun_applied", (data: any) => {
-      this.onStunApplied(data);
-    });
-
-    this.room.onMessage("respawn", (data: any) => {
-      this.onRespawn(data);
-    });
-
-    this.room.onMessage("kill_feed", (data: any) => {
-      this.onKillFeed?.(data.killerName, data.victimName);
-    });
-
-    this.room.onMessage("invalid_target", () => {
-      this.onInvalidTarget();
-    });
+    // Game Event Handler
+    const gameEventHandler = new GameEventHandler(
+        this.room,
+        this.spriteManager,
+        this.effectManager,
+        this.soundManager,
+        this.inputHandler,
+        this.onConsoleMessage,
+        this.onKillFeed
+    );
+    gameEventHandler.setupListeners();
 
     // Drops
     this.room.state.drops.onAdd((drop: any, id: string) => {
@@ -421,97 +385,6 @@ export class GameScene extends Phaser.Scene {
   }
 
   // --- Event handlers ---
-
-  private onAttackStart(data: any) {
-    const sprite = this.spriteManager.getSprite(data.sessionId);
-    if (sprite) {
-      sprite.container.setAlpha(0.7);
-      this.time.delayedCall(100, () => {
-        sprite.container.setAlpha(1);
-      });
-      if (data.sessionId === this.room.sessionId) {
-        this.onConsoleMessage?.("You attacked!", "#cccccc");
-      }
-    }
-    this.soundManager.playAttack();
-  }
-
-  private onAttackHit(data: any) {
-    if (data.targetSessionId) {
-      this.spriteManager.flashSprite(data.targetSessionId, 0xff0000);
-    }
-  }
-
-  private onCastStart(data: any) {
-    const sprite = this.spriteManager.getSprite(data.sessionId);
-    if (sprite) {
-      sprite.container.setAlpha(0.8);
-      this.time.delayedCall(140, () => {
-        sprite.container.setAlpha(1);
-      });
-      if (data.sessionId === this.room.sessionId) {
-        this.onConsoleMessage?.("You cast a spell!", "#aaaaff");
-      }
-    }
-    this.soundManager.playSpell();
-  }
-
-  private onCastHit(data: any) {
-    this.effectManager.playEffect(data.fxId ?? 1, data.targetTileX, data.targetTileY);
-  }
-
-  private onDamage(data: any) {
-    this.effectManager.showDamage(data.targetSessionId, data.amount, data.type);
-    this.soundManager.playHit();
-
-    if (data.targetSessionId === this.room.sessionId) {
-      this.onConsoleMessage?.(`You took ${data.amount} damage!`, "#ff4444");
-    }
-  }
-
-  private onDeath(data: any) {
-    const sprite = this.spriteManager.getSprite(data.sessionId);
-    if (sprite) {
-      sprite.container.setAlpha(0.3);
-    }
-    if (data.sessionId === this.room.sessionId) {
-      this.inputHandler.cancelTargeting();
-      this.onConsoleMessage?.("You have died!", "#ff0000");
-    }
-    this.soundManager.playDeath();
-  }
-
-  private onRespawn(data: any) {
-    const sprite = this.spriteManager.getSprite(data.sessionId);
-    if (sprite) {
-      sprite.container.setAlpha(1);
-      sprite.setTilePosition(data.tileX, data.tileY);
-      sprite.renderX = data.tileX * TILE_SIZE + TILE_SIZE / 2;
-      sprite.renderY = data.tileY * TILE_SIZE + TILE_SIZE / 2;
-    }
-    if (data.sessionId === this.room.sessionId) {
-        this.onConsoleMessage?.("You have respawned!", "#ffffff");
-    }
-  }
-
-  private onHeal(data: any) {
-    this.effectManager.showHeal(data.sessionId, data.amount);
-    this.soundManager.playHeal();
-    if (data.sessionId === this.room.sessionId) {
-      this.onConsoleMessage?.(`You healed for ${data.amount}!`, "#33cc33");
-    }
-  }
-
-  private onBuffApplied(data: any) {
-    this.effectManager.showFloatingText(data.sessionId, "BUFF", "#d4a843");
-  }
-
-  private onStunApplied(data: any) {
-    this.effectManager.showFloatingText(data.targetSessionId, "STUNNED", "#cccc33");
-    if (data.targetSessionId === this.room.sessionId) {
-         this.onConsoleMessage?.("You are stunned!", "#cccc33");
-    }
-  }
 
   private addDrop(drop: any, id: string) {
     const px = drop.tileX * TILE_SIZE + TILE_SIZE / 2;

@@ -1,7 +1,7 @@
-import Phaser from "phaser";
 import { PlayerSprite } from "../entities/PlayerSprite";
 import type { CameraController } from "../systems/CameraController";
 import type { GameScene } from "../scenes/GameScene";
+import type { EntityState } from "@abraxas/shared";
 
 export class SpriteManager {
     private sprites = new Map<string, PlayerSprite>();
@@ -13,7 +13,7 @@ export class SpriteManager {
         private getSessionId: () => string
     ) {}
 
-    addPlayer(player: any, sessionId: string) {
+    addPlayer(player: EntityState, sessionId: string) {
         if (this.sprites.has(sessionId)) return;
 
         const isLocal = sessionId === this.getSessionId();
@@ -22,7 +22,7 @@ export class SpriteManager {
             sessionId,
             player.tileX,
             player.tileY,
-            player.classType,
+            player.classType ?? "warrior",
             player.name,
             isLocal
         );
@@ -42,7 +42,7 @@ export class SpriteManager {
         }
     }
 
-    addNpc(npc: any, sessionId: string) {
+    addNpc(npc: EntityState, sessionId: string) {
         if (this.sprites.has(sessionId)) return;
         
         const sprite = new PlayerSprite(
@@ -50,8 +50,8 @@ export class SpriteManager {
             sessionId,
             npc.tileX,
             npc.tileY,
-            npc.type, // Treat type as classType for visual resolution
-            npc.type.toUpperCase(), // Name
+            (npc.type as any) ?? "orc", // Treat type as classType for visual resolution
+            npc.type?.toUpperCase() ?? "NPC", // Name
             false
         );
         
@@ -78,28 +78,29 @@ export class SpriteManager {
             let entity = state.players.get(sessionId) || state.npcs.get(sessionId);
             
             if (entity) {
+                const e = entity as EntityState;
                 if (sprite.isLocal) {
-                    sprite.reconcileServer(entity.tileX, entity.tileY);
+                    sprite.reconcileServer(e.tileX, e.tileY);
                 } else {
-                    sprite.setTilePosition(entity.tileX, entity.tileY);
+                    sprite.setTilePosition(e.tileX, e.tileY);
                 }
                 
-                sprite.setFacing(entity.facing ?? 2); 
-                sprite.updateHpMana(entity.hp, entity.maxHp);
+                sprite.setFacing(e.facing ?? 2); 
+                sprite.updateHpMana(e.hp, e.maxHp);
                 
-                if ("classType" in entity) { // It's a player
+                if (e.classType) { // It's a player
                     sprite.updateEquipment(
-                        entity.equipWeapon ?? "",
-                        entity.equipShield ?? "",
-                        entity.equipHelmet ?? ""
+                        e.equipWeapon ?? "",
+                        e.equipShield ?? "",
+                        e.equipHelmet ?? ""
                     );
                 }
         
-                if (!entity.alive) {
+                if (!e.alive) {
                     sprite.container.setAlpha(0.3);
-                } else if (entity.stealthed && !sprite.isLocal) {
+                } else if (e.stealthed && !sprite.isLocal) {
                     sprite.container.setAlpha(0.15);
-                } else if (entity.stealthed && sprite.isLocal) {
+                } else if (e.stealthed && sprite.isLocal) {
                     sprite.container.setAlpha(0.5);
                 }
             }
