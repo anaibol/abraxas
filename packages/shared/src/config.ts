@@ -23,6 +23,12 @@ export const GCD_MS = 120;
 export const BUFFER_WINDOW_MS = 200;
 export const PATCH_RATE = 20;
 
+export const MAX_INVENTORY_SLOTS = 24;
+export const PLAYER_RESPAWN_TIME_MS = 5000;
+export const NPC_RESPAWN_TIME_MS = 10000;
+export const DROP_EXPIRY_MS = 60000;
+export const AGGRO_RANGE = 8;
+
 export const CLASS_STATS: Record<string, ClassStats> = {
   warrior: {
     hp: 180,

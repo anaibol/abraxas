@@ -213,7 +213,11 @@ export class ArenaRoom extends Room<GameState> {
     }
 
     this.state.players.set(client.sessionId, player);
-    console.log(`ArenaRoom TRACE: after state.set tileX=${player.tileX}`);
+    
+    // FORCE COORDS LATE TO BYPASS RESET
+    player.tileX = dbPlayer.x;
+    player.tileY = dbPlayer.y;
+    console.log(`ArenaRoom LATE TRACE: tileX=${player.tileX}`);
 
     client.send("welcome", {
       sessionId: client.sessionId,
@@ -228,7 +232,7 @@ export class ArenaRoom extends Room<GameState> {
     logger.info({
       room: this.roomId,
       clientId: client.sessionId,
-      intent: "join",
+      intent: "join_VERIFY_LATEST",
       result: "ok",
       posAfter: { x: player.tileX, y: player.tileY },
     });

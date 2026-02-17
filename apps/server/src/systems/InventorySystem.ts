@@ -1,9 +1,14 @@
-import { ITEMS, CLASS_STATS, type EquipmentSlot, type ItemDef } from "@abraxas/shared";
+import { 
+  ITEMS, 
+  CLASS_STATS, 
+  type EquipmentSlot, 
+  type ItemDef, 
+  MAX_INVENTORY_SLOTS, 
+  StatBonuses 
+} from "@abraxas/shared";
 import type { Player } from "../schema/Player";
 import { InventoryItem } from "../schema/InventoryItem";
 import { logger } from "../logger";
-
-const MAX_INVENTORY_SLOTS = 24;
 
 export const EQUIP_SLOT_MAP: Record<EquipmentSlot, keyof Player> = {
   weapon: "equipWeapon",
@@ -141,8 +146,8 @@ export class InventorySystem {
     return true;
   }
 
-  getEquipmentBonuses(player: Player): { str: number; agi: number; int: number; hp: number; mana: number; armor: number } {
-    const bonuses = { str: 0, agi: 0, int: 0, hp: 0, mana: 0, armor: 0 };
+  getEquipmentBonuses(player: Player): StatBonuses {
+    const bonuses: StatBonuses = { str: 0, agi: 0, int: 0, hp: 0, mana: 0, armor: 0 };
 
     for (const slotKey of Object.values(EQUIP_SLOT_MAP)) {
       const itemId = player[slotKey];

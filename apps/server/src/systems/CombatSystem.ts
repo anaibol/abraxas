@@ -24,11 +24,7 @@ import type { BuffSystem } from "./BuffSystem";
 
 type Entity = Player | Npc;
 
-import { ServerMessages } from "@abraxas/shared";
-
-interface BroadcastFn {
-  <T extends keyof ServerMessages>(type: T, data: ServerMessages[T]): void;
-}
+import { ServerMessages, BroadcastFn } from "@abraxas/shared";
 
 type FindEntityAtTileFn = (x: number, y: number) => Entity | undefined;
 type SendToClientFn = (type: string, data?: Record<string, unknown>) => void;

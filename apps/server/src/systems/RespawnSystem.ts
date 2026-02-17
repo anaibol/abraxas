@@ -1,5 +1,5 @@
 import type { TileMap } from "@abraxas/shared";
-import { CLASS_STATS, STARTING_EQUIPMENT, RESPAWN_TIME_MS, ITEMS } from "@abraxas/shared";
+import { CLASS_STATS, STARTING_EQUIPMENT, PLAYER_RESPAWN_TIME_MS, ITEMS } from "@abraxas/shared";
 import type { Player } from "../schema/Player";
 import { InventorySystem, EQUIP_SLOT_MAP } from "./InventorySystem";
 
@@ -25,7 +25,7 @@ export class RespawnSystem {
     if (this.pending.some((p) => p.sessionId === sessionId)) return;
     this.pending.push({
       sessionId,
-      respawnAt: now + RESPAWN_TIME_MS,
+      respawnAt: now + PLAYER_RESPAWN_TIME_MS,
     });
   }
 

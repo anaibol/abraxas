@@ -1,17 +1,20 @@
-import { ClassStats, NPC_STATS, TileMap, Direction, NpcType, ServerMessages } from "@abraxas/shared";
+import { 
+  ClassStats, 
+  NPC_STATS, 
+  TileMap, 
+  Direction, 
+  NpcType, 
+  ServerMessages, 
+  BroadcastFn, 
+  NPC_RESPAWN_TIME_MS, 
+  AGGRO_RANGE 
+} from "@abraxas/shared";
 import { Npc } from "../schema/Npc";
 import { Player } from "../schema/Player";
 import { GameState } from "../schema/GameState";
 import { MovementSystem } from "./MovementSystem";
 import { CombatSystem } from "./CombatSystem";
 import { logger } from "../logger";
-
-interface BroadcastFn {
-  <T extends keyof ServerMessages>(type: T, data: ServerMessages[T]): void;
-}
-
-const AGGRO_RANGE = 8;
-const RESPAWN_TIME_MS = 10000;
 
 type Entity = Player | Npc;
 
@@ -84,7 +87,7 @@ export class NpcSystem {
     // Handle respawns
     for (let i = this.respawns.length - 1; i >= 0; i--) {
         const respawn = this.respawns[i];
-        if (now - respawn.deadAt > RESPAWN_TIME_MS) {
+        if (now - respawn.deadAt > NPC_RESPAWN_TIME_MS) {
             this.spawnNpc(respawn.type, map);
             this.respawns.splice(i, 1);
         }

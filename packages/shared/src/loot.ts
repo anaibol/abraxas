@@ -51,4 +51,3 @@ export const STARTING_EQUIPMENT: Record<string, { items: string[]; gold: number 
 };
 
 export const KILL_GOLD_BONUS = 25;
-export const RESPAWN_TIME_MS = 5000;

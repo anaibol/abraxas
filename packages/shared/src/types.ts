@@ -137,3 +137,16 @@ export type ServerMessages = {
   pong: { serverTime: number };
   level_up: { sessionId: string; level: number };
 };
+
+export interface BroadcastFn {
+  <T extends keyof ServerMessages>(type: T, data: ServerMessages[T]): void;
+}
+
+export interface StatBonuses {
+  str: number;
+  agi: number;
+  int: number;
+  hp: number;
+  mana: number;
+  armor: number;
+}
