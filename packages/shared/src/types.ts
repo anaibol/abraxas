@@ -18,6 +18,7 @@ export interface TileMap {
   tileSize: number;
   collision: number[][];
   spawns: { x: number; y: number }[];
+  npcCount?: number;
 }
 
 export interface ClassStats {

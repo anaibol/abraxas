@@ -56,7 +56,10 @@ export class ArenaRoom extends Room<GameState> {
     );
 
     // Spawn NPCs
-    this.npcSystem.spawnNpcs(20, this.map);
+    const npcCount = this.map.npcCount !== undefined ? this.map.npcCount : 20;
+    if (npcCount > 0) {
+        this.npcSystem.spawnNpcs(npcCount, this.map);
+    }
 
     this.setSimulationInterval((dt) => this.tick(dt), TICK_MS);
     this.setPatchRate(TICK_MS);
@@ -143,18 +146,17 @@ export class ArenaRoom extends Room<GameState> {
         client.leave(1011, "Failed to load/create player data");
         return;
     }
-    console.log(`ArenaRoom DEBUG: dbPlayer stats x=${dbPlayer.x} y=${dbPlayer.y} facing=${dbPlayer.facing}`);
     player.classType = classType;
-    console.log(`ArenaRoom FINAL DEBUG: dbPlayer stats x=${dbPlayer.x} y=${dbPlayer.y} facing=${dbPlayer.facing}`);
     player.tileX = dbPlayer.x;
     player.tileY = dbPlayer.y;
-    console.log(`ArenaRoom FINAL DEBUG: Assigned schema tileX=${player.tileX} tileY=${player.tileY}`);
+
     const dirKey = dbPlayer.facing.toUpperCase();
     if (dirKey === "UP") player.facing = Direction.UP;
     else if (dirKey === "DOWN") player.facing = Direction.DOWN;
     else if (dirKey === "LEFT") player.facing = Direction.LEFT;
     else if (dirKey === "RIGHT") player.facing = Direction.RIGHT;
     else player.facing = Direction.DOWN;
+
     player.hp = dbPlayer.hp;
     player.maxHp = dbPlayer.maxHp;
     player.mana = dbPlayer.mana;
@@ -169,32 +171,22 @@ export class ArenaRoom extends Room<GameState> {
     player.maxXp = dbPlayer.maxXp;
 
     try {
-        const parsed = JSON.parse(dbPlayer.inventory);
-        if (Array.isArray(parsed)) {
-            for (const item of parsed) {
-                if (typeof item === "object" && item !== null && "itemId" in item && "quantity" in item) {
-                   this.inventorySystem.addItem(player, item.itemId, item.quantity); 
-                }
-            }
+        const parsedInv = JSON.parse(dbPlayer.inventory);
+        for (const item of parsedInv) {
+            this.inventorySystem.addItem(player, item.itemId, item.quantity); 
         }
-    } catch (e) {
-        console.error("Failed to load inventory", e);
-    }
+    } catch (e) {}
 
     try {
-        const parsed = JSON.parse(dbPlayer.equipment);
-        if (typeof parsed === "object" && parsed !== null) {
-            player.equipWeapon = String(parsed.weapon || "");
-            player.equipShield = String(parsed.shield || "");
-            player.equipHelmet = String(parsed.helmet || "");
-            player.equipArmor = String(parsed.armor || "");
-            player.equipRing = String(parsed.ring || "");
-        }
-    } catch (e) {
-        console.error("Failed to load equipment", e);
-    }
+        const parsedEquip = JSON.parse(dbPlayer.equipment);
+        player.equipWeapon = parsedEquip.weapon || "";
+        player.equipShield = parsedEquip.shield || "";
+        player.equipHelmet = parsedEquip.helmet || "";
+        player.equipArmor = parsedEquip.armor || "";
+        player.equipRing = parsedEquip.ring || "";
+    } catch (e) {}
     
-    if (dbPlayer.inventory === "[]" && dbPlayer.equipment === "{}" && dbPlayer.createdAt.getTime() === dbPlayer.updatedAt.getTime()) {
+    if (dbPlayer.inventory === "[]" && dbPlayer.equipment === "{}") {
          const startingGear = STARTING_EQUIPMENT[classType];
          if (startingGear) {
             player.gold = startingGear.gold;
@@ -206,18 +198,12 @@ export class ArenaRoom extends Room<GameState> {
                }
             }
             this.inventorySystem.recalcStats(player);
-            console.log(`ArenaRoom TRACE: after recalcStats tileX=${player.tileX}`);
             player.hp = player.maxHp;
             player.mana = player.maxMana;
          }
     }
 
     this.state.players.set(client.sessionId, player);
-    
-    // FORCE COORDS LATE TO BYPASS RESET
-    player.tileX = dbPlayer.x;
-    player.tileY = dbPlayer.y;
-    console.log(`ArenaRoom LATE TRACE: tileX=${player.tileX}`);
 
     client.send("welcome", {
       sessionId: client.sessionId,
@@ -232,12 +218,11 @@ export class ArenaRoom extends Room<GameState> {
     logger.info({
       room: this.roomId,
       clientId: client.sessionId,
-      intent: "join_VERIFY_LATEST",
+      intent: "join",
       result: "ok",
       posAfter: { x: player.tileX, y: player.tileY },
     });
   }
-
   async onLeave(client: Client) {
     const player = this.state.players.get(client.sessionId);
     if (player) {
