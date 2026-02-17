@@ -1,10 +1,17 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaLibSql } from "@prisma/adapter-libsql";
+import { createClient } from "@libsql/client";
 import { CLASS_STATS, STARTING_EQUIPMENT, ITEMS, NPC_STATS, EXP_TABLE, NPC_DROPS } from "@abraxas/shared";
 import type { ClassStats } from "@abraxas/shared";
 
-// Initialize Prisma Client
-// In a real app, this might be a singleton exported from a db module
-const prisma = new PrismaClient();
+// Initialize Prisma Client with Adapter
+const libsql = createClient({
+  url: process.env.DATABASE_URL ?? "file:./dev.db",
+  authToken: process.env.TURSO_AUTH_TOKEN,
+});
+
+const adapter = new PrismaLibSql(libsql);
+const prisma = new PrismaClient({ adapter });
 
 export class PersistenceService {
     static async authenticateUser(usernameInput: string | undefined): Promise<any> {
