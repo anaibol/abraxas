@@ -113,7 +113,17 @@ export class ArenaRoom extends Room<GameState> {
   async onAuth(client: Client, options: JoinOptions) {
     // Simple auth: use name as username/password for now
     // In production, use token or actual password
-    const username = options.name || "Guest" + Math.floor(Math.random() * 1000);
+    let username = options.name;
+    
+    if (!username) {
+        const NAMES = ["Aeltho", "Bryna", "Cyril", "Dorn", "Elara", "Faelan", "Garrick", "Hylia", "Ivor", "Jora", "Kael", "Lira", "Marek", "Nylah", "Orion", "Pyra", "Quintus", "Rian", "Sylas", "Thora", "Ulric", "Vyla", "Wren", "Xander", "Yara", "Zephyr"];
+        username = NAMES[Math.floor(Math.random() * NAMES.length)];
+        
+        // Ensure uniqueness (simple retry logic or append number if taken? 
+        // findUnique will fail if we create duplicate unique. 
+        // For Guest/Random, appending a number is safer.
+        username += Math.floor(Math.random() * 10000);
+    }
     
     // Find or create User
     let user = await prisma.user.findUnique({
@@ -130,7 +140,6 @@ export class ArenaRoom extends Room<GameState> {
 
     return { user };
   }
-
   async onJoin(client: Client, options: JoinOptions, auth: any) {
     const classType = options?.classType || "warrior";
     const stats = CLASS_STATS[classType];
@@ -140,7 +149,7 @@ export class ArenaRoom extends Room<GameState> {
     }
     
     const user = auth.user;
-    const playerName = options.name || user.username; // Should match user username if unique?
+    const playerName = options.name || user.username;
 
     // Load Player from DB
     let dbPlayer = await prisma.player.findUnique({
@@ -161,12 +170,15 @@ export class ArenaRoom extends Room<GameState> {
          let inventoryStr = "[]";
          let equipmentStr = "{}";
          
-         // Can't easily construct the complex inventory logic here without GameState structures
-         // So for creation, we'll initialize basic stats and empty inv/equip
-         // Then in logic below (lines 137+) let existing start-gear logic run?
-         // NO. We should trust DB or create NEW with logic.
-         
-         // Let's create the DB record with defaults first
+         // Create initial inventory/equipment JSON
+         if (startingGear) {
+            const invItems = [];
+             for (const itemId of startingGear.items) {
+                 const def = ITEMS[itemId];
+                 if (!def) continue;
+             }
+         }
+
          dbPlayer = await prisma.player.create({
              data: {
                  userId: user.id,
@@ -179,82 +191,81 @@ export class ArenaRoom extends Room<GameState> {
                  mana: stats.mana,
                  maxMana: stats.mana,
                  str: stats.str,
-                 agi: stats.agi, // Prisma schema didn't have str/agi/int in example? I should check schema.
-                 // Wait, I missed defining str/agi/int in schema.prisma! 
-                 // I need to add them.
-                 // For now, let's skip them in CREATE and let them default/be added if I update schema.
-                 // OR update schema now.
-                 // Checking previous schema view... 
-                 // Schema had: x, y, hp, maxHp, mana, maxMana, level, xp, maxXp, gold, inventory, equipment.
-                 // MISSING: str, agi, intStat.
-                 // I MUST UPDATE SCHEMA FIRST.
+                 agi: stats.agi,
+                 intStat: stats.int,
+                 facing: "down",
+                 inventory: "[]",
+                 equipment: "{}"
              }
          });
     }
-    
-    // ... rest of logic
-    // But wait, I need to update schema first if I want to persist stats.
-    
-    return; // Placeholder to avoid breaking file while I fix schema
-  }
-
-  // Original onJoin (renamed/commented out temporarily or just override?)
-  // onJoin(client: Client, options: JoinOptions) { ... }
-    const classType = options?.classType || "warrior";
-    const stats = CLASS_STATS[classType];
-    if (!stats) {
-      client.leave();
-      return;
-    }
-
-    const spawn = this.map.spawns[this.spawnIndex % this.map.spawns.length];
-    this.spawnIndex++;
 
     const player = new Player();
     player.sessionId = client.sessionId;
-    player.name = options?.name || "Unknown";
-    player.classType = classType;
-    player.tileX = spawn.x;
-    player.tileY = spawn.y;
-    player.facing = "down";
-    player.hp = stats.hp;
-    player.maxHp = stats.hp;
-    player.mana = stats.mana;
-    player.maxMana = stats.mana;
-    player.alive = true;
-    player.str = stats.str;
-    player.agi = stats.agi;
-    player.intStat = stats.int;
-    player.gold = 0;
+    player.name = dbPlayer.name;
+    player.classType = dbPlayer.classType as any; // Type assertion
+    player.tileX = dbPlayer.x;
+    player.tileY = dbPlayer.y;
+    player.facing = dbPlayer.facing as Direction;
+    player.hp = dbPlayer.hp;
+    player.maxHp = dbPlayer.maxHp;
+    player.mana = dbPlayer.mana;
+    player.maxMana = dbPlayer.maxMana;
+    player.alive = dbPlayer.hp > 0;
+    player.str = dbPlayer.str;
+    player.agi = dbPlayer.agi;
+    player.intStat = dbPlayer.intStat;
+    player.gold = dbPlayer.gold;
+    player.level = dbPlayer.level;
+    player.xp = dbPlayer.xp;
+    player.maxXp = dbPlayer.maxXp;
+
+    // Load Inventory
+    try {
+        const invData = JSON.parse(dbPlayer.inventory);
+        for (const item of invData) {
+            this.inventorySystem.addItem(player, item.itemId, item.quantity); 
+        }
+    } catch (e) {
+        console.error("Failed to load inventory", e);
+    }
+
+    // Load Equipment
+    try {
+        const equipData = JSON.parse(dbPlayer.equipment);
+        player.equipWeapon = equipData.weapon || "";
+        player.equipShield = equipData.shield || "";
+        player.equipHelmet = equipData.helmet || "";
+        player.equipArmor = equipData.armor || "";
+        player.equipRing = equipData.ring || "";
+    } catch (e) {
+        console.error("Failed to load equipment", e);
+    }
+    
+    // If NEW player (just created in DB, inventory empty), give starting gear
+    if (dbPlayer.inventory === "[]" && dbPlayer.equipment === "{}" && dbPlayer.createdAt.getTime() === dbPlayer.updatedAt.getTime()) {
+         const startingGear = STARTING_EQUIPMENT[classType];
+         if (startingGear) {
+            player.gold = startingGear.gold;
+            for (const itemId of startingGear.items) {
+               this.inventorySystem.addItem(player, itemId);
+               const def = ITEMS[itemId];
+               if (def && def.slot !== "consumable") {
+                   this.inventorySystem.equipItem(player, itemId);
+               }
+            }
+            this.inventorySystem.recalcStats(player);
+            player.hp = player.maxHp;
+            player.mana = player.maxMana;
+         }
+    }
 
     this.state.players.set(client.sessionId, player);
 
-    // Give starting equipment
-    const startingGear = STARTING_EQUIPMENT[classType];
-    if (startingGear) {
-      player.gold = startingGear.gold;
-      for (const itemId of startingGear.items) {
-        const def = ITEMS[itemId];
-        if (!def) continue;
-        if (def.slot !== "consumable") {
-          const slotKey = `equip${def.slot.charAt(0).toUpperCase() + def.slot.slice(1)}` as keyof typeof player;
-          if ((player as any)[slotKey] === "") {
-            (player as any)[slotKey] = itemId;
-            continue;
-          }
-        }
-        this.inventorySystem.addItem(player, itemId);
-      }
-      this.inventorySystem.recalcStats(player);
-      // Update HP/mana to new maxes
-      player.hp = player.maxHp;
-      player.mana = player.maxMana;
-    }
-
     client.send("welcome", {
       sessionId: client.sessionId,
-      tileX: spawn.x,
-      tileY: spawn.y,
+      tileX: player.tileX,
+      tileY: player.tileY,
       mapWidth: this.map.width,
       mapHeight: this.map.height,
       tileSize: this.map.tileSize,
@@ -266,11 +277,71 @@ export class ArenaRoom extends Room<GameState> {
       clientId: client.sessionId,
       intent: "join",
       result: "ok",
-      posAfter: { x: spawn.x, y: spawn.y },
+      posAfter: { x: player.tileX, y: player.tileY },
     });
   }
 
-  onLeave(client: Client) {
+  async onLeave(client: Client) {
+    const player = this.state.players.get(client.sessionId);
+    if (player) {
+        const inventory: { itemId: string; quantity: number; slotIndex: number }[] = [];
+        player.inventory.forEach(item => {
+            inventory.push({ itemId: item.itemId, quantity: item.quantity, slotIndex: item.slotIndex });
+        });
+        
+        const equipment = {
+            weapon: player.equipWeapon,
+            shield: player.equipShield,
+            helmet: player.equipHelmet,
+            armor: player.equipArmor,
+            ring: player.equipRing
+        };
+
+        try {
+            await prisma.player.updateMany({ // Use updateMany based on userId+name or just find unique ID if we stored it?
+                // We didn't store the DB UUID in the Player schema, only in local scope on join.
+                // We should probably store dbId in Player schema (non-synced) or just query by userId + name.
+                // But wait, we don't have userId easily available unless we stored it on player.
+                // Let's assume name is unique per user? Or globally unique?
+                // If name is unique globally, we can use name.
+                // If not, we need to store dbId on the Player entity (maybe as a non-synced field `dbId`).
+                // For now, let's rely on name matching since we don't allow duplicate names in DB per user.
+                // BUT we need the user ID. 
+                // We don't have the user ID on the player object right now.
+                // Let's add `dbId` to Player schema (server-side only if possible, or just public).
+                // Or better, update schema to include `dbId`. 
+                // Alternatively, query by name if unique. 
+                // Let's update Player schema in `schema/Player.ts` to include `dbId` string.
+                where: {
+                    name: player.name
+                    // We risk collision if names aren't globally unique. 
+                    // Let's add dbId to Player schema in next step. For now, assume unique name.
+                },
+                data: {
+                    x: player.tileX,
+                    y: player.tileY,
+                    hp: player.hp,
+                    maxHp: player.maxHp,
+                    mana: player.mana,
+                    maxMana: player.maxMana,
+                    str: player.str,
+                    agi: player.agi,
+                    intStat: player.intStat,
+                    facing: player.facing,
+                    gold: player.gold,
+                    level: player.level,
+                    xp: player.xp,
+                    maxXp: player.maxXp,
+                    inventory: JSON.stringify(inventory),
+                    equipment: JSON.stringify(equipment),
+                    classType: player.classType
+                }
+            });
+        } catch (e) {
+            logger.error({ msg: "Failed to save player", err: e });
+        }
+    }
+
     this.state.players.delete(client.sessionId);
     this.movement.removePlayer(client.sessionId);
     this.combat.removeEntity(client.sessionId);

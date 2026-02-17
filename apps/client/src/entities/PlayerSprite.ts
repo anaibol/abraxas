@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { TILE_SIZE, CLASS_STATS, CLASS_APPEARANCE, ITEMS } from "@ao5/shared";
+import { TILE_SIZE, CLASS_STATS, NPC_STATS, CLASS_APPEARANCE, ITEMS } from "@ao5/shared";
 import type { AoGrhResolver, DirectionEntry, BodyEntry } from "../assets/AoGrhResolver";
 
 const DIR_MAP: Record<string, "down" | "up" | "left" | "right"> = {
@@ -64,10 +64,18 @@ export class PlayerSprite {
     this.classType = classType;
     this.isLocal = isLocal;
 
-    const stats = CLASS_STATS[classType];
-    this.pixelsPerSecond = stats.speedTilesPerSecond * TILE_SIZE;
-    this.maxHp = stats.hp;
-    this.maxMana = stats.mana;
+    const stats = CLASS_STATS[classType] || NPC_STATS[classType];
+    if (!stats) {
+        console.warn(`No stats found for class/type: ${classType}, defaulting to warrior`);
+        const defaultStats = CLASS_STATS.warrior;
+         this.pixelsPerSecond = defaultStats.speedTilesPerSecond * TILE_SIZE;
+         this.maxHp = defaultStats.hp;
+         this.maxMana = defaultStats.mana;
+    } else {
+        this.pixelsPerSecond = stats.speedTilesPerSecond * TILE_SIZE;
+        this.maxHp = stats.hp;
+        this.maxMana = stats.mana;
+    }
 
     this.resolver = scene.registry.get("aoResolver") as AoGrhResolver;
     const appearance = CLASS_APPEARANCE[classType] ?? CLASS_APPEARANCE.warrior;
