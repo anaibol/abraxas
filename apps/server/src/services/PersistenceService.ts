@@ -1,11 +1,26 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaLibSql } from "@prisma/adapter-libsql";
 import { CLASS_STATS, STARTING_EQUIPMENT, ITEMS, NPC_STATS, EXP_TABLE, NPC_DROPS } from "@abraxas/shared";
 import type { ClassStats } from "@abraxas/shared";
 import "dotenv/config";
+import { resolve } from "path";
 
-// Initialize Prisma Client
-console.log("PersistenceService: DATABASE_URL loaded:", !!process.env.DATABASE_URL);
-const prisma = new PrismaClient();
+// Initialize Prisma Client with Adapter
+console.log("PersistenceService: DATABASE_URL:", process.env.DATABASE_URL);
+
+const dbPath = process.env.DATABASE_URL || "file:dev.db";
+// Ensure absolute file URL for local SQLite
+const url = dbPath.startsWith("file:") ? `file://${resolve(process.cwd(), dbPath.replace("file:", ""))}` : dbPath;
+console.log("PersistenceService: Using URL:", url);
+
+const adapter = new PrismaLibSql({
+  url,
+  authToken: process.env.TURSO_AUTH_TOKEN,
+});
+const prisma = new PrismaClient({ 
+    adapter,
+    log: ["query", "info", "warn", "error"]
+});
 
 export class PersistenceService {
     static async authenticateUser(usernameInput: string | undefined): Promise<any> {
