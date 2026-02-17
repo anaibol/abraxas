@@ -47,10 +47,6 @@ function waitForState(
       if (predicate(room.state)) {
         resolve();
       } else if (Date.now() - start > timeoutMs) {
-        console.log(`Timeout! Current state: players=${room.state.players.size}`);
-        room.state.players.forEach((p, id) => {
-            console.log(`  Player ${id}: x=${p.tileX}, y=${p.tileY}, name=${p.name}`);
-        });
         reject(new Error("Timeout waiting for state condition"));
       } else {
         setTimeout(check, 30);
