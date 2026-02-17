@@ -53,7 +53,7 @@ export interface FxEntry {
 
 type IndexEntry = DirectionEntry | BodyEntry | FxEntry | 0;
 
-const DIR_KEYS = ["down", "up", "left", "right"] as const;
+const DIR_KEYS: readonly ("down" | "up" | "left" | "right")[] = ["down", "up", "left", "right"];
 
 function isAnimGrh(entry: GrhEntry): entry is AnimGrh {
   return typeof entry === "object" && "frames" in entry;

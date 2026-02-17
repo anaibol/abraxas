@@ -4,7 +4,7 @@ import type { NetworkManager, WelcomeData } from "../network/NetworkManager";
 import { InputHandler } from "../systems/InputHandler";
 import { CameraController } from "../systems/CameraController";
 import { SoundManager } from "../assets/SoundManager";
-import type { AoGrhResolver } from "../assets/AoGrhResolver";
+import { AoGrhResolver } from "../assets/AoGrhResolver";
 import { TILE_SIZE, DIRECTION_DELTA } from "@abraxas/shared";
 import type { Direction } from "@abraxas/shared";
 import type { PlayerState } from "../ui/Sidebar";
@@ -65,9 +65,12 @@ export class GameScene extends Phaser.Scene {
   }
 
   create() {
-    this.room = this.network.getRoom() as Room<GameState>;
+    this.room = this.network.getRoom();
     this.welcome = this.network.getWelcomeData();
-    this.resolver = this.registry.get("aoResolver") as AoGrhResolver;
+    const resolver = this.registry.get("aoResolver");
+    if (resolver instanceof AoGrhResolver) {
+        this.resolver = resolver;
+    }
 
     const worldW = this.welcome.mapWidth * TILE_SIZE;
     const worldH = this.welcome.mapHeight * TILE_SIZE;

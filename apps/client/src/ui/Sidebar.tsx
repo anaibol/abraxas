@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Box, Flex, Text, Grid } from "@chakra-ui/react";
-import { CLASS_STATS, SPELLS, ITEMS } from "@abraxas/shared";
+import { CLASS_STATS, SPELLS, ITEMS, EQUIPMENT_SLOTS, type EquipmentSlot } from "@abraxas/shared";
 
 export interface InventorySlot {
   itemId: string;
@@ -78,7 +78,7 @@ const SPELL_ICONS: Record<string, string> = {
 interface SidebarProps {
   state: PlayerState;
   onEquip?: (itemId: string) => void;
-  onUnequip?: (slot: string) => void;
+  onUnequip?: (slot: EquipmentSlot) => void;
   onUseItem?: (itemId: string) => void;
   onDropItem?: (itemId: string) => void;
 }
@@ -97,6 +97,11 @@ const ITEM_ICONS: Record<string, string> = {
   ring: "\uD83D\uDC8D",
   consumable: "\uD83E\uDDEA",
 };
+
+const SIDEBAR_TABS: readonly { key: "inv" | "spells"; label: string }[] = [
+  { key: "inv", label: "\u2694 Inventory" },
+  { key: "spells", label: "\uD83D\uDCD6 Spells" },
+];
 
 export function Sidebar({ state, onEquip, onUnequip, onUseItem, onDropItem }: SidebarProps) {
   const [tab, setTab] = useState<"inv" | "spells">("inv");
@@ -129,7 +134,7 @@ export function Sidebar({ state, onEquip, onUnequip, onUseItem, onDropItem }: Si
 
       {/* Tabs */}
       <Flex borderBottom="2px solid" borderBottomColor={P.border}>
-        {([["inv", "\u2694 Inventory"], ["spells", "\uD83D\uDCD6 Spells"]] as const).map(([key, label]) => (
+        {SIDEBAR_TABS.map(({ key, label }) => (
           <Box
             key={key}
             flex="1"
@@ -161,7 +166,7 @@ export function Sidebar({ state, onEquip, onUnequip, onUseItem, onDropItem }: Si
           {/* Equipment slots */}
           {state.equipment && (
             <Flex gap="1" mb="2" justify="center">
-              {(["weapon", "armor", "shield", "helmet", "ring"] as const).map((slot) => {
+              {EQUIPMENT_SLOTS.map((slot) => {
                 const equipped = state.equipment![slot];
                 const def = equipped ? ITEMS[equipped] : null;
                 return (
