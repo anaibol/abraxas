@@ -77,11 +77,11 @@ describe("Arena multiplayer smoke test", () => {
       name: "Warrior_" + testSuffix,
       classType: "warrior",
     });
+
     const roomB: Room<GameState> = await clientB.joinOrCreate("arena", {
       name: "Wizard_" + testSuffix,
       classType: "wizard",
     });
-
     // Wait until both rooms see 2 players
     await waitForState(roomA, (state) => state.players.size >= 2);
     await waitForState(roomB, (state) => state.players.size >= 2);
