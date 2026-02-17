@@ -88,7 +88,7 @@ export async function createGameServer(options: {
 
   await server.listen(options.port);
 
-  logger.info({ intent: "server_start", result: "ok", port: options.port } as any);
+  logger.info({ intent: "server_start", result: "ok", port: options.port });
 
   return server;
 }

@@ -280,7 +280,7 @@ export function App() {
             <Sidebar
               state={playerState}
               onEquip={(itemId) => networkRef.current?.sendEquip(itemId)}
-              onUnequip={(slot) => networkRef.current?.sendUnequip(slot as EquipmentSlot)}
+              onUnequip={(slot) => networkRef.current?.sendUnequip(slot)}
               onUseItem={(itemId) => networkRef.current?.sendUseItem(itemId)}
               onDropItem={(itemId) => networkRef.current?.sendDropItem(itemId)}
             />
