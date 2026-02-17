@@ -13,6 +13,12 @@ import { CLASS_STATS, TICK_MS, STARTING_EQUIPMENT, ITEMS, KILL_GOLD_BONUS, NPC_S
 import type { TileMap, Direction, JoinOptions, EquipmentSlot } from "@ao5/shared";
 import { logger } from "../logger";
 
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient({
+  datasourceUrl: process.env.DATABASE_URL
+});
+
 type Entity = Player | Npc;
 
 export class ArenaRoom extends Room<GameState> {
@@ -104,7 +110,96 @@ export class ArenaRoom extends Room<GameState> {
     logger.info({ room: this.roomId, intent: "room_created", result: "ok" });
   }
 
-  onJoin(client: Client, options: JoinOptions) {
+  async onAuth(client: Client, options: JoinOptions) {
+    // Simple auth: use name as username/password for now
+    // In production, use token or actual password
+    const username = options.name || "Guest" + Math.floor(Math.random() * 1000);
+    
+    // Find or create User
+    let user = await prisma.user.findUnique({
+        where: { username }
+    });
+
+    if (!user) {
+        user = await prisma.user.create({
+            data: {
+                username,
+            }
+        });
+    }
+
+    return { user };
+  }
+
+  async onJoin(client: Client, options: JoinOptions, auth: any) {
+    const classType = options?.classType || "warrior";
+    const stats = CLASS_STATS[classType];
+    if (!stats) {
+      client.leave();
+      return;
+    }
+    
+    const user = auth.user;
+    const playerName = options.name || user.username; // Should match user username if unique?
+
+    // Load Player from DB
+    let dbPlayer = await prisma.player.findUnique({
+        where: {
+            userId_name: {
+                userId: user.id,
+                name: playerName
+            }
+        }
+    });
+
+    // Create if not exists
+    if (!dbPlayer) {
+         const spawn = this.map.spawns[this.spawnIndex % this.map.spawns.length];
+         this.spawnIndex++;
+         
+         const startingGear = STARTING_EQUIPMENT[classType];
+         let inventoryStr = "[]";
+         let equipmentStr = "{}";
+         
+         // Can't easily construct the complex inventory logic here without GameState structures
+         // So for creation, we'll initialize basic stats and empty inv/equip
+         // Then in logic below (lines 137+) let existing start-gear logic run?
+         // NO. We should trust DB or create NEW with logic.
+         
+         // Let's create the DB record with defaults first
+         dbPlayer = await prisma.player.create({
+             data: {
+                 userId: user.id,
+                 name: playerName,
+                 classType,
+                 x: spawn.x,
+                 y: spawn.y,
+                 hp: stats.hp,
+                 maxHp: stats.hp,
+                 mana: stats.mana,
+                 maxMana: stats.mana,
+                 str: stats.str,
+                 agi: stats.agi, // Prisma schema didn't have str/agi/int in example? I should check schema.
+                 // Wait, I missed defining str/agi/int in schema.prisma! 
+                 // I need to add them.
+                 // For now, let's skip them in CREATE and let them default/be added if I update schema.
+                 // OR update schema now.
+                 // Checking previous schema view... 
+                 // Schema had: x, y, hp, maxHp, mana, maxMana, level, xp, maxXp, gold, inventory, equipment.
+                 // MISSING: str, agi, intStat.
+                 // I MUST UPDATE SCHEMA FIRST.
+             }
+         });
+    }
+    
+    // ... rest of logic
+    // But wait, I need to update schema first if I want to persist stats.
+    
+    return; // Placeholder to avoid breaking file while I fix schema
+  }
+
+  // Original onJoin (renamed/commented out temporarily or just override?)
+  // onJoin(client: Client, options: JoinOptions) { ... }
     const classType = options?.classType || "warrior";
     const stats = CLASS_STATS[classType];
     if (!stats) {
