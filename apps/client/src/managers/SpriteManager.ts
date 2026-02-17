@@ -1,7 +1,10 @@
 import { PlayerSprite } from "../entities/PlayerSprite";
 import type { CameraController } from "../systems/CameraController";
 import type { GameScene } from "../scenes/GameScene";
-import type { EntityState, PlayerEntityState, NpcEntityState } from "@abraxas/shared";
+import type { EntityState } from "@abraxas/shared";
+import { GameState } from "../../../server/src/schema/GameState";
+import { Player } from "../../../server/src/schema/Player";
+import { Npc } from "../../../server/src/schema/Npc";
 
 export class SpriteManager {
     private sprites = new Map<string, PlayerSprite>();
@@ -9,11 +12,11 @@ export class SpriteManager {
     constructor(
         private scene: GameScene,
         private cameraController: CameraController,
-        private getCurrentRoomState: () => any, 
+        private getCurrentRoomState: () => GameState, 
         private getSessionId: () => string
     ) {}
 
-    addPlayer(player: PlayerEntityState, sessionId: string) {
+    addPlayer(player: Player, sessionId: string) {
         if (this.sprites.has(sessionId)) return;
 
         const isLocal = sessionId === this.getSessionId();
@@ -42,7 +45,7 @@ export class SpriteManager {
         }
     }
 
-    addNpc(npc: NpcEntityState, sessionId: string) {
+    addNpc(npc: Npc, sessionId: string) {
         if (this.sprites.has(sessionId)) return;
         
         const sprite = new PlayerSprite(
@@ -75,7 +78,9 @@ export class SpriteManager {
         if (!state) return;
 
         for (const [sessionId, sprite] of this.sprites) {
-            let entity = (state.players.get(sessionId) || state.npcs.get(sessionId)) as EntityState | undefined;
+            const player = state.players.get(sessionId);
+            const npc = state.npcs.get(sessionId);
+            const entity = player || npc;
             
             if (entity) {
                 if (sprite.isLocal) {
@@ -87,11 +92,11 @@ export class SpriteManager {
                 sprite.setFacing(entity.facing); 
                 sprite.updateHpMana(entity.hp, entity.maxHp);
                 
-                if (entity.classType) { // It's a player
+                if (player) { // It's a player
                     sprite.updateEquipment(
-                        entity.equipWeapon,
-                        entity.equipShield,
-                        entity.equipHelmet
+                        player.equipWeapon,
+                        player.equipShield,
+                        player.equipHelmet
                     );
                 }
         

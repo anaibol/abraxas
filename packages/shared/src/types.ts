@@ -1,4 +1,9 @@
-export type Direction = "up" | "down" | "left" | "right";
+export enum Direction {
+  UP = 0,
+  DOWN = 1,
+  LEFT = 2,
+  RIGHT = 3
+}
 export type ClassType = "warrior" | "wizard" | "archer" | "assassin" | "paladin" | "druid";
 export type NpcType = "orc" | "skeleton" | "goblin" | "wolf";
 
@@ -54,11 +59,11 @@ export interface SpellDef {
   dotDurationMs?: number;
 }
 
-export const DIRECTION_DELTA: Record<Direction, { dx: number; dy: number }> = {
-  up:    { dx:  0, dy: -1 },
-  down:  { dx:  0, dy:  1 },
-  left:  { dx: -1, dy:  0 },
-  right: { dx:  1, dy:  0 },
+export const DIRECTION_DELTA: Record<number, { dx: number; dy: number }> = {
+  [Direction.UP]:    { dx:  0, dy: -1 },
+  [Direction.DOWN]:  { dx:  0, dy:  1 },
+  [Direction.LEFT]:  { dx: -1, dy:  0 },
+  [Direction.RIGHT]: { dx:  1, dy:  0 },
 };
 
 export interface BaseEntityState {

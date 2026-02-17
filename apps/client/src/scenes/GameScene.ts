@@ -12,6 +12,11 @@ import { SpriteManager } from "../managers/SpriteManager";
 import { EffectManager } from "../managers/EffectManager";
 import { GameEventHandler } from "../handlers/GameEventHandler";
 
+import { GameState } from "../../../server/src/schema/GameState";
+import { Player } from "../../../server/src/schema/Player";
+import { Npc } from "../../../server/src/schema/Npc";
+import { Drop } from "../../../server/src/schema/Drop";
+
 export type StateCallback = (state: PlayerState) => void;
 export type KillFeedCallback = (killer: string, victim: string) => void;
 export type ConsoleCallback = (text: string, color?: string) => void;
@@ -21,7 +26,7 @@ export class GameScene extends Phaser.Scene {
   private onStateUpdate: StateCallback;
   private onKillFeed?: KillFeedCallback;
   private onConsoleMessage?: ConsoleCallback;
-  private room!: Room;
+  private room!: Room<GameState>;
   private welcome!: WelcomeData;
   private resolver!: AoGrhResolver;
 
@@ -60,7 +65,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   create() {
-    this.room = this.network.getRoom();
+    this.room = this.network.getRoom() as Room<GameState>;
     this.welcome = this.network.getWelcomeData();
     this.resolver = this.registry.get("aoResolver") as AoGrhResolver;
 
@@ -107,11 +112,11 @@ export class GameScene extends Phaser.Scene {
     );
 
     // Listen for player add/remove/change
-    this.room.state.players.onAdd((player: any, sessionId: string) => {
+    this.room.state.players.onAdd((player: Player, sessionId: string) => {
       this.spriteManager.addPlayer(player, sessionId);
     });
 
-    this.room.state.players.onRemove((_player: any, sessionId: string) => {
+    this.room.state.players.onRemove((_player: Player, sessionId: string) => {
       this.spriteManager.removePlayer(sessionId);
     });
 
@@ -128,20 +133,20 @@ export class GameScene extends Phaser.Scene {
     gameEventHandler.setupListeners();
 
     // Drops
-    this.room.state.drops.onAdd((drop: any, id: string) => {
+    this.room.state.drops.onAdd((drop: Drop, id: string) => {
       this.addDrop(drop, id);
     });
 
-    this.room.state.drops.onRemove((_drop: any, id: string) => {
+    this.room.state.drops.onRemove((_drop: Drop, id: string) => {
       this.removeDrop(id);
     });
 
     // NPCs
-    this.room.state.npcs.onAdd((npc: any, id: string) => {
+    this.room.state.npcs.onAdd((npc: Npc, id: string) => {
         this.spriteManager.addNpc(npc, id);
     });
 
-    this.room.state.npcs.onRemove((_npc: any, id: string) => {
+    this.room.state.npcs.onRemove((_npc: Npc, id: string) => {
         this.spriteManager.removeNpc(id);
     });
 

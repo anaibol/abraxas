@@ -10,7 +10,7 @@ import { InventorySystem } from "../systems/InventorySystem";
 import { RespawnSystem } from "../systems/RespawnSystem";
 import { NpcSystem } from "../systems/NpcSystem";
 import { CLASS_STATS, TICK_MS, STARTING_EQUIPMENT, ITEMS, KILL_GOLD_BONUS, NPC_STATS, EXP_TABLE, NPC_DROPS } from "@abraxas/shared";
-import { TileMap, Direction, ServerMessages, ClassType } from "@abraxas/shared";
+import { TileMap, Direction, ServerMessages, ClassType, JoinOptions, EquipmentSlot } from "@abraxas/shared";
 import { logger } from "../logger";
 
 import { PersistenceService } from "../services/PersistenceService";
@@ -119,6 +119,7 @@ export class ArenaRoom extends Room<GameState> {
     const classType = options?.classType || "warrior";
     const stats = CLASS_STATS[classType];
     if (!stats) {
+      logger.warn({ room: this.roomId, clientId: client.sessionId, intent: "join", result: "error", message: `Invalid classType: ${classType}` });
       client.leave();
       return;
     }
@@ -136,11 +137,11 @@ export class ArenaRoom extends Room<GameState> {
 
     const player = new Player();
     player.sessionId = client.sessionId;
-    player.name = dbPlayer.name;
-    player.classType = dbPlayer.classType as ClassType; 
+    player.name = playerName;
+    player.classType = classType;
+    player.facing = Direction.DOWN;
     player.tileX = dbPlayer.x;
     player.tileY = dbPlayer.y;
-    player.facing = dbPlayer.facing as Direction;
     player.hp = dbPlayer.hp;
     player.maxHp = dbPlayer.maxHp;
     player.mana = dbPlayer.mana;
@@ -238,7 +239,7 @@ export class ArenaRoom extends Room<GameState> {
             str: player.str,
             agi: player.agi,
             intStat: player.intStat,
-            facing: player.facing,
+            facing: Direction[player.facing].toLowerCase(),
             gold: player.gold,
             level: player.level,
             xp: player.xp,

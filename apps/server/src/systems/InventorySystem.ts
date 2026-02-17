@@ -5,7 +5,7 @@ import { logger } from "../logger";
 
 const MAX_INVENTORY_SLOTS = 24;
 
-const EQUIP_SLOT_MAP: Record<string, keyof Player> = {
+const EQUIP_SLOT_MAP: Record<EquipmentSlot, keyof Player> = {
   weapon: "equipWeapon",
   armor: "equipArmor",
   shield: "equipShield",
@@ -81,18 +81,18 @@ export class InventorySystem {
     // Check item is in inventory
     if (!this.findItem(player, itemId)) return false;
 
-    const slotKey = EQUIP_SLOT_MAP[def.slot];
+    const slotKey = EQUIP_SLOT_MAP[def.slot as EquipmentSlot];
     if (!slotKey) return false;
 
     // Unequip current item in that slot first
-    const currentEquipped = (player as any)[slotKey] as string;
-    if (currentEquipped) {
+    const currentEquipped = player[slotKey];
+    if (typeof currentEquipped === "string" && currentEquipped) {
       this.addItem(player, currentEquipped);
     }
 
     // Remove from inventory and equip
     this.removeItem(player, itemId);
-    (player as any)[slotKey] = itemId;
+    (player as any)[slotKey] = itemId; // Keep one cast for writing if Colyseus types are stubborn, but reading is clean
 
     // Apply stat bonuses
     this.recalcStats(player);
@@ -103,8 +103,8 @@ export class InventorySystem {
     const slotKey = EQUIP_SLOT_MAP[slot];
     if (!slotKey) return false;
 
-    const itemId = (player as any)[slotKey] as string;
-    if (!itemId) return false;
+    const itemId = player[slotKey];
+    if (typeof itemId !== "string" || !itemId) return false;
 
     // Try to add to inventory
     if (!this.addItem(player, itemId)) return false; // Inventory full
@@ -135,8 +135,8 @@ export class InventorySystem {
     const bonuses = { str: 0, agi: 0, int: 0, hp: 0, mana: 0, armor: 0 };
 
     for (const slotKey of Object.values(EQUIP_SLOT_MAP)) {
-      const itemId = (player as any)[slotKey] as string;
-      if (!itemId) continue;
+      const itemId = player[slotKey];
+      if (typeof itemId !== "string" || !itemId) continue;
       const def = ITEMS[itemId];
       if (!def) continue;
 
@@ -173,8 +173,8 @@ export class InventorySystem {
 
     // Drop equipment
     for (const slotKey of Object.values(EQUIP_SLOT_MAP)) {
-      const itemId = (player as any)[slotKey] as string;
-      if (itemId) {
+      const itemId = player[slotKey];
+      if (typeof itemId === "string" && itemId) {
         dropped.push({ itemId, quantity: 1 });
         (player as any)[slotKey] = "";
       }
