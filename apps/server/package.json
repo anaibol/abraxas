@@ -12,10 +12,12 @@
     "@ao5/shared": "workspace:*",
     "@colyseus/core": "^0.15.0",
     "@colyseus/schema": "^2.0.0",
-    "@colyseus/ws-transport": "^0.15.0"
+    "@colyseus/ws-transport": "^0.15.0",
+    "@prisma/client": "^7.4.0"
   },
   "devDependencies": {
+    "@types/bun": "latest",
     "colyseus.js": "^0.15.0",
-    "@types/bun": "latest"
+    "prisma": "^7.4.0"
   }
 }

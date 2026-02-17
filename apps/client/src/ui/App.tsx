@@ -7,7 +7,8 @@ import { Sidebar, type PlayerState } from "./Sidebar";
 import { DeathOverlay } from "./DeathOverlay";
 import { KillFeed, type KillFeedEntry } from "./KillFeed";
 import { Console, type ConsoleMessage } from "./Console";
-import type { ClassType } from "@ao5/shared";
+import { Minimap } from "./Minimap";
+import type { ClassType, TileMap } from "@ao5/shared";
 import { NetworkManager } from "../network/NetworkManager";
 import Phaser from "phaser";
 import { PreloaderScene } from "../scenes/PreloaderScene";
@@ -32,10 +33,16 @@ export function App() {
   const [showDeath, setShowDeath] = useState(false);
   const [killFeed, setKillFeed] = useState<KillFeedEntry[]>([]);
   const [consoleMessages, setConsoleMessages] = useState<ConsoleMessage[]>([]);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [mapData, setMapData] = useState<TileMap | null>(null);
+
   const gameContainerRef = useRef<HTMLDivElement>(null);
   const phaserGameRef = useRef<Phaser.Game | null>(null);
   const networkRef = useRef<NetworkManager | null>(null);
   const wasAliveRef = useRef(true);
+  
+  // Ref to room state for minimap to access latest data without re-rendering App constantly
+  const roomRef = useRef<any>(null);
 
   // Track death/respawn
   useEffect(() => {
@@ -58,12 +65,62 @@ export function App() {
     return () => clearTimeout(timer);
   }, [killFeed]);
 
+  // Handle Chat Toggle
+  useEffect(() => {
+    if (phase !== "game") return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Enter") {
+             if (isChatOpen) {
+                 // Close chat (sending handled by Console component if it was focused)
+                 // But wait, if we are focused on input, this keydown might fire too?
+                 // We should letting Console handle the send, and this just toggles state?
+                 // If chat is open, enter sends and closes?
+             } else {
+                 setIsChatOpen(true);
+             }
+        }
+        if (e.key === "Escape" && isChatOpen) {
+            setIsChatOpen(false);
+        }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [phase, isChatOpen]);
+
+  // When chat is open, we should probably disable game inputs? 
+  // GameScene listens to keys. We might need to tell GameScene to ignore input.
+  // Or just rely on input focus stealing events?
+  // Phaser input usually keeps working unless we explicitly stop it.
+
+  useEffect(() => {
+      const game = phaserGameRef.current;
+      if (game) {
+          game.input.enabled = !isChatOpen;
+          if (isChatOpen) {
+               game.input.keyboard?.resetKeys();
+          }
+      }
+  }, [isChatOpen]);
+
+
   const handleJoin = useCallback(async (name: string, classType: ClassType) => {
     setConnecting(true);
     try {
       const network = new NetworkManager();
       await network.connect(name, classType);
       networkRef.current = network;
+      roomRef.current = network.getRoom();
+      
+      const welcome = network.getWelcomeData();
+      setMapData({
+          width: welcome.mapWidth,
+          height: welcome.mapHeight,
+          tileSize: welcome.tileSize,
+          collision: welcome.collision,
+          spawns: [] // Not needed for client map display usually
+      });
 
       setPlayerState((prev) => ({ ...prev, name, classType }));
       setPhase("game");
@@ -75,6 +132,36 @@ export function App() {
         color: "#ffff00",
         timestamp: Date.now()
       }]);
+      
+      // Listen for chat
+      network.getRoom().onMessage("chat", (data: { senderId: string, senderName: string, message: string }) => {
+           setConsoleMessages(prev => {
+                const newMsg: ConsoleMessage = {
+                    id: ++consoleMsgId,
+                    text: `${data.senderName}: ${data.message}`,
+                    color: "#ffffff",
+                    timestamp: Date.now()
+                };
+                 const next = [...prev, newMsg];
+                 if (next.length > 50) return next.slice(next.length - 50);
+                 return next;
+           });
+      });
+
+      // Listen for notifications
+        network.getRoom().onMessage("notification", (data: { message: string }) => {
+           setConsoleMessages(prev => {
+                const newMsg: ConsoleMessage = {
+                    id: ++consoleMsgId,
+                    text: data.message,
+                    color: "#00ff00",
+                    timestamp: Date.now()
+                };
+                 const next = [...prev, newMsg];
+                 if (next.length > 50) return next.slice(next.length - 50);
+                 return next;
+           });
+      });
 
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
@@ -132,19 +219,62 @@ export function App() {
     }
   }, []);
 
+  const handleSendChat = (msg: string) => {
+      networkRef.current?.sendChat(msg);
+      // Close chat after sending?
+      setIsChatOpen(false);
+  };
+
   useEffect(() => {
     return () => {
       phaserGameRef.current?.destroy(true);
     };
   }, []);
+  
+  // Minimap rendering helper
+  // Since Minimap needs live data, we can pass a dummy state that forces re-render or let it handle itself.
+  // Actually, React re-renders App on playerState change (HP/Mana) which happens on tick.
+  // But players/npcs map changes are not in playerState.
+  // We can pass the raw maps from roomRef.current?.state?.players / npcs
+  // And force update Minimap every frame?
+  // Our Minimap component has a useEffect that triggers on prop change.
+  // If we pass the same Map object reference, useEffect won't trigger unless we change something else.
+  // We can force re-render of Minimap by passing a tick counter or similar, OR
+  // Better: The Minimap component should use requestAnimationFrame loop itself to draw from the mutable map references.
+  // let's check Minimap implementation again. It uses useEffect.
+  // We should probably modify Minimap to use rAF loop if passed mutable maps.
+  // For now, let's pass a tick if we have one. We don't have a tick in App state.
+  // Let's rely on React updates for now. App updates on GameScene callbacks?
+  // GameScene callback `onStatsUpdate` (setPlayerState) happens on `state.listen`.
+  // Wait, `onStatsUpdate` is only called when `me.onChange` fires.
+  // Minimap needs all entities positions.
+  
+  // To make Minimap smooth, we really should have a `useFrame` or similar.
+  // Or just let Minimap run its own loop.
+  // I will update Minimap.tsx to run a loop.
+  // Implemented `Minimap.tsx` currently relies on props.
+  // I will leave it as is for now and see if I can pass a `tick` prop from a rAF in App?
+  // No, that would re-render App too much.
+  
+  // Let's modify App to just render Minimap, and in next step modify Minimap to use rAF.
 
   return (
     <ChakraProvider value={system}>
       {phase === "lobby" && <Lobby onJoin={handleJoin} connecting={connecting} />}
-      {phase === "game" && (
+      {phase === "game" && mapData && (
         <>
           <Flex pos="fixed" inset="0" bg="#08080c">
             <Box ref={gameContainerRef} flex="1" h="100%" minW="0" overflow="hidden" />
+            <Box pos="absolute" top="20px" right="20px" zIndex={90}>
+                {roomRef.current && (
+                    <Minimap 
+                        map={mapData} 
+                        players={roomRef.current.state?.players} 
+                        npcs={roomRef.current.state?.npcs} 
+                        currentPlayerId={roomRef.current.sessionId} 
+                    />
+                )}
+            </Box>
             <Sidebar
               state={playerState}
               onEquip={(itemId) => networkRef.current?.sendEquip(itemId)}
@@ -155,7 +285,11 @@ export function App() {
           </Flex>
           <DeathOverlay visible={showDeath} deathTime={deathTime} />
           <KillFeed entries={killFeed} />
-          <Console messages={consoleMessages} />
+          <Console 
+            messages={consoleMessages} 
+            isChatOpen={isChatOpen} 
+            onSendChat={handleSendChat} 
+          />
         </>
       )}
     </ChakraProvider>

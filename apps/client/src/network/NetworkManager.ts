@@ -98,6 +98,10 @@ export class NetworkManager {
     this.room?.send("drop_item", { itemId });
   }
 
+  sendChat(message: string) {
+    this.room?.send("chat", { message });
+  }
+
   sendPing() {
     this.room?.send("ping", {});
   }

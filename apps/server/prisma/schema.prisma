@@ -1,0 +1,52 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String?  // Optional for now, or just use username as auth
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  players   Player[]
+}
+
+model Player {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  
+  name      String
+  classType String
+  
+  x         Int      @default(0)
+  y         Int      @default(0)
+  hp        Int
+  maxHp     Int
+  mana      Int
+  maxMana   Int
+  
+  level     Int      @default(1)
+  xp        Int      @default(0)
+  maxXp     Int      @default(100)
+  
+  gold      Int      @default(0)
+  
+  // JSON fields for complex data
+  inventory String   @default("[]") // Store as JSON string or comma-separated IDs
+  equipment String   @default("{}") // Store as JSON string
+  
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, name]) // Prevent duplicate player names for same user? Or globally? Maybe globally just name @unique
+}
