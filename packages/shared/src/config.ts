@@ -249,6 +249,7 @@ export const SPELLS: Record<string, SpellDef> = {
     windupMs: 140,
     effect: "damage",
     key: "Q",
+    fxId: 3,
   },
   ice_bolt: {
     id: "ice_bolt",
@@ -354,6 +355,7 @@ export const SPELLS: Record<string, SpellDef> = {
     windupMs: 80,
     effect: "damage",
     key: "Q",
+    fxId: 2,
   },
   stealth: {
     id: "stealth",
@@ -398,6 +400,7 @@ export const SPELLS: Record<string, SpellDef> = {
     windupMs: 140,
     effect: "damage",
     key: "Q",
+    fxId: 23,
   },
   heal: {
     id: "heal",
