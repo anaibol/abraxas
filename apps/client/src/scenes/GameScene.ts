@@ -22,7 +22,7 @@ export type KillFeedCallback = (killer: string, victim: string) => void;
 export type ConsoleCallback = (text: string, color?: string) => void;
 
 export class GameScene extends Phaser.Scene {
-  private network: NetworkManager;
+  private network: NetworkManager<GameState>;
   private onStateUpdate: StateCallback;
   private onKillFeed?: KillFeedCallback;
   private onConsoleMessage?: ConsoleCallback;

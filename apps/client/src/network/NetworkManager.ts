@@ -19,9 +19,9 @@ function getServerUrl(): string {
   return "ws://localhost:2567";
 }
 
-export class NetworkManager {
+export class NetworkManager<SC = any> {
   private client: Client;
-  private room: Room | null = null;
+  private room: Room<SC> | null = null;
   private welcomeData: WelcomeData | null = null;
   private welcomeResolve: ((data: WelcomeData) => void) | null = null;
 
@@ -29,8 +29,8 @@ export class NetworkManager {
     this.client = new Client(serverUrl ?? getServerUrl());
   }
 
-  async connect(name: string, classType: ClassType): Promise<Room> {
-    this.room = await this.client.joinOrCreate("arena", { name, classType });
+  async connect(name: string, classType: ClassType): Promise<Room<SC>> {
+    this.room = await this.client.joinOrCreate<SC>("arena", { name, classType });
 
     const welcomePromise = new Promise<WelcomeData>((resolve) => {
       this.welcomeResolve = resolve;
@@ -48,7 +48,7 @@ export class NetworkManager {
     return this.room;
   }
 
-  getRoom(): Room {
+  getRoom(): Room<SC> {
     if (!this.room) throw new Error("Not connected");
     return this.room;
   }

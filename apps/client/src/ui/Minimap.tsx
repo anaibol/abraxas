@@ -9,10 +9,16 @@ import { TileMap } from "@abraxas/shared";
 import { Player } from "../../../server/src/schema/Player";
 import { Npc } from "../../../server/src/schema/Npc";
 
+// Colyseus MapSchema is similar to Map but with some differences.
+// We can use a simplified interface that covers what we use.
+interface SchemaMap<T> {
+    forEach: (cb: (value: T, key: string) => void) => void;
+}
+
 interface MinimapProps {
   map: TileMap;
-  players: Map<string, Player>; 
-  npcs: Map<string, Npc>;
+  players: SchemaMap<Player> | undefined; 
+  npcs: SchemaMap<Npc> | undefined;
   currentPlayerId: string;
 }
 
@@ -54,7 +60,7 @@ export const Minimap: React.FC<MinimapProps> = ({ map, players, npcs, currentPla
         // Draw NPCs
         if (npcs) {
             ctx.fillStyle = "red";
-            npcs.forEach((npc) => {
+            npcs.forEach((npc: Npc) => {
                 if (!npc.alive) return;
                 ctx.beginPath();
                 ctx.arc(npc.tileX * scaleX, npc.tileY * scaleY, 2, 0, Math.PI * 2);
@@ -64,7 +70,7 @@ export const Minimap: React.FC<MinimapProps> = ({ map, players, npcs, currentPla
 
         // Draw Players
         if (players) {
-            players.forEach((player) => {
+            players.forEach((player: Player) => {
                 if (!player.alive) return;
                 if (player.sessionId === currentPlayerId) {
                     ctx.fillStyle = "lime";

@@ -13,6 +13,8 @@ import { NetworkManager } from "../network/NetworkManager";
 import Phaser from "phaser";
 import { PreloaderScene } from "../scenes/PreloaderScene";
 import { GameScene } from "../scenes/GameScene";
+import { GameState } from "../../../server/src/schema/GameState";
+import { Room } from "colyseus.js";
 
 let killFeedId = 0;
 let consoleMsgId = 0;
@@ -38,11 +40,11 @@ export function App() {
 
   const gameContainerRef = useRef<HTMLDivElement>(null);
   const phaserGameRef = useRef<Phaser.Game | null>(null);
-  const networkRef = useRef<NetworkManager | null>(null);
+  const networkRef = useRef<NetworkManager<GameState> | null>(null);
   const wasAliveRef = useRef(true);
   
   // Ref to room state for minimap to access latest data without re-rendering App constantly
-  const roomRef = useRef<any>(null);
+  const roomRef = useRef<Room<GameState> | null>(null);
 
   // Track death/respawn
   useEffect(() => {
@@ -110,7 +112,7 @@ export function App() {
   const handleJoin = useCallback(async (name: string, classType: ClassType) => {
     setConnecting(true);
     try {
-      const network = new NetworkManager();
+      const network = new NetworkManager<GameState>();
       await network.connect(name, classType);
       networkRef.current = network;
       roomRef.current = network.getRoom();

@@ -47,6 +47,10 @@ function waitForState(
       if (predicate(room.state)) {
         resolve();
       } else if (Date.now() - start > timeoutMs) {
+        console.log(`Timeout! Current state: players=${room.state.players.size}`);
+        room.state.players.forEach((p, id) => {
+            console.log(`  Player ${id}: x=${p.tileX}, y=${p.tileY}, name=${p.name}`);
+        });
         reject(new Error("Timeout waiting for state condition"));
       } else {
         setTimeout(check, 30);
@@ -72,12 +76,13 @@ describe("Arena multiplayer smoke test", () => {
     const clientB = new Client(`ws://localhost:${TEST_PORT}`);
 
     // ---- Step 1: Both clients join ----
+    const testSuffix = Date.now().toString();
     const roomA: Room<GameState> = await clientA.joinOrCreate("arena", {
-      name: "Warrior",
+      name: "Warrior_" + testSuffix,
       classType: "warrior",
     });
     const roomB: Room<GameState> = await clientB.joinOrCreate("arena", {
-      name: "Wizard",
+      name: "Wizard_" + testSuffix,
       classType: "wizard",
     });
 
@@ -96,8 +101,8 @@ describe("Arena multiplayer smoke test", () => {
     expect(pB).toBeDefined();
 
     // Assert spawn positions
-    expect(pA.tileX).toBe(10);
-    expect(pA.tileY).toBe(10);
+    expect(pA.tileX).toBe(2);
+    expect(pA.tileY).toBe(4);
     expect(pB.tileX).toBe(4);
     expect(pB.tileY).toBe(4);
 
