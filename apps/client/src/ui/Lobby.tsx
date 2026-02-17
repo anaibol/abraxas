@@ -23,6 +23,8 @@ const P = {
   font: "'Friz Quadrata', Georgia, serif",
 };
 
+const CLASS_TYPES: readonly ClassType[] = ["warrior", "wizard", "archer", "assassin", "paladin", "druid"];
+
 const CLASS_INFO: Record<ClassType, { icon: string; color: string; desc: string }> = {
   warrior:  { icon: "\u2694\uFE0F", color: "#c41e3a", desc: "HP:180 STR:25" },
   wizard:   { icon: "\u2728",   color: "#3355cc", desc: "INT:28 Mana:150" },
@@ -76,7 +78,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
 
         <Text fontSize="10px" color={P.goldMuted} letterSpacing="2px" textTransform="uppercase" mb="2">Class</Text>
         <Grid templateColumns="repeat(3, 1fr)" gap="2.5" mb="7">
-          {(Object.keys(CLASS_INFO) as ClassType[]).map((cls) => {
+          {CLASS_TYPES.map((cls) => {
             const sel = classType === cls;
             const info = CLASS_INFO[cls];
             return (

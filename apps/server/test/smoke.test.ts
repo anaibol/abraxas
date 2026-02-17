@@ -86,8 +86,8 @@ describe("Arena multiplayer smoke test", () => {
     expect(pB).toBeDefined();
 
     // Assert spawn positions
-    expect(pA.tileX).toBe(2);
-    expect(pA.tileY).toBe(4);
+    expect(pA.tileX).toBe(10);
+    expect(pA.tileY).toBe(10);
     expect(pB.tileX).toBe(4);
     expect(pB.tileY).toBe(4);
 

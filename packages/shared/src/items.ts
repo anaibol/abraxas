@@ -396,5 +396,5 @@ export const ITEMS: Record<string, ItemDef> = {
   },
 };
 
-export const EQUIPMENT_SLOTS = ["weapon", "armor", "shield", "helmet", "ring"] as const;
-export type EquipmentSlot = (typeof EQUIPMENT_SLOTS)[number];
+export type EquipmentSlot = "weapon" | "armor" | "shield" | "helmet" | "ring";
+export const EQUIPMENT_SLOTS: readonly EquipmentSlot[] = ["weapon", "armor", "shield", "helmet", "ring"];

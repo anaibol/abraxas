@@ -94,10 +94,12 @@ export class RespawnSystem {
       if (def.slot !== "consumable") {
         const slotKey = EQUIP_SLOT_MAP[def.slot];
         if (slotKey && player[slotKey] === "") {
-          if (slotKey in player) {
-            (player as any)[slotKey] = itemId;
+            if (slotKey === "equipWeapon") player.equipWeapon = itemId;
+            else if (slotKey === "equipArmor") player.equipArmor = itemId;
+            else if (slotKey === "equipShield") player.equipShield = itemId;
+            else if (slotKey === "equipHelmet") player.equipHelmet = itemId;
+            else if (slotKey === "equipRing") player.equipRing = itemId;
             continue;
-          }
         }
       }
       // Otherwise add to inventory

@@ -138,8 +138,10 @@ export class ArenaRoom extends Room<GameState> {
     player.sessionId = client.sessionId;
     player.name = playerName;
     player.classType = classType;
+    console.log(`ArenaRoom DEBUG: dbPlayer stats x=${dbPlayer.x} y=${dbPlayer.y} facing=${dbPlayer.facing}`);
     player.tileX = dbPlayer.x;
     player.tileY = dbPlayer.y;
+    console.log(`ArenaRoom DEBUG: Assigned schema tileX=${player.tileX} tileY=${player.tileY}`);
     player.facing = (Direction as any)[dbPlayer.facing.toUpperCase()] ?? Direction.DOWN;
     player.hp = dbPlayer.hp;
     player.maxHp = dbPlayer.maxHp;
@@ -155,21 +157,27 @@ export class ArenaRoom extends Room<GameState> {
     player.maxXp = dbPlayer.maxXp;
 
     try {
-        const invData = JSON.parse(dbPlayer.inventory) as InventoryEntry[];
-        for (const item of invData) {
-            this.inventorySystem.addItem(player, item.itemId, item.quantity); 
+        const parsed = JSON.parse(dbPlayer.inventory);
+        if (Array.isArray(parsed)) {
+            for (const item of parsed) {
+                if (typeof item === "object" && item !== null && "itemId" in item && "quantity" in item) {
+                   this.inventorySystem.addItem(player, item.itemId, item.quantity); 
+                }
+            }
         }
     } catch (e) {
         console.error("Failed to load inventory", e);
     }
 
     try {
-        const equipData = JSON.parse(dbPlayer.equipment) as EquipmentData;
-        player.equipWeapon = equipData.weapon || "";
-        player.equipShield = equipData.shield || "";
-        player.equipHelmet = equipData.helmet || "";
-        player.equipArmor = equipData.armor || "";
-        player.equipRing = equipData.ring || "";
+        const parsed = JSON.parse(dbPlayer.equipment);
+        if (typeof parsed === "object" && parsed !== null) {
+            player.equipWeapon = String(parsed.weapon || "");
+            player.equipShield = String(parsed.shield || "");
+            player.equipHelmet = String(parsed.helmet || "");
+            player.equipArmor = String(parsed.armor || "");
+            player.equipRing = String(parsed.ring || "");
+        }
     } catch (e) {
         console.error("Failed to load equipment", e);
     }
@@ -272,9 +280,16 @@ export class ArenaRoom extends Room<GameState> {
 
     this.buffSystem.tick(
       now,
-      (sid) => this.findEntityBySessionId(sid) as Player,
+      (sid) => {
+        const entity = this.findEntityBySessionId(sid);
+        return entity instanceof Player ? entity : undefined;
+      },
       broadcast,
-      (player) => this.onEntityDeath(player as Player, ""),
+      (player) => {
+        if (player instanceof Player) {
+          this.onEntityDeath(player, "");
+        }
+      },
       this.roomId,
       this.state.tick
     );
@@ -307,7 +322,7 @@ export class ArenaRoom extends Room<GameState> {
       broadcast,
       this.state.tick,
       this.roomId,
-      (x, y) => this.findEntityAtTile(x, y),
+      (x: number, y: number) => this.findEntityAtTile(x, y),
       (sessionId) => {
         const c = this.clients.find((cl) => cl.sessionId === sessionId);
         return (type: string, data?: Record<string, unknown>) => c?.send(type, data ?? {});
@@ -394,12 +409,12 @@ export class ArenaRoom extends Room<GameState> {
   }
 
   private onEntityDeath(entity: Entity, killerSessionId: string) {
-    if ("classType" in entity) {
+    if (entity instanceof Player) {
         // It's a player
-        this.onPlayerDeath(entity as Player, killerSessionId);
+        this.onPlayerDeath(entity, killerSessionId);
     } else {
         // It's an NPC
-        this.onNpcDeath(entity as Npc, killerSessionId);
+        this.onNpcDeath(entity, killerSessionId);
     }
   }
 

@@ -94,9 +94,11 @@ export class InventorySystem {
     this.removeItem(player, itemId);
     
     // Safely assign to the specific equipment slot
-    if (slotKey in player) {
-      (player as any)[slotKey] = itemId; // Colyseus Schema requires some internal casting for dynamic write, but it's now guarded
-    }
+    if (slotKey === "equipWeapon") player.equipWeapon = itemId;
+    else if (slotKey === "equipArmor") player.equipArmor = itemId;
+    else if (slotKey === "equipShield") player.equipShield = itemId;
+    else if (slotKey === "equipHelmet") player.equipHelmet = itemId;
+    else if (slotKey === "equipRing") player.equipRing = itemId;
 
     // Apply stat bonuses
     this.recalcStats(player);
@@ -113,9 +115,11 @@ export class InventorySystem {
     // Try to add to inventory
     if (!this.addItem(player, itemId)) return false; // Inventory full
 
-    if (slotKey in player) {
-      (player as any)[slotKey] = "";
-    }
+    if (slotKey === "equipWeapon") player.equipWeapon = "";
+    else if (slotKey === "equipArmor") player.equipArmor = "";
+    else if (slotKey === "equipShield") player.equipShield = "";
+    else if (slotKey === "equipHelmet") player.equipHelmet = "";
+    else if (slotKey === "equipRing") player.equipRing = "";
     this.recalcStats(player);
     return true;
   }
@@ -182,9 +186,11 @@ export class InventorySystem {
       const itemId = player[slotKey];
       if (typeof itemId === "string" && itemId) {
         dropped.push({ itemId, quantity: 1 });
-        if (slotKey in player) {
-          (player as any)[slotKey] = "";
-        }
+        if (slotKey === "equipWeapon") player.equipWeapon = "";
+        else if (slotKey === "equipArmor") player.equipArmor = "";
+        else if (slotKey === "equipShield") player.equipShield = "";
+        else if (slotKey === "equipHelmet") player.equipHelmet = "";
+        else if (slotKey === "equipRing") player.equipRing = "";
       }
     }
 

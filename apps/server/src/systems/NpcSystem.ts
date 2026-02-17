@@ -36,8 +36,8 @@ export class NpcSystem {
   private spawnNpc(type: string, map: TileMap) {
     const npc = new Npc();
     npc.sessionId = crypto.randomUUID();
-    if (type in NPC_STATS) {
-      npc.type = type as NpcType;
+    if (type === "orc" || type === "skeleton" || type === "goblin" || type === "wolf") {
+      npc.type = type;
     }
     
     // Find valid spawn location
