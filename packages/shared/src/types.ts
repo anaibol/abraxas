@@ -44,6 +44,7 @@ export interface SpellDef {
   windupMs: number;
   effect: SpellEffect;
   key: string;
+  fxId: number;
   durationMs?: number;
   aoeRadius?: number;
   buffStat?: string;
@@ -60,23 +61,33 @@ export const DIRECTION_DELTA: Record<Direction, { dx: number; dy: number }> = {
   right: { dx:  1, dy:  0 },
 };
 
-export interface EntityState {
+export interface BaseEntityState {
   sessionId: string;
   tileX: number;
   tileY: number;
-  classType?: ClassType; // Players only
-  type?: NpcType;       // NPCs only
   name: string;
   facing: Direction;
   hp: number;
   maxHp: number;
   alive: boolean;
-  stealthed?: boolean;
-  stunned?: boolean;
-  equipWeapon?: string;
-  equipShield?: string;
-  equipHelmet?: string;
+  stealthed: boolean;
+  stunned: boolean;
 }
+
+export interface PlayerEntityState extends BaseEntityState {
+  classType: ClassType;
+  equipWeapon: string;
+  equipShield: string;
+  equipHelmet: string;
+  type?: never;
+}
+
+export interface NpcEntityState extends BaseEntityState {
+  type: NpcType;
+  classType?: never;
+}
+
+export type EntityState = PlayerEntityState | NpcEntityState;
 
 export type ServerMessages = {
   welcome: {
@@ -91,7 +102,7 @@ export type ServerMessages = {
   attack_start: { sessionId: string; facing: Direction };
   attack_hit: { sessionId: string; targetSessionId: string | null; dodged?: boolean };
   cast_start: { sessionId: string; spellId: string; targetTileX: number; targetTileY: number };
-  cast_hit: { sessionId: string; spellId: string; targetTileX: number; targetTileY: number; fxId?: number };
+  cast_hit: { sessionId: string; spellId: string; targetTileX: number; targetTileY: number; fxId: number };
   damage: { targetSessionId: string; amount: number; hpAfter: number; type: "physical" | "magic" };
   heal: { sessionId: string; amount: number; hpAfter: number };
   death: { sessionId: string; killerSessionId?: string };

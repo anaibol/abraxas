@@ -220,6 +220,7 @@ export const SPELLS: Record<string, SpellDef> = {
     durationMs: 8000,
     buffStat: "str",
     buffAmount: 10,
+    fxId: 16,
   },
   shield_bash: {
     id: "shield_bash",
@@ -233,6 +234,7 @@ export const SPELLS: Record<string, SpellDef> = {
     effect: "stun",
     key: "W",
     durationMs: 2000,
+    fxId: 17,
   },
 
   // ── Wizard ──
@@ -259,6 +261,7 @@ export const SPELLS: Record<string, SpellDef> = {
     windupMs: 120,
     effect: "damage",
     key: "W",
+    fxId: 22,
   },
   thunderstorm: {
     id: "thunderstorm",
@@ -272,6 +275,7 @@ export const SPELLS: Record<string, SpellDef> = {
     effect: "aoe",
     key: "E",
     aoeRadius: 2,
+    fxId: 14,
   },
   mana_shield: {
     id: "mana_shield",
@@ -287,6 +291,7 @@ export const SPELLS: Record<string, SpellDef> = {
     durationMs: 6000,
     buffStat: "armor",
     buffAmount: 15,
+    fxId: 18,
   },
 
   // ── Archer ──
@@ -302,6 +307,7 @@ export const SPELLS: Record<string, SpellDef> = {
     effect: "aoe",
     key: "Q",
     aoeRadius: 2,
+    fxId: 14,
   },
   poison_arrow: {
     id: "poison_arrow",
@@ -317,6 +323,7 @@ export const SPELLS: Record<string, SpellDef> = {
     dotDamage: 5,
     dotIntervalMs: 1000,
     dotDurationMs: 5000,
+    fxId: 19,
   },
   evasion: {
     id: "evasion",
@@ -332,6 +339,7 @@ export const SPELLS: Record<string, SpellDef> = {
     durationMs: 5000,
     buffStat: "agi",
     buffAmount: 15,
+    fxId: 18,
   },
 
   // ── Assassin ──
@@ -359,6 +367,7 @@ export const SPELLS: Record<string, SpellDef> = {
     effect: "stealth",
     key: "W",
     durationMs: 6000,
+    fxId: 10,
   },
   envenom: {
     id: "envenom",
@@ -374,6 +383,7 @@ export const SPELLS: Record<string, SpellDef> = {
     dotDamage: 6,
     dotIntervalMs: 1000,
     dotDurationMs: 6000,
+    fxId: 19,
   },
 
   // ── Paladin ──
@@ -400,6 +410,7 @@ export const SPELLS: Record<string, SpellDef> = {
     windupMs: 160,
     effect: "heal",
     key: "W",
+    fxId: 1,
   },
   divine_shield: {
     id: "divine_shield",
@@ -415,6 +426,7 @@ export const SPELLS: Record<string, SpellDef> = {
     durationMs: 4000,
     buffStat: "invulnerable",
     buffAmount: 1,
+    fxId: 34,
   },
 
   // ── Druid ──
@@ -430,6 +442,7 @@ export const SPELLS: Record<string, SpellDef> = {
     effect: "stun",
     key: "Q",
     durationMs: 2500,
+    fxId: 20,
   },
   rejuvenation: {
     id: "rejuvenation",
@@ -443,6 +456,7 @@ export const SPELLS: Record<string, SpellDef> = {
     effect: "heal",
     key: "W",
     durationMs: 6000,
+    fxId: 1,
   },
   lightning_bolt: {
     id: "lightning_bolt",
@@ -455,6 +469,7 @@ export const SPELLS: Record<string, SpellDef> = {
     windupMs: 120,
     effect: "damage",
     key: "E",
+    fxId: 14,
   },
   shapeshift: {
     id: "shapeshift",
@@ -470,5 +485,6 @@ export const SPELLS: Record<string, SpellDef> = {
     durationMs: 10000,
     buffStat: "str",
     buffAmount: 12,
+    fxId: 16,
   },
 };

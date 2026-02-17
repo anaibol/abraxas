@@ -66,7 +66,7 @@ export class GameEventHandler {
     }
 
     private onCastHit(data: ServerMessages["cast_hit"]) {
-        this.effectManager.playEffect(data.fxId ?? 1, data.targetTileX, data.targetTileY);
+        this.effectManager.playEffect(data.fxId, data.targetTileX, data.targetTileY);
     }
 
     private onDamage(data: ServerMessages["damage"]) {

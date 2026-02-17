@@ -498,6 +498,7 @@ export class CombatSystem {
       spellId: windup.spellId ?? "",
       targetTileX: windup.targetTileX,
       targetTileY: windup.targetTileY,
+      fxId: spell.fxId,
     });
 
     const casterInt = attacker.intStat + this.buffSystem.getBuffBonus(attacker.sessionId, "int", now);
