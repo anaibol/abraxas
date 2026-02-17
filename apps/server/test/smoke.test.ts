@@ -2,7 +2,7 @@ import { describe, test, expect, beforeAll, afterAll } from "bun:test";
 import { Client, Room } from "colyseus.js";
 import { resolve } from "path";
 import { createGameServer } from "../src/server";
-import type { TileMap } from "@abraxas/shared";
+import { TileMap, Direction } from "@abraxas/shared";
 
 const TEST_PORT = 2568;
 let server: any;
@@ -97,31 +97,31 @@ describe("Arena multiplayer smoke test", () => {
     expect(pB.intStat).toBeGreaterThan(0);
 
     // ---- Step 2: Move A right -> (3,4) ----
-    roomA.send("move", { direction: "right" });
+    roomA.send("move", { direction: Direction.RIGHT });
     await waitForState(roomA, () => getPlayer(roomA, roomA.sessionId)?.tileX === 3);
 
     expect(getPlayer(roomA, roomA.sessionId).tileX).toBe(3);
     expect(getPlayer(roomA, roomA.sessionId).tileY).toBe(4);
-    expect(getPlayer(roomA, roomA.sessionId).facing).toBe("right");
+    expect(getPlayer(roomA, roomA.sessionId).facing).toBe(Direction.RIGHT);
 
     // ---- Step 3: Move A up -> (3,3) is blocked ----
     await wait(300);
-    roomA.send("move", { direction: "up" });
+    roomA.send("move", { direction: Direction.UP });
     await wait(200);
 
     // Position unchanged, facing updated
     expect(getPlayer(roomA, roomA.sessionId).tileX).toBe(3);
     expect(getPlayer(roomA, roomA.sessionId).tileY).toBe(4);
-    expect(getPlayer(roomA, roomA.sessionId).facing).toBe("up");
+    expect(getPlayer(roomA, roomA.sessionId).facing).toBe(Direction.UP);
 
     // ---- Step 4: Face A right (toward B) by attempting move into occupied tile ----
     await wait(300);
-    roomA.send("move", { direction: "right" });
+    roomA.send("move", { direction: Direction.RIGHT });
     await wait(200);
 
     expect(getPlayer(roomA, roomA.sessionId).tileX).toBe(3);
     expect(getPlayer(roomA, roomA.sessionId).tileY).toBe(4);
-    expect(getPlayer(roomA, roomA.sessionId).facing).toBe("right");
+    expect(getPlayer(roomA, roomA.sessionId).facing).toBe(Direction.RIGHT);
 
     // ---- Step 5: A attacks with melee (CTRL) -> hits B at (4,4) ----
     const initialHpB = getPlayer(roomA, roomB.sessionId).hp;

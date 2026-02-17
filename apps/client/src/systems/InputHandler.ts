@@ -1,13 +1,12 @@
 import Phaser from "phaser";
 import type { NetworkManager } from "../network/NetworkManager";
-import type { Direction } from "@abraxas/shared";
-import { CLASS_STATS, SPELLS } from "@abraxas/shared";
+import { Direction, CLASS_STATS, SPELLS } from "@abraxas/shared";
 
 const KEY_TO_DIRECTION: Record<number, Direction> = {
-  [Phaser.Input.Keyboard.KeyCodes.UP]: "up",
-  [Phaser.Input.Keyboard.KeyCodes.DOWN]: "down",
-  [Phaser.Input.Keyboard.KeyCodes.LEFT]: "left",
-  [Phaser.Input.Keyboard.KeyCodes.RIGHT]: "right",
+  [Phaser.Input.Keyboard.KeyCodes.UP]: Direction.UP,
+  [Phaser.Input.Keyboard.KeyCodes.DOWN]: Direction.DOWN,
+  [Phaser.Input.Keyboard.KeyCodes.LEFT]: Direction.LEFT,
+  [Phaser.Input.Keyboard.KeyCodes.RIGHT]: Direction.RIGHT,
 };
 
 const SPELL_KEY_CODES: Record<string, number> = {

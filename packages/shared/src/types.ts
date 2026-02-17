@@ -59,6 +59,20 @@ export interface SpellDef {
   dotDurationMs?: number;
 }
 
+export interface InventoryEntry {
+  itemId: string;
+  quantity: number;
+  slotIndex: number;
+}
+
+export interface EquipmentData {
+  weapon: string;
+  shield: string;
+  helmet: string;
+  armor: string;
+  ring: string;
+}
+
 export const DIRECTION_DELTA: Record<number, { dx: number; dy: number }> = {
   [Direction.UP]:    { dx:  0, dy: -1 },
   [Direction.DOWN]:  { dx:  0, dy:  1 },

@@ -10,7 +10,7 @@ import { InventorySystem } from "../systems/InventorySystem";
 import { RespawnSystem } from "../systems/RespawnSystem";
 import { NpcSystem } from "../systems/NpcSystem";
 import { CLASS_STATS, TICK_MS, STARTING_EQUIPMENT, ITEMS, KILL_GOLD_BONUS, NPC_STATS, EXP_TABLE, NPC_DROPS } from "@abraxas/shared";
-import { TileMap, Direction, ServerMessages, ClassType, JoinOptions, EquipmentSlot } from "@abraxas/shared";
+import { TileMap, Direction, ServerMessages, ClassType, JoinOptions, EquipmentSlot, InventoryEntry, EquipmentData } from "@abraxas/shared";
 import { logger } from "../logger";
 
 import { PersistenceService } from "../services/PersistenceService";
@@ -154,7 +154,7 @@ export class ArenaRoom extends Room<GameState> {
     player.maxXp = dbPlayer.maxXp;
 
     try {
-        const invData = JSON.parse(dbPlayer.inventory);
+        const invData = JSON.parse(dbPlayer.inventory) as InventoryEntry[];
         for (const item of invData) {
             this.inventorySystem.addItem(player, item.itemId, item.quantity); 
         }
@@ -163,7 +163,7 @@ export class ArenaRoom extends Room<GameState> {
     }
 
     try {
-        const equipData = JSON.parse(dbPlayer.equipment);
+        const equipData = JSON.parse(dbPlayer.equipment) as EquipmentData;
         player.equipWeapon = equipData.weapon || "";
         player.equipShield = equipData.shield || "";
         player.equipHelmet = equipData.helmet || "";
@@ -214,12 +214,12 @@ export class ArenaRoom extends Room<GameState> {
   async onLeave(client: Client) {
     const player = this.state.players.get(client.sessionId);
     if (player) {
-        const inventory: { itemId: string; quantity: number; slotIndex: number }[] = [];
+        const inventory: InventoryEntry[] = [];
         player.inventory.forEach(item => {
             inventory.push({ itemId: item.itemId, quantity: item.quantity, slotIndex: item.slotIndex });
         });
         
-        const equipment = {
+        const equipment: EquipmentData = {
             weapon: player.equipWeapon,
             shield: player.equipShield,
             helmet: player.equipHelmet,
@@ -242,8 +242,8 @@ export class ArenaRoom extends Room<GameState> {
             level: player.level,
             xp: player.xp,
             maxXp: player.maxXp,
-            inventory: JSON.stringify(inventory),
-            equipment: JSON.stringify(equipment),
+            inventory,
+            equipment,
             classType: player.classType
         };
 

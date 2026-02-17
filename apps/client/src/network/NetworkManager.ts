@@ -1,5 +1,5 @@
 import { Client, Room } from "colyseus.js";
-import type { ClassType } from "@abraxas/shared";
+import type { ClassType, Direction, EquipmentSlot } from "@abraxas/shared";
 
 export interface WelcomeData {
   sessionId: string;
@@ -62,7 +62,7 @@ export class NetworkManager {
     return this.room?.sessionId ?? "";
   }
 
-  sendMove(direction: string) {
+  sendMove(direction: Direction) {
     this.room?.send("move", { direction });
   }
 
@@ -86,7 +86,7 @@ export class NetworkManager {
     this.room?.send("equip", { itemId });
   }
 
-  sendUnequip(slot: string) {
+  sendUnequip(slot: EquipmentSlot) {
     this.room?.send("unequip", { slot });
   }
 

@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaLibSql } from "@prisma/adapter-libsql";
-import { CLASS_STATS, STARTING_EQUIPMENT, ITEMS, NPC_STATS, EXP_TABLE, NPC_DROPS } from "@abraxas/shared";
-import type { ClassStats } from "@abraxas/shared";
+import { CLASS_STATS, STARTING_EQUIPMENT, ITEMS, NPC_STATS, EXP_TABLE, NPC_DROPS, Direction } from "@abraxas/shared";
+import type { ClassStats, InventoryEntry, EquipmentData } from "@abraxas/shared";
 import "dotenv/config";
 import { resolve } from "path";
 
@@ -77,8 +77,8 @@ export class PersistenceService {
                  agi: stats.agi,
                  intStat: stats.int,
                  facing: "down",
-                 inventory: "[]",
-                 equipment: "{}"
+                 inventory: JSON.stringify([]),
+                 equipment: JSON.stringify({})
              }
          });
     }
@@ -87,9 +87,9 @@ export class PersistenceService {
         name: string, 
         data: {
             x: number, y: number, hp: number, maxHp: number, mana: number, maxMana: number,
-            str: number, agi: number, intStat: number, facing: string,
+            str: number, agi: number, intStat: number, facing: Direction,
             gold: number, level: number, xp: number, maxXp: number,
-            inventory: string, equipment: string, classType: string
+            inventory: InventoryEntry[], equipment: EquipmentData, classType: string
         }
     ) {
         try {

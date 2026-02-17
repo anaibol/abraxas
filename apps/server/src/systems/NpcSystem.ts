@@ -1,4 +1,4 @@
-import { ClassStats, NPC_STATS, TileMap } from "@abraxas/shared";
+import { ClassStats, NPC_STATS, TileMap, Direction, NpcType } from "@abraxas/shared";
 import { Npc } from "../schema/Npc";
 import { Player } from "../schema/Player";
 import { GameState } from "../schema/GameState";
@@ -32,7 +32,7 @@ export class NpcSystem {
   private spawnNpc(type: string, map: TileMap) {
     const npc = new Npc();
     npc.sessionId = crypto.randomUUID();
-    npc.type = type;
+    npc.type = type as NpcType;
     
     // Find valid spawn location
     let attempts = 0;
@@ -123,10 +123,10 @@ export class NpcSystem {
                 if (target.tileY > npc.tileY) dy = 1;
                 else if (target.tileY < npc.tileY) dy = -1;
                 
-                if (dx === 1) npc.facing = "right";
-                else if (dx === -1) npc.facing = "left";
-                else if (dy === 1) npc.facing = "down";
-                else if (dy === -1) npc.facing = "up";
+                if (dx === 1) npc.facing = Direction.RIGHT;
+                else if (dx === -1) npc.facing = Direction.LEFT;
+                else if (dy === 1) npc.facing = Direction.DOWN;
+                else if (dy === -1) npc.facing = Direction.UP;
 
                 // Attack
                 this.combatSystem.tryAttack(
@@ -150,14 +150,14 @@ export class NpcSystem {
                 else if (target.tileY < npc.tileY) dy = -1;
 
                 // Prefer axis with larger distance
-                let moveDir: "up" | "down" | "left" | "right" | null = null;
+                let moveDir: Direction | null = null;
                 if (Math.abs(target.tileX - npc.tileX) > Math.abs(target.tileY - npc.tileY)) {
                      // Try X first
-                     if (dx > 0) moveDir = "right";
-                     else if (dx < 0) moveDir = "left";
+                     if (dx > 0) moveDir = Direction.RIGHT;
+                     else if (dx < 0) moveDir = Direction.LEFT;
                 } else {
-                     if (dy > 0) moveDir = "down";
-                     else if (dy < 0) moveDir = "up";
+                     if (dy > 0) moveDir = Direction.DOWN;
+                     else if (dy < 0) moveDir = Direction.UP;
                 }
 
                 if (moveDir) {
