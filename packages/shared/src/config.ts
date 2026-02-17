@@ -146,8 +146,63 @@ export const NPC_STATS: Record<string, ClassStats> = {
     meleeCooldownMs: 600,
     meleeWindupMs: 120,
     spells: [],
+    expReward: 60,
   },
 };
+
+export const EXP_TABLE = [
+    0,      // Level 1
+    100,    // Level 2
+    250,    // Level 3
+    450,    // Level 4
+    700,    // Level 5
+    1000,   // Level 6
+    1350,   // Level 7
+    1750,   // Level 8
+    2200,   // Level 9
+    2700,   // Level 10
+    3250,   // Level 11
+    3850,   // Level 12
+    4500,   // Level 13
+    5200,   // Level 14
+    5950,   // Level 15
+    6750,   // Level 16
+    7600,   // Level 17
+    8500,   // Level 18
+    9450,   // Level 19
+    10450,  // Level 20
+];
+
+export interface DropTableEntry {
+    itemId: string;
+    chance: number; // 0-1
+    min: number;
+    max: number;
+}
+
+export const NPC_DROPS: Record<string, DropTableEntry[]> = {
+    orc: [
+        { itemId: "potion_hp_medium", chance: 0.1, min: 1, max: 2 },
+        { itemId: "potion_mana_medium", chance: 0.1, min: 1, max: 2 },
+        { itemId: "sword_iron", chance: 0.05, min: 1, max: 1 },
+        { itemId: "armor_chain", chance: 0.02, min: 1, max: 1 },
+        { itemId: "gold", chance: 0.5, min: 10, max: 30 },
+    ],
+    skeleton: [
+        { itemId: "potion_hp_small", chance: 0.2, min: 1, max: 1 },
+        { itemId: "axe_bronze", chance: 0.05, min: 1, max: 1 },
+        { itemId: "gold", chance: 0.3, min: 5, max: 15 },
+    ],
+    goblin: [
+        { itemId: "potion_hp_small", chance: 0.15, min: 1, max: 1 },
+        { itemId: "dagger_iron", chance: 0.05, min: 1, max: 1 },
+        { itemId: "gold", chance: 0.6, min: 10, max: 20 },
+    ],
+    wolf: [
+        { itemId: "gold", chance: 0.2, min: 2, max: 8 },
+    ],
+};
+
 
 export const SPELLS: Record<string, SpellDef> = {
   // ── Warrior ──

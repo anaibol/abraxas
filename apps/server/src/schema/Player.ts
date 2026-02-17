@@ -20,6 +20,11 @@ export class Player extends Schema {
   @type("boolean") stealthed: boolean = false;
   @type("boolean") stunned: boolean = false;
 
+  // Leveling
+  @type("uint8") level: number = 1;
+  @type("uint32") xp: number = 0;
+  @type("uint32") maxXp: number = 100;
+
   // Inventory: up to 24 slots
   @type([InventoryItem]) inventory = new ArraySchema<InventoryItem>();
 

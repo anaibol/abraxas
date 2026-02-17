@@ -9,7 +9,7 @@ import { BuffSystem } from "../systems/BuffSystem";
 import { InventorySystem } from "../systems/InventorySystem";
 import { RespawnSystem } from "../systems/RespawnSystem";
 import { NpcSystem } from "../systems/NpcSystem";
-import { CLASS_STATS, TICK_MS, STARTING_EQUIPMENT, ITEMS, KILL_GOLD_BONUS } from "@ao5/shared";
+import { CLASS_STATS, TICK_MS, STARTING_EQUIPMENT, ITEMS, KILL_GOLD_BONUS, NPC_STATS, EXP_TABLE, NPC_DROPS } from "@ao5/shared";
 import type { TileMap, Direction, JoinOptions, EquipmentSlot } from "@ao5/shared";
 import { logger } from "../logger";
 
@@ -447,16 +447,106 @@ export class ArenaRoom extends Room<GameState> {
   private onNpcDeath(npc: Npc, killerSessionId: string) {
       this.npcSystem.handleDeath(npc);
 
-      // Award exp/gold to killer? For now just log.
       if (killerSessionId) {
-          // maybe give gold?
           const killer = this.state.players.get(killerSessionId);
-          if (killer) {
-              killer.gold += 10; // Fixed gold/exp for now, or fetch from config
+          if (killer && killer.alive) {
+             this.handleNpcKillRewards(killer, npc);
           }
       }
 
       this.broadcast("death", { sessionId: npc.sessionId, killerSessionId });
+  }
+
+  private handleNpcKillRewards(player: Player, npc: Npc) {
+      // 1. Experience & Leveling
+      const stats = NPC_STATS[npc.type];
+      if (stats && stats.expReward) {
+          player.xp += stats.expReward;
+          // Level up check
+          while (player.xp >= player.maxXp) {
+              player.xp -= player.maxXp;
+              player.level++;
+              
+              // Increase Max XP for next level (simple curve: current * 1.5 or look up table)
+              // We have EXP_TABLE in config.
+              // EXP_TABLE[level] is exp needed to reach level+1 ? Or total exp?
+              // Let's assume EXP_TABLE[level] is the XP needed to go from level to level+1.
+              // But config says: 0, 100, 250...
+              // So level 1 needs 100 xp to go to level 2.
+              // We should look up EXP_TABLE[player.level] if it exists.
+              
+              const nextLevelEntry = EXP_TABLE[player.level]; 
+              if (nextLevelEntry !== undefined) {
+                  player.maxXp = nextLevelEntry;
+              } else {
+                  // Fallback if table runs out
+                  player.maxXp = Math.floor(player.maxXp * 1.2);
+              }
+
+              // Stat Increases (simple +5 to all + recovery)
+              const classStats = CLASS_STATS[player.classType];
+              // Maybe scale stats? For now just flat bonus + full heal
+              player.maxHp += 20;
+              player.maxMana += 10;
+              player.str += 2;
+              player.agi += 2;
+              player.intStat += 2;
+
+              player.hp = player.maxHp;
+              player.mana = player.maxMana;
+
+              this.broadcast("level_up", {
+                  sessionId: player.sessionId,
+                  level: player.level,
+              });
+              
+              const client = this.clients.find(c => c.sessionId === player.sessionId);
+              if (client) {
+                  client.send("notification", { message: `Level Up! You are now level ${player.level}!` });
+              }
+          }
+      }
+
+      // 2. Drops (Diablo Style)
+      // Look up drop table
+      const dropTable = NPC_DROPS[npc.type];
+      if (dropTable) {
+          for (const entry of dropTable) {
+              if (Math.random() < entry.chance) {
+                  const quantity = Math.floor(Math.random() * (entry.max - entry.min + 1)) + entry.min;
+                  
+                  // Spread drops slightly
+                  const offsetX = (Math.random() - 0.5) * 1.5; 
+                  const offsetY = (Math.random() - 0.5) * 1.5;
+                  
+                  // If it's gold, spawn gold drop
+                  if (entry.itemId === "gold") {
+                       this.drops.spawnGoldDrop(
+                          this.state.drops,
+                          npc.tileX + offsetX, // Note: tileX is int, but DropSystem might handle float positions? 
+                          // DropSystemSchema uses x: number (float ok).
+                          // Map collision check might be needed if drops block or need to be on valid tile.
+                          // Usually drops just sit on top.
+                          npc.tileY + offsetY,
+                          quantity,
+                          this.roomId,
+                          this.state.tick
+                      );
+                  } else {
+                      // Item Drop
+                      this.drops.spawnItemDrop(
+                          this.state.drops,
+                          npc.tileX + offsetX,
+                          npc.tileY + offsetY,
+                          entry.itemId,
+                          quantity,
+                          this.roomId,
+                          this.state.tick
+                      );
+                  }
+              }
+          }
+      }
   }
 
   private onPlayerDeath(player: Player, killerSessionId: string) {
@@ -496,32 +586,23 @@ export class ArenaRoom extends Room<GameState> {
     }
 
     // Broadcast kill feed
-    this.broadcast("kill_feed", {
-      killerSessionId,
-      victimSessionId: player.sessionId,
-      killerName: killerSessionId ? this.findEntityBySessionId(killerSessionId)?.type ?? "" : "", // Use type for NPC name if NPC killed player?
-      victimName: player.name,
-    });
-    // Wait, findEntityBySessionId handles entity. if killer is NPC, it has no name, just type.
-    // Let's refine killerName logic:
     let killerName = "";
     if (killerSessionId) {
         const killer = this.findEntityBySessionId(killerSessionId);
         if (killer) {
-            if ("name" in killer) killerName = killer.name;
-            else killerName = killer.type;
+            if ("classType" in killer) { // It's a Player
+                killerName = killer.name;
+            } else { // It's an NPC
+                killerName = killer.type;
+            }
         }
     }
 
-    // Since I'm in existing method, i need to be careful with replacment string scope.
-    // I'll leave the broadcast as it was mostly, but update killerName resolution.
-    // Actually I'm replacing the whole file so I can write new logic.
-
     this.broadcast("kill_feed", {
-        killerSessionId,
-        victimSessionId: player.sessionId,
-        killerName,
-        victimName: player.name,
+      killerSessionId,
+      victimSessionId: player.sessionId,
+      killerName,
+      victimName: player.name,
     });
 
     // Queue respawn

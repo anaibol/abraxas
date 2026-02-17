@@ -26,6 +26,7 @@ export interface ClassStats {
   meleeCooldownMs: number;
   meleeWindupMs: number;
   spells: string[];
+  expReward?: number;
 }
 
 export type EntityStats = ClassStats;

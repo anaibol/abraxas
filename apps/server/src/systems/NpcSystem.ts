@@ -1,10 +1,9 @@
-import { Action, ClassStats, NPC_STATS, TileMap } from "@ao5/shared";
+import { ClassStats, NPC_STATS, TileMap } from "@ao5/shared";
 import { Npc } from "../schema/Npc";
 import { Player } from "../schema/Player";
 import { GameState } from "../schema/GameState";
 import { MovementSystem } from "./MovementSystem";
 import { CombatSystem } from "./CombatSystem";
-import { v4 as uuidv4 } from "uuid";
 import { logger } from "../logger";
 
 const AGGRO_RANGE = 8;
@@ -32,7 +31,7 @@ export class NpcSystem {
 
   private spawnNpc(type: string, map: TileMap) {
     const npc = new Npc();
-    npc.sessionId = uuidv4();
+    npc.sessionId = crypto.randomUUID();
     npc.type = type;
     
     // Find valid spawn location
@@ -58,7 +57,12 @@ export class NpcSystem {
     npc.alive = true;
 
     this.state.npcs.set(npc.sessionId, npc);
-    logger.info(`Spawned NPC ${type} at ${npc.tileX},${npc.tileY}`);
+    logger.info({
+        intent: "spawn_npc",
+        type: type,
+        x: npc.tileX,
+        y: npc.tileY
+    });
   }
 
   tick(
