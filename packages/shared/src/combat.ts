@@ -1,4 +1,4 @@
-/** Stat-based combat damage formulas for AO5 Arena */
+/** Stat-based combat damage formulas for Abraxas Arena */
 
 /** Melee physical damage: STR scaling, armor reduction, AGI dodge chance */
 export function calcMeleeDamage(

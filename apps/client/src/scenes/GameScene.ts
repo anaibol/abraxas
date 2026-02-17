@@ -12,11 +12,13 @@ import type { PlayerState } from "../ui/Sidebar";
 
 export type StateCallback = (state: PlayerState) => void;
 export type KillFeedCallback = (killer: string, victim: string) => void;
+export type ConsoleCallback = (text: string, color?: string) => void;
 
 export class GameScene extends Phaser.Scene {
   private network: NetworkManager;
   private onStateUpdate: StateCallback;
   private onKillFeed?: KillFeedCallback;
+  private onConsoleMessage?: ConsoleCallback;
   private room!: Room;
   private welcome!: WelcomeData;
   private resolver!: AoGrhResolver;
@@ -39,11 +41,17 @@ export class GameScene extends Phaser.Scene {
 
   private debugText?: Phaser.GameObjects.Text;
 
-  constructor(network: NetworkManager, onStateUpdate: StateCallback, onKillFeed?: KillFeedCallback) {
+  constructor(
+    network: NetworkManager,
+    onStateUpdate: StateCallback,
+    onKillFeed?: KillFeedCallback,
+    onConsoleMessage?: ConsoleCallback
+  ) {
     super({ key: "GameScene" });
     this.network = network;
     this.onStateUpdate = onStateUpdate;
     this.onKillFeed = onKillFeed;
+    this.onConsoleMessage = onConsoleMessage;
   }
 
   create() {
@@ -474,6 +482,9 @@ export class GameScene extends Phaser.Scene {
       this.time.delayedCall(100, () => {
         sprite.container.setAlpha(1);
       });
+      if (data.sessionId === this.room.sessionId) {
+        this.onConsoleMessage?.("You attacked!", "#cccccc");
+      }
     }
     this.soundManager.playAttack();
   }
@@ -494,6 +505,9 @@ export class GameScene extends Phaser.Scene {
       this.time.delayedCall(140, () => {
         sprite.container.setAlpha(1);
       });
+      if (data.sessionId === this.room.sessionId) {
+        this.onConsoleMessage?.("You cast a spell!", "#aaaaff");
+      }
     }
     this.soundManager.playSpell();
   }
@@ -552,6 +566,15 @@ export class GameScene extends Phaser.Scene {
         text,
         expireAt: this.time.now + 1200,
       });
+
+      // Console log
+      if (data.targetSessionId === this.room.sessionId) {
+        // I took damage
+        this.onConsoleMessage?.(`You took ${data.amount} damage!`, "#ff4444");
+      } else if (data.sessionId === this.room.sessionId) { // Assuming data.sessionId is source
+        // I dealt damage (if we had source info here easily)
+        // For now, let's just log if I am the source, or if I am the target
+      }
     }
     this.soundManager.playHit();
   }
@@ -563,6 +586,7 @@ export class GameScene extends Phaser.Scene {
     }
     if (data.sessionId === this.room.sessionId) {
       this.inputHandler.cancelTargeting();
+      this.onConsoleMessage?.("You have died!", "#ff0000");
     }
     this.soundManager.playDeath();
   }
@@ -574,6 +598,9 @@ export class GameScene extends Phaser.Scene {
       sprite.setTilePosition(data.tileX, data.tileY);
       sprite.renderX = data.tileX * TILE_SIZE + TILE_SIZE / 2;
       sprite.renderY = data.tileY * TILE_SIZE + TILE_SIZE / 2;
+    }
+    if (data.sessionId === this.room.sessionId) {
+        this.onConsoleMessage?.("You have respawned!", "#ffffff");
     }
   }
 
@@ -594,6 +621,10 @@ export class GameScene extends Phaser.Scene {
       text.setOrigin(0.5);
       text.setDepth(20);
       this.damageTexts.push({ text, expireAt: this.time.now + 1200 });
+
+      if (data.sessionId === this.room.sessionId) {
+        this.onConsoleMessage?.(`You healed for ${data.amount}!`, "#33cc33");
+      }
     }
     this.soundManager.playHeal();
   }
@@ -635,6 +666,10 @@ export class GameScene extends Phaser.Scene {
       text.setOrigin(0.5);
       text.setDepth(20);
       this.damageTexts.push({ text, expireAt: this.time.now + 1500 });
+      
+      if (data.targetSessionId === this.room.sessionId) {
+         this.onConsoleMessage?.("You are stunned!", "#cccc33");
+      }
     }
   }
 

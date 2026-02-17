@@ -9,6 +9,13 @@ export const CLASS_APPEARANCE: Record<string, { bodyId: number; headId: number }
   druid:    { bodyId: 55, headId: 6 },
 };
 
+export const NPC_APPEARANCE: Record<string, { bodyId: number; headId: number }> = {
+  orc:      { bodyId: 30, headId: 0 }, // Using 0 for headId if body includes head or just to separate
+  skeleton: { bodyId: 35, headId: 0 },
+  goblin:   { bodyId: 45, headId: 0 }, // Reusing assassin body for now if no specific goblin
+  wolf:     { bodyId: 65, headId: 0 },
+};
+
 export const TICK_RATE = 20;
 export const TICK_MS = 1000 / TICK_RATE;
 export const TILE_SIZE = 32;
@@ -88,6 +95,57 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     meleeCooldownMs: 550,
     meleeWindupMs: 120,
     spells: ["entangle", "rejuvenation", "lightning_bolt", "shapeshift"],
+  },
+};
+
+export const NPC_STATS: Record<string, ClassStats> = {
+  orc: {
+    hp: 120,
+    mana: 0,
+    str: 18,
+    agi: 10,
+    int: 5,
+    speedTilesPerSecond: 5,
+    meleeRange: 1,
+    meleeCooldownMs: 800,
+    meleeWindupMs: 200,
+    spells: [],
+  },
+  skeleton: {
+    hp: 60,
+    mana: 0,
+    str: 12,
+    agi: 15,
+    int: 5,
+    speedTilesPerSecond: 6,
+    meleeRange: 1,
+    meleeCooldownMs: 600,
+    meleeWindupMs: 150,
+    spells: [],
+  },
+  goblin: {
+    hp: 40,
+    mana: 0,
+    str: 8,
+    agi: 18,
+    int: 5,
+    speedTilesPerSecond: 7,
+    meleeRange: 1,
+    meleeCooldownMs: 500,
+    meleeWindupMs: 100,
+    spells: [],
+  },
+  wolf: {
+    hp: 80,
+    mana: 0,
+    str: 15,
+    agi: 20,
+    int: 5,
+    speedTilesPerSecond: 8,
+    meleeRange: 1,
+    meleeCooldownMs: 600,
+    meleeWindupMs: 120,
+    spells: [],
   },
 };
 

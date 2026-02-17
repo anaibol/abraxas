@@ -19,7 +19,7 @@ const staticDir = process.env.STATIC_DIR
 
 await createGameServer({ port, map, staticDir });
 
-console.log(`[AO5] Server listening on ws://localhost:${port}`);
+console.log(`[Abraxas] Server listening on ws://localhost:${port}`);
 if (staticDir) {
-  console.log(`[AO5] Serving static files from ${staticDir}`);
+  console.log(`[Abraxas] Serving static files from ${staticDir}`);
 }

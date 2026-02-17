@@ -49,7 +49,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
         fontFamily={P.font}
       >
         <Text textAlign="center" fontSize="32px" fontWeight="700" color={P.gold} letterSpacing="6px" textShadow="0 0 24px rgba(180,140,50,0.35)" mb="0.5">
-          AO5
+          Abraxas
         </Text>
         <Text textAlign="center" fontSize="11px" color={P.goldDark} letterSpacing="8px" textTransform="uppercase" mb="7">
           Arena

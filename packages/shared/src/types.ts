@@ -1,5 +1,6 @@
 export type Direction = "up" | "down" | "left" | "right";
 export type ClassType = "warrior" | "wizard" | "archer" | "assassin" | "paladin" | "druid";
+export type NpcType = "orc" | "skeleton" | "goblin" | "wolf";
 
 export interface JoinOptions {
   name: string;
@@ -26,6 +27,8 @@ export interface ClassStats {
   meleeWindupMs: number;
   spells: string[];
 }
+
+export type EntityStats = ClassStats;
 
 export type SpellEffect = "damage" | "heal" | "dot" | "buff" | "stun" | "stealth" | "aoe";
 

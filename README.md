@@ -1,4 +1,4 @@
-# AO5 Arena
+# Abraxas Arena
 
 A 2D tile-based PvP multiplayer game inspired by classic Argentum Online.
 
@@ -43,6 +43,7 @@ bun test
 ```
 
 The smoke test:
+
 1. Starts a server with `arena.test.json` (10x10 deterministic map)
 2. Connects a Warrior (Client A) and Wizard (Client B)
 3. Tests movement (including blocked/occupied tiles)
@@ -54,24 +55,24 @@ The smoke test:
 
 ### Environment Variables
 
-| Variable     | Default  | Description                        |
-|-------------|----------|------------------------------------|
-| `PORT`      | `2567`   | Server WebSocket port              |
-| `MAP`       | `arena`  | Map name (loads from shared/maps/) |
-| `LOG_LEVEL` | `info`   | `debug`, `info`, `warn`, `error`   |
-| `LOG_FORMAT`| `json`   | `json` or `text`                   |
+| Variable     | Default | Description                        |
+| ------------ | ------- | ---------------------------------- |
+| `PORT`       | `2567`  | Server WebSocket port              |
+| `MAP`        | `arena` | Map name (loads from shared/maps/) |
+| `LOG_LEVEL`  | `info`  | `debug`, `info`, `warn`, `error`   |
+| `LOG_FORMAT` | `json`  | `json` or `text`                   |
 
 ### Tick Tuning
 
 All timing values are in `packages/shared/src/config.ts`:
 
-| Constant           | Value | Description                  |
-|-------------------|-------|------------------------------|
-| `TICK_RATE`       | 20    | Server ticks per second      |
-| `TICK_MS`         | 50    | Milliseconds per tick        |
-| `GCD_MS`          | 120   | Global cooldown between actions |
-| `BUFFER_WINDOW_MS`| 200   | Input buffer expiration      |
-| `TILE_SIZE`       | 32    | Pixels per tile              |
+| Constant           | Value | Description                     |
+| ------------------ | ----- | ------------------------------- |
+| `TICK_RATE`        | 20    | Server ticks per second         |
+| `TICK_MS`          | 50    | Milliseconds per tick           |
+| `GCD_MS`           | 120   | Global cooldown between actions |
+| `BUFFER_WINDOW_MS` | 200   | Input buffer expiration         |
+| `TILE_SIZE`        | 32    | Pixels per tile                 |
 
 ## How to Add Classes
 

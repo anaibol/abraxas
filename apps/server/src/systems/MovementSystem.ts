@@ -1,16 +1,19 @@
-import type { Direction, TileMap } from "@ao5/shared";
-import { DIRECTION_DELTA, CLASS_STATS } from "@ao5/shared";
+import type { Direction, TileMap, ClassStats } from "@ao5/shared";
+import { DIRECTION_DELTA, CLASS_STATS, NPC_STATS } from "@ao5/shared";
 import type { Player } from "../schema/Player";
+import type { Npc } from "../schema/Npc";
 import { logger } from "../logger";
 
-interface PlayerTimers {
+type Entity = Player | Npc;
+
+interface EntityTimers {
   lastMoveMs: number;
 }
 
 export class MovementSystem {
-  private timers = new Map<string, PlayerTimers>();
+  private timers = new Map<string, EntityTimers>();
 
-  private getTimers(sessionId: string): PlayerTimers {
+  private getTimers(sessionId: string): EntityTimers {
     let t = this.timers.get(sessionId);
     if (!t) {
       t = { lastMoveMs: 0 };
@@ -24,7 +27,7 @@ export class MovementSystem {
   }
 
   tryMove(
-    player: Player,
+    entity: Entity,
     direction: Direction,
     map: TileMap,
     now: number,
@@ -32,88 +35,79 @@ export class MovementSystem {
     tick: number,
     roomId: string
   ): boolean {
-    const timers = this.getTimers(player.sessionId);
-    const stats = CLASS_STATS[player.classType];
+    const timers = this.getTimers(entity.sessionId);
+    
+    let stats: ClassStats;
+    if ("classType" in entity) {
+        stats = CLASS_STATS[entity.classType];
+    } else {
+        stats = NPC_STATS[entity.type];
+    }
+
+    if (!stats) return false;
+
     const moveIntervalMs = 1000 / stats.speedTilesPerSecond;
 
     // Always update facing
-    player.facing = direction;
+    entity.facing = direction;
 
     // Check movement timing (with 15ms tolerance for network/clock jitter)
     if (now - timers.lastMoveMs < moveIntervalMs - 15) {
-      logger.debug({
-        room: roomId,
-        tick,
-        clientId: player.sessionId,
-        intent: "move",
-        result: "too_fast",
-      });
+      // Only log debug for players to avoid spamming for NPCs
+      if ("classType" in entity) {
+        logger.debug({
+            room: roomId,
+            tick,
+            clientId: entity.sessionId,
+            intent: "move",
+            result: "too_fast",
+        });
+      }
       return false;
     }
 
     const delta = DIRECTION_DELTA[direction];
-    const newX = player.tileX + delta.dx;
-    const newY = player.tileY + delta.dy;
+    const newX = entity.tileX + delta.dx;
+    const newY = entity.tileY + delta.dy;
 
     // Bounds check
     if (newX < 0 || newX >= map.width || newY < 0 || newY >= map.height) {
-      logger.debug({
-        room: roomId,
-        tick,
-        clientId: player.sessionId,
-        intent: "move",
-        result: "out_of_bounds",
-        posBefore: { x: player.tileX, y: player.tileY },
-      });
       return false;
     }
 
     // Collision check
     if (map.collision[newY]?.[newX] === 1) {
-      logger.debug({
-        room: roomId,
-        tick,
-        clientId: player.sessionId,
-        intent: "move",
-        result: "blocked",
-        posBefore: { x: player.tileX, y: player.tileY },
-      });
       return false;
     }
 
     // Occupied check
-    if (occupiedCheck(newX, newY, player.sessionId)) {
-      logger.debug({
-        room: roomId,
-        tick,
-        clientId: player.sessionId,
-        intent: "move",
-        result: "occupied",
-        posBefore: { x: player.tileX, y: player.tileY },
-      });
+    if (occupiedCheck(newX, newY, entity.sessionId)) {
       return false;
     }
 
-    const posBefore = { x: player.tileX, y: player.tileY };
-    player.tileX = newX;
-    player.tileY = newY;
+    const posBefore = { x: entity.tileX, y: entity.tileY };
+    entity.tileX = newX;
+    entity.tileY = newY;
+    
     // Accumulated timing: advance from last move time, not from `now`.
-    // This keeps rhythm consistent and avoids drift between client/server clocks.
     timers.lastMoveMs += moveIntervalMs;
     // Cap drift so we don't allow burst moves after a long idle
     if (now - timers.lastMoveMs > moveIntervalMs) {
       timers.lastMoveMs = now;
     }
 
-    logger.info({
-      room: roomId,
-      tick,
-      clientId: player.sessionId,
-      intent: "move",
-      result: "ok",
-      posBefore,
-      posAfter: { x: newX, y: newY },
-    });
+    // Log only for players
+    if ("classType" in entity) {
+        logger.info({
+            room: roomId,
+            tick,
+            clientId: entity.sessionId,
+            intent: "move",
+            result: "ok",
+            posBefore,
+            posAfter: { x: newX, y: newY },
+        });
+    }
 
     return true;
   }

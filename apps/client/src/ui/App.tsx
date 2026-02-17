@@ -6,6 +6,7 @@ import { Lobby } from "./Lobby";
 import { Sidebar, type PlayerState } from "./Sidebar";
 import { DeathOverlay } from "./DeathOverlay";
 import { KillFeed, type KillFeedEntry } from "./KillFeed";
+import { Console, type ConsoleMessage } from "./Console";
 import type { ClassType } from "@ao5/shared";
 import { NetworkManager } from "../network/NetworkManager";
 import Phaser from "phaser";
@@ -13,6 +14,7 @@ import { PreloaderScene } from "../scenes/PreloaderScene";
 import { GameScene } from "../scenes/GameScene";
 
 let killFeedId = 0;
+let consoleMsgId = 0;
 
 export function App() {
   const [phase, setPhase] = useState<"lobby" | "game">("lobby");
@@ -29,6 +31,7 @@ export function App() {
   const [deathTime, setDeathTime] = useState(0);
   const [showDeath, setShowDeath] = useState(false);
   const [killFeed, setKillFeed] = useState<KillFeedEntry[]>([]);
+  const [consoleMessages, setConsoleMessages] = useState<ConsoleMessage[]>([]);
   const gameContainerRef = useRef<HTMLDivElement>(null);
   const phaserGameRef = useRef<Phaser.Game | null>(null);
   const networkRef = useRef<NetworkManager | null>(null);
@@ -64,6 +67,14 @@ export function App() {
 
       setPlayerState((prev) => ({ ...prev, name, classType }));
       setPhase("game");
+      
+      // Add welcome message
+      setConsoleMessages([{
+        id: ++consoleMsgId,
+        text: `Welcome to the game, ${name}!`,
+        color: "#ffff00",
+        timestamp: Date.now()
+      }]);
 
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
@@ -80,6 +91,20 @@ export function App() {
                 ...prev.slice(-9),
                 { id: ++killFeedId, killerName, victimName, timestamp: Date.now() },
               ]);
+            },
+            (text: string, color?: string) => {
+               setConsoleMessages((prev) => {
+                 const newMsg: ConsoleMessage = {
+                   id: ++consoleMsgId,
+                   text,
+                   color,
+                   timestamp: Date.now()
+                 };
+                 // Keep last 50 messages
+                 const next = [...prev, newMsg];
+                 if (next.length > 50) return next.slice(next.length - 50);
+                 return next;
+               });
             }
           );
 
@@ -130,6 +155,7 @@ export function App() {
           </Flex>
           <DeathOverlay visible={showDeath} deathTime={deathTime} />
           <KillFeed entries={killFeed} />
+          <Console messages={consoleMessages} />
         </>
       )}
     </ChakraProvider>
