@@ -1,4 +1,4 @@
-import { ClassStats, NPC_STATS, TileMap } from "@ao5/shared";
+import { ClassStats, NPC_STATS, TileMap } from "@abraxas/shared";
 import { Npc } from "../schema/Npc";
 import { Player } from "../schema/Player";
 import { GameState } from "../schema/GameState";

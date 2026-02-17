@@ -2,7 +2,7 @@ import type { MapSchema } from "@colyseus/schema";
 import type { Player } from "../schema/Player";
 import { Drop } from "../schema/Drop";
 import { InventorySystem } from "./InventorySystem";
-import { ITEMS } from "@ao5/shared";
+import { ITEMS } from "@abraxas/shared";
 import { logger } from "../logger";
 
 let dropCounter = 0;

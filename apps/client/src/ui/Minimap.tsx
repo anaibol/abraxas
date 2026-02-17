@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { TileMap } from "@ao5/shared";
+import { TileMap } from "@abraxas/shared";
 import { Player } from "../../../server/src/schema/Player"; // Note: Importing from server schema might be tricky in client if not shared properly. Usually we use Colyseus client types or just generic types. 
 // Ideally we should have shared types or use the schema definition if available to client build. 
 // Given the monorepo structure, let's see how other files import Player. 

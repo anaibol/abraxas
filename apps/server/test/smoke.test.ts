@@ -2,7 +2,7 @@ import { describe, test, expect, beforeAll, afterAll } from "bun:test";
 import { Client, Room } from "colyseus.js";
 import { resolve } from "path";
 import { createGameServer } from "../src/server";
-import type { TileMap } from "@ao5/shared";
+import type { TileMap } from "@abraxas/shared";
 
 const TEST_PORT = 2568;
 let server: any;

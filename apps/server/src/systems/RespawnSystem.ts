@@ -1,5 +1,5 @@
-import type { TileMap } from "@ao5/shared";
-import { CLASS_STATS, STARTING_EQUIPMENT, RESPAWN_TIME_MS, ITEMS } from "@ao5/shared";
+import type { TileMap } from "@abraxas/shared";
+import { CLASS_STATS, STARTING_EQUIPMENT, RESPAWN_TIME_MS, ITEMS } from "@abraxas/shared";
 import type { Player } from "../schema/Player";
 import { InventorySystem } from "./InventorySystem";
 

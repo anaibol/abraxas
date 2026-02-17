@@ -3,7 +3,7 @@ import { WebSocketTransport } from "@colyseus/ws-transport";
 import { WebSocketClient } from "@colyseus/ws-transport";
 import { createServer, type IncomingMessage, type ServerResponse } from "http";
 import { ArenaRoom } from "./rooms/ArenaRoom";
-import type { TileMap } from "@ao5/shared";
+import type { TileMap } from "@abraxas/shared";
 import { logger } from "./logger";
 import { resolve, extname, join } from "path";
 import { existsSync, readFileSync, statSync } from "fs";

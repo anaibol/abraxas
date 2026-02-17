@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Box, Flex, Text, Input, Button, Grid } from "@chakra-ui/react";
-import type { ClassType } from "@ao5/shared";
-import { CLASS_STATS } from "@ao5/shared";
+import type { ClassType } from "@abraxas/shared";
+import { CLASS_STATS } from "@abraxas/shared";
 
 interface LobbyProps {
   onJoin: (name: string, classType: ClassType) => void;

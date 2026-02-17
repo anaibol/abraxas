@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Box, Flex, Text, Grid } from "@chakra-ui/react";
-import { CLASS_STATS, SPELLS, ITEMS } from "@ao5/shared";
+import { CLASS_STATS, SPELLS, ITEMS } from "@abraxas/shared";
 
 export interface InventorySlot {
   itemId: string;

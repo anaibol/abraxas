@@ -1,5 +1,5 @@
-import type { Direction, TileMap, ClassStats } from "@ao5/shared";
-import { DIRECTION_DELTA, CLASS_STATS, NPC_STATS } from "@ao5/shared";
+import type { Direction, TileMap, ClassStats } from "@abraxas/shared";
+import { DIRECTION_DELTA, CLASS_STATS, NPC_STATS } from "@abraxas/shared";
 import type { Player } from "../schema/Player";
 import type { Npc } from "../schema/Npc";
 import { logger } from "../logger";

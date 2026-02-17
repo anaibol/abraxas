@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 import type { NetworkManager } from "../network/NetworkManager";
-import type { Direction } from "@ao5/shared";
-import { CLASS_STATS, SPELLS } from "@ao5/shared";
+import type { Direction } from "@abraxas/shared";
+import { CLASS_STATS, SPELLS } from "@abraxas/shared";
 
 const KEY_TO_DIRECTION: Record<number, Direction> = {
   [Phaser.Input.Keyboard.KeyCodes.UP]: "up",

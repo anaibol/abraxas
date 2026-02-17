@@ -1,5 +1,5 @@
 {
-  "name": "@ao5/server",
+  "name": "@abraxas/server",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -9,7 +9,7 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@ao5/shared": "workspace:*",
+    "@abraxas/shared": "workspace:*",
     "@colyseus/core": "^0.15.0",
     "@colyseus/schema": "^2.0.0",
     "@colyseus/ws-transport": "^0.15.0",

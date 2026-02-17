@@ -1,5 +1,5 @@
 import { Client, Room } from "colyseus.js";
-import type { ClassType } from "@ao5/shared";
+import type { ClassType } from "@abraxas/shared";
 
 export interface WelcomeData {
   sessionId: string;

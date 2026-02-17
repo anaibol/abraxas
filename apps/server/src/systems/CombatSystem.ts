@@ -9,8 +9,8 @@ import {
   calcRangedDamage,
   calcSpellDamage,
   calcHealAmount,
-} from "@ao5/shared";
-import type { Direction, SpellDef, ClassStats } from "@ao5/shared";
+} from "@abraxas/shared";
+import type { Direction, SpellDef, ClassStats } from "@abraxas/shared";
 import type { Player } from "../schema/Player";
 import type { Npc } from "../schema/Npc";
 import type { BuffSystem } from "./BuffSystem";

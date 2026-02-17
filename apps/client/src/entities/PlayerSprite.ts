@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { TILE_SIZE, CLASS_STATS, NPC_STATS, CLASS_APPEARANCE, ITEMS } from "@ao5/shared";
+import { TILE_SIZE, CLASS_STATS, NPC_STATS, CLASS_APPEARANCE, ITEMS } from "@abraxas/shared";
 import type { AoGrhResolver, DirectionEntry, BodyEntry } from "../assets/AoGrhResolver";
 
 const DIR_MAP: Record<string, "down" | "up" | "left" | "right"> = {

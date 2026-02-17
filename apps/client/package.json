@@ -1,5 +1,5 @@
 {
-  "name": "@ao5/client",
+  "name": "@abraxas/client",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -9,7 +9,7 @@
     "preview": "bunx vite preview"
   },
   "dependencies": {
-    "@ao5/shared": "workspace:*",
+    "@abraxas/shared": "workspace:*",
     "@chakra-ui/react": "^3.33.0",
     "@emotion/react": "^11.14.0",
     "colyseus.js": "^0.15.0",

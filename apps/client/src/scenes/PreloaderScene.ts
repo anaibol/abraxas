@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { CLASS_APPEARANCE, ITEMS } from "@ao5/shared";
+import { CLASS_APPEARANCE, ITEMS } from "@abraxas/shared";
 import { AoGrhResolver } from "../assets/AoGrhResolver";
 
 export class PreloaderScene extends Phaser.Scene {

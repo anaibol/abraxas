@@ -1,6 +1,6 @@
 import { resolve } from "path";
 import { createGameServer } from "./server";
-import type { TileMap } from "@ao5/shared";
+import type { TileMap } from "@abraxas/shared";
 
 const mapName = process.env.MAP || "arena";
 const mapPath = resolve(

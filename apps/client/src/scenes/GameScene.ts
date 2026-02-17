@@ -6,8 +6,8 @@ import { InputHandler } from "../systems/InputHandler";
 import { CameraController } from "../systems/CameraController";
 import { SoundManager } from "../assets/SoundManager";
 import type { AoGrhResolver } from "../assets/AoGrhResolver";
-import { TILE_SIZE, DIRECTION_DELTA } from "@ao5/shared";
-import type { Direction } from "@ao5/shared";
+import { TILE_SIZE, DIRECTION_DELTA } from "@abraxas/shared";
+import type { Direction } from "@abraxas/shared";
 import type { PlayerState } from "../ui/Sidebar";
 
 export type StateCallback = (state: PlayerState) => void;

@@ -1,4 +1,4 @@
-import { ITEMS, CLASS_STATS, type EquipmentSlot, type ItemDef } from "@ao5/shared";
+import { ITEMS, CLASS_STATS, type EquipmentSlot, type ItemDef } from "@abraxas/shared";
 import type { Player } from "../schema/Player";
 import { InventoryItem } from "../schema/InventoryItem";
 import { logger } from "../logger";

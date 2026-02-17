@@ -7,7 +7,7 @@ Built with **Phaser 4 RC** + **Colyseus** + **Bun**.
 ## Architecture
 
 ```
-/ao5
+/abraxas
   /packages
     /shared          # Types, config, maps (shared between client & server)
   /apps

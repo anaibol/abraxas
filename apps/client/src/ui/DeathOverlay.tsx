@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Flex, Text } from "@chakra-ui/react";
-import { RESPAWN_TIME_MS } from "@ao5/shared";
+import { RESPAWN_TIME_MS } from "@abraxas/shared";
 
 interface DeathOverlayProps {
   visible: boolean;

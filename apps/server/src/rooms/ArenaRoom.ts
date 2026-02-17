@@ -9,15 +9,12 @@ import { BuffSystem } from "../systems/BuffSystem";
 import { InventorySystem } from "../systems/InventorySystem";
 import { RespawnSystem } from "../systems/RespawnSystem";
 import { NpcSystem } from "../systems/NpcSystem";
-import { CLASS_STATS, TICK_MS, STARTING_EQUIPMENT, ITEMS, KILL_GOLD_BONUS, NPC_STATS, EXP_TABLE, NPC_DROPS } from "@ao5/shared";
-import type { TileMap, Direction, JoinOptions, EquipmentSlot } from "@ao5/shared";
+import { CLASS_STATS, TICK_MS, STARTING_EQUIPMENT, ITEMS, KILL_GOLD_BONUS, NPC_STATS, EXP_TABLE, NPC_DROPS } from "@abraxas/shared";
+import type { TileMap, Direction, JoinOptions, EquipmentSlot } from "@abraxas/shared";
 import { logger } from "../logger";
 
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient({
-  datasourceUrl: process.env.DATABASE_URL
-});
+import { PersistenceService } from "../services/PersistenceService";
+import { MessageHandler } from "../handlers/MessageHandler";
 
 type Entity = Player | Npc;
 
@@ -32,6 +29,7 @@ export class ArenaRoom extends Room<GameState> {
   private inventorySystem = new InventorySystem();
   private respawnSystem = new RespawnSystem(this.inventorySystem);
   private npcSystem!: NpcSystem;
+  private messageHandler!: MessageHandler;
   private spawnIndex = 0;
 
   onCreate(_options: Record<string, unknown>) {
@@ -44,6 +42,19 @@ export class ArenaRoom extends Room<GameState> {
       throw new Error("ArenaRoom.mapData must be set before room creation");
     }
 
+    this.messageHandler = new MessageHandler(
+        this.state,
+        this.map,
+        this.roomId,
+        this.movement,
+        this.combat,
+        this.inventorySystem,
+        this.drops,
+        this.broadcast.bind(this),
+        this.findEntityAtTile.bind(this),
+        this.isTileOccupied.bind(this)
+    );
+
     // Spawn NPCs
     this.npcSystem.spawnNpcs(20, this.map);
 
@@ -51,11 +62,11 @@ export class ArenaRoom extends Room<GameState> {
     this.setPatchRate(TICK_MS);
 
     this.onMessage("move", (client, data: { direction: Direction }) => {
-      this.handleMove(client, data.direction);
+      this.messageHandler.handleMove(client, data.direction);
     });
 
     this.onMessage("attack", (client, data?: { targetTileX?: number; targetTileY?: number }) => {
-      this.handleAttack(client, data?.targetTileX, data?.targetTileY);
+      this.messageHandler.handleAttack(client, data?.targetTileX, data?.targetTileY);
     });
 
     this.onMessage(
@@ -64,43 +75,32 @@ export class ArenaRoom extends Room<GameState> {
         client,
         data: { spellId: string; targetTileX: number; targetTileY: number }
       ) => {
-        this.handleCast(client, data);
+        this.messageHandler.handleCast(client, data);
       }
     );
 
     this.onMessage("pickup", (client, data: { dropId: string }) => {
-      this.handlePickup(client, data.dropId);
+      this.messageHandler.handlePickup(client, data.dropId);
     });
 
     this.onMessage("equip", (client, data: { itemId: string }) => {
-      this.handleEquip(client, data.itemId);
+      this.messageHandler.handleEquip(client, data.itemId);
     });
 
     this.onMessage("unequip", (client, data: { slot: EquipmentSlot }) => {
-      this.handleUnequip(client, data.slot);
+      this.messageHandler.handleUnequip(client, data.slot);
     });
 
     this.onMessage("use_item", (client, data: { itemId: string }) => {
-      this.handleUseItem(client, data.itemId);
+      this.messageHandler.handleUseItem(client, data.itemId);
     });
 
     this.onMessage("drop_item", (client, data: { itemId: string }) => {
-      this.handleDropItem(client, data.itemId);
+      this.messageHandler.handleDropItem(client, data.itemId);
     });
 
     this.onMessage("chat", (client, data: { message: string }) => {
-        const player = this.state.players.get(client.sessionId);
-        if (player && data.message) {
-            // Trim and limit message length
-            const text = data.message.trim().slice(0, 100);
-            if (text.length > 0) {
-                this.broadcast("chat", {
-                    senderId: player.sessionId,
-                    senderName: player.name,
-                    message: text,
-                });
-            }
-        }
+        this.messageHandler.handleChat(client, data.message);
     });
 
     this.onMessage("ping", (client) => {
@@ -111,35 +111,10 @@ export class ArenaRoom extends Room<GameState> {
   }
 
   async onAuth(client: Client, options: JoinOptions) {
-    // Simple auth: use name as username/password for now
-    // In production, use token or actual password
-    let username = options.name;
-    
-    if (!username) {
-        const NAMES = ["Aeltho", "Bryna", "Cyril", "Dorn", "Elara", "Faelan", "Garrick", "Hylia", "Ivor", "Jora", "Kael", "Lira", "Marek", "Nylah", "Orion", "Pyra", "Quintus", "Rian", "Sylas", "Thora", "Ulric", "Vyla", "Wren", "Xander", "Yara", "Zephyr"];
-        username = NAMES[Math.floor(Math.random() * NAMES.length)];
-        
-        // Ensure uniqueness (simple retry logic or append number if taken? 
-        // findUnique will fail if we create duplicate unique. 
-        // For Guest/Random, appending a number is safer.
-        username += Math.floor(Math.random() * 10000);
-    }
-    
-    // Find or create User
-    let user = await prisma.user.findUnique({
-        where: { username }
-    });
-
-    if (!user) {
-        user = await prisma.user.create({
-            data: {
-                username,
-            }
-        });
-    }
-
+    const user = await PersistenceService.authenticateUser(options.name);
     return { user };
   }
+
   async onJoin(client: Client, options: JoinOptions, auth: any) {
     const classType = options?.classType || "warrior";
     const stats = CLASS_STATS[classType];
@@ -151,59 +126,18 @@ export class ArenaRoom extends Room<GameState> {
     const user = auth.user;
     const playerName = options.name || user.username;
 
-    // Load Player from DB
-    let dbPlayer = await prisma.player.findUnique({
-        where: {
-            userId_name: {
-                userId: user.id,
-                name: playerName
-            }
-        }
-    });
+    let dbPlayer = await PersistenceService.loadPlayer(user.id, playerName);
 
-    // Create if not exists
     if (!dbPlayer) {
          const spawn = this.map.spawns[this.spawnIndex % this.map.spawns.length];
          this.spawnIndex++;
-         
-         const startingGear = STARTING_EQUIPMENT[classType];
-         let inventoryStr = "[]";
-         let equipmentStr = "{}";
-         
-         // Create initial inventory/equipment JSON
-         if (startingGear) {
-            const invItems = [];
-             for (const itemId of startingGear.items) {
-                 const def = ITEMS[itemId];
-                 if (!def) continue;
-             }
-         }
-
-         dbPlayer = await prisma.player.create({
-             data: {
-                 userId: user.id,
-                 name: playerName,
-                 classType,
-                 x: spawn.x,
-                 y: spawn.y,
-                 hp: stats.hp,
-                 maxHp: stats.hp,
-                 mana: stats.mana,
-                 maxMana: stats.mana,
-                 str: stats.str,
-                 agi: stats.agi,
-                 intStat: stats.int,
-                 facing: "down",
-                 inventory: "[]",
-                 equipment: "{}"
-             }
-         });
+         dbPlayer = await PersistenceService.createPlayer(user.id, playerName, classType, spawn.x, spawn.y);
     }
 
     const player = new Player();
     player.sessionId = client.sessionId;
     player.name = dbPlayer.name;
-    player.classType = dbPlayer.classType as any; // Type assertion
+    player.classType = dbPlayer.classType as any; 
     player.tileX = dbPlayer.x;
     player.tileY = dbPlayer.y;
     player.facing = dbPlayer.facing as Direction;
@@ -220,7 +154,6 @@ export class ArenaRoom extends Room<GameState> {
     player.xp = dbPlayer.xp;
     player.maxXp = dbPlayer.maxXp;
 
-    // Load Inventory
     try {
         const invData = JSON.parse(dbPlayer.inventory);
         for (const item of invData) {
@@ -230,7 +163,6 @@ export class ArenaRoom extends Room<GameState> {
         console.error("Failed to load inventory", e);
     }
 
-    // Load Equipment
     try {
         const equipData = JSON.parse(dbPlayer.equipment);
         player.equipWeapon = equipData.weapon || "";
@@ -242,7 +174,6 @@ export class ArenaRoom extends Room<GameState> {
         console.error("Failed to load equipment", e);
     }
     
-    // If NEW player (just created in DB, inventory empty), give starting gear
     if (dbPlayer.inventory === "[]" && dbPlayer.equipment === "{}" && dbPlayer.createdAt.getTime() === dbPlayer.updatedAt.getTime()) {
          const startingGear = STARTING_EQUIPMENT[classType];
          if (startingGear) {
@@ -296,50 +227,28 @@ export class ArenaRoom extends Room<GameState> {
             armor: player.equipArmor,
             ring: player.equipRing
         };
+        
+        const playerData = {
+            x: player.tileX,
+            y: player.tileY,
+            hp: player.hp,
+            maxHp: player.maxHp,
+            mana: player.mana,
+            maxMana: player.maxMana,
+            str: player.str,
+            agi: player.agi,
+            intStat: player.intStat,
+            facing: player.facing,
+            gold: player.gold,
+            level: player.level,
+            xp: player.xp,
+            maxXp: player.maxXp,
+            inventory: JSON.stringify(inventory),
+            equipment: JSON.stringify(equipment),
+            classType: player.classType
+        };
 
-        try {
-            await prisma.player.updateMany({ // Use updateMany based on userId+name or just find unique ID if we stored it?
-                // We didn't store the DB UUID in the Player schema, only in local scope on join.
-                // We should probably store dbId in Player schema (non-synced) or just query by userId + name.
-                // But wait, we don't have userId easily available unless we stored it on player.
-                // Let's assume name is unique per user? Or globally unique?
-                // If name is unique globally, we can use name.
-                // If not, we need to store dbId on the Player entity (maybe as a non-synced field `dbId`).
-                // For now, let's rely on name matching since we don't allow duplicate names in DB per user.
-                // BUT we need the user ID. 
-                // We don't have the user ID on the player object right now.
-                // Let's add `dbId` to Player schema (server-side only if possible, or just public).
-                // Or better, update schema to include `dbId`. 
-                // Alternatively, query by name if unique. 
-                // Let's update Player schema in `schema/Player.ts` to include `dbId` string.
-                where: {
-                    name: player.name
-                    // We risk collision if names aren't globally unique. 
-                    // Let's add dbId to Player schema in next step. For now, assume unique name.
-                },
-                data: {
-                    x: player.tileX,
-                    y: player.tileY,
-                    hp: player.hp,
-                    maxHp: player.maxHp,
-                    mana: player.mana,
-                    maxMana: player.maxMana,
-                    str: player.str,
-                    agi: player.agi,
-                    intStat: player.intStat,
-                    facing: player.facing,
-                    gold: player.gold,
-                    level: player.level,
-                    xp: player.xp,
-                    maxXp: player.maxXp,
-                    inventory: JSON.stringify(inventory),
-                    equipment: JSON.stringify(equipment),
-                    classType: player.classType
-                }
-            });
-        } catch (e) {
-            logger.error({ msg: "Failed to save player", err: e });
-        }
+        await PersistenceService.savePlayer(player.name, playerData);
     }
 
     this.state.players.delete(client.sessionId);
@@ -361,22 +270,15 @@ export class ArenaRoom extends Room<GameState> {
     const now = Date.now();
     const broadcast = this.broadcast.bind(this);
 
-    // Process buffs/DoTs
     this.buffSystem.tick(
       now,
-      (sid) => this.findEntityBySessionId(sid) as Player, // Buff system mostly for players now, need refactor to support NPCs fully? Casting to Player for now as BuffSystem might expect Players. Checked BuffSystem, it expects getPlayer returns Player.
-      // Wait, BuffSystem handles players mostly. If we want buffs on NPCs we need to update BuffSystem too.
-      // For now let's assume NPCs don't get sophisticated buffs or we ignore type error if compatible.
-      // But we should update getPlayer to getEntity.
+      (sid) => this.findEntityBySessionId(sid) as Player,
       broadcast,
-      (player) => this.onEntityDeath(player as Player, ""), // Typo fix
+      (player) => this.onEntityDeath(player as Player, ""),
       this.roomId,
       this.state.tick
     );
-    // Note: BuffSystem.tick iterates this.state.players? No, it iterates its own state map.
-    // If we want NPCs to have buffs, we need to register them in BuffSystem state.
 
-    // Process NPCs
     this.npcSystem.tick(
         _deltaTime,
         this.map,
@@ -388,7 +290,6 @@ export class ArenaRoom extends Room<GameState> {
         broadcast
     );
 
-    // Process combat windups
     this.combat.processWindups(
       now,
       (x, y) => this.findEntityAtTile(x, y),
@@ -413,122 +314,14 @@ export class ArenaRoom extends Room<GameState> {
       },
     );
 
-    // Expire old drops
     this.drops.expireDrops(this.state.drops, now);
 
-    // Process respawns
     this.respawnSystem.tick(
       now,
       (sid) => this.state.players.get(sid),
       this.map,
       broadcast
     );
-  }
-
-  private handleMove(client: Client, direction: Direction) {
-    const player = this.state.players.get(client.sessionId);
-    if (!player || !player.alive) return;
-    if (player.stunned) return;
-
-    this.movement.tryMove(
-      player,
-      direction,
-      this.map,
-      Date.now(),
-      (x, y, excludeId) => this.isTileOccupied(x, y, excludeId),
-      this.state.tick,
-      this.roomId
-    );
-  }
-
-  private handleAttack(client: Client, targetTileX?: number, targetTileY?: number) {
-    const player = this.state.players.get(client.sessionId);
-    if (!player || !player.alive) return;
-
-    this.combat.tryAttack(
-      player,
-      Date.now(),
-      this.broadcast.bind(this),
-      this.state.tick,
-      this.roomId,
-      targetTileX,
-      targetTileY,
-      (x, y) => this.findEntityAtTile(x, y),
-      (type, data) => client.send(type, data ?? {}),
-    );
-  }
-
-  private handleCast(
-    client: Client,
-    data: { spellId: string; targetTileX: number; targetTileY: number }
-  ) {
-    const player = this.state.players.get(client.sessionId);
-    if (!player || !player.alive) return;
-
-    this.combat.tryCast(
-      player,
-      data.spellId,
-      data.targetTileX,
-      data.targetTileY,
-      Date.now(),
-      this.broadcast.bind(this),
-      this.state.tick,
-      this.roomId,
-      (x, y) => this.findEntityAtTile(x, y),
-      (type, data) => client.send(type, data ?? {}),
-    );
-  }
-
-  private handlePickup(client: Client, dropId: string) {
-    const player = this.state.players.get(client.sessionId);
-    if (!player || !player.alive) return;
-
-    this.drops.tryPickup(
-      player,
-      dropId,
-      this.state.drops,
-      this.roomId,
-      this.state.tick
-    );
-  }
-
-  private handleEquip(client: Client, itemId: string) {
-    const player = this.state.players.get(client.sessionId);
-    if (!player || !player.alive) return;
-    this.inventorySystem.equipItem(player, itemId);
-  }
-
-  private handleUnequip(client: Client, slot: EquipmentSlot) {
-    const player = this.state.players.get(client.sessionId);
-    if (!player || !player.alive) return;
-    this.inventorySystem.unequipItem(player, slot);
-  }
-
-  private handleUseItem(client: Client, itemId: string) {
-    const player = this.state.players.get(client.sessionId);
-    if (!player || !player.alive) return;
-    if (this.inventorySystem.useItem(player, itemId)) {
-      this.broadcast("item_used", {
-        sessionId: client.sessionId,
-        itemId,
-      });
-    }
-  }
-
-  private handleDropItem(client: Client, itemId: string) {
-    const player = this.state.players.get(client.sessionId);
-    if (!player || !player.alive) return;
-    if (this.inventorySystem.removeItem(player, itemId)) {
-      this.drops.spawnItemDrop(
-        this.state.drops,
-        player.tileX,
-        player.tileY,
-        itemId,
-        1,
-        this.roomId,
-        this.state.tick
-      );
-    }
   }
 
   private findEntityBySessionId(sessionId: string): Entity | undefined {

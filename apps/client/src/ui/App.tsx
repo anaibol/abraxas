@@ -8,7 +8,7 @@ import { DeathOverlay } from "./DeathOverlay";
 import { KillFeed, type KillFeedEntry } from "./KillFeed";
 import { Console, type ConsoleMessage } from "./Console";
 import { Minimap } from "./Minimap";
-import type { ClassType, TileMap } from "@ao5/shared";
+import type { ClassType, TileMap } from "@abraxas/shared";
 import { NetworkManager } from "../network/NetworkManager";
 import Phaser from "phaser";
 import { PreloaderScene } from "../scenes/PreloaderScene";
