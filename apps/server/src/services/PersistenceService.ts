@@ -1,4 +1,4 @@
-import { PrismaClient } from "../generated/prisma";
+import { PrismaClient } from "@prisma/client";
 import { CLASS_STATS, STARTING_EQUIPMENT, ITEMS, NPC_STATS, EXP_TABLE, NPC_DROPS } from "@abraxas/shared";
 import type { ClassStats } from "@abraxas/shared";
 
