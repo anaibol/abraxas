@@ -1,12 +1,12 @@
-import Phaser from "phaser";
-import { TILE_SIZE, CLASS_STATS, NPC_STATS, CLASS_APPEARANCE, ITEMS } from "@abraxas/shared";
+```
+import { TILE_SIZE, CLASS_STATS, NPC_STATS, CLASS_APPEARANCE, ITEMS, Direction, DIRECTION_DELTA } from "@abraxas/shared";
 import type { AoGrhResolver, DirectionEntry, BodyEntry } from "../assets/AoGrhResolver";
 
-const DIR_MAP: Record<string, "down" | "up" | "left" | "right"> = {
-  down: "down",
-  up: "up",
-  left: "left",
-  right: "right",
+const DIR_NAME_MAP: Record<number, "down" | "up" | "left" | "right"> = {
+  [Direction.DOWN]: "down",
+  [Direction.UP]: "up",
+  [Direction.LEFT]: "left",
+  [Direction.RIGHT]: "right",
 };
 
 export class PlayerSprite {
@@ -35,7 +35,7 @@ export class PlayerSprite {
   private resolver: AoGrhResolver;
   private bodyEntry: BodyEntry;
   private headEntry: DirectionEntry;
-  private currentDir: "down" | "up" | "left" | "right" = "down";
+  private currentDir: Direction = Direction.DOWN;
   private isMoving: boolean = false;
 
   // Current equipment AO IDs (0 = none)
@@ -142,7 +142,8 @@ export class PlayerSprite {
 
   private updateHeadPosition() {
     // Body bottom at TILE_SIZE/2, body height from the static frame
-    const bodyStatic = this.resolver.resolveStaticGrh(this.bodyEntry[this.currentDir]);
+    const dirName = DIR_NAME_MAP[this.currentDir];
+    const bodyStatic = this.resolver.resolveStaticGrh(this.bodyEntry[dirName]);
     const bodyH = bodyStatic ? bodyStatic.height : 45;
     const bodyTopY = TILE_SIZE / 2 - bodyH;
     const offX = this.bodyEntry.offHeadX ?? 0;
@@ -163,14 +164,8 @@ export class PlayerSprite {
     this.targetY = tileY * TILE_SIZE + TILE_SIZE / 2;
   }
 
-  predictMove(direction: string) {
-    const deltas: Record<string, { dx: number; dy: number }> = {
-      up: { dx: 0, dy: -1 },
-      down: { dx: 0, dy: 1 },
-      left: { dx: -1, dy: 0 },
-      right: { dx: 1, dy: 0 },
-    };
-    const d = deltas[direction];
+  predictMove(direction: Direction) {
+    const d = DIRECTION_DELTA[direction];
     if (d) {
       this.predictedTileX += d.dx;
       this.predictedTileY += d.dy;
@@ -204,13 +199,13 @@ export class PlayerSprite {
     }
   }
 
-  setFacing(direction: string) {
-    const dir = DIR_MAP[direction] ?? "down";
-    if (dir === this.currentDir) return;
-    this.currentDir = dir;
+  setFacing(direction: Direction) {
+    if (direction === this.currentDir) return;
+    this.currentDir = direction;
+    const dirName = DIR_NAME_MAP[direction];
 
     // Update head frame
-    const headGrhId = this.headEntry[dir];
+    const headGrhId = this.headEntry[dirName];
     const headStatic = this.resolver.resolveStaticGrh(headGrhId);
     if (headStatic) {
       this.headSprite.setTexture(`ao-${headStatic.grafico}`, `grh-${headStatic.id}`);
@@ -234,7 +229,8 @@ export class PlayerSprite {
   }
 
   private setIdleFrame() {
-    const bodyGrhId = this.bodyEntry[this.currentDir];
+    const dirName = DIR_NAME_MAP[this.currentDir];
+    const bodyGrhId = this.bodyEntry[dirName];
     const bodyStatic = this.resolver.resolveStaticGrh(bodyGrhId);
     if (bodyStatic) {
       this.bodySprite.stop();
@@ -244,7 +240,7 @@ export class PlayerSprite {
     if (this.weaponSprite) {
       const weaponEntry = this.resolver.getWeaponEntry(this.curWeaponAoId);
       if (weaponEntry) {
-        const ws = this.resolver.resolveStaticGrh(weaponEntry[this.currentDir]);
+        const ws = this.resolver.resolveStaticGrh(weaponEntry[dirName]);
         if (ws) {
           this.weaponSprite.stop();
           this.weaponSprite.setTexture(`ao-${ws.grafico}`, `grh-${ws.id}`);
@@ -254,7 +250,7 @@ export class PlayerSprite {
     if (this.shieldSprite) {
       const shieldEntry = this.resolver.getShieldEntry(this.curShieldAoId);
       if (shieldEntry) {
-        const ss = this.resolver.resolveStaticGrh(shieldEntry[this.currentDir]);
+        const ss = this.resolver.resolveStaticGrh(shieldEntry[dirName]);
         if (ss) {
           this.shieldSprite.stop();
           this.shieldSprite.setTexture(`ao-${ss.grafico}`, `grh-${ss.id}`);
@@ -265,7 +261,8 @@ export class PlayerSprite {
 
   private playWalkAnims() {
     const scene = this.container.scene;
-    const bodyGrhId = this.bodyEntry[this.currentDir];
+    const dirName = DIR_NAME_MAP[this.currentDir];
+    const bodyGrhId = this.bodyEntry[dirName];
     const bodyAnimKey = this.resolver.ensureAnimation(scene, bodyGrhId, "body");
     if (bodyAnimKey) {
       this.bodySprite.play(bodyAnimKey, true);
@@ -275,7 +272,7 @@ export class PlayerSprite {
     if (this.weaponSprite && this.curWeaponAoId) {
       const weaponEntry = this.resolver.getWeaponEntry(this.curWeaponAoId);
       if (weaponEntry) {
-        const wAnimKey = this.resolver.ensureAnimation(scene, weaponEntry[this.currentDir], "weapon");
+        const wAnimKey = this.resolver.ensureAnimation(scene, weaponEntry[dirName], "weapon");
         if (wAnimKey) this.weaponSprite.play(wAnimKey, true);
       }
     }
@@ -284,13 +281,14 @@ export class PlayerSprite {
     if (this.shieldSprite && this.curShieldAoId) {
       const shieldEntry = this.resolver.getShieldEntry(this.curShieldAoId);
       if (shieldEntry) {
-        const sAnimKey = this.resolver.ensureAnimation(scene, shieldEntry[this.currentDir], "shield");
+        const sAnimKey = this.resolver.ensureAnimation(scene, shieldEntry[dirName], "shield");
         if (sAnimKey) this.shieldSprite.play(sAnimKey, true);
       }
     }
   }
 
   private updateEquipmentDirection() {
+    const dirName = DIR_NAME_MAP[this.currentDir];
     // Weapon
     if (this.weaponSprite && this.curWeaponAoId) {
       const weaponEntry = this.resolver.getWeaponEntry(this.curWeaponAoId);
