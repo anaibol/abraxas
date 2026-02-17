@@ -59,6 +59,7 @@ export class PersistenceService {
     }
 
     static async createPlayer(userId: string, playerName: string, classType: string, x: number, y: number) {
+        console.log(`PersistenceService: createPlayer name=${playerName} x=${x} y=${y}`);
         const stats = CLASS_STATS[classType];
         if (!stats) throw new Error("Invalid class type");
 

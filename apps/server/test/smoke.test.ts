@@ -3,6 +3,8 @@ import { Client, Room } from "colyseus.js";
 import { resolve } from "path";
 import { createGameServer } from "../src/server";
 import { TileMap, Direction } from "@abraxas/shared";
+import { GameState } from "../src/schema/GameState";
+import { Player } from "../src/schema/Player";
 
 const TEST_PORT = 2568;
 let server: any;
@@ -35,14 +37,14 @@ function wait(ms: number): Promise<void> {
 }
 
 function waitForState(
-  room: Room,
-  predicate: () => boolean,
+  room: Room<GameState>,
+  predicate: (state: GameState) => boolean,
   timeoutMs = 3000
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const start = Date.now();
     const check = () => {
-      if (predicate()) {
+      if (predicate(room.state)) {
         resolve();
       } else if (Date.now() - start > timeoutMs) {
         reject(new Error("Timeout waiting for state condition"));
@@ -54,8 +56,14 @@ function waitForState(
   });
 }
 
-function getPlayer(room: Room, sessionId: string): any {
-  return (room.state as any).players.get(sessionId);
+function getPlayer(room: Room<GameState>, sessionId: string): Player | undefined {
+  return room.state.players.get(sessionId);
+}
+
+function expectPlayer(room: Room<GameState>, sessionId: string): Player {
+  const p = getPlayer(room, sessionId);
+  if (!p) throw new Error(`Player ${sessionId} not found`);
+  return p;
 }
 
 describe("Arena multiplayer smoke test", () => {
@@ -64,24 +72,26 @@ describe("Arena multiplayer smoke test", () => {
     const clientB = new Client(`ws://localhost:${TEST_PORT}`);
 
     // ---- Step 1: Both clients join ----
-    const roomA: Room = await clientA.joinOrCreate("arena", {
+    const roomA: Room<GameState> = await clientA.joinOrCreate("arena", {
       name: "Warrior",
       classType: "warrior",
     });
-    const roomB: Room = await clientB.joinOrCreate("arena", {
+    const roomB: Room<GameState> = await clientB.joinOrCreate("arena", {
       name: "Wizard",
       classType: "wizard",
     });
 
     // Wait until both rooms see 2 players
-    await waitForState(roomA, () => (roomA.state as any).players.size >= 2);
-    await waitForState(roomB, () => (roomB.state as any).players.size >= 2);
+    await waitForState(roomA, (state) => state.players.size >= 2);
+    await waitForState(roomB, (state) => state.players.size >= 2);
 
-    expect((roomA.state as any).players.size).toBe(2);
-    expect((roomB.state as any).players.size).toBe(2);
+    expect(roomA.state.players.size).toBe(2);
+    expect(roomB.state.players.size).toBe(2);
 
     const pA = getPlayer(roomA, roomA.sessionId);
     const pB = getPlayer(roomA, roomB.sessionId);
+    if (!pA || !pB) throw new Error("Players not found in roomA state");
+
     expect(pA).toBeDefined();
     expect(pB).toBeDefined();
 
@@ -98,11 +108,16 @@ describe("Arena multiplayer smoke test", () => {
 
     // ---- Step 2: Move A right -> (3,4) ----
     roomA.send("move", { direction: Direction.RIGHT });
-    await waitForState(roomA, () => getPlayer(roomA, roomA.sessionId)?.tileX === 3);
+    await waitForState(roomA, (state) => {
+        const p = state.players.get(roomA.sessionId);
+        return p !== undefined && p.tileX === 3;
+    });
 
-    expect(getPlayer(roomA, roomA.sessionId).tileX).toBe(3);
-    expect(getPlayer(roomA, roomA.sessionId).tileY).toBe(4);
-    expect(getPlayer(roomA, roomA.sessionId).facing).toBe(Direction.RIGHT);
+    const pA2 = getPlayer(roomA, roomA.sessionId);
+    if (!pA2) throw new Error("Player A not found");
+    expect(pA2.tileX).toBe(3);
+    expect(pA2.tileY).toBe(4);
+    expect(pA2.facing).toBe(Direction.RIGHT);
 
     // ---- Step 3: Move A up -> (3,3) is blocked ----
     await wait(300);
@@ -110,21 +125,23 @@ describe("Arena multiplayer smoke test", () => {
     await wait(200);
 
     // Position unchanged, facing updated
-    expect(getPlayer(roomA, roomA.sessionId).tileX).toBe(3);
-    expect(getPlayer(roomA, roomA.sessionId).tileY).toBe(4);
-    expect(getPlayer(roomA, roomA.sessionId).facing).toBe(Direction.UP);
+    const pA3 = expectPlayer(roomA, roomA.sessionId);
+    expect(pA3.tileX).toBe(3);
+    expect(pA3.tileY).toBe(4);
+    expect(pA3.facing).toBe(Direction.UP);
 
     // ---- Step 4: Face A right (toward B) by attempting move into occupied tile ----
     await wait(300);
     roomA.send("move", { direction: Direction.RIGHT });
     await wait(200);
 
-    expect(getPlayer(roomA, roomA.sessionId).tileX).toBe(3);
-    expect(getPlayer(roomA, roomA.sessionId).tileY).toBe(4);
-    expect(getPlayer(roomA, roomA.sessionId).facing).toBe(Direction.RIGHT);
+    const pA4 = expectPlayer(roomA, roomA.sessionId);
+    expect(pA4.tileX).toBe(3);
+    expect(pA4.tileY).toBe(4);
+    expect(pA4.facing).toBe(Direction.RIGHT);
 
     // ---- Step 5: A attacks with melee (CTRL) -> hits B at (4,4) ----
-    const initialHpB = getPlayer(roomA, roomB.sessionId).hp;
+    const initialHpB = expectPlayer(roomA, roomB.sessionId).hp;
     expect(initialHpB).toBeGreaterThan(0);
 
     const attackHitPromise = new Promise<void>((resolve) => {
@@ -136,15 +153,15 @@ describe("Arena multiplayer smoke test", () => {
     await wait(150);
 
     // With stat-based combat, damage varies — just check HP decreased
-    const newHpB = getPlayer(roomA, roomB.sessionId).hp;
+    const newHpB = expectPlayer(roomA, roomB.sessionId).hp;
     expect(newHpB).toBeLessThan(initialHpB);
 
     // ---- Step 6: Wizard casts fireball at A's tile (3,4) ----
     await wait(500);
 
-    const initialHpA = getPlayer(roomB, roomA.sessionId).hp;
+    const initialHpA = expectPlayer(roomB, roomA.sessionId).hp;
     expect(initialHpA).toBeGreaterThan(0);
-    const initialManaB = getPlayer(roomB, roomB.sessionId).mana;
+    const initialManaB = expectPlayer(roomB, roomB.sessionId).mana;
     expect(initialManaB).toBeGreaterThan(0);
 
     const castHitPromise = new Promise<void>((resolve) => {
@@ -161,11 +178,11 @@ describe("Arena multiplayer smoke test", () => {
     await wait(150);
 
     // Mana reduced by 25 (fireball cost)
-    const newManaB = getPlayer(roomB, roomB.sessionId).mana;
+    const newManaB = expectPlayer(roomB, roomB.sessionId).mana;
     expect(newManaB).toBe(initialManaB - 25);
 
     // A's HP reduced by spell damage (formula-based)
-    const newHpA = getPlayer(roomB, roomA.sessionId).hp;
+    const newHpA = expectPlayer(roomB, roomA.sessionId).hp;
     expect(newHpA).toBeLessThan(initialHpA);
 
     // ---- Step 7: Disconnect cleanly ----

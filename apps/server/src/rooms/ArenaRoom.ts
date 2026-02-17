@@ -138,11 +138,21 @@ export class ArenaRoom extends Room<GameState> {
     player.sessionId = client.sessionId;
     player.name = playerName;
     player.classType = classType;
+    if (!dbPlayer) {
+        console.error(`ArenaRoom ERROR: No dbPlayer found/created for ${playerName}`);
+        client.leave(1011, "Failed to load/create player data");
+        return;
+    }
     console.log(`ArenaRoom DEBUG: dbPlayer stats x=${dbPlayer.x} y=${dbPlayer.y} facing=${dbPlayer.facing}`);
     player.tileX = dbPlayer.x;
     player.tileY = dbPlayer.y;
     console.log(`ArenaRoom DEBUG: Assigned schema tileX=${player.tileX} tileY=${player.tileY}`);
-    player.facing = (Direction as any)[dbPlayer.facing.toUpperCase()] ?? Direction.DOWN;
+    const dirKey = dbPlayer.facing.toUpperCase();
+    if (dirKey === "UP") player.facing = Direction.UP;
+    else if (dirKey === "DOWN") player.facing = Direction.DOWN;
+    else if (dirKey === "LEFT") player.facing = Direction.LEFT;
+    else if (dirKey === "RIGHT") player.facing = Direction.RIGHT;
+    else player.facing = Direction.DOWN;
     player.hp = dbPlayer.hp;
     player.maxHp = dbPlayer.maxHp;
     player.mana = dbPlayer.mana;
@@ -564,9 +574,9 @@ export class ArenaRoom extends Room<GameState> {
     if (killerSessionId) {
         const killer = this.findEntityBySessionId(killerSessionId);
         if (killer) {
-            if ("classType" in killer) { // It's a Player
+            if (killer instanceof Player) { // It's a Player
                 killerName = killer.name;
-            } else { // It's an NPC
+            } else if (killer instanceof Npc) { // It's an NPC
                 killerName = killer.type;
             }
         }
