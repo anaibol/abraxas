@@ -1,0 +1,194 @@
+import { ITEMS, CLASS_STATS, type EquipmentSlot, type ItemDef } from "@ao5/shared";
+import type { Player } from "../schema/Player";
+import { InventoryItem } from "../schema/InventoryItem";
+import { logger } from "../logger";
+
+const MAX_INVENTORY_SLOTS = 24;
+
+const EQUIP_SLOT_MAP: Record<string, keyof Player> = {
+  weapon: "equipWeapon",
+  armor: "equipArmor",
+  shield: "equipShield",
+  helmet: "equipHelmet",
+  ring: "equipRing",
+};
+
+export class InventorySystem {
+  addItem(player: Player, itemId: string, quantity: number = 1): boolean {
+    const def = ITEMS[itemId];
+    if (!def) return false;
+
+    // For stackable items, try to stack first
+    if (def.stackable) {
+      for (const item of player.inventory) {
+        if (item.itemId === itemId) {
+          item.quantity += quantity;
+          return true;
+        }
+      }
+    }
+
+    // Find empty slot
+    const usedSlots = new Set<number>();
+    for (const item of player.inventory) {
+      usedSlots.add(item.slotIndex);
+    }
+
+    for (let i = 0; i < MAX_INVENTORY_SLOTS; i++) {
+      if (!usedSlots.has(i)) {
+        const item = new InventoryItem();
+        item.itemId = itemId;
+        item.quantity = quantity;
+        item.slotIndex = i;
+        player.inventory.push(item);
+        return true;
+      }
+    }
+
+    return false; // Inventory full
+  }
+
+  removeItem(player: Player, itemId: string, quantity: number = 1): boolean {
+    for (let i = 0; i < player.inventory.length; i++) {
+      const item = player.inventory[i];
+      if (item.itemId === itemId) {
+        if (item.quantity > quantity) {
+          item.quantity -= quantity;
+          return true;
+        } else {
+          player.inventory.splice(i, 1);
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  findItem(player: Player, itemId: string): InventoryItem | undefined {
+    for (const item of player.inventory) {
+      if (item.itemId === itemId) return item;
+    }
+    return undefined;
+  }
+
+  equipItem(player: Player, itemId: string): boolean {
+    const def = ITEMS[itemId];
+    if (!def) return false;
+    if (def.slot === "consumable") return false;
+
+    // Check class restriction
+    if (def.requiredClass && !def.requiredClass.includes(player.classType)) return false;
+
+    // Check item is in inventory
+    if (!this.findItem(player, itemId)) return false;
+
+    const slotKey = EQUIP_SLOT_MAP[def.slot];
+    if (!slotKey) return false;
+
+    // Unequip current item in that slot first
+    const currentEquipped = (player as any)[slotKey] as string;
+    if (currentEquipped) {
+      this.addItem(player, currentEquipped);
+    }
+
+    // Remove from inventory and equip
+    this.removeItem(player, itemId);
+    (player as any)[slotKey] = itemId;
+
+    // Apply stat bonuses
+    this.recalcStats(player);
+    return true;
+  }
+
+  unequipItem(player: Player, slot: EquipmentSlot): boolean {
+    const slotKey = EQUIP_SLOT_MAP[slot];
+    if (!slotKey) return false;
+
+    const itemId = (player as any)[slotKey] as string;
+    if (!itemId) return false;
+
+    // Try to add to inventory
+    if (!this.addItem(player, itemId)) return false; // Inventory full
+
+    (player as any)[slotKey] = "";
+    this.recalcStats(player);
+    return true;
+  }
+
+  useItem(player: Player, itemId: string): boolean {
+    const def = ITEMS[itemId];
+    if (!def || !def.consumeEffect) return false;
+    if (!this.findItem(player, itemId)) return false;
+
+    // Apply consume effect
+    if (def.consumeEffect.healHp) {
+      player.hp = Math.min(player.maxHp, player.hp + def.consumeEffect.healHp);
+    }
+    if (def.consumeEffect.healMana) {
+      player.mana = Math.min(player.maxMana, player.mana + def.consumeEffect.healMana);
+    }
+
+    this.removeItem(player, itemId);
+    return true;
+  }
+
+  getEquipmentBonuses(player: Player): { str: number; agi: number; int: number; hp: number; mana: number; armor: number } {
+    const bonuses = { str: 0, agi: 0, int: 0, hp: 0, mana: 0, armor: 0 };
+
+    for (const slotKey of Object.values(EQUIP_SLOT_MAP)) {
+      const itemId = (player as any)[slotKey] as string;
+      if (!itemId) continue;
+      const def = ITEMS[itemId];
+      if (!def) continue;
+
+      bonuses.str += def.stats.str ?? 0;
+      bonuses.agi += def.stats.agi ?? 0;
+      bonuses.int += def.stats.int ?? 0;
+      bonuses.hp += def.stats.hp ?? 0;
+      bonuses.mana += def.stats.mana ?? 0;
+      bonuses.armor += def.stats.armor ?? 0;
+    }
+
+    return bonuses;
+  }
+
+  /** Recalculate player stats from base class + equipment */
+  recalcStats(player: Player) {
+    const base = CLASS_STATS[player.classType];
+    if (!base) return;
+
+    const equip = this.getEquipmentBonuses(player);
+    player.str = base.str + equip.str;
+    player.agi = base.agi + equip.agi;
+    player.intStat = base.int + equip.int;
+    player.maxHp = base.hp + equip.hp;
+    player.maxMana = base.mana + equip.mana;
+    // Clamp current HP/mana to new max
+    player.hp = Math.min(player.hp, player.maxHp);
+    player.mana = Math.min(player.mana, player.maxMana);
+  }
+
+  /** Drop all items and equipment on death — returns list of {itemId, quantity} */
+  dropAllItems(player: Player): { itemId: string; quantity: number }[] {
+    const dropped: { itemId: string; quantity: number }[] = [];
+
+    // Drop equipment
+    for (const slotKey of Object.values(EQUIP_SLOT_MAP)) {
+      const itemId = (player as any)[slotKey] as string;
+      if (itemId) {
+        dropped.push({ itemId, quantity: 1 });
+        (player as any)[slotKey] = "";
+      }
+    }
+
+    // Drop inventory
+    for (const item of player.inventory) {
+      dropped.push({ itemId: item.itemId, quantity: item.quantity });
+    }
+    player.inventory.clear();
+
+    // Recalc stats with no equipment
+    this.recalcStats(player);
+    return dropped;
+  }
+}

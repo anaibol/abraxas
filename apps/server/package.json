@@ -1,0 +1,21 @@
+{
+  "name": "@ao5/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "start": "bun run src/index.ts",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@ao5/shared": "workspace:*",
+    "@colyseus/core": "^0.15.0",
+    "@colyseus/schema": "^2.0.0",
+    "@colyseus/ws-transport": "^0.15.0"
+  },
+  "devDependencies": {
+    "colyseus.js": "^0.15.0",
+    "@types/bun": "latest"
+  }
+}

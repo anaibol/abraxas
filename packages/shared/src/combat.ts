@@ -1,0 +1,61 @@
+/** Stat-based combat damage formulas for AO5 Arena */
+
+/** Melee physical damage: STR scaling, armor reduction, AGI dodge chance */
+export function calcMeleeDamage(
+  attackerStr: number,
+  defenderStr: number,
+  defenderAgi: number
+): { damage: number; dodged: boolean } {
+  // Dodge: ~1% per AGI point above 10
+  const dodgeChance = Math.max(0, (defenderAgi - 10) * 0.01);
+  if (Math.random() < dodgeChance) {
+    return { damage: 0, dodged: true };
+  }
+
+  // Base damage scales with attacker STR
+  const raw = attackerStr * 1.2;
+  // Armor reduction from defender STR (diminishing returns)
+  const reduction = defenderStr * 0.3;
+  const damage = Math.max(1, Math.round(raw - reduction));
+  return { damage, dodged: false };
+}
+
+/** Ranged physical damage: AGI scaling for archer class */
+export function calcRangedDamage(
+  attackerAgi: number,
+  defenderStr: number,
+  defenderAgi: number
+): { damage: number; dodged: boolean } {
+  // Reduced dodge chance vs ranged
+  const dodgeChance = Math.max(0, (defenderAgi - 10) * 0.005);
+  if (Math.random() < dodgeChance) {
+    return { damage: 0, dodged: true };
+  }
+
+  const raw = attackerAgi * 1.1;
+  const reduction = defenderStr * 0.2;
+  const damage = Math.max(1, Math.round(raw - reduction));
+  return { damage, dodged: false };
+}
+
+/** Spell damage: base + scaling stat * ratio, minus magic resist from INT */
+export function calcSpellDamage(
+  baseDamage: number,
+  scalingStat: number,
+  scalingRatio: number,
+  defenderInt: number
+): number {
+  const raw = baseDamage + scalingStat * scalingRatio;
+  // Magic resist: ~0.5% per INT point
+  const resistMult = Math.max(0.3, 1 - defenderInt * 0.005);
+  return Math.max(1, Math.round(raw * resistMult));
+}
+
+/** Heal amount: base + caster INT * ratio */
+export function calcHealAmount(
+  baseAmount: number,
+  casterInt: number,
+  scalingRatio: number
+): number {
+  return Math.max(1, Math.round(baseAmount + casterInt * scalingRatio));
+}

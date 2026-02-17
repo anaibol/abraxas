@@ -1,0 +1,11 @@
+{
+  "name": "ao5",
+  "private": true,
+  "workspaces": ["packages/*", "apps/*"],
+  "scripts": {
+    "dev:server": "bun run --cwd apps/server dev",
+    "dev:client": "bun run --cwd apps/client dev",
+    "build": "bun run --cwd apps/client build",
+    "test": "bun test --cwd apps/server"
+  }
+}
