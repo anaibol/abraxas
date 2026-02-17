@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Flex, Text } from "@chakra-ui/react";
-import { RESPAWN_TIME_MS } from "@abraxas/shared";
+import { PLAYER_RESPAWN_TIME_MS } from "@abraxas/shared";
 
 interface DeathOverlayProps {
   visible: boolean;
@@ -8,13 +8,13 @@ interface DeathOverlayProps {
 }
 
 export function DeathOverlay({ visible, deathTime }: DeathOverlayProps) {
-  const [countdown, setCountdown] = useState(Math.ceil(RESPAWN_TIME_MS / 1000));
+  const [countdown, setCountdown] = useState(Math.ceil(PLAYER_RESPAWN_TIME_MS / 1000));
 
   useEffect(() => {
     if (!visible) return;
     const interval = setInterval(() => {
       const elapsed = Date.now() - deathTime;
-      const remaining = Math.max(0, Math.ceil((RESPAWN_TIME_MS - elapsed) / 1000));
+      const remaining = Math.max(0, Math.ceil((PLAYER_RESPAWN_TIME_MS - elapsed) / 1000));
       setCountdown(remaining);
     }, 100);
     return () => clearInterval(interval);
