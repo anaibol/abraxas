@@ -1,11 +1,12 @@
 import { Schema, type } from "@colyseus/schema";
+import type { Direction, NpcType } from "@abraxas/shared";
 
 export class Npc extends Schema {
   @type("string") sessionId: string = "";
-  @type("string") type: string = "orc"; // NpcType
+  @type("string") type: NpcType = "orc"; 
   @type("uint16") tileX: number = 0;
   @type("uint16") tileY: number = 0;
-  @type("string") facing: string = "down";
+  @type("string") facing: Direction = "down";
   @type("int16") hp: number = 0;
   @type("int16") maxHp: number = 0;
   @type("boolean") alive: boolean = true;

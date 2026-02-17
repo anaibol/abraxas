@@ -178,7 +178,7 @@ export class CombatSystem {
 
     broadcast("attack_start", {
       sessionId: attacker.sessionId,
-      facing: attacker.facing as Direction,
+      facing: attacker.facing,
     });
 
     return true;

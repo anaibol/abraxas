@@ -1,13 +1,14 @@
 import { Schema, type, ArraySchema } from "@colyseus/schema";
 import { InventoryItem } from "./InventoryItem";
+import type { Direction, ClassType } from "@abraxas/shared";
 
 export class Player extends Schema {
   @type("string") sessionId: string = "";
   @type("string") name: string = "";
-  @type("string") classType: string = "warrior";
+  @type("string") classType: ClassType = "warrior";
   @type("uint16") tileX: number = 0;
   @type("uint16") tileY: number = 0;
-  @type("string") facing: string = "down";
+  @type("string") facing: Direction = "down";
   @type("int16") hp: number = 0;
   @type("int16") maxHp: number = 0;
   @type("int16") mana: number = 0;

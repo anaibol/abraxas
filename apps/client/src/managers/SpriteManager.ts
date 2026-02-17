@@ -45,12 +45,15 @@ export class SpriteManager {
     addNpc(npc: EntityState, sessionId: string) {
         if (this.sprites.has(sessionId)) return;
         
+        // Map NPC type to a visual class type if available, otherwise default
+        const visualClass = npc.type || "orc"; 
+        
         const sprite = new PlayerSprite(
             this.scene,
             sessionId,
             npc.tileX,
             npc.tileY,
-            (npc.type as any) ?? "orc", // Treat type as classType for visual resolution
+            visualClass, 
             npc.type?.toUpperCase() ?? "NPC", // Name
             false
         );

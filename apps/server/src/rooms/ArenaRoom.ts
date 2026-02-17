@@ -10,7 +10,7 @@ import { InventorySystem } from "../systems/InventorySystem";
 import { RespawnSystem } from "../systems/RespawnSystem";
 import { NpcSystem } from "../systems/NpcSystem";
 import { CLASS_STATS, TICK_MS, STARTING_EQUIPMENT, ITEMS, KILL_GOLD_BONUS, NPC_STATS, EXP_TABLE, NPC_DROPS } from "@abraxas/shared";
-import type { TileMap, Direction, JoinOptions, EquipmentSlot } from "@abraxas/shared";
+import { TileMap, Direction, ServerMessages, ClassType } from "@abraxas/shared";
 import { logger } from "../logger";
 
 import { PersistenceService } from "../services/PersistenceService";
@@ -137,7 +137,7 @@ export class ArenaRoom extends Room<GameState> {
     const player = new Player();
     player.sessionId = client.sessionId;
     player.name = dbPlayer.name;
-    player.classType = dbPlayer.classType as any; 
+    player.classType = dbPlayer.classType as ClassType; 
     player.tileX = dbPlayer.x;
     player.tileY = dbPlayer.y;
     player.facing = dbPlayer.facing as Direction;
