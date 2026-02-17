@@ -1,17 +1,11 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaLibSql } from "@prisma/adapter-libsql";
-import { createClient } from "@libsql/client";
 import { CLASS_STATS, STARTING_EQUIPMENT, ITEMS, NPC_STATS, EXP_TABLE, NPC_DROPS } from "@abraxas/shared";
 import type { ClassStats } from "@abraxas/shared";
+import "dotenv/config";
 
-// Initialize Prisma Client with Adapter
-const libsql = createClient({
-  url: process.env.DATABASE_URL ?? "file:./dev.db",
-  authToken: process.env.TURSO_AUTH_TOKEN,
-});
-
-const adapter = new PrismaLibSql(libsql);
-const prisma = new PrismaClient({ adapter });
+// Initialize Prisma Client
+console.log("PersistenceService: DATABASE_URL loaded:", !!process.env.DATABASE_URL);
+const prisma = new PrismaClient();
 
 export class PersistenceService {
     static async authenticateUser(usernameInput: string | undefined): Promise<any> {
