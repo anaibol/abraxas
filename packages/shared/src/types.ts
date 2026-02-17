@@ -122,7 +122,7 @@ export type ServerMessages = {
   attack_hit: { sessionId: string; targetSessionId: string | null; dodged?: boolean };
   cast_start: { sessionId: string; spellId: string; targetTileX: number; targetTileY: number };
   cast_hit: { sessionId: string; spellId: string; targetTileX: number; targetTileY: number; fxId: number };
-  damage: { targetSessionId: string; amount: number; hpAfter: number; type: "physical" | "magic" };
+  damage: { targetSessionId: string; amount: number; hpAfter: number; type: "physical" | "magic" | "dot" };
   heal: { sessionId: string; amount: number; hpAfter: number };
   death: { sessionId: string; killerSessionId?: string };
   respawn: { sessionId: string; tileX: number; tileY: number };

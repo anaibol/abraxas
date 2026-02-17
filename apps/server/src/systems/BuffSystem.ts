@@ -1,31 +1,9 @@
 import type { Player } from "../schema/Player";
 import { logger } from "../logger";
-
-interface Buff {
-  id: string;
-  stat: string;
-  amount: number;
-  expiresAt: number;
-}
-
-interface DoT {
-  id: string;
-  sourceSessionId: string;
-  damage: number;
-  intervalMs: number;
-  expiresAt: number;
-  lastTickAt: number;
-}
-
-interface PlayerBuffState {
-  buffs: Buff[];
-  dots: DoT[];
-  stunnedUntil: number;
-  stealthedUntil: number;
-}
+import { Buff, DoT, PlayerBuffState, ServerMessages } from "@abraxas/shared";
 
 interface BroadcastFn {
-  (type: string, data: Record<string, unknown>): void;
+  <T extends keyof ServerMessages>(type: T, data: ServerMessages[T]): void;
 }
 
 export class BuffSystem {

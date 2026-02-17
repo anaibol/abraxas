@@ -1,5 +1,30 @@
 /** Stat-based combat damage formulas for Abraxas Arena */
 
+export interface BufferedAction {
+  type: "attack" | "cast";
+  spellId?: string;
+  targetTileX?: number;
+  targetTileY?: number;
+  bufferedAt: number;
+}
+
+export interface WindupAction {
+  type: "melee" | "spell";
+  completeAtMs: number;
+  attackerSessionId: string;
+  targetTileX: number;
+  targetTileY: number;
+  spellId?: string;
+}
+
+export interface EntityCombatState {
+  lastGcdMs: number;
+  lastMeleeMs: number;
+  spellCooldowns: Map<string, number>;
+  bufferedAction: BufferedAction | null;
+  windupAction: WindupAction | null;
+}
+
 /** Melee physical damage: STR scaling, armor reduction, AGI dodge chance */
 export function calcMeleeDamage(
   attackerStr: number,

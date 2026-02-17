@@ -144,9 +144,11 @@ export class ArenaRoom extends Room<GameState> {
         return;
     }
     console.log(`ArenaRoom DEBUG: dbPlayer stats x=${dbPlayer.x} y=${dbPlayer.y} facing=${dbPlayer.facing}`);
+    player.classType = classType;
+    console.log(`ArenaRoom FINAL DEBUG: dbPlayer stats x=${dbPlayer.x} y=${dbPlayer.y} facing=${dbPlayer.facing}`);
     player.tileX = dbPlayer.x;
     player.tileY = dbPlayer.y;
-    console.log(`ArenaRoom DEBUG: Assigned schema tileX=${player.tileX} tileY=${player.tileY}`);
+    console.log(`ArenaRoom FINAL DEBUG: Assigned schema tileX=${player.tileX} tileY=${player.tileY}`);
     const dirKey = dbPlayer.facing.toUpperCase();
     if (dirKey === "UP") player.facing = Direction.UP;
     else if (dirKey === "DOWN") player.facing = Direction.DOWN;
@@ -204,12 +206,14 @@ export class ArenaRoom extends Room<GameState> {
                }
             }
             this.inventorySystem.recalcStats(player);
+            console.log(`ArenaRoom TRACE: after recalcStats tileX=${player.tileX}`);
             player.hp = player.maxHp;
             player.mana = player.maxMana;
          }
     }
 
     this.state.players.set(client.sessionId, player);
+    console.log(`ArenaRoom TRACE: after state.set tileX=${player.tileX}`);
 
     client.send("welcome", {
       sessionId: client.sessionId,

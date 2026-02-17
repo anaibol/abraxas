@@ -10,37 +10,19 @@ import {
   calcSpellDamage,
   calcHealAmount,
 } from "@abraxas/shared";
-import type { Direction, SpellDef, ClassStats } from "@abraxas/shared";
+import type { 
+  Direction, 
+  SpellDef, 
+  ClassStats, 
+  BufferedAction, 
+  WindupAction, 
+  EntityCombatState 
+} from "@abraxas/shared";
 import type { Player } from "../schema/Player";
 import type { Npc } from "../schema/Npc";
 import type { BuffSystem } from "./BuffSystem";
 
 type Entity = Player | Npc;
-
-interface BufferedAction {
-  type: "attack" | "cast";
-  spellId?: string;
-  targetTileX?: number;
-  targetTileY?: number;
-  bufferedAt: number;
-}
-
-interface WindupAction {
-  type: "melee" | "spell";
-  completeAtMs: number;
-  attackerSessionId: string;
-  targetTileX: number;
-  targetTileY: number;
-  spellId?: string;
-}
-
-interface EntityCombatState {
-  lastGcdMs: number;
-  lastMeleeMs: number;
-  spellCooldowns: Map<string, number>;
-  bufferedAction: BufferedAction | null;
-  windupAction: WindupAction | null;
-}
 
 import { ServerMessages } from "@abraxas/shared";
 
