@@ -37,6 +37,8 @@ export class GameScene extends Phaser.Scene {
   private lastOverlayCenterX = -1;
   private lastOverlayCenterY = -1;
 
+  private debugText?: Phaser.GameObjects.Text;
+
   constructor(network: NetworkManager, onStateUpdate: StateCallback, onKillFeed?: KillFeedCallback) {
     super({ key: "GameScene" });
     this.network = network;
@@ -148,6 +150,17 @@ export class GameScene extends Phaser.Scene {
     this.room.state.drops.onRemove((_drop: any, id: string) => {
       this.removeDrop(id);
     });
+
+    // Debug text
+    this.debugText = this.add.text(10, 10, "", {
+      fontSize: "16px",
+      color: "#ffffff",
+      stroke: "#000000",
+      strokeThickness: 4,
+      fontFamily: "'Courier New', Courier, monospace",
+    });
+    this.debugText.setScrollFactor(0);
+    this.debugText.setDepth(100);
   }
 
   update(time: number, delta: number) {
@@ -253,6 +266,13 @@ export class GameScene extends Phaser.Scene {
       dt.text.setAlpha(Math.max(0, (dt.expireAt - time) / 1000));
       return true;
     });
+
+    // Update debug text
+    if (this.debugText && localSprite) {
+      this.debugText.setText(
+        `X: ${localSprite.predictedTileX} Y: ${localSprite.predictedTileY}`
+      );
+    }
   }
 
   // --- Targeting visual feedback ---
