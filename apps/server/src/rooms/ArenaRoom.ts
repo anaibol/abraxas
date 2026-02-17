@@ -138,6 +138,8 @@ export class ArenaRoom extends Room<GameState> {
     player.sessionId = client.sessionId;
     player.name = playerName;
     player.classType = classType;
+    player.tileX = dbPlayer.x;
+    player.tileY = dbPlayer.y;
     player.facing = (Direction as any)[dbPlayer.facing.toUpperCase()] ?? Direction.DOWN;
     player.hp = dbPlayer.hp;
     player.maxHp = dbPlayer.maxHp;

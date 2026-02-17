@@ -152,7 +152,7 @@ export class CombatSystem {
       finalTargetY = targetTileY;
     } else {
       // Melee attack: target tile at meleeRange in facing direction
-      const delta = DIRECTION_DELTA[attacker.facing as Direction];
+      const delta = DIRECTION_DELTA[attacker.facing];
       const range = stats.meleeRange;
       finalTargetX = attacker.tileX + delta.dx * range;
       finalTargetY = attacker.tileY + delta.dy * range;

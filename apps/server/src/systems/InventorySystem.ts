@@ -5,7 +5,7 @@ import { logger } from "../logger";
 
 const MAX_INVENTORY_SLOTS = 24;
 
-const EQUIP_SLOT_MAP: Record<EquipmentSlot, keyof Player> = {
+export const EQUIP_SLOT_MAP: Record<EquipmentSlot, keyof Player> = {
   weapon: "equipWeapon",
   armor: "equipArmor",
   shield: "equipShield",
@@ -81,7 +81,7 @@ export class InventorySystem {
     // Check item is in inventory
     if (!this.findItem(player, itemId)) return false;
 
-    const slotKey = EQUIP_SLOT_MAP[def.slot as EquipmentSlot];
+    const slotKey = EQUIP_SLOT_MAP[def.slot];
     if (!slotKey) return false;
 
     // Unequip current item in that slot first
@@ -92,7 +92,11 @@ export class InventorySystem {
 
     // Remove from inventory and equip
     this.removeItem(player, itemId);
-    (player as any)[slotKey] = itemId; // Keep one cast for writing if Colyseus types are stubborn, but reading is clean
+    
+    // Safely assign to the specific equipment slot
+    if (slotKey in player) {
+      (player as any)[slotKey] = itemId; // Colyseus Schema requires some internal casting for dynamic write, but it's now guarded
+    }
 
     // Apply stat bonuses
     this.recalcStats(player);
@@ -109,7 +113,9 @@ export class InventorySystem {
     // Try to add to inventory
     if (!this.addItem(player, itemId)) return false; // Inventory full
 
-    (player as any)[slotKey] = "";
+    if (slotKey in player) {
+      (player as any)[slotKey] = "";
+    }
     this.recalcStats(player);
     return true;
   }
@@ -176,7 +182,9 @@ export class InventorySystem {
       const itemId = player[slotKey];
       if (typeof itemId === "string" && itemId) {
         dropped.push({ itemId, quantity: 1 });
-        (player as any)[slotKey] = "";
+        if (slotKey in player) {
+          (player as any)[slotKey] = "";
+        }
       }
     }
 

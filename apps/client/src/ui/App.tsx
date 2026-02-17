@@ -8,7 +8,7 @@ import { DeathOverlay } from "./DeathOverlay";
 import { KillFeed, type KillFeedEntry } from "./KillFeed";
 import { Console, type ConsoleMessage } from "./Console";
 import { Minimap } from "./Minimap";
-import type { ClassType, TileMap } from "@abraxas/shared";
+import type { ClassType, TileMap, EquipmentSlot } from "@abraxas/shared";
 import { NetworkManager } from "../network/NetworkManager";
 import Phaser from "phaser";
 import { PreloaderScene } from "../scenes/PreloaderScene";
@@ -280,7 +280,7 @@ export function App() {
             <Sidebar
               state={playerState}
               onEquip={(itemId) => networkRef.current?.sendEquip(itemId)}
-              onUnequip={(slot) => networkRef.current?.sendUnequip(slot)}
+              onUnequip={(slot) => networkRef.current?.sendUnequip(slot as EquipmentSlot)}
               onUseItem={(itemId) => networkRef.current?.sendUseItem(itemId)}
               onDropItem={(itemId) => networkRef.current?.sendDropItem(itemId)}
             />

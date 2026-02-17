@@ -32,6 +32,18 @@ export interface BodyEntry extends DirectionEntry {
   offHeadY: number;
 }
 
+function isBodyEntry(entry: IndexEntry): entry is BodyEntry {
+  return typeof entry === "object" && "offHeadX" in entry;
+}
+
+function isDirectionEntry(entry: IndexEntry): entry is DirectionEntry {
+  return typeof entry === "object" && "down" in entry && !("offHeadX" in entry);
+}
+
+function isFxEntry(entry: IndexEntry): entry is FxEntry {
+  return typeof entry === "object" && "animacion" in entry;
+}
+
 export interface FxEntry {
   id: number;
   animacion: number;
@@ -104,38 +116,42 @@ export class AoGrhResolver {
 
   getBodyEntry(bodyId: number): BodyEntry | null {
     const entry = this.cuerpos[bodyId];
-    if (!entry || typeof entry !== "object") return null;
-    return entry as BodyEntry;
+    if (isBodyEntry(entry)) return entry;
+    return null;
   }
 
   getHeadEntry(headId: number): DirectionEntry | null {
     const entry = this.cabezas[headId];
-    if (!entry || typeof entry !== "object") return null;
-    return entry as DirectionEntry;
+    if (isDirectionEntry(entry)) return entry;
+    if (isBodyEntry(entry)) return entry; // BodyEntry extends DirectionEntry
+    return null;
   }
 
   getWeaponEntry(weaponId: number): DirectionEntry | null {
     const entry = this.armas[weaponId];
-    if (!entry || typeof entry !== "object") return null;
-    return entry as DirectionEntry;
+    if (isDirectionEntry(entry)) return entry;
+    if (isBodyEntry(entry)) return entry;
+    return null;
   }
 
   getShieldEntry(shieldId: number): DirectionEntry | null {
     const entry = this.escudos[shieldId];
-    if (!entry || typeof entry !== "object") return null;
-    return entry as DirectionEntry;
+    if (isDirectionEntry(entry)) return entry;
+    if (isBodyEntry(entry)) return entry;
+    return null;
   }
 
   getHelmetEntry(helmetId: number): DirectionEntry | null {
     const entry = this.cascos[helmetId];
-    if (!entry || typeof entry !== "object") return null;
-    return entry as DirectionEntry;
+    if (isDirectionEntry(entry)) return entry;
+    if (isBodyEntry(entry)) return entry;
+    return null;
   }
 
   getFxEntry(fxId: number): FxEntry | null {
     const entry = this.fxs[fxId];
-    if (!entry || typeof entry !== "object") return null;
-    return entry as FxEntry;
+    if (isFxEntry(entry)) return entry;
+    return null;
   }
 
   /**

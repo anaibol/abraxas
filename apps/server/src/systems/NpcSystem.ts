@@ -1,10 +1,14 @@
-import { ClassStats, NPC_STATS, TileMap, Direction, NpcType } from "@abraxas/shared";
+import { ClassStats, NPC_STATS, TileMap, Direction, NpcType, ServerMessages } from "@abraxas/shared";
 import { Npc } from "../schema/Npc";
 import { Player } from "../schema/Player";
 import { GameState } from "../schema/GameState";
 import { MovementSystem } from "./MovementSystem";
 import { CombatSystem } from "./CombatSystem";
 import { logger } from "../logger";
+
+interface BroadcastFn {
+  <T extends keyof ServerMessages>(type: T, data: ServerMessages[T]): void;
+}
 
 const AGGRO_RANGE = 8;
 const RESPAWN_TIME_MS = 10000;
@@ -32,7 +36,9 @@ export class NpcSystem {
   private spawnNpc(type: string, map: TileMap) {
     const npc = new Npc();
     npc.sessionId = crypto.randomUUID();
-    npc.type = type as NpcType;
+    if (type in NPC_STATS) {
+      npc.type = type as NpcType;
+    }
     
     // Find valid spawn location
     let attempts = 0;
@@ -73,7 +79,7 @@ export class NpcSystem {
     tickCount: number, 
     roomId: string,
     findEntityAtTile: (x: number, y: number) => Entity | undefined,
-    broadcast: (type: string, data: Record<string, unknown>) => void
+    broadcast: BroadcastFn
   ) {
     // Handle respawns
     for (let i = this.respawns.length - 1; i >= 0; i--) {

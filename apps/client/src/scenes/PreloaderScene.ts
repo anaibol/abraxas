@@ -106,8 +106,8 @@ export class PreloaderScene extends Phaser.Scene {
 
     // Update label
     const label = this.children.list.find(
-      (c) => c instanceof Phaser.GameObjects.Text
-    ) as Phaser.GameObjects.Text | undefined;
+      (c): c is Phaser.GameObjects.Text => c instanceof Phaser.GameObjects.Text
+    );
     if (label) label.setText(`Loading ${neededPngs.size} graphics...`);
 
     // Load all needed PNGs

@@ -95,7 +95,25 @@ export class PersistenceService {
         try {
             await prisma.player.updateMany({
                 where: { name },
-                data
+                data: {
+                    x: data.x,
+                    y: data.y,
+                    hp: data.hp,
+                    maxHp: data.maxHp,
+                    mana: data.mana,
+                    maxMana: data.maxMana,
+                    str: data.str,
+                    agi: data.agi,
+                    intStat: data.intStat,
+                    facing: Direction[data.facing].toLowerCase(),
+                    gold: data.gold,
+                    level: data.level,
+                    xp: data.xp,
+                    maxXp: data.maxXp,
+                    inventory: JSON.stringify(data.inventory),
+                    equipment: JSON.stringify(data.equipment),
+                    classType: data.classType
+                }
             });
         } catch (e) {
             console.error("Failed to save player", e);

@@ -1,7 +1,7 @@
 import type { TileMap } from "@abraxas/shared";
 import { CLASS_STATS, STARTING_EQUIPMENT, RESPAWN_TIME_MS, ITEMS } from "@abraxas/shared";
 import type { Player } from "../schema/Player";
-import { InventorySystem } from "./InventorySystem";
+import { InventorySystem, EQUIP_SLOT_MAP } from "./InventorySystem";
 
 interface PendingRespawn {
   sessionId: string;
@@ -92,10 +92,12 @@ export class RespawnSystem {
 
       // Auto-equip if it's an equipment item and the slot is empty
       if (def.slot !== "consumable") {
-        const slotKey = `equip${def.slot.charAt(0).toUpperCase() + def.slot.slice(1)}` as keyof Player;
-        if ((player as any)[slotKey] === "") {
-          (player as any)[slotKey] = itemId;
-          continue;
+        const slotKey = EQUIP_SLOT_MAP[def.slot];
+        if (slotKey && player[slotKey] === "") {
+          if (slotKey in player) {
+            (player as any)[slotKey] = itemId;
+            continue;
+          }
         }
       }
       // Otherwise add to inventory
