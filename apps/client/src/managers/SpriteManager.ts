@@ -2,6 +2,7 @@ import { PlayerSprite } from "../entities/PlayerSprite";
 import type { CameraController } from "../systems/CameraController";
 import type { GameScene } from "../scenes/GameScene";
 import type { PlayerEntityState, NpcEntityState } from "@abraxas/shared";
+import type { GameState } from "../../../server/src/schema/GameState";
 
 export class SpriteManager {
   private sprites = new Map<string, PlayerSprite>();
@@ -9,7 +10,7 @@ export class SpriteManager {
   constructor(
     private scene: GameScene,
     private cameraController: CameraController,
-    private getCurrentRoomState: () => any,
+    private getCurrentRoomState: () => GameState | null | undefined,
     private getSessionId: () => string,
   ) {}
 
@@ -66,10 +67,8 @@ export class SpriteManager {
     if (!state) return;
 
     for (const [sessionId, sprite] of this.sprites) {
-      const player = state.players.get(sessionId) as
-        | PlayerEntityState
-        | undefined;
-      const npc = state.npcs.get(sessionId) as NpcEntityState | undefined;
+      const player = state.players.get(sessionId);
+      const npc = state.npcs.get(sessionId);
       const entity = player || npc;
 
       if (entity) {

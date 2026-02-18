@@ -381,7 +381,7 @@ export class GameScene extends Phaser.Scene {
     );
   }
 
-  private buildInventory(localPlayer: any) {
+  private buildInventory(localPlayer: Player) {
     const inventory: { itemId: string; quantity: number; slotIndex: number }[] =
       [];
     if (!localPlayer.inventory) return inventory;
@@ -463,7 +463,7 @@ export class GameScene extends Phaser.Scene {
 
   // --- Event handlers ---
 
-  private addDrop(drop: any, id: string) {
+  private addDrop(drop: Drop, id: string) {
     const px = drop.tileX * TILE_SIZE + TILE_SIZE / 2;
     const py = drop.tileY * TILE_SIZE + TILE_SIZE / 2;
     const circle = this.add.circle(px, py, 6, 0xffcc00);
