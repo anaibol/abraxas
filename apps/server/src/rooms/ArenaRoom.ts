@@ -211,11 +211,9 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         this.spatial,
       );
 
-      this.social = new SocialSystem(this.state, (sid: string) =>
-        this.clients.find((c) => c.sessionId === sid),
-      );
-      this.friends = new FriendsSystem(this.state, (sid: string) =>
-        this.clients.find((c) => c.sessionId === sid),
+      this.social = new SocialSystem(this.state, (sid) => this.findClient(sid));
+      this.friends = new FriendsSystem(this.state, (sid) =>
+        this.findClient(sid),
       );
 
       this.messageHandler = new MessageHandler(
@@ -234,8 +232,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
           const player = Array.from(this.state.players.values()).find(
             (p) => p.name === name,
           );
-          if (!player) return undefined;
-          return this.clients.find((c) => c.sessionId === player.sessionId);
+          return player ? this.findClient(player.sessionId) : undefined;
         },
         this.quests,
         this.gainXp.bind(this),
@@ -564,7 +561,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     );
 
     this.combat.processBufferedActions(now, broadcast, (sessionId: string) => {
-      const c = this.clients.find((cl: Client) => cl.sessionId === sessionId);
+      const c = this.findClient(sessionId);
       return <T extends ServerMessageType>(type: T, data?: ServerMessages[T]) =>
         c?.send(type, data);
     });
@@ -626,12 +623,9 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       .updateProgress(player.userId, player.dbId, "kill", npc.type, 1)
       .then((updatedQuests) => {
         if (updatedQuests.length > 0) {
-          const client = this.clients.find(
-            (c) => c.sessionId === player.sessionId,
-          );
-          if (client) {
+          const client = this.findClient(player.sessionId);
+          if (client)
             this.messageHandler.sendQuestUpdates(client, updatedQuests);
-          }
         }
       });
 
@@ -725,6 +719,20 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     });
   }
 
+  /** Looks up a connected client by session ID. */
+  private findClient(sessionId: string): Client | undefined {
+    return this.clients.find((c) => c.sessionId === sessionId);
+  }
+
+  /** Sends a message to a specific player by their session ID. */
+  private sendToPlayer<T extends ServerMessageType>(
+    sessionId: string,
+    type: T,
+    data: ServerMessages[T],
+  ): void {
+    this.findClient(sessionId)?.send(type, data);
+  }
+
   public gainXp(player: Player, amount: number) {
     player.xp += amount;
 
@@ -753,12 +761,9 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         level: player.level,
       });
 
-      const client = this.clients.find((c) => c.sessionId === player.sessionId);
-      if (client) {
-        client.send(ServerMessageType.Notification, {
-          message: `Level Up! You are now level ${player.level}!`,
-        });
-      }
+      this.sendToPlayer(player.sessionId, ServerMessageType.Notification, {
+        message: `Level Up! You are now level ${player.level}!`,
+      });
     }
   }
 }
