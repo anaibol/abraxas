@@ -93,11 +93,11 @@ export class SpriteManager {
                 }
         
                 if (!entity.alive) {
-                    sprite.container.setAlpha(0.3);
+                    this.setAlpha(sessionId, 0.3);
                 } else if (entity.stealthed && !sprite.isLocal) {
-                    sprite.container.setAlpha(0.15);
+                    this.setAlpha(sessionId, 0.15);
                 } else if (entity.stealthed && sprite.isLocal) {
-                    sprite.container.setAlpha(0.5);
+                    this.setAlpha(sessionId, 0.5);
                 }
             }
             sprite.update(delta);

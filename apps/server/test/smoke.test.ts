@@ -99,6 +99,19 @@ describe("Arena multiplayer smoke test", () => {
     const tokenA = AuthService.generateToken({ userId: userA.id, username: nameA });
     const tokenB = AuthService.generateToken({ userId: userB.id, username: nameB });
 
+    console.log("TEST: Attempting manual WebSocket connection...");
+    try {
+        const wsUrl = `ws://127.0.0.1:${TEST_PORT}/matchmake/joinOrCreate/arena`;
+        const ws = new WebSocket(wsUrl);
+        ws.onopen = () => console.log("TEST: Manual WS connected!");
+        ws.onerror = (e) => console.log("TEST: Manual WS error:", e);
+        ws.onclose = (e) => console.log("TEST: Manual WS closed:", e.code, e.reason);
+        await new Promise(r => setTimeout(r, 500));
+        ws.close();
+    } catch (e) {
+        console.log("TEST: Manual WS failed:", e);
+    }
+
     const roomA: Room<GameState> = await clientA.joinOrCreate("arena", {
       name: nameA,
       classType: "warrior",

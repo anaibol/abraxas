@@ -1,10 +1,12 @@
 import type { Player } from "../schema/Player";
 import { logger } from "../logger";
-import { Buff, DoT, PlayerBuffState, ServerMessages, ServerMessageType } from "@abraxas/shared";
-
-interface BroadcastFn {
-  <T extends ServerMessageType>(type: T, data: ServerMessages[T]): void;
-}
+import {
+  Buff,
+  BroadcastFn,
+  DoT,
+  PlayerBuffState,
+  ServerMessageType,
+} from "@abraxas/shared";
 
 export class BuffSystem {
   private state = new Map<string, PlayerBuffState>();
@@ -22,7 +24,14 @@ export class BuffSystem {
     this.state.delete(sessionId);
   }
 
-  addBuff(sessionId: string, id: string, stat: string, amount: number, durationMs: number, now: number): void {
+  addBuff(
+    sessionId: string,
+    id: string,
+    stat: string,
+    amount: number,
+    durationMs: number,
+    now: number,
+  ): void {
     const s = this.getState(sessionId);
     // Replace existing buff of same id
     s.buffs = s.buffs.filter((b) => b.id !== id);
@@ -36,11 +45,13 @@ export class BuffSystem {
     damage: number,
     intervalMs: number,
     durationMs: number,
-    now: number
+    now: number,
   ): void {
     const s = this.getState(targetSessionId);
     // Replace existing DoT of same id from same source
-    s.dots = s.dots.filter((d) => !(d.id === id && d.sourceSessionId === sourceSessionId));
+    s.dots = s.dots.filter(
+      (d) => !(d.id === id && d.sourceSessionId === sourceSessionId),
+    );
     s.dots.push({
       id,
       sourceSessionId,
@@ -101,7 +112,7 @@ export class BuffSystem {
     broadcast: BroadcastFn,
     onDeath: (player: Player) => void,
     roomId: string,
-    tick: number
+    tick: number,
   ): void {
     for (const [sessionId, s] of this.state.entries()) {
       const player = getPlayer(sessionId);

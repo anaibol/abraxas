@@ -14,13 +14,11 @@ export class DropSystem {
     this.inventorySystem = inv;
   }
 
-  spawnDrop(
+  private createDrop(
     drops: MapSchema<Drop>,
     tileX: number,
     tileY: number,
     itemType: string,
-    roomId: string,
-    tick: number
   ): Drop {
     const id = `drop_${++dropCounter}`;
     const drop = new Drop();
@@ -33,25 +31,25 @@ export class DropSystem {
     return drop;
   }
 
+  spawnDrop(
+    drops: MapSchema<Drop>,
+    tileX: number,
+    tileY: number,
+    itemType: string,
+  ): Drop {
+    return this.createDrop(drops, tileX, tileY, itemType);
+  }
+
   spawnItemDrop(
     drops: MapSchema<Drop>,
     tileX: number,
     tileY: number,
     itemId: string,
     quantity: number,
-    roomId: string,
-    tick: number
   ): Drop {
-    const id = `drop_${++dropCounter}`;
-    const drop = new Drop();
-    drop.id = id;
-    drop.itemType = "item";
+    const drop = this.createDrop(drops, tileX, tileY, "item");
     drop.itemId = itemId;
     drop.quantity = quantity;
-    drop.tileX = tileX;
-    drop.tileY = tileY;
-    drop.spawnedAt = Date.now();
-    drops.set(id, drop);
     return drop;
   }
 
@@ -60,18 +58,9 @@ export class DropSystem {
     tileX: number,
     tileY: number,
     goldAmount: number,
-    roomId: string,
-    tick: number
   ): Drop {
-    const id = `drop_${++dropCounter}`;
-    const drop = new Drop();
-    drop.id = id;
-    drop.itemType = "gold";
+    const drop = this.createDrop(drops, tileX, tileY, "gold");
     drop.goldAmount = goldAmount;
-    drop.tileX = tileX;
-    drop.tileY = tileY;
-    drop.spawnedAt = Date.now();
-    drops.set(id, drop);
     return drop;
   }
 
@@ -81,7 +70,7 @@ export class DropSystem {
     drops: MapSchema<Drop>,
     roomId: string,
     tick: number,
-    onError?: (message: string) => void
+    onError?: (message: string) => void,
   ): boolean {
     const drop = drops.get(dropId);
     if (!drop) return false;

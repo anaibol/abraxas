@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "@colyseus/sdk": "^0.17.0",
+    "@colyseus/sdk": "^0.17.33",
     "prisma": "^7.4.0"
   }
 }

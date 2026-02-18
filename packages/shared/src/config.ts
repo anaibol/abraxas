@@ -1,28 +1,46 @@
 import type { ClassStats, SpellDef, QuestDef } from "./types";
 
-export const CLASS_APPEARANCE: Record<string, { bodyId: number; headId: number }> = {
-  warrior:  { bodyId: 40, headId: 1 },
-  wizard:   { bodyId: 22, headId: 3 },
-  archer:   { bodyId: 60, headId: 2 },
+export const CLASS_APPEARANCE: Record<
+  string,
+  { bodyId: number; headId: number }
+> = {
+  warrior: { bodyId: 40, headId: 1 },
+  wizard: { bodyId: 22, headId: 3 },
+  archer: { bodyId: 60, headId: 2 },
   assassin: { bodyId: 45, headId: 4 },
-  paladin:  { bodyId: 50, headId: 5 },
-  druid:    { bodyId: 55, headId: 6 },
+  paladin: { bodyId: 50, headId: 5 },
+  druid: { bodyId: 55, headId: 6 },
 };
 
-export const NPC_APPEARANCE: Record<string, { bodyId: number; headId: number }> = {
-  orc:      { bodyId: 30, headId: 0 }, // Using 0 for headId if body includes head or just to separate
+export const NPC_APPEARANCE: Record<
+  string,
+  { bodyId: number; headId: number }
+> = {
+  orc: { bodyId: 30, headId: 0 }, // Using 0 for headId if body includes head or just to separate
   skeleton: { bodyId: 35, headId: 0 },
-  goblin:   { bodyId: 45, headId: 0 }, // Reusing assassin body for now if no specific goblin
-  wolf:     { bodyId: 65, headId: 0 },
-  merchant: { bodyId: 5, headId: 0 }, 
-  spider:   { bodyId: 10, headId: 0 },
-  ghost:    { bodyId: 15, headId: 0 },
-  lich:     { bodyId: 70, headId: 0 },
+  goblin: { bodyId: 45, headId: 0 }, // Reusing assassin body for now if no specific goblin
+  wolf: { bodyId: 65, headId: 0 },
+  merchant: { bodyId: 5, headId: 0 },
+  spider: { bodyId: 10, headId: 0 },
+  ghost: { bodyId: 15, headId: 0 },
+  lich: { bodyId: 70, headId: 0 },
 };
 
 export const MERCHANT_INVENTORY: Record<string, string[]> = {
-  general_store: ["health_potion", "mana_potion", "iron_dagger", "wooden_shield", "leather_armor"],
-  blacksmith: ["iron_sword", "steel_sword", "chainmail", "iron_helmet", "iron_shield"],
+  general_store: [
+    "health_potion",
+    "mana_potion",
+    "iron_dagger",
+    "wooden_shield",
+    "leather_armor",
+  ],
+  blacksmith: [
+    "iron_sword",
+    "steel_sword",
+    "chainmail",
+    "iron_helmet",
+    "iron_shield",
+  ],
 };
 
 export const TICK_RATE = 20;
@@ -206,84 +224,83 @@ export const NPC_STATS: Record<string, ClassStats> = {
 };
 
 export const EXP_TABLE = [
-    0,      // Level 1
-    100,    // Level 2
-    250,    // Level 3
-    450,    // Level 4
-    700,    // Level 5
-    1000,   // Level 6
-    1350,   // Level 7
-    1750,   // Level 8
-    2200,   // Level 9
-    2700,   // Level 10
-    3250,   // Level 11
-    3850,   // Level 12
-    4500,   // Level 13
-    5200,   // Level 14
-    5950,   // Level 15
-    6750,   // Level 16
-    7600,   // Level 17
-    8500,   // Level 18
-    9450,   // Level 19
-    10450,  // Level 20
+  0, // Level 1
+  100, // Level 2
+  250, // Level 3
+  450, // Level 4
+  700, // Level 5
+  1000, // Level 6
+  1350, // Level 7
+  1750, // Level 8
+  2200, // Level 9
+  2700, // Level 10
+  3250, // Level 11
+  3850, // Level 12
+  4500, // Level 13
+  5200, // Level 14
+  5950, // Level 15
+  6750, // Level 16
+  7600, // Level 17
+  8500, // Level 18
+  9450, // Level 19
+  10450, // Level 20
 ];
 
 export interface DropTableEntry {
-    itemId: string;
-    chance: number; // 0-1
-    min: number;
-    max: number;
+  itemId: string;
+  chance: number; // 0-1
+  min: number;
+  max: number;
 }
 
 export const NPC_DROPS: Record<string, DropTableEntry[]> = {
-    orc: [
-        { itemId: "great_health_potion", chance: 0.1, min: 1, max: 2 },
-        { itemId: "great_mana_potion", chance: 0.1, min: 1, max: 2 },
-        { itemId: "iron_sword", chance: 0.08, min: 1, max: 1 },
-        { itemId: "steel_sword", chance: 0.01, min: 1, max: 1 },
-        { itemId: "chainmail", chance: 0.03, min: 1, max: 1 },
-        { itemId: "iron_helmet", chance: 0.05, min: 1, max: 1 },
-        { itemId: "wooden_shield", chance: 0.05, min: 1, max: 1 },
-        { itemId: "gold", chance: 0.6, min: 15, max: 40 },
-    ],
-    skeleton: [
-        { itemId: "health_potion", chance: 0.2, min: 1, max: 2 },
-        { itemId: "bronze_axe", chance: 0.05, min: 1, max: 1 },
-        { itemId: "iron_shield", chance: 0.04, min: 1, max: 1 },
-        { itemId: "ring_of_strength", chance: 0.02, min: 1, max: 1 },
-        { itemId: "gold", chance: 0.4, min: 8, max: 20 },
-    ],
-    goblin: [
-        { itemId: "health_potion", chance: 0.2, min: 1, max: 1 },
-        { itemId: "mana_potion", chance: 0.1, min: 1, max: 1 },
-        { itemId: "iron_dagger", chance: 0.06, min: 1, max: 1 },
-        { itemId: "leather_armor", chance: 0.04, min: 1, max: 1 },
-        { itemId: "ring_of_agility", chance: 0.01, min: 1, max: 1 },
-        { itemId: "gold", chance: 0.5, min: 5, max: 15 },
-    ],
-    wolf: [
-        { itemId: "health_potion", chance: 0.05, min: 1, max: 1 },
-        { itemId: "gold", chance: 0.4, min: 5, max: 15 },
-    ],
-    spider: [
-        { itemId: "mana_potion", chance: 0.1, min: 1, max: 1 },
-        { itemId: "gold", chance: 0.3, min: 10, max: 25 },
-    ],
-    ghost: [
-        { itemId: "ring_of_intelligence", chance: 0.05, min: 1, max: 1 },
-        { itemId: "mana_potion", chance: 0.15, min: 1, max: 2 },
-        { itemId: "gold", chance: 0.2, min: 20, max: 50 },
-    ],
-    lich: [
-        { itemId: "steel_sword", chance: 0.5, min: 1, max: 1 },
-        { itemId: "chainmail", chance: 0.4, min: 1, max: 1 },
-        { itemId: "ring_of_intelligence", chance: 0.2, min: 1, max: 1 },
-        { itemId: "health_potion", chance: 1.0, min: 5, max: 10 },
-        { itemId: "mana_potion", chance: 1.0, min: 5, max: 10 },
-        { itemId: "gold", chance: 1.0, min: 500, max: 1500 },
-    ],
+  orc: [
+    { itemId: "great_health_potion", chance: 0.1, min: 1, max: 2 },
+    { itemId: "great_mana_potion", chance: 0.1, min: 1, max: 2 },
+    { itemId: "iron_sword", chance: 0.08, min: 1, max: 1 },
+    { itemId: "steel_sword", chance: 0.01, min: 1, max: 1 },
+    { itemId: "chainmail", chance: 0.03, min: 1, max: 1 },
+    { itemId: "iron_helmet", chance: 0.05, min: 1, max: 1 },
+    { itemId: "wooden_shield", chance: 0.05, min: 1, max: 1 },
+    { itemId: "gold", chance: 0.6, min: 15, max: 40 },
+  ],
+  skeleton: [
+    { itemId: "health_potion", chance: 0.2, min: 1, max: 2 },
+    { itemId: "bronze_axe", chance: 0.05, min: 1, max: 1 },
+    { itemId: "iron_shield", chance: 0.04, min: 1, max: 1 },
+    { itemId: "ring_of_strength", chance: 0.02, min: 1, max: 1 },
+    { itemId: "gold", chance: 0.4, min: 8, max: 20 },
+  ],
+  goblin: [
+    { itemId: "health_potion", chance: 0.2, min: 1, max: 1 },
+    { itemId: "mana_potion", chance: 0.1, min: 1, max: 1 },
+    { itemId: "iron_dagger", chance: 0.06, min: 1, max: 1 },
+    { itemId: "leather_armor", chance: 0.04, min: 1, max: 1 },
+    { itemId: "ring_of_agility", chance: 0.01, min: 1, max: 1 },
+    { itemId: "gold", chance: 0.5, min: 5, max: 15 },
+  ],
+  wolf: [
+    { itemId: "health_potion", chance: 0.05, min: 1, max: 1 },
+    { itemId: "gold", chance: 0.4, min: 5, max: 15 },
+  ],
+  spider: [
+    { itemId: "mana_potion", chance: 0.1, min: 1, max: 1 },
+    { itemId: "gold", chance: 0.3, min: 10, max: 25 },
+  ],
+  ghost: [
+    { itemId: "ring_of_intellect", chance: 0.05, min: 1, max: 1 },
+    { itemId: "mana_potion", chance: 0.15, min: 1, max: 2 },
+    { itemId: "gold", chance: 0.2, min: 20, max: 50 },
+  ],
+  lich: [
+    { itemId: "steel_sword", chance: 0.5, min: 1, max: 1 },
+    { itemId: "chainmail", chance: 0.4, min: 1, max: 1 },
+    { itemId: "ring_of_intellect", chance: 0.2, min: 1, max: 1 },
+    { itemId: "health_potion", chance: 1.0, min: 5, max: 10 },
+    { itemId: "mana_potion", chance: 1.0, min: 5, max: 10 },
+    { itemId: "gold", chance: 1.0, min: 500, max: 1500 },
+  ],
 };
-
 
 export const SPELLS: Record<string, SpellDef> = {
   // ── Warrior ──
@@ -633,28 +650,28 @@ export const QUESTS: Record<string, QuestDef> = {
   slime_slayer: {
     id: "slime_slayer",
     title: "Slime Slayer",
-    description: "The village is being overrun by slimes! Kill 5 slimes to help us out.",
+    description:
+      "The village is being overrun by slimes! Kill 5 slimes to help us out.",
     npcId: "village_elder",
     requirements: [
-      { type: "kill", target: "goblin", count: 5 } // Using goblin as a placeholder for slime
+      { type: "kill", target: "goblin", count: 5 }, // Using goblin as a placeholder for slime
     ],
     rewards: {
       exp: 200,
       gold: 50,
-      items: [{ itemId: "health_potion", quantity: 2 }]
-    }
+      items: [{ itemId: "health_potion", quantity: 2 }],
+    },
   },
   tutorial_talk: {
     id: "tutorial_talk",
     title: "A New Arrival",
-    description: "Welcome to Abraxas! Go talk to the Merchant to learn about trading.",
+    description:
+      "Welcome to Abraxas! Go talk to the Merchant to learn about trading.",
     npcId: "village_elder",
-    requirements: [
-      { type: "talk", target: "merchant", count: 1 }
-    ],
+    requirements: [{ type: "talk", target: "merchant", count: 1 }],
     rewards: {
       exp: 100,
-      gold: 10
-    }
-  }
+      gold: 10,
+    },
+  },
 };
