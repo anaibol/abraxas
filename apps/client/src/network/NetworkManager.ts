@@ -1,4 +1,4 @@
-import { Client, Room } from "colyseus.js";
+import { Client, Room } from "@colyseus/sdk";
 import type {
   ClassType,
   Direction,
@@ -21,7 +21,8 @@ function getServerUrl(): string {
 
 export class NetworkManager<SC = unknown> {
   private client: Client;
-  private room: Room<SC> | null = null;
+  // Room<any, SC>: first param is room-class type (any = untyped messages), second is state
+  private room: Room<any, SC> | null = null;
   private welcomeData: WelcomeData | null = null;
   private welcomeResolve: ((data: WelcomeData) => void) | null = null;
 
@@ -31,7 +32,7 @@ export class NetworkManager<SC = unknown> {
 
   private _send(type: string | number, payload?: unknown) {
     try {
-      this.room?.send(type, payload);
+      (this.room as Room<any>)?.send(type, payload);
     } catch {
       // ignore if not connected
     }
@@ -46,7 +47,7 @@ export class NetworkManager<SC = unknown> {
     classType: ClassType,
     token?: string,
     mapName?: string,
-  ): Promise<Room<SC>> {
+  ): Promise<Room<any, SC>> {
     this.room = await this.client.joinOrCreate<SC>("arena", {
       name,
       classType,
@@ -58,22 +59,25 @@ export class NetworkManager<SC = unknown> {
       this.welcomeResolve = resolve;
     });
 
-    this.room.onMessage(ServerMessageType.Welcome, (data: WelcomeData) => {
-      this.welcomeData = data;
-      if (this.welcomeResolve) {
-        this.welcomeResolve(data);
-        this.welcomeResolve = null;
-      }
-    });
+    (this.room as Room<any>).onMessage(
+      ServerMessageType.Welcome,
+      (data: WelcomeData) => {
+        this.welcomeData = data;
+        if (this.welcomeResolve) {
+          this.welcomeResolve(data);
+          this.welcomeResolve = null;
+        }
+      },
+    );
 
-    this.room.onMessage(
+    (this.room as Room<any>).onMessage(
       ServerMessageType.Warp,
       (data: ServerMessages[ServerMessageType.Warp]) => {
         if (this.onWarp) this.onWarp(data);
       },
     );
 
-    this.room.onMessage(
+    (this.room as Room<any>).onMessage(
       ServerMessageType.Audio,
       (data: ServerMessages[ServerMessageType.Audio]) => {
         if (this.onAudioData) this.onAudioData(data.sessionId, data.data);
@@ -81,28 +85,22 @@ export class NetworkManager<SC = unknown> {
     );
 
     await welcomePromise;
-    return this.room;
+    return this.room!;
   }
 
   public onAudioData: ((sessionId: string, data: ArrayBuffer) => void) | null =
     null;
 
-  /** Measures round-trip latency. Calls onResult with RTT in ms when Pong arrives. */
+  /** Measures round-trip latency using the built-in SDK ping. */
   ping(onResult: (rtt: number) => void): void {
-    if (!this.room) return;
-    const sentAt = Date.now();
-    const off = this.room.onMessage(ServerMessageType.Pong, () => {
-      onResult(Date.now() - sentAt);
-      off(); // unsubscribe after first response
-    });
-    this._send(ClientMessageType.Ping, {});
+    this.room?.ping(onResult);
   }
 
   sendAudio(data: ArrayBuffer) {
     this._send(ClientMessageType.Audio, data);
   }
 
-  getRoom(): Room<SC> {
+  getRoom(): Room<any, SC> {
     if (!this.room) throw new Error("Not connected");
     return this.room;
   }
@@ -189,10 +187,6 @@ export class NetworkManager<SC = unknown> {
 
   sendSellItem(itemId: string, quantity: number, npcId?: string) {
     this._send(ClientMessageType.SellItem, { itemId, quantity, npcId });
-  }
-
-  sendPing() {
-    this._send(ClientMessageType.Ping, {});
   }
 
   disconnect() {

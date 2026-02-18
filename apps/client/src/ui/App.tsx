@@ -33,7 +33,7 @@ import Phaser from "phaser";
 import { PreloaderScene } from "../scenes/PreloaderScene";
 import { GameScene } from "../scenes/GameScene";
 import { GameState } from "../../../server/src/schema/GameState";
-import { Room } from "colyseus.js";
+import { Room } from "@colyseus/sdk";
 
 const toaster = createToaster({
   placement: "top",

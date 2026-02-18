@@ -149,9 +149,13 @@ export class MessageHandler {
       )
     ) {
       if (drop.itemType === "gold") {
-        this.broadcast(ServerMessageType.Notification, { message: `${player.name} picked up ${drop.goldAmount} gold` });
+        this.broadcast(ServerMessageType.Notification, {
+          message: `${player.name} picked up ${drop.goldAmount} gold`,
+        });
       } else {
-        this.broadcast(ServerMessageType.Notification, { message: `${player.name} picked up ${drop.itemId}` });
+        this.broadcast(ServerMessageType.Notification, {
+          message: `${player.name} picked up ${drop.itemId}`,
+        });
         this.quests
           .updateProgress(
             player.userId,
@@ -200,7 +204,10 @@ export class MessageHandler {
         client.send(ServerMessageType.Error, { message: msg }),
       )
     ) {
-      this.broadcast(ServerMessageType.ItemUsed, { sessionId: client.sessionId, itemId: data.itemId });
+      this.broadcast(ServerMessageType.ItemUsed, {
+        sessionId: client.sessionId,
+        itemId: data.itemId,
+      });
     }
   }
 
@@ -511,10 +518,6 @@ export class MessageHandler {
     data: ClientMessages[ClientMessageType.PartyKick],
   ): void {
     this.social.handleKickPlayer(client, data.targetSessionId);
-  }
-
-  handlePing(client: Client): void {
-    client.send(ServerMessageType.Pong, { serverTime: Date.now() });
   }
 
   handleAudio(client: Client, data: ArrayBuffer): void {

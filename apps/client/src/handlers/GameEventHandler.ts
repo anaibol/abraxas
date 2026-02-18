@@ -1,4 +1,4 @@
-import type { Room } from "colyseus.js";
+import type { Room } from "@colyseus/sdk";
 import type { ServerMessages } from "@abraxas/shared";
 import { ServerMessageType } from "@abraxas/shared";
 import type { SpriteManager } from "../managers/SpriteManager";

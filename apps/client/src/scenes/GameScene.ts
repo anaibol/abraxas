@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import type { Room } from "colyseus.js";
+import type { Room } from "@colyseus/sdk";
 import type { NetworkManager } from "../network/NetworkManager";
 import type { WelcomeData } from "@abraxas/shared";
 import { InputHandler } from "../systems/InputHandler";

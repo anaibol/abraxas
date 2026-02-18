@@ -197,7 +197,6 @@ export enum ServerMessageType {
   Notification = "notification",
   ItemUsed = "item_used",
   InvalidTarget = "invalid_target",
-  Pong = "pong",
   LevelUp = "level_up",
   OpenShop = "open_shop",
   BuyItem = "buy_item",
@@ -293,7 +292,6 @@ export type ServerMessages = {
   [ServerMessageType.Notification]: { message: string };
   [ServerMessageType.ItemUsed]: { sessionId: string; itemId: string };
   [ServerMessageType.InvalidTarget]: null;
-  [ServerMessageType.Pong]: { serverTime: number };
   [ServerMessageType.LevelUp]: { sessionId: string; level: number };
   [ServerMessageType.OpenShop]: { npcId: string; inventory: string[] };
   [ServerMessageType.BuyItem]: { itemId: string; quantity: number };
@@ -357,7 +355,6 @@ export enum ClientMessageType {
   Interact = "interact",
   BuyItem = "buy_item",
   SellItem = "sell_item",
-  Ping = "ping",
   QuestAccept = "quest_accept",
   QuestComplete = "quest_complete",
 }
@@ -390,7 +387,6 @@ export type ClientMessages = {
     quantity: number;
     npcId?: string;
   };
-  [ClientMessageType.Ping]: {};
   [ClientMessageType.QuestAccept]: { questId: string };
   [ClientMessageType.QuestComplete]: { questId: string };
 };
