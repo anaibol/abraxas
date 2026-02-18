@@ -47,7 +47,7 @@
         "jsonwebtoken": "^9.0.3",
       },
       "devDependencies": {
-        "@colyseus/sdk": "^0.17.0",
+        "@colyseus/sdk": "^0.17.33",
         "@types/bun": "latest",
         "prisma": "^7.4.0",
       },

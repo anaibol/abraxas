@@ -6,7 +6,6 @@ import {
   QuestType,
 } from "@abraxas/shared";
 import { prisma } from "../database/db";
-import { logger } from "../logger";
 
 export class QuestSystem {
   private playerQuests = new Map<string, Map<string, PlayerQuestState>>(); // userId -> questId -> state
