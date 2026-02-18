@@ -22,7 +22,8 @@ export async function createGameServer(options: {
     transport,
   });
 
-  server.define("arena", ArenaRoom);
+  const handler = server.define("arena", ArenaRoom);
+  console.error(`[server.ts] Registered 'arena' room handler: ${!!handler}`);
 
   const app = transport.getExpressApp();
 
@@ -104,22 +105,6 @@ export async function createGameServer(options: {
       ".ico": "image/x-icon",
       ".map": "application/json",
     };
-
-    app.use((req: any, res: any, next?: any) => {
-        const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-        let urlPath = url.pathname;
-        if (urlPath === "/") urlPath = "/index.html";
-        
-        const filePath = join(options.staticDir!, urlPath);
-        
-        if (filePath.startsWith(options.staticDir!) && existsSync(filePath) && statSync(filePath).isFile()) {
-            const ext = extname(filePath);
-            const mime = MIME_TYPES[ext] || "application/octet-stream";
-            res.status(200).header("Content-Type", mime).send(readFileSync(filePath));
-        } else if (next) {
-            next();
-        }
-    });
 
     app.use((req: any, res: any) => {
         const indexPath = join(options.staticDir!, "index.html");
