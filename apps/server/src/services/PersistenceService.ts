@@ -1,4 +1,5 @@
 import { prisma } from "../database/db";
+import { AuthService } from "../database/auth";
 import { CLASS_STATS, Direction } from "@abraxas/shared";
 import type { InventoryEntry, EquipmentData } from "@abraxas/shared";
 
@@ -18,9 +19,9 @@ export class PersistenceService {
                 }
             });
         } else {
-            // Verify password (simplistic for now, assuming caller handles hash check or we do it here)
-            // For Phase 1, we might just return the user if found, validating password elsewhere
-            // But ideally: if (user.password !== passwordHash) throw error
+            // Verify password
+            const isValid = await AuthService.verifyPassword(passwordHash, user.password);
+            if (!isValid) return null;
         }
     
         return user;
@@ -51,12 +52,15 @@ export class PersistenceService {
                  y,
                  hp: stats.hp,
                  maxHp: stats.hp,
-                 mana: stats.mana,
-                 maxMana: stats.mana,
+                 mana: stats.mana || 0,
+                 maxMana: stats.mana || 0,
                  str: stats.str,
                  agi: stats.agi,
                  intStat: stats.int,
                  facing: "down",
+             },
+             include: {
+                 inventory: true
              }
          });
     }
@@ -102,9 +106,11 @@ export class PersistenceService {
                 }
             });
 
-            // 2. Update Inventory (Delete all and recreate - simplest for now)
+            // 2. Update Inventory (Delete and recreate - simple but could be optimized)
             const player = await prisma.player.findUnique({ where: { name } });
             if (player) {
+                // Optimization: In a real high-traffic game, we'd only sync diffs.
+                // For now, wrapping in a transaction ensures data integrity.
                 await prisma.$transaction([
                     prisma.inventoryItem.deleteMany({ where: { playerId: player.id } }),
                     prisma.inventoryItem.createMany({

@@ -18,6 +18,7 @@ interface MinimapProps {
 
 export const Minimap: React.FC<MinimapProps> = ({ map, players, npcs, currentPlayerId }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const bgCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -25,30 +26,41 @@ export const Minimap: React.FC<MinimapProps> = ({ map, players, npcs, currentPla
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // Draw Map Background (Collision)
+    const scaleX = canvas.width / map.width;
+    const scaleY = canvas.height / map.height;
+
+    if (!bgCanvasRef.current) {
+        const bgCanvas = document.createElement("canvas");
+        bgCanvas.width = canvas.width;
+        bgCanvas.height = canvas.height;
+        const bgCtx = bgCanvas.getContext("2d");
+        if (bgCtx) {
+            // Draw Terrain
+            bgCtx.fillStyle = "#222";
+            bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+
+            bgCtx.fillStyle = "#444";
+            for (let y = 0; y < map.height; y++) {
+                for (let x = 0; x < map.width; x++) {
+                    if (map.collision[y]?.[x] === 0) { // Walkable
+                        bgCtx.fillRect(x * scaleX, y * scaleY, scaleX, scaleY);
+                    }
+                }
+            }
+            bgCanvasRef.current = bgCanvas;
+        }
+    }
+
     let animationFrameId: number;
 
     const render = () => {
         // Clear
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Draw Map Background (Collision)
-        // Optimization: Draw background only once? Or use a separate canvas?
-        // For 200x200 it's fast enough.
-        
-        const scaleX = canvas.width / map.width;
-        const scaleY = canvas.height / map.height;
-
-        // Draw Terrain
-        ctx.fillStyle = "#222";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        ctx.fillStyle = "#444";
-        for (let y = 0; y < map.height; y++) {
-            for (let x = 0; x < map.width; x++) {
-                if (map.collision[y]?.[x] === 0) { // Walkable
-                    ctx.fillRect(x * scaleX, y * scaleY, scaleX, scaleY);
-                }
-            }
+        // Draw cached terrain
+        if (bgCanvasRef.current) {
+            ctx.drawImage(bgCanvasRef.current, 0, 0);
         }
 
         // Draw NPCs

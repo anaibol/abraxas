@@ -1,10 +1,11 @@
 import { PlayerSprite } from "../entities/PlayerSprite";
 import type { CameraController } from "../systems/CameraController";
 import type { GameScene } from "../scenes/GameScene";
-import type { EntityState } from "@abraxas/shared";
-import { GameState } from "../../../server/src/schema/GameState";
-import { Player } from "../../../server/src/schema/Player";
-import { Npc } from "../../../server/src/schema/Npc";
+import type { 
+    EntityState, 
+    PlayerEntityState, 
+    NpcEntityState 
+} from "@abraxas/shared";
 
 export class SpriteManager {
     private sprites = new Map<string, PlayerSprite>();
@@ -12,11 +13,11 @@ export class SpriteManager {
     constructor(
         private scene: GameScene,
         private cameraController: CameraController,
-        private getCurrentRoomState: () => GameState, 
+        private getCurrentRoomState: () => any, 
         private getSessionId: () => string
     ) {}
 
-    addPlayer(player: Player, sessionId: string) {
+    addPlayer(player: PlayerEntityState, sessionId: string) {
         if (this.sprites.has(sessionId)) return;
 
         const isLocal = sessionId === this.getSessionId();
@@ -45,7 +46,7 @@ export class SpriteManager {
         }
     }
 
-    addNpc(npc: Npc, sessionId: string) {
+    addNpc(npc: NpcEntityState, sessionId: string) {
         if (this.sprites.has(sessionId)) return;
         
         const sprite = new PlayerSprite(
@@ -78,8 +79,8 @@ export class SpriteManager {
         if (!state) return;
 
         for (const [sessionId, sprite] of this.sprites) {
-            const player = state.players.get(sessionId);
-            const npc = state.npcs.get(sessionId);
+            const player = state.players.get(sessionId) as PlayerEntityState | undefined;
+            const npc = state.npcs.get(sessionId) as NpcEntityState | undefined;
             const entity = player || npc;
             
             if (entity) {

@@ -116,11 +116,11 @@ export function App() {
   }, [isChatOpen]);
 
 
-  const handleJoin = useCallback(async (name: string, classType: ClassType) => {
+  const handleJoin = useCallback(async (name: string, classType: ClassType, token: string) => {
     setConnecting(true);
     try {
       const network = new NetworkManager<GameState>();
-      await network.connect(name, classType);
+      await network.connect(name, classType, token);
       networkRef.current = network;
       roomRef.current = network.getRoom();
       

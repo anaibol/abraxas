@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { Box, Flex, Text, Input, Button, Grid } from "@chakra-ui/react";
 import type { ClassType } from "@abraxas/shared";
-import { CLASS_STATS } from "@abraxas/shared";
 
 interface LobbyProps {
-  onJoin: (name: string, classType: ClassType) => void;
+  onJoin: (name: string, classType: ClassType, token: string) => void;
   connecting: boolean;
 }
 
@@ -19,7 +18,6 @@ const P = {
   goldMuted: "#8a7a60",
   goldText: "#c8b68a",
   blood: "#c41e3a",
-  arcane: "#3355cc",
   font: "'Friz Quadrata', Georgia, serif",
 };
 
@@ -35,8 +33,33 @@ const CLASS_INFO: Record<ClassType, { icon: string; color: string; desc: string 
 };
 
 export function Lobby({ onJoin, connecting }: LobbyProps) {
-  const [name, setName] = useState("Player");
+  const [mode, setMode] = useState<"login" | "register" | "class_select">("login");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [token, setToken] = useState("");
   const [classType, setClassType] = useState<ClassType>("warrior");
+  const [error, setError] = useState("");
+
+  const handleAuth = async () => {
+    setError("");
+    const url = mode === "login" ? "/api/login" : "/api/register";
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setToken(data.token);
+        setMode("class_select");
+      } else {
+        setError(data.error || "Authentication failed");
+      }
+    } catch (e) {
+      setError("Network error");
+    }
+  };
 
   return (
     <Flex pos="fixed" inset="0" align="center" justify="center" bg="rgba(4,4,8,0.96)" zIndex="100">
@@ -58,75 +81,119 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
         </Text>
         <Box h="1px" bg={`linear-gradient(90deg, transparent, ${P.gold}, transparent)`} mb="7" />
 
-        <Text fontSize="10px" color={P.goldMuted} letterSpacing="2px" textTransform="uppercase" mb="1.5">Name</Text>
-        <Input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          maxLength={16}
-          bg="#08080c"
-          border="1px solid"
-          borderColor={P.border}
-          borderRadius="2px"
-          color={P.goldText}
-          fontFamily={P.font}
-          fontSize="14px"
-          p="2.5"
-          mb="5"
-          outline="none"
-          _focus={{ borderColor: P.gold, boxShadow: `0 0 10px rgba(180,140,50,0.15)` }}
-        />
+        {mode !== "class_select" ? (
+          <>
+            <Text fontSize="10px" color={P.goldMuted} letterSpacing="2px" textTransform="uppercase" mb="1.5">Username</Text>
+            <Input
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              maxLength={16}
+              bg="#08080c"
+              border="1px solid"
+              borderColor={P.border}
+              borderRadius="2px"
+              color={P.goldText}
+              fontFamily={P.font}
+              fontSize="14px"
+              p="2.5"
+              mb="4"
+              outline="none"
+              _focus={{ borderColor: P.gold }}
+            />
 
-        <Text fontSize="10px" color={P.goldMuted} letterSpacing="2px" textTransform="uppercase" mb="2">Class</Text>
-        <Grid templateColumns="repeat(3, 1fr)" gap="2.5" mb="7">
-          {CLASS_TYPES.map((cls) => {
-            const sel = classType === cls;
-            const info = CLASS_INFO[cls];
-            return (
-              <Box
-                key={cls}
-                textAlign="center"
-                p="3"
-                bg={sel ? P.raised : "#08080c"}
-                border="1px solid"
-                borderColor={sel ? info.color : P.border}
-                borderRadius="2px"
-                cursor="pointer"
-                transition="all 0.15s"
-                onClick={() => setClassType(cls)}
-                _hover={{ bg: P.raised, borderColor: P.border }}
-                boxShadow={sel ? `0 0 16px ${info.color}33, inset 0 0 20px ${info.color}11` : "none"}
-              >
-                <Text fontSize="24px" mb="1">{info.icon}</Text>
-                <Text fontSize="9px" fontWeight="700" letterSpacing="1.5px" textTransform="uppercase" color={sel ? P.goldText : P.goldMuted}>
-                  {cls}
-                </Text>
-                <Text fontSize="8px" color={P.goldDark} mt="0.5">{info.desc}</Text>
-              </Box>
-            );
-          })}
-        </Grid>
+            <Text fontSize="10px" color={P.goldMuted} letterSpacing="2px" textTransform="uppercase" mb="1.5">Password</Text>
+            <Input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              bg="#08080c"
+              border="1px solid"
+              borderColor={P.border}
+              borderRadius="2px"
+              color={P.goldText}
+              fontFamily={P.font}
+              fontSize="14px"
+              p="2.5"
+              mb="5"
+              outline="none"
+              _focus={{ borderColor: P.gold }}
+            />
 
-        <Button
-          w="100%"
-          p="3"
-          bg={connecting ? P.goldDark : P.goldDim}
-          color={connecting ? P.goldMuted : "#08080c"}
-          fontFamily={P.font}
-          fontWeight="700"
-          fontSize="13px"
-          letterSpacing="3px"
-          textTransform="uppercase"
-          border="1px solid"
-          borderColor={P.gold}
-          borderRadius="2px"
-          cursor={connecting ? "wait" : "pointer"}
-          disabled={connecting}
-          _hover={connecting ? {} : { bg: P.gold }}
-          _active={{ bg: P.goldDark }}
-          onClick={() => onJoin(name.trim() || "Player", classType)}
-        >
-          {connecting ? "Connecting..." : "Enter Arena"}
-        </Button>
+            {error && <Text color={P.blood} fontSize="11px" mb="4" textAlign="center">{error}</Text>}
+
+            <Button
+              w="100%"
+              mb="4"
+              bg={P.goldDim}
+              color="#08080c"
+              onClick={handleAuth}
+              fontFamily={P.font}
+              fontWeight="700"
+              fontSize="13px"
+              letterSpacing="3px"
+              textTransform="uppercase"
+              _hover={{ bg: P.gold }}
+            >
+              {mode === "login" ? "Login" : "Register"}
+            </Button>
+
+            <Text
+              textAlign="center"
+              fontSize="11px"
+              color={P.goldDark}
+              cursor="pointer"
+              _hover={{ color: P.goldText }}
+              onClick={() => setMode(mode === "login" ? "register" : "login")}
+            >
+              {mode === "login" ? "Need an account? Register" : "Have an account? Login"}
+            </Text>
+          </>
+        ) : (
+          <>
+            <Text fontSize="10px" color={P.goldMuted} letterSpacing="2px" textTransform="uppercase" mb="2">Select Class</Text>
+            <Grid templateColumns="repeat(3, 1fr)" gap="2.5" mb="7">
+              {CLASS_TYPES.map((cls) => {
+                const sel = classType === cls;
+                const info = CLASS_INFO[cls];
+                return (
+                  <Box
+                    key={cls}
+                    textAlign="center"
+                    p="3"
+                    bg={sel ? P.raised : "#08080c"}
+                    border="1px solid"
+                    borderColor={sel ? info.color : P.border}
+                    borderRadius="2px"
+                    cursor="pointer"
+                    transition="all 0.15s"
+                    onClick={() => setClassType(cls)}
+                    _hover={{ bg: P.raised }}
+                  >
+                    <Text fontSize="24px" mb="1">{info.icon}</Text>
+                    <Text fontSize="9px" fontWeight="700" color={sel ? P.goldText : P.goldMuted}>{cls.toUpperCase()}</Text>
+                    <Text fontSize="8px" color={P.goldDark}>{info.desc}</Text>
+                  </Box>
+                );
+              })}
+            </Grid>
+
+            <Button
+              w="100%"
+              bg={connecting ? P.goldDark : P.goldDim}
+              color="#08080c"
+              disabled={connecting}
+              onClick={() => onJoin(username, classType, token)}
+              fontFamily={P.font}
+              fontWeight="700"
+              fontSize="13px"
+              letterSpacing="3px"
+              textTransform="uppercase"
+              _hover={{ bg: P.gold }}
+            >
+              {connecting ? "Connecting..." : "Enter Arena"}
+            </Button>
+          </>
+        )}
       </Box>
     </Flex>
   );

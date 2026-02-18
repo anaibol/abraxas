@@ -5,6 +5,8 @@ import { createGameServer } from "../src/server";
 import { TileMap, Direction } from "@abraxas/shared";
 import { GameState } from "../src/schema/GameState";
 import { Player } from "../src/schema/Player";
+import { AuthService } from "../src/database/auth";
+import { prisma } from "../src/database/db";
 
 const TEST_PORT = 2568;
 let server: any;
@@ -73,14 +75,35 @@ describe("Arena multiplayer smoke test", () => {
 
     // ---- Step 1: Both clients join ----
     const testSuffix = Date.now().toString();
+    const nameA = "Warrior_" + testSuffix;
+    const nameB = "Wizard_" + testSuffix;
+
+    // Seed users
+    const password = await AuthService.hashPassword("password");
+    const userA = await prisma.user.upsert({
+      where: { username: nameA },
+      update: { password },
+      create: { username: nameA, password }
+    });
+    const userB = await prisma.user.upsert({
+      where: { username: nameB },
+      update: { password },
+      create: { username: nameB, password }
+    });
+
+    const tokenA = AuthService.generateToken({ userId: userA.id, username: nameA });
+    const tokenB = AuthService.generateToken({ userId: userB.id, username: nameB });
+
     const roomA: Room<GameState> = await clientA.joinOrCreate("arena", {
-      name: "Warrior_" + testSuffix,
+      name: nameA,
       classType: "warrior",
+      token: tokenA,
     });
 
     const roomB: Room<GameState> = await clientB.joinOrCreate("arena", {
-      name: "Wizard_" + testSuffix,
+      name: nameB,
       classType: "wizard",
+      token: tokenB,
     });
     // Wait until both rooms see 2 players
     await waitForState(roomA, (state) => state.players.size >= 2);
