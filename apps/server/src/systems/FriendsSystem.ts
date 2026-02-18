@@ -123,28 +123,47 @@ export class FriendsSystem {
         const client = this.findClient(sessionId);
         if (!client) return;
 
-        const friendships = await prisma.requesterFriend.findMany({
-            where: {
-                OR: [
-                    { requesterId: userId, status: "ACCEPTED" },
-                    { recipientId: userId, status: "ACCEPTED" }
-                ]
-            },
-            include: {
-                requester: { include: { players: true } },
-                recipient: { include: { players: true } }
-            }
-        });
+        // Fetch accepted friendships from both tables
+        const [outgoing, incoming] = await Promise.all([
+            prisma.requesterFriend.findMany({
+                where: { requesterId: userId, status: "ACCEPTED" }
+            }),
+            prisma.recipientFriend.findMany({
+                where: { recipientId: userId, status: "ACCEPTED" }
+            })
+        ]);
 
-        const friends = friendships.map((f: any) => {
-            const isRequester = f.requesterId === userId;
-            const friendUser = isRequester ? f.recipient : f.requester;
-            return {
-                id: friendUser.id,
-                name: friendUser.players[0]?.name || "Unknown",
-                online: this.onlineUsers.has(friendUser.id)
-            };
-        });
+        const friends: any[] = [];
+
+        // For each outgoing request, the 'target' is the recipient
+        for (const f of outgoing) {
+            const user = await prisma.user.findUnique({
+                where: { id: f.recipientId },
+                include: { players: true }
+            });
+            if (user) {
+                friends.push({
+                    id: user.id,
+                    name: user.players[0]?.name || "Unknown",
+                    online: this.onlineUsers.has(user.id)
+                });
+            }
+        }
+
+        // For each incoming request, the 'target' is the requester
+        for (const f of incoming) {
+            const user = await prisma.user.findUnique({
+                where: { id: f.requesterId },
+                include: { players: true }
+            });
+            if (user) {
+                friends.push({
+                    id: user.id,
+                    name: user.players[0]?.name || "Unknown",
+                    online: this.onlineUsers.has(user.id)
+                });
+            }
+        }
 
         client.send("friend_update", { friends });
     }

@@ -23,7 +23,7 @@ import { FriendsSystem } from "../systems/FriendsSystem";
 import { SpatialLookup } from "../utils/SpatialLookup";
 import { EntityUtils, Entity } from "../utils/EntityUtils";
 
-export class ArenaRoom extends Room<GameState> {
+export class ArenaRoom extends Room<any> {
   private map!: TileMap;
   private roomMapName!: string;
   private movement!: MovementSystem;
@@ -44,12 +44,14 @@ export class ArenaRoom extends Room<GameState> {
     this.setState(new GameState());
     
     this.roomMapName = options.mapName || "arena";
-    console.log(`[ArenaRoom] Attempting to load map: ${this.roomMapName}`);
-    const mapData = await MapService.getMap(this.roomMapName);
-    if (!mapData) {
+    
+    // Check if map was provided in options (from client) or define options (from server.define)
+    const defineOptions = (this as any).options || {};
+    this.map = (options as any).map || defineOptions.map || (await MapService.getMap(this.roomMapName));
+    
+    if (!this.map) {
         throw new Error(`Failed to load map: ${this.roomMapName}`);
     }
-    this.map = mapData;
 
     this.drops.setInventorySystem(this.inventorySystem);
     
@@ -75,9 +77,9 @@ export class ArenaRoom extends Room<GameState> {
         this.broadcast.bind(this),
         this.spatial.isTileOccupied.bind(this.spatial),
         (name: string) => {
-            const player = Array.from(this.state.players.values()).find(p => p.name === name);
+            const player = Array.from(this.state.players.values()).find((p: any) => p.name === name);
             if (!player) return undefined;
-            return this.clients.find(c => c.sessionId === player.sessionId);
+            return this.clients.find(c => c.sessionId === (player as any).sessionId);
         }
     );
 
@@ -307,7 +309,7 @@ export class ArenaRoom extends Room<GameState> {
         this.friends.setUserOffline(player.userId);
 
         const inventory: InventoryEntry[] = [];
-        player.inventory.forEach(item => {
+        (player.inventory as any).forEach((item: any) => {
             inventory.push({ itemId: item.itemId, quantity: item.quantity, slotIndex: item.slotIndex });
         });
         
@@ -365,12 +367,12 @@ export class ArenaRoom extends Room<GameState> {
 
     this.buffSystem.tick(
       now,
-      (sid) => {
+      (sid: string) => {
         const entity = this.spatial.findEntityBySessionId(sid);
-        return entity && EntityUtils.isPlayer(entity) ? entity : undefined;
+        return entity && EntityUtils.isPlayer(entity) ? (entity as Player) : undefined;
       },
       broadcast,
-      (player) => {
+      (player: Entity) => {
         if (EntityUtils.isPlayer(player)) {
           this.onEntityDeath(player, "");
         }
@@ -383,11 +385,11 @@ export class ArenaRoom extends Room<GameState> {
         _deltaTime,
         this.map,
         now,
-        (x, y, excludeId) => this.spatial.isTileOccupied(x, y, excludeId),
+        (x: number, y: number, excludeId: string) => this.spatial.isTileOccupied(x, y, excludeId),
         this.state.tick,
         this.roomId,
         broadcast,
-        (caster, spellId, x, y) => this.onSummon(caster, spellId, x, y)
+        (caster: Entity, spellId: string, x: number, y: number) => this.onSummon(caster, spellId, x, y)
     );
 
     this.combat.processWindups(
@@ -395,8 +397,8 @@ export class ArenaRoom extends Room<GameState> {
       broadcast,
       this.state.tick,
       this.roomId,
-      (entity, killerSessionId) => this.onEntityDeath(entity, killerSessionId),
-      (caster, spellId, x, y) => this.onSummon(caster, spellId, x, y)
+      (entity: Entity, killerSessionId: string) => this.onEntityDeath(entity, killerSessionId),
+      (caster: Entity, spellId: string, x: number, y: number) => this.onSummon(caster, spellId, x, y)
     );
 
     this.combat.processBufferedActions(
@@ -404,8 +406,8 @@ export class ArenaRoom extends Room<GameState> {
       broadcast,
       this.state.tick,
       this.roomId,
-      (sessionId) => {
-        const c = this.clients.find((cl) => cl.sessionId === sessionId);
+      (sessionId: string) => {
+        const c = this.clients.find((cl: Client) => cl.sessionId === sessionId);
         return (type: string, data?: Record<string, unknown>) => c?.send(type, data ?? {});
       },
     );
@@ -414,7 +416,7 @@ export class ArenaRoom extends Room<GameState> {
 
     this.respawnSystem.tick(
       now,
-      (sid) => this.state.players.get(sid),
+      (sid: string) => this.state.players.get(sid),
       this.map,
       broadcast
     );
@@ -423,10 +425,10 @@ export class ArenaRoom extends Room<GameState> {
   private onEntityDeath(entity: Entity, killerSessionId: string) {
     if (EntityUtils.isPlayer(entity)) {
         // It's a player
-        this.onPlayerDeath(entity, killerSessionId);
+        this.onPlayerDeath(entity as Player, killerSessionId);
     } else {
         // It's an NPC
-        this.onNpcDeath(entity, killerSessionId);
+        this.onNpcDeath(entity as Npc, killerSessionId);
     }
   }
 
@@ -467,14 +469,6 @@ export class ArenaRoom extends Room<GameState> {
               player.xp -= player.maxXp;
               player.level++;
               
-              // Increase Max XP for next level (simple curve: current * 1.5 or look up table)
-              // We have EXP_TABLE in config.
-              // EXP_TABLE[level] is exp needed to reach level+1 ? Or total exp?
-              // Let's assume EXP_TABLE[level] is the XP needed to go from level to level+1.
-              // But config says: 0, 100, 250...
-              // So level 1 needs 100 xp to go to level 2.
-              // We should look up EXP_TABLE[player.level] if it exists.
-              
               const nextLevelEntry = EXP_TABLE[player.level]; 
               if (nextLevelEntry !== undefined) {
                   player.maxXp = nextLevelEntry;
@@ -484,8 +478,6 @@ export class ArenaRoom extends Room<GameState> {
               }
 
               // Stat Increases (simple +5 to all + recovery)
-              const classStats = CLASS_STATS[player.classType];
-              // Maybe scale stats? For now just flat bonus + full heal
               player.maxHp += 20;
               player.maxMana += 10;
               player.str += 2;
@@ -508,7 +500,6 @@ export class ArenaRoom extends Room<GameState> {
       }
 
       // 2. Drops (Diablo Style)
-      // Look up drop table
       const dropTable = NPC_DROPS[npc.type];
       if (dropTable) {
           for (const entry of dropTable) {
@@ -519,7 +510,6 @@ export class ArenaRoom extends Room<GameState> {
                   const offsetX = (Math.random() - 0.5) * 1.5; 
                   const offsetY = (Math.random() - 0.5) * 1.5;
                   
-                  // If it's gold, spawn gold drop
                   if (entry.itemId === "gold") {
                        this.drops.spawnGoldDrop(
                           this.state.drops,
@@ -588,9 +578,9 @@ export class ArenaRoom extends Room<GameState> {
         const killer = this.spatial.findEntityBySessionId(killerSessionId);
         if (killer) {
             if (EntityUtils.isPlayer(killer)) { // It's a Player
-                killerName = killer.name;
+                killerName = (killer as Player).name;
             } else if (EntityUtils.isNpc(killer)) { // It's an NPC
-                killerName = killer.type;
+                killerName = (killer as Npc).type;
             }
         }
     }

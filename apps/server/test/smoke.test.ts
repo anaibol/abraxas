@@ -10,6 +10,7 @@ import { prisma } from "../src/database/db";
 
 const TEST_PORT = 2568;
 let server: any;
+let testMap: TileMap;
 
 /**
  * Test map (arena.test.json):
@@ -26,8 +27,8 @@ beforeAll(async () => {
     import.meta.dir,
     "../../../packages/shared/src/maps/arena.test.json"
   );
-  const map: TileMap = await Bun.file(mapPath).json();
-  server = await createGameServer({ port: TEST_PORT, map });
+  testMap = await Bun.file(mapPath).json();
+  server = await createGameServer({ port: TEST_PORT, map: testMap });
   // Ensure Bun.serve is ready
   await new Promise(r => setTimeout(r, 500));
 });
@@ -101,6 +102,7 @@ describe("Arena multiplayer smoke test", () => {
       classType: "warrior",
       token: tokenA,
       mapName: "arena.test",
+      map: testMap
     });
 
     const roomB: Room<GameState> = await clientB.joinOrCreate("arena", {
@@ -108,6 +110,7 @@ describe("Arena multiplayer smoke test", () => {
       classType: "wizard",
       token: tokenB,
       mapName: "arena.test",
+      map: testMap
     });
     // Wait until both rooms see 2 players
     await waitForState(roomA, (state) => state.players.size >= 2);
