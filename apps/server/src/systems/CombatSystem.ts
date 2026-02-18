@@ -11,7 +11,7 @@ import {
 import type {
   ServerMessages,
   BroadcastFn,
-  SpellDef,
+  Spell,
   WindupAction,
   EntityCombatState,
   TileMap,
@@ -358,7 +358,7 @@ export class CombatSystem {
   private applySpellToTarget(
     attacker: Entity,
     target: Entity,
-    spell: SpellDef,
+    spell: Spell,
     broadcast: BroadcastFn,
     onDeath: (entity: Entity, killerSessionId?: string) => void,
     now: number,

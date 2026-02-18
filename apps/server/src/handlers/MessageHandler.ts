@@ -15,7 +15,6 @@ import {
   MERCHANT_INVENTORY,
   QUESTS,
   ServerMessages,
-  QuestDef,
   ServerMessageType,
   ClientMessageType,
   ClientMessages,
@@ -290,7 +289,7 @@ export class MessageHandler {
       return;
     }
 
-    for (const state of this.quests.getPlayerQuestStates(player.userId)) {
+    for (const state of this.quests.getCharacterQuestStates(player.userId)) {
       if (state.status !== "COMPLETED") continue;
       const questDef = QUESTS[state.questId];
       if (questDef?.npcId === npc.type) {
@@ -485,7 +484,7 @@ export class MessageHandler {
         senderId: player.sessionId,
         senderName: `[To: ${targetName}]`,
         message: whisperMsg,
-        channel: "whisper" as const,
+        channel: "whisper",
       };
 
       client.send(ServerMessageType.Chat, whisperData);

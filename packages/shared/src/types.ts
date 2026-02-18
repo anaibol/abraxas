@@ -4,14 +4,8 @@ export enum Direction {
   LEFT = 2,
   RIGHT = 3,
 }
-export type EquipmentSlot = "weapon" | "armor" | "shield" | "helmet" | "ring";
-export const EQUIPMENT_SLOTS: readonly EquipmentSlot[] = [
-  "weapon",
-  "armor",
-  "shield",
-  "helmet",
-  "ring",
-];
+export const EQUIPMENT_SLOTS = ["weapon", "armor", "shield", "helmet", "ring"] as const;
+export type EquipmentSlot = (typeof EQUIPMENT_SLOTS)[number];
 export type ClassType = "WARRIOR" | "MAGE" | "ROGUE" | "CLERIC" | "RANGER";
 export type NpcType =
   | "orc"
@@ -56,14 +50,14 @@ export interface QuestReward {
   items?: { itemId: string; quantity: number }[];
 }
 
-export interface QuestDef {
+export type Quest = {
   id: string;
   title: string;
   description: string;
-  npcId: string; // NPC who gives/takes the quest
+  npcId: string;
   requirements: QuestRequirement[];
   rewards: QuestReward;
-}
+};
 
 export interface PlayerQuestState {
   questId: string;
@@ -87,7 +81,7 @@ export interface TileMap {
   spawns: { x: number; y: number }[];
   npcCount?: number;
   merchantCount?: number;
-  npcs?: { type: string; x: number; y: number }[];
+  npcs?: { type: NpcType; x: number; y: number }[];
   warps?: Warp[];
 }
 
@@ -124,7 +118,7 @@ export type SpellEffect =
   | "aoe"
   | "summon";
 
-export interface SpellDef {
+export type Spell = {
   id: string;
   rangeTiles: number;
   manaCost: number;
@@ -143,7 +137,7 @@ export interface SpellDef {
   dotDamage?: number;
   dotIntervalMs?: number;
   dotDurationMs?: number;
-}
+};
 
 export interface InventoryEntry {
   itemId: string;

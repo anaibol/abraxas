@@ -13,8 +13,8 @@ const EQUIPMENT_SLOT_MAP: Partial<Record<keyof EquipmentData, EquipSlot>> = {
   ring: EquipSlot.RING1,
 };
 
-/** Common include shape used by both loadPlayer and createPlayer. */
-const PLAYER_INCLUDE = {
+/** Common include shape used by loadCharacter and createCharacter. */
+const CHARACTER_INCLUDE = {
   inventory: {
     include: {
       slots: {
@@ -37,16 +37,16 @@ const PLAYER_INCLUDE = {
 } as const;
 
 export class PersistenceService {
-  static async loadPlayer(userId: string, playerName: string) {
+  static async loadCharacter(userId: string, characterName: string) {
     return prisma.character.findFirst({
-      where: { accountId: userId, name: playerName },
-      include: PLAYER_INCLUDE,
+      where: { accountId: userId, name: characterName },
+      include: CHARACTER_INCLUDE,
     });
   }
 
-  static async createPlayer(
+  static async createCharacter(
     userId: string,
-    playerName: string,
+    characterName: string,
     classType: ClassType,
     x: number,
     y: number,
@@ -59,7 +59,7 @@ export class PersistenceService {
       return await prisma.character.create({
         data: {
           account: { connect: { id: userId } },
-          name: playerName,
+          name: characterName,
           class: classType,
           mapId: mapName,
           x,
@@ -77,20 +77,17 @@ export class PersistenceService {
           },
           inventory: { create: { size: 40 } },
         },
-        include: PLAYER_INCLUDE,
+        include: CHARACTER_INCLUDE,
       });
     } catch (e: unknown) {
-      if (
-        e instanceof Error &&
-        (e as { code?: string }).code === "P2002"
-      ) {
+      if (typeof e === "object" && e !== null && "code" in e && e.code === "P2002") {
         throw new Error("Character name already taken");
       }
       throw e;
     }
   }
 
-  static async savePlayer(
+  static async saveCharacter(
     characterId: string,
     data: {
       x: number;
@@ -246,7 +243,7 @@ export class PersistenceService {
         }
       });
     } catch (e) {
-      logger.error({ message: "Failed to save player", error: String(e) });
+      logger.error({ message: "Failed to save character", error: String(e) });
     }
   }
 }

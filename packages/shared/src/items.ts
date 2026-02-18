@@ -9,7 +9,7 @@ export type ItemSlot =
   | "consumable";
 export type ItemRarity = "common" | "uncommon" | "rare";
 
-export interface ItemDef {
+export type Item = {
   id: string;
   name: string;
   slot: ItemSlot;
@@ -32,9 +32,9 @@ export interface ItemDef {
   aoWeaponId?: number;
   aoShieldId?: number;
   aoHelmetId?: number;
-}
+};
 
-export const ITEMS: Record<string, ItemDef> = {
+export const ITEMS: Record<string, Item> = {
   // ── Weapons: Warrior ──
   iron_sword: {
     id: "iron_sword",

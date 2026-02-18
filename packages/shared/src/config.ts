@@ -1,4 +1,4 @@
-import type { ClassStats, NpcStats, SpellDef, QuestDef } from "./types";
+import type { ClassStats, NpcStats, NpcType, Spell, Quest } from "./types";
 
 export const CLASS_APPEARANCE: Record<
   string,
@@ -118,7 +118,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
   },
 };
 
-export const NPC_STATS: Record<string, NpcStats> = {
+export const NPC_STATS: Record<NpcType, NpcStats> = {
   orc: {
     hp: 120,
     str: 18,
@@ -220,6 +220,9 @@ export const NPC_STATS: Record<string, NpcStats> = {
   },
 };
 
+/** All valid NPC type keys, derived from NPC_STATS. */
+export const NPC_TYPES = Object.keys(NPC_STATS) as NpcType[];
+
 export const EXP_TABLE = [
   0, // Level 1
   100, // Level 2
@@ -299,7 +302,7 @@ export const NPC_DROPS: Record<string, DropTableEntry[]> = {
   ],
 };
 
-export const SPELLS: Record<string, SpellDef> = {
+export const SPELLS: Record<string, Spell> = {
   // ── Warrior ──
   war_cry: {
     id: "war_cry",
@@ -643,7 +646,7 @@ export const SPELLS: Record<string, SpellDef> = {
   },
 };
 
-export const QUESTS: Record<string, QuestDef> = {
+export const QUESTS: Record<string, Quest> = {
   slime_slayer: {
     id: "slime_slayer",
     title: "Slime Slayer",
