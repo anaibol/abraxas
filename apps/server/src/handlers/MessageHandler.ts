@@ -27,7 +27,6 @@ export class MessageHandler {
         private inventorySystem: InventorySystem,
         private drops: DropSystem,
         private broadcast: BroadcastCallback,
-        private findEntityAtTile: (x: number, y: number) => Entity | undefined,
         private isTileOccupied: (x: number, y: number, excludeId: string) => boolean
     ) {}
 
@@ -59,7 +58,6 @@ export class MessageHandler {
             this.roomId,
             targetTileX,
             targetTileY,
-            this.findEntityAtTile,
             (type, data) => client.send(type, data ?? {}),
         );
     }
@@ -77,7 +75,6 @@ export class MessageHandler {
             this.broadcast,
             this.state.tick,
             this.roomId,
-            this.findEntityAtTile,
             (type, data) => client.send(type, data ?? {}),
         );
     }

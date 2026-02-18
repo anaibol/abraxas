@@ -19,7 +19,7 @@ export class SpatialLookup {
   }
 
   addToGrid(entity: Entity) {
-      if (!EntityUtils.isAlive(entity)) return;
+      if (!entity.alive) return;
       const key = this.getKey(entity.tileX, entity.tileY);
       if (!this.grid.has(key)) {
           this.grid.set(key, new Set());
@@ -66,12 +66,12 @@ export class SpatialLookup {
     // Return first entity found in cell
     for (const sessionId of cell) {
         const entity = this.findEntityBySessionId(sessionId);
-        if (entity && EntityUtils.isAlive(entity) && entity.tileX === x && entity.tileY === y) {
+        if (entity && entity.alive && entity.tileX === x && entity.tileY === y) {
             return entity;
         } else {
              // Cleanup stale entry if found?
              // Should be handled by updatePosition/removeFromGrid, but safety check:
-             if (!entity || !EntityUtils.isAlive(entity) || entity.tileX !== x || entity.tileY !== y) {
+             if (!entity || !entity.alive || entity.tileX !== x || entity.tileY !== y) {
                  // Lazy cleanup or just ignore? Best to trust the system updates for now
                  // to avoid side effects during read.
              }
@@ -103,7 +103,7 @@ export class SpatialLookup {
                  for (const sessionId of cell) {
                      if (sessionId === excludeId) continue;
                      const entity = this.findEntityBySessionId(sessionId);
-                     if (entity && EntityUtils.isAlive(entity)) {
+                     if (entity && entity.alive) {
                          result.push(entity);
                      }
                  }
@@ -122,7 +122,7 @@ export class SpatialLookup {
     for (const sessionId of cell) {
         if (sessionId === excludeId) continue;
         const entity = this.findEntityBySessionId(sessionId);
-        if (entity && EntityUtils.isAlive(entity)) return true;
+        if (entity && entity.alive) return true;
     }
     return false;
   }

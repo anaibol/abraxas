@@ -24,7 +24,7 @@ export class ArenaRoom extends Room<GameState> {
   private map!: TileMap;
   private movement!: MovementSystem;
   private buffSystem = new BuffSystem();
-  private combat = new CombatSystem(this.buffSystem);
+  private combat!: CombatSystem;
   private drops = new DropSystem();
   private inventorySystem = new InventorySystem();
   private respawnSystem = new RespawnSystem(this.inventorySystem);
@@ -41,6 +41,7 @@ export class ArenaRoom extends Room<GameState> {
     // Initialize utilities and systems in dependency order
     this.spatial = new SpatialLookup(this.state);
     this.movement = new MovementSystem(this.spatial);
+    this.combat = new CombatSystem(this.buffSystem, this.spatial);
     this.npcSystem = new NpcSystem(this.state, this.movement, this.combat, this.spatial);
 
     if (!this.map) {
@@ -56,7 +57,6 @@ export class ArenaRoom extends Room<GameState> {
         this.inventorySystem,
         this.drops,
         this.broadcast.bind(this),
-        this.spatial.findEntityAtTile.bind(this.spatial),
         this.spatial.isTileOccupied.bind(this.spatial)
     );
 
@@ -145,6 +145,7 @@ export class ArenaRoom extends Room<GameState> {
     const player = new Player();
     player.sessionId = client.sessionId;
     player.name = playerName;
+    player.userId = user.id;
     player.classType = classType;
     if (!dbPlayer) {
         console.error(`ArenaRoom ERROR: No dbPlayer found/created for ${playerName}`);
@@ -180,7 +181,9 @@ export class ArenaRoom extends Room<GameState> {
         for (const item of parsedInv) {
             this.inventorySystem.addItem(player, item.itemId, item.quantity); 
         }
-    } catch (e) {}
+    } catch (e) {
+        logger.error({ room: this.roomId, intent: "load_inventory", result: "error", message: "Failed to parse inventory", error: e });
+    }
 
     try {
         const parsedEquip = JSON.parse(dbPlayer.equipment);
@@ -189,7 +192,9 @@ export class ArenaRoom extends Room<GameState> {
         player.equipHelmet = parsedEquip.helmet || "";
         player.equipArmor = parsedEquip.armor || "";
         player.equipRing = parsedEquip.ring || "";
-    } catch (e) {}
+    } catch (e) {
+        logger.error({ room: this.roomId, intent: "load_equipment", result: "error", message: "Failed to parse equipment", error: e });
+    }
     
     if (dbPlayer.inventory === "[]" && dbPlayer.equipment === "{}") {
          const startingGear = STARTING_EQUIPMENT[classType];
@@ -265,7 +270,7 @@ export class ArenaRoom extends Room<GameState> {
             classType: player.classType
         };
 
-        await PersistenceService.savePlayer(player.name, playerData);
+        await PersistenceService.savePlayer(player.userId, player.name, playerData);
         this.spatial.removeFromGrid(player); // Remove from spatial grid
     }
 
@@ -311,15 +316,11 @@ export class ArenaRoom extends Room<GameState> {
         (x, y, excludeId) => this.spatial.isTileOccupied(x, y, excludeId),
         this.state.tick,
         this.roomId,
-        (x, y) => this.spatial.findEntityAtTile(x, y),
         broadcast
     );
 
     this.combat.processWindups(
       now,
-      (x, y) => this.spatial.findEntityAtTile(x, y),
-      (cx, cy, radius, excludeId) => this.spatial.findEntitiesInRadius(cx, cy, radius, excludeId),
-      (sid) => this.spatial.findEntityBySessionId(sid),
       broadcast,
       this.state.tick,
       this.roomId,
@@ -328,11 +329,9 @@ export class ArenaRoom extends Room<GameState> {
 
     this.combat.processBufferedActions(
       now,
-      (sid) => this.spatial.findEntityBySessionId(sid),
       broadcast,
       this.state.tick,
       this.roomId,
-      (x: number, y: number) => this.spatial.findEntityAtTile(x, y),
       (sessionId) => {
         const c = this.clients.find((cl) => cl.sessionId === sessionId);
         return (type: string, data?: Record<string, unknown>) => c?.send(type, data ?? {});

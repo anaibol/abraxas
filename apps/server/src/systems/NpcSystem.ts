@@ -60,6 +60,11 @@ export class NpcSystem {
         attempts++;
     }
 
+    if (attempts >= 100) {
+        logger.error({ intent: "spawn_npc", result: "failed", message: "Could not find valid spawn location", type });
+        return;
+    }
+
     const stats = NPC_STATS[type];
     npc.hp = stats.hp;
     npc.maxHp = stats.hp;
@@ -88,7 +93,6 @@ export class NpcSystem {
     occupiedCheck: (x: number, y: number, excludeId: string) => boolean,
     tickCount: number,
     roomId: string,
-    findEntityAtTile: (x: number, y: number) => Entity | undefined,
     broadcast: BroadcastFn
   ) {
     // Handle respawns
@@ -112,7 +116,7 @@ export class NpcSystem {
                 this.updateChase(npc, map, now, occupiedCheck, tickCount, roomId);
                 break;
             case NpcState.ATTACK:
-                this.updateAttack(npc, dt, now, broadcast, tickCount, roomId, findEntityAtTile);
+                this.updateAttack(npc, dt, now, broadcast, tickCount, roomId);
                 break;
             default:
                 npc.state = NpcState.IDLE;
@@ -122,7 +126,7 @@ export class NpcSystem {
 
     // Handle dead NPCs removal
     this.state.npcs.forEach((npc) => {
-        if (!EntityUtils.isAlive(npc) && !this.respawns.some(r => r.type === npc.type && Date.now() - r.deadAt < 100)) {
+        if (!npc.alive && !this.respawns.some(r => r.type === npc.type && Date.now() - r.deadAt < 100)) {
              // Logic handled via handleDeath now
         }
     });
@@ -137,7 +141,7 @@ export class NpcSystem {
       const npcPos = EntityUtils.getPosition(npc);
 
       for (const entity of players) {
-          if (EntityUtils.isPlayer(entity) && EntityUtils.isAlive(entity) && !entity.stealthed) {
+          if (entity.alive && entity.alive && !entity.stealthed) {
                const dist = MathUtils.dist(npcPos, EntityUtils.getPosition(entity));
                if (dist < minDist) {
                    minDist = dist;
@@ -164,7 +168,7 @@ export class NpcSystem {
       const target = this.spatial.findEntityBySessionId(npc.targetId);
       
       // Target lost or dead
-      if (!target || !EntityUtils.isAlive(target) || (EntityUtils.isPlayer(target) && target.stealthed)) {
+      if (!target || !target.alive || (target.alive && target.stealthed)) {
           npc.targetId = "";
           npc.state = NpcState.IDLE;
           return;
@@ -218,7 +222,7 @@ export class NpcSystem {
       findEntityAtTile: (x: number, y: number) => Entity | undefined
   ) {
       const target = this.spatial.findEntityBySessionId(npc.targetId);
-      if (!target || !EntityUtils.isAlive(target)) {
+      if (!target || !target.alive) {
           npc.state = NpcState.IDLE;
           return;
       }
@@ -245,7 +249,7 @@ export class NpcSystem {
             roomId,
             undefined, // targetId not needed for melee logic usually, uses tile
             undefined,
-            findEntityAtTile
+            undefined
       );
   }
 

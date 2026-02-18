@@ -19,7 +19,7 @@ function getServerUrl(): string {
   return "ws://localhost:2567";
 }
 
-export class NetworkManager<SC = any> {
+export class NetworkManager<SC = unknown> {
   private client: Client;
   private room: Room<SC> | null = null;
   private welcomeData: WelcomeData | null = null;

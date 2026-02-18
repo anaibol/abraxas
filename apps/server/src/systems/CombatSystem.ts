@@ -110,7 +110,7 @@ export class CombatSystem {
       // Validate a living enemy exists at the target tile
       const target = this.spatial.findEntityAtTile(targetTileX, targetTileY);
       // Can't attack self or dead
-      if (!target || !EntityUtils.isAlive(target) || target.sessionId === attacker.sessionId) {
+      if (!target || !target.alive || target.sessionId === attacker.sessionId) {
           sendToClient?.("invalid_target");
           return false;
       }
@@ -224,7 +224,7 @@ export class CombatSystem {
     // For single-target offensive spells (rangeTiles > 0, not AoE), validate target exists before mana deduction
     if (spell.rangeTiles > 0 && spell.effect !== "aoe") {
       const target = this.spatial.findEntityAtTile(targetTileX, targetTileY);
-      if (!target || !EntityUtils.isAlive(target) || target.sessionId === caster.sessionId) {
+      if (!target || !target.alive || target.sessionId === caster.sessionId) {
         sendToClient?.("invalid_target");
         return false;
       }
@@ -282,7 +282,7 @@ export class CombatSystem {
       }
 
       const attacker = this.spatial.findEntityBySessionId(windup.attackerSessionId);
-      if (!attacker || !EntityUtils.isAlive(attacker)) {
+      if (!attacker || !attacker.alive) {
         const cs = this.state.get(windup.attackerSessionId);
         if (cs) cs.windupAction = null;
         continue;
@@ -376,7 +376,7 @@ export class CombatSystem {
     const stats = EntityUtils.getStats(attacker)!;
     const target = this.spatial.findEntityAtTile(windup.targetTileX, windup.targetTileY);
 
-    if (target && EntityUtils.isAlive(target) && target.sessionId !== attacker.sessionId) {
+    if (target && target.alive && target.sessionId !== attacker.sessionId) {
       // Check invulnerability
       if (this.buffSystem.isInvulnerable(target.sessionId, now)) {
         broadcast("attack_hit", {
@@ -520,7 +520,7 @@ export class CombatSystem {
 
     // Single-target damage/dot/stun
     const target = this.spatial.findEntityAtTile(windup.targetTileX, windup.targetTileY);
-    if (target && EntityUtils.isAlive(target) && target.sessionId !== attacker.sessionId) {
+    if (target && target.alive && target.sessionId !== attacker.sessionId) {
       this.applySpellToTarget(attacker, target, spell, scalingValue, broadcast, onDeath, now);
     }
   }

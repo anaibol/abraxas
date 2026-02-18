@@ -12,11 +12,11 @@ import { existsSync, readFileSync, statSync } from "fs";
 // Colyseus protocol uses number[] for ROOM_STATE and patches.
 // Convert to Uint8Array so ws sends binary frames.
 const origRaw = WebSocketClient.prototype.raw;
-WebSocketClient.prototype.raw = function (data: any, options?: any, cb?: any) {
+WebSocketClient.prototype.raw = function (data: unknown, options?: unknown, cb?: () => void) {
   if (Array.isArray(data)) {
     data = new Uint8Array(data);
   }
-  return origRaw.call(this, data, options, cb);
+  return origRaw.call(this, data as any, options, cb);
 };
 
 const MIME_TYPES: Record<string, string> = {

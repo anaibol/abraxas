@@ -6,11 +6,11 @@ import "dotenv/config";
 import { resolve } from "path";
 
 // Initialize Prisma Client with Adapter
-console.log("PersistenceService: DATABASE_URL:", process.env.DATABASE_URL);
+// console.log("PersistenceService: DATABASE_URL:", process.env.DATABASE_URL); // REMOVED FOR SECURITY
 
 const DEFAULT_DB_PATH = "file:../../dev.db";
 const dbPath = process.env.DATABASE_URL || DEFAULT_DB_PATH;
-console.log("PersistenceService: DATABASE_URL (env):", process.env.DATABASE_URL);
+// console.log("PersistenceService: DATABASE_URL (env):", process.env.DATABASE_URL); // REMOVED FOR SECURITY
 
 let url = dbPath;
 if (dbPath === DEFAULT_DB_PATH) {
@@ -92,6 +92,7 @@ export class PersistenceService {
     }
 
     static async savePlayer(
+        userId: string,
         name: string, 
         data: {
             x: number, y: number, hp: number, maxHp: number, mana: number, maxMana: number,
@@ -101,8 +102,13 @@ export class PersistenceService {
         }
     ) {
         try {
-            await prisma.player.updateMany({
-                where: { name },
+            await prisma.player.update({
+                where: { 
+                    userId_name: {
+                        userId,
+                        name
+                    }
+                 },
                 data: {
                     x: data.x,
                     y: data.y,

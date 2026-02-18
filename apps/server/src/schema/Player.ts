@@ -5,6 +5,7 @@ import type { ClassType } from "@abraxas/shared";
 
 export class Player extends Schema {
   @type("string") sessionId: string = "";
+  @type("string") userId: string = "";
   @type("string") name: string = "";
   @type("string") classType: ClassType = "warrior";
   @type("uint16") tileX: number = 0;
