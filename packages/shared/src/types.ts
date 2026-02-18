@@ -5,7 +5,7 @@ export enum Direction {
   RIGHT = 3
 }
 export type ClassType = "warrior" | "wizard" | "archer" | "assassin" | "paladin" | "druid";
-export type NpcType = "orc" | "skeleton" | "goblin" | "wolf";
+export type NpcType = "orc" | "skeleton" | "goblin" | "wolf" | "merchant";
 
 export interface JoinOptions {
   name: string;
@@ -137,6 +137,9 @@ export type ServerMessages = {
   invalid_target: null;
   pong: { serverTime: number };
   level_up: { sessionId: string; level: number };
+  open_shop: { npcId: string; inventory: string[] };
+  buy_item: { itemId: string; quantity: number };
+  sell_item: { itemId: string; quantity: number };
   error: { message: string };
 };
 

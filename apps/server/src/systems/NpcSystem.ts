@@ -127,6 +127,8 @@ export class NpcSystem {
 
 
   private updateIdle(npc: Npc, now: number): void {
+      if (npc.type === "merchant") return; // Merchants don't aggro
+      
       // Look for targets
       const players = this.spatial.findEntitiesInRadius(npc.tileX, npc.tileY, AGGRO_RANGE);
       let nearest: Entity | null = null;

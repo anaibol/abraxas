@@ -14,6 +14,12 @@ export const NPC_APPEARANCE: Record<string, { bodyId: number; headId: number }> 
   skeleton: { bodyId: 35, headId: 0 },
   goblin:   { bodyId: 45, headId: 0 }, // Reusing assassin body for now if no specific goblin
   wolf:     { bodyId: 65, headId: 0 },
+  merchant: { bodyId: 5, headId: 0 }, // Common Merchant body (AO ID 5)
+};
+
+export const MERCHANT_INVENTORY: Record<string, string[]> = {
+  general_store: ["health_potion", "mana_potion", "iron_dagger", "wooden_shield", "leather_armor"],
+  blacksmith: ["iron_sword", "steel_sword", "chainmail", "iron_helmet", "iron_shield"],
 };
 
 export const TICK_RATE = 20;
@@ -149,6 +155,17 @@ export const NPC_STATS: Record<string, ClassStats> = {
     meleeWindupMs: 120,
     spells: [],
     expReward: 60,
+  },
+  merchant: {
+    hp: 1000,
+    str: 10,
+    agi: 10,
+    int: 10,
+    speedTilesPerSecond: 0, // Stationary
+    meleeRange: 0,
+    meleeCooldownMs: 0,
+    meleeWindupMs: 0,
+    spells: [],
   },
 };
 
