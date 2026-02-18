@@ -22,6 +22,8 @@ export async function createGameServer(options: {
     transport,
   });
 
+  console.error(`[server.ts] Type of ArenaRoom: ${typeof ArenaRoom}`);
+  console.error(`[server.ts] ArenaRoom string: ${ArenaRoom.toString().substring(0, 50)}`);
   const handler = server.define("arena", ArenaRoom);
   console.error(`[server.ts] Registered 'arena' room handler: ${!!handler}`);
 

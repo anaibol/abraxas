@@ -248,11 +248,7 @@ export class InventorySystem {
       const itemId = player[slotKey];
       if (typeof itemId === "string" && itemId) {
         dropped.push({ itemId, quantity: 1 });
-        if (slotKey === "equipWeapon") player.equipWeapon = "";
-        else if (slotKey === "equipArmor") player.equipArmor = "";
-        else if (slotKey === "equipShield") player.equipShield = "";
-        else if (slotKey === "equipHelmet") player.equipHelmet = "";
-        else if (slotKey === "equipRing") player.equipRing = "";
+        setEquipSlot(player, slotKey, "");
       }
     }
 

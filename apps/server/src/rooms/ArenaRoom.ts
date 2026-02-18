@@ -37,7 +37,9 @@ import { logger } from "../logger";
 import { MapService } from "../services/MapService";
 import { PersistenceService } from "../services/PersistenceService";
 import { AuthService } from "../database/auth";
+import { AuthService } from "../database/auth";
 import { prisma } from "../database/db";
+import { User } from "@prisma/client";
 import { MessageHandler } from "../handlers/MessageHandler";
 import { SocialSystem } from "../systems/SocialSystem";
 import { FriendsSystem } from "../systems/FriendsSystem";
@@ -45,7 +47,6 @@ import { SpatialLookup } from "../utils/SpatialLookup";
 import { EntityUtils, Entity } from "../utils/EntityUtils";
 import { QuestSystem } from "../systems/QuestSystem";
 
-// console.error("[ArenaRoom.ts] Module loading...");
 
 export class ArenaRoom extends Room<{ state: GameState }> {
   constructor() {
@@ -260,7 +261,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     return { user };
   }
 
-  async onJoin(client: Client, options: JoinOptions & { mapName?: string }, auth?: any) {
+  async onJoin(client: Client, options: JoinOptions & { mapName?: string }, auth: { user: User }) {
     const classType = options?.classType || "warrior";
     if (!classType || !CLASS_STATS[classType]) {
       logger.warn({ room: this.roomId, clientId: client.sessionId, intent: "join", result: "error", message: `Invalid classType: ${classType}` });

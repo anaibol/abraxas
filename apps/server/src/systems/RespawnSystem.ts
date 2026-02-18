@@ -1,7 +1,16 @@
 import type { TileMap } from "@abraxas/shared";
-import { CLASS_STATS, STARTING_EQUIPMENT, PLAYER_RESPAWN_TIME_MS, ITEMS } from "@abraxas/shared";
+import {
+  CLASS_STATS,
+  STARTING_EQUIPMENT,
+  PLAYER_RESPAWN_TIME_MS,
+  ITEMS,
+} from "@abraxas/shared";
 import type { Player } from "../schema/Player";
-import { InventorySystem, EQUIP_SLOT_MAP } from "./InventorySystem";
+import {
+  InventorySystem,
+  EQUIP_SLOT_MAP,
+  setEquipSlot,
+} from "./InventorySystem";
 
 interface PendingRespawn {
   sessionId: string;
@@ -39,7 +48,7 @@ export class RespawnSystem {
     now: number,
     getPlayer: (sessionId: string) => Player | undefined,
     map: TileMap,
-    broadcast: BroadcastFn
+    broadcast: BroadcastFn,
   ): void {
     const remaining: PendingRespawn[] = [];
 
@@ -96,12 +105,8 @@ export class RespawnSystem {
       if (def.slot !== "consumable") {
         const slotKey = EQUIP_SLOT_MAP[def.slot];
         if (slotKey && player[slotKey] === "") {
-            if (slotKey === "equipWeapon") player.equipWeapon = itemId;
-            else if (slotKey === "equipArmor") player.equipArmor = itemId;
-            else if (slotKey === "equipShield") player.equipShield = itemId;
-            else if (slotKey === "equipHelmet") player.equipHelmet = itemId;
-            else if (slotKey === "equipRing") player.equipRing = itemId;
-            continue;
+          setEquipSlot(player, slotKey, itemId);
+          continue;
         }
       }
       // Otherwise add to inventory
