@@ -76,9 +76,9 @@ export class PersistenceService {
           x: data.x,
           y: data.y,
           mapId: data.mapId,
-          gold: BigInt(data.gold),
+          gold: data.gold,
           level: data.level,
-          exp: BigInt(data.xp),
+          exp: data.xp,
           facing: facingStr,
           stats: {
             update: {
@@ -92,7 +92,7 @@ export class PersistenceService {
             },
           },
         },
-        include: { inventory: true },
+        include: CHAR_INCLUDE,
       });
 
       if (!char.inventory) return;

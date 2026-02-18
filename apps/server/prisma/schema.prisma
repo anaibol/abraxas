@@ -252,14 +252,14 @@ model CharacterQuest {
   characterId String
   character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
 
-  questDefId String
-  questDef   QuestDef @relation(fields: [questDefId], references: [id], onDelete: Restrict)
+  questId String
+  quest   QuestDef @relation(fields: [questId], references: [id], onDelete: Restrict)
 
   status       QuestStatus @default(NOT_STARTED)
   progressJson Json?
   startedAt    DateTime?
   completedAt  DateTime?
 
-  @@unique([characterId, questDefId])
+  @@unique([characterId, questId])
   @@index([characterId, status])
 }

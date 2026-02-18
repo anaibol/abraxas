@@ -3,6 +3,11 @@ primary_region = 'gru'
 
 [build]
 
+[env]
+# SQLite file on the persistent volume mounted at /data.
+# Override with a fly secret (fly secrets set DATABASE_URL=...) to use Turso instead.
+DATABASE_URL = "file:/data/prod.db"
+
 [http_service]
 auto_start_machines = true
 auto_stop_machines = false
@@ -22,7 +27,6 @@ timeout = "5s"
 cpu_kind = 'shared'
 cpus = 1
 memory = '512mb'
-memory_mb = 512
 
 [deploy]
 release_command = "sh -c 'cd apps/server && bunx prisma migrate deploy'"

@@ -145,7 +145,7 @@ const loginEndpoint = createEndpoint(
         return ctx.json({ error: "Invalid credentials" }, { status: 401 });
       }
 
-      const char = await prisma.character.findFirst({
+      const char = await prisma.character.findFirstOrThrow({
         where: { accountId: user.id },
         select: { id: true, name: true, class: true },
       });
@@ -156,9 +156,9 @@ const loginEndpoint = createEndpoint(
       });
       return ctx.json({
         token,
-        charId: char?.id,
-        charName: char?.name ?? user.username,
-        classType: char?.class ?? "WARRIOR",
+        charId: char.id,
+        charName: char.name,
+        classType: char.class,
       });
     } catch (e) {
       logger.error({ message: "Login error", error: String(e) });

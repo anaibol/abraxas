@@ -1,77 +1,84 @@
 import {
   QUESTS,
-  QuestDef,
-  QuestStatus,
+  Quest,
   PlayerQuestState,
   QuestType,
 } from "@abraxas/shared";
 import { prisma } from "../database/db";
 
 export class QuestSystem {
-  private playerQuests = new Map<string, Map<string, PlayerQuestState>>(); // userId -> questId -> state
+  /** userId → questId → state */
+  private charQuests = new Map<string, Map<string, PlayerQuestState>>();
+  /** questId (code) → DB quest.id — avoids repeated lookups per progress update */
+  private questIdCache = new Map<string, string>();
 
-  async loadPlayerQuests(
+  async loadCharQuests(
     userId: string,
-    characterId: string,
+    charId: string,
   ): Promise<PlayerQuestState[]> {
     const dbQuests = await prisma.characterQuest.findMany({
-      where: { characterId },
-      include: { questDef: true },
+      where: { characterId: charId },
+      include: { quest: true },
     });
 
     const questStates = new Map<string, PlayerQuestState>();
     for (const dbQuest of dbQuests) {
-      questStates.set(dbQuest.questDef.code, {
-        questId: dbQuest.questDef.code,
-        status: dbQuest.status.toLowerCase() as QuestStatus,
-        progress: (dbQuest.progressJson as Record<string, number>) || {},
+      const code = dbQuest.quest.code;
+      questStates.set(code, {
+        questId: code,
+        status: dbQuest.status,
+        progress: dbQuest.progressJson as Record<string, number> ?? {},
       });
+      this.questIdCache.set(code, dbQuest.quest.id);
     }
-    this.playerQuests.set(userId, questStates);
+    this.charQuests.set(userId, questStates);
     return Array.from(questStates.values());
   }
 
   getQuestState(userId: string, questId: string): PlayerQuestState | undefined {
-    return this.playerQuests.get(userId)?.get(questId);
+    return this.charQuests.get(userId)?.get(questId);
+  }
+
+  getCharQuestStates(userId: string): PlayerQuestState[] {
+    return Array.from(this.charQuests.get(userId)?.values() ?? []);
   }
 
   async acceptQuest(
     userId: string,
-    characterId: string,
+    charId: string,
     questId: string,
   ): Promise<PlayerQuestState | null> {
     const questDef = QUESTS[questId];
     if (!questDef) return null;
 
-    let userQuests = this.playerQuests.get(userId);
+    let userQuests = this.charQuests.get(userId);
     if (!userQuests) {
       userQuests = new Map();
-      this.playerQuests.set(userId, userQuests);
+      this.charQuests.set(userId, userQuests);
     }
 
     if (userQuests.has(questId)) return null;
 
-    // Find QuestDef in DB
-    const dbQuestDef = await prisma.questDef.findUnique({
-      where: { code: questId },
-    });
-    if (!dbQuestDef) return null;
+    let dbQuestId = this.questIdCache.get(questId);
+    if (!dbQuestId) {
+      const dbQuest = await prisma.questDef.findUnique({
+        where: { code: questId },
+      });
+      if (!dbQuest) return null;
+      dbQuestId = dbQuest.id;
+      this.questIdCache.set(questId, dbQuestId);
+    }
 
     const initialState: PlayerQuestState = {
       questId,
-      status: "active",
-      progress: {},
+      status: "IN_PROGRESS",
+      progress: Object.fromEntries(questDef.requirements.map((r) => [r.target, 0])),
     };
-
-    // Initialize progress for all requirements
-    for (const req of questDef.requirements) {
-      initialState.progress[req.target] = 0;
-    }
 
     await prisma.characterQuest.create({
       data: {
-        characterId,
-        questDefId: dbQuestDef.id,
+        characterId: charId,
+        questId: dbQuestId,
         status: "IN_PROGRESS",
         progressJson: initialState.progress,
       },
@@ -83,60 +90,60 @@ export class QuestSystem {
 
   async updateProgress(
     userId: string,
-    characterId: string,
+    charId: string,
     type: QuestType,
     target: string,
     amount: number = 1,
   ): Promise<PlayerQuestState[]> {
-    const userQuests = this.playerQuests.get(userId);
+    const userQuests = this.charQuests.get(userId);
     if (!userQuests) return [];
 
     const updatedQuests: PlayerQuestState[] = [];
 
     for (const state of userQuests.values()) {
-      if (state.status !== "active") continue;
+      if (state.status !== "IN_PROGRESS") continue;
 
       const questDef = QUESTS[state.questId];
       if (!questDef) continue;
-      
-      // Check if this quest even cares about this type/target
-      const relevantReq = questDef.requirements.find(r => r.type === type && r.target === target);
+
+      const relevantReq = questDef.requirements.find(
+        (r) => r.type === type && r.target === target,
+      );
       if (!relevantReq) continue;
 
-      let changed = false;
       const current = state.progress[target] || 0;
-      if (current < relevantReq.count) {
-        state.progress[target] = Math.min(relevantReq.count, current + amount);
-        changed = true;
+      if (current >= relevantReq.count) continue;
+
+      state.progress[target] = Math.min(relevantReq.count, current + amount);
+
+      const allMet = questDef.requirements.every(
+        (req) => (state.progress[req.target] || 0) >= req.count,
+      );
+      if (allMet) {
+        state.status = "COMPLETED";
       }
 
-      if (changed) {
-        // Check if all requirements met
-        const allMet = questDef.requirements.every(
-          (req) => (state.progress[req.target] || 0) >= req.count,
-        );
-        if (allMet) {
-          state.status = "completed";
-        }
-
-        const dbQuestDefId = (questDef as any).dbId; // Assuming we might want to cache this
-        // For now, keep findUnique or optimize it
-        const dbQuestDef = await prisma.questDef.findUnique({
+      let dbQuestId = this.questIdCache.get(state.questId);
+      if (!dbQuestId) {
+        const dbQuest = await prisma.questDef.findUnique({
           where: { code: state.questId },
         });
-
-        if (dbQuestDef) {
-          await prisma.characterQuest.update({
-            where: { characterId_questDefId: { characterId, questDefId: dbQuestDef.id } },
-            data: {
-              status: state.status === "completed" ? "COMPLETED" : "IN_PROGRESS",
-              progressJson: state.progress,
-            },
-          });
+        if (dbQuest) {
+          dbQuestId = dbQuest.id;
+          this.questIdCache.set(state.questId, dbQuestId);
         }
-
-        updatedQuests.push(state);
       }
+
+      if (dbQuestId) {
+        await prisma.characterQuest.update({
+          where: {
+            characterId_questId: { characterId: charId, questId: dbQuestId },
+          },
+          data: { status: state.status, progressJson: state.progress },
+        });
+      }
+
+      updatedQuests.push(state);
     }
 
     return updatedQuests;
@@ -144,24 +151,33 @@ export class QuestSystem {
 
   async completeQuest(
     userId: string,
-    characterId: string,
+    charId: string,
     questId: string,
-  ): Promise<QuestDef | null> {
+  ): Promise<Quest | null> {
     const state = this.getQuestState(userId, questId);
-    if (!state || state.status !== "completed") return null;
+    if (!state || state.status !== "COMPLETED") return null;
 
     const questDef = QUESTS[questId];
     if (!questDef) return null;
 
-    state.status = "rewarded";
+    state.status = "TURNED_IN";
 
-    const dbQuestDef = await prisma.questDef.findUnique({
-      where: { code: questId },
-    });
+    let dbQuestId = this.questIdCache.get(questId);
+    if (!dbQuestId) {
+      const dbQuest = await prisma.questDef.findUnique({
+        where: { code: questId },
+      });
+      if (dbQuest) {
+        dbQuestId = dbQuest.id;
+        this.questIdCache.set(questId, dbQuestId);
+      }
+    }
 
-    if (dbQuestDef) {
+    if (dbQuestId) {
       await prisma.characterQuest.update({
-        where: { characterId_questDefId: { characterId, questDefId: dbQuestDef.id } },
+        where: {
+          characterId_questId: { characterId: charId, questId: dbQuestId },
+        },
         data: { status: "TURNED_IN" },
       });
     }
@@ -170,8 +186,7 @@ export class QuestSystem {
   }
 
   getAvailableQuests(userId: string, npcId: string): string[] {
-    const userQuests = this.playerQuests.get(userId) || new Map();
-
+    const userQuests = this.charQuests.get(userId) ?? new Map();
     return Object.values(QUESTS)
       .filter((q) => q.npcId === npcId && !userQuests.has(q.id))
       .map((q) => q.id);
