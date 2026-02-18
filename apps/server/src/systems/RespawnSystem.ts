@@ -18,6 +18,7 @@ interface PendingRespawn {
 }
 
 import { BroadcastFn, ServerMessageType } from "@abraxas/shared";
+import { broadcastRespawn } from "../utils/ServerEvents";
 
 export class RespawnSystem {
   private pending: PendingRespawn[] = [];
@@ -77,11 +78,7 @@ export class RespawnSystem {
       // Give starting equipment
       this.giveStartingEquipment(player);
 
-      broadcast(ServerMessageType.Respawn, {
-        sessionId: player.sessionId,
-        tileX: spawn.x,
-        tileY: spawn.y,
-      });
+      broadcastRespawn(broadcast, player.sessionId, spawn.x, spawn.y);
     }
 
     this.pending = remaining;

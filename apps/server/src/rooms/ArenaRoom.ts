@@ -1,4 +1,4 @@
-import { Room, Client } from "@colyseus/core";
+thimport { Room, Client } from "@colyseus/core";
 import { GameState } from "../schema/GameState";
 import { Player } from "../schema/Player";
 import { Npc } from "../schema/Npc";
@@ -33,7 +33,6 @@ import {
   QUESTS,
 } from "@abraxas/shared";
 import { logger } from "../logger";
-
 import { MapService } from "../services/MapService";
 import { PersistenceService } from "../services/PersistenceService";
 import { AuthService } from "../database/auth";
@@ -563,9 +562,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       now,
       (sid: string) => {
         const entity = this.spatial.findEntityBySessionId(sid);
-        return entity && EntityUtils.isPlayer(entity)
-          ? (entity as Player)
-          : undefined;
+        return entity && EntityUtils.isPlayer(entity) ? entity : undefined;
       },
       broadcast,
       (player: Entity) => {
@@ -615,10 +612,8 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 
   private onEntityDeath(entity: Entity, killerSessionId: string) {
     if (EntityUtils.isPlayer(entity)) {
-      // It's a player
-      this.onPlayerDeath(entity as Player, killerSessionId);
+      this.onPlayerDeath(entity, killerSessionId);
     } else {
-      // It's an NPC
       this.onNpcDeath(entity as Npc, killerSessionId);
     }
   }
@@ -751,21 +746,21 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       const killer = this.spatial.findEntityBySessionId(killerSessionId);
       if (killer) {
         if (EntityUtils.isPlayer(killer)) {
-          // It's a Player
-          killerName = (killer as Player).name;
+          killerName = killer.name;
         } else if (EntityUtils.isNpc(killer)) {
-          // It's an NPC
-          killerName = (killer as Npc).type;
+          killerName = killer.type;
         }
       }
     }
 
-    this.broadcast(ServerMessageType.KillFeed, {
+    const boundBroadcast2 = this.broadcast.bind(this) as any;
+    broadcastKillFeed(
+      boundBroadcast2,
       killerSessionId,
-      victimSessionId: player.sessionId,
+      player.sessionId,
       killerName,
-      victimName: player.name,
-    });
+      player.name,
+    );
 
     // Queue respawn
     this.respawnSystem.queueRespawn(player.sessionId, Date.now());

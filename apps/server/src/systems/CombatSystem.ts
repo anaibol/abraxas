@@ -24,7 +24,18 @@ import {
   BroadcastFn,
   ServerMessageType,
 } from "@abraxas/shared";
-import { broadcastDamage, broadcastDeath, broadcastAttackHit } from "../utils/ServerEvents";
+import {
+  broadcastDamage,
+  broadcastDeath,
+  broadcastAttackHit,
+  broadcastAttackStart,
+  broadcastCastStart,
+  broadcastCastHit,
+  broadcastBuffApplied,
+  broadcastStealthApplied,
+  broadcastHeal,
+  broadcastStunApplied,
+} from "../utils/ServerEvents";
 
 type SendToClientFn = <T extends ServerMessageType>(
   type: T,
@@ -161,11 +172,7 @@ export class CombatSystem {
 
     cs.windupAction = windup;
     this.activeWindups.push(windup);
-
-    broadcast(ServerMessageType.AttackStart, {
-      sessionId: attacker.sessionId,
-      facing: attacker.facing,
-    });
+    broadcastAttackStart(broadcast, attacker.sessionId, attacker.facing);
 
     return true;
   }
@@ -280,13 +287,7 @@ export class CombatSystem {
 
     cs.windupAction = windup;
     this.activeWindups.push(windup);
-
-    broadcast(ServerMessageType.CastStart, {
-      sessionId: caster.sessionId,
-      spellId,
-      targetTileX: finalTargetX,
-      targetTileY: finalTargetY,
-    });
+    broadcastCastStart(broadcast, caster.sessionId, spellId, finalTargetX, finalTargetY);
 
     return true;
   }
@@ -458,13 +459,7 @@ export class CombatSystem {
     const spell = SPELLS[windup.spellId!];
     if (!spell) return;
 
-    broadcast(ServerMessageType.CastHit, {
-      sessionId: attacker.sessionId,
-      spellId: windup.spellId ?? "",
-      targetTileX: windup.targetTileX,
-      targetTileY: windup.targetTileY,
-      fxId: spell.fxId,
-    });
+    broadcastCastHit(broadcast, attacker.sessionId, windup.spellId ?? "", windup.targetTileX, windup.targetTileY, spell.fxId);
 
     const casterInt =
       attacker.intStat +
@@ -494,11 +489,7 @@ export class CombatSystem {
           spell.durationMs,
           now,
         );
-        broadcast(ServerMessageType.BuffApplied, {
-          sessionId: attacker.sessionId,
-          spellId: spell.id,
-          durationMs: spell.durationMs,
-        });
+        broadcastBuffApplied(broadcast, attacker.sessionId, spell.id, spell.durationMs);
       }
       return;
     }
@@ -506,10 +497,7 @@ export class CombatSystem {
     if (spell.effect === "stealth") {
       if (spell.durationMs) {
         this.buffSystem.applyStealth(attacker.sessionId, spell.durationMs, now);
-        broadcast(ServerMessageType.StealthApplied, {
-          sessionId: attacker.sessionId,
-          durationMs: spell.durationMs,
-        });
+        broadcastStealthApplied(broadcast, attacker.sessionId, spell.durationMs);
       }
       return;
     }
@@ -521,11 +509,7 @@ export class CombatSystem {
         spell.scalingRatio,
       );
       attacker.hp = Math.min(attacker.maxHp, attacker.hp + healAmount);
-      broadcast(ServerMessageType.Heal, {
-        sessionId: attacker.sessionId,
-        amount: healAmount,
-        hpAfter: attacker.hp,
-      });
+      broadcastHeal(broadcast, attacker.sessionId, healAmount, attacker.hp);
       return;
     }
 
@@ -628,10 +612,7 @@ export class CombatSystem {
     // Apply stun
     if (spell.effect === "stun" && spell.durationMs) {
       this.buffSystem.applyStun(target.sessionId, spell.durationMs, now);
-      broadcast(ServerMessageType.StunApplied, {
-        targetSessionId: target.sessionId,
-        durationMs: spell.durationMs,
-      });
+      broadcastStunApplied(broadcast, target.sessionId, spell.durationMs);
     }
   }
 }
