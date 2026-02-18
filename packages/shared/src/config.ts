@@ -134,6 +134,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
 export const NPC_STATS: Record<string, ClassStats> = {
   orc: {
     hp: 120,
+    mana: 0,
     str: 18,
     agi: 10,
     int: 5,
@@ -145,6 +146,7 @@ export const NPC_STATS: Record<string, ClassStats> = {
   },
   skeleton: {
     hp: 60,
+    mana: 0,
     str: 12,
     agi: 15,
     int: 5,
@@ -156,6 +158,7 @@ export const NPC_STATS: Record<string, ClassStats> = {
   },
   goblin: {
     hp: 40,
+    mana: 0,
     str: 8,
     agi: 18,
     int: 5,
@@ -167,6 +170,7 @@ export const NPC_STATS: Record<string, ClassStats> = {
   },
   wolf: {
     hp: 80,
+    mana: 0,
     str: 15,
     agi: 20,
     int: 5,
@@ -179,6 +183,7 @@ export const NPC_STATS: Record<string, ClassStats> = {
   },
   merchant: {
     hp: 1000,
+    mana: 0,
     str: 10,
     agi: 10,
     int: 10,
@@ -190,6 +195,7 @@ export const NPC_STATS: Record<string, ClassStats> = {
   },
   spider: {
     hp: 50,
+    mana: 0,
     str: 10,
     agi: 25,
     int: 5,
@@ -201,6 +207,7 @@ export const NPC_STATS: Record<string, ClassStats> = {
   },
   ghost: {
     hp: 70,
+    mana: 50,
     str: 5,
     agi: 10,
     int: 20,
@@ -212,6 +219,7 @@ export const NPC_STATS: Record<string, ClassStats> = {
   },
   lich: {
     hp: 1500,
+    mana: 200,
     str: 10,
     agi: 10,
     int: 50,
