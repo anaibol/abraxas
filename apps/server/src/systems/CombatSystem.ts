@@ -9,32 +9,25 @@ import {
   calcRangedDamage,
   calcSpellDamage,
   calcHealAmount,
+  MathUtils
 } from "@abraxas/shared";
-import type { 
-  Direction, 
-  SpellDef, 
-  ClassStats, 
-  BufferedAction, 
-  WindupAction, 
-  EntityCombatState 
+import type {
+  Direction,
+  SpellDef,
+  ClassStats,
+  BufferedAction,
+  WindupAction,
+  EntityCombatState
 } from "@abraxas/shared";
 import type { Player } from "../schema/Player";
 import type { Npc } from "../schema/Npc";
 import type { BuffSystem } from "./BuffSystem";
-
-type Entity = Player | Npc;
+import { EntityUtils, Entity } from "../utils/EntityUtils";
 
 import { ServerMessages, BroadcastFn } from "@abraxas/shared";
 
 type FindEntityAtTileFn = (x: number, y: number) => Entity | undefined;
 type SendToClientFn = (type: string, data?: Record<string, unknown>) => void;
-
-function getStats(entity: Entity): ClassStats | undefined {
-  if ("classType" in entity) {
-    return CLASS_STATS[entity.classType];
-  }
-  return NPC_STATS[entity.type];
-}
 
 export class CombatSystem {
   private state = new Map<string, EntityCombatState>();
@@ -79,7 +72,7 @@ export class CombatSystem {
     sendToClient?: SendToClientFn,
   ): boolean {
     const cs = this.getCombatState(attacker.sessionId);
-    const stats = getStats(attacker);
+    const stats = EntityUtils.getStats(attacker);
     if (!stats) return false;
 
     // Can't attack while stunned
@@ -109,9 +102,8 @@ export class CombatSystem {
 
     if (targetTileX != null && targetTileY != null && stats.meleeRange > 1) {
       // Ranged attack with explicit target tile — validate before committing
-      const dx = Math.abs(targetTileX - attacker.tileX);
-      const dy = Math.abs(targetTileY - attacker.tileY);
-      if (dx + dy > stats.meleeRange) {
+      const dist = MathUtils.manhattanDist(EntityUtils.getPosition(attacker), { x: targetTileX, y: targetTileY });
+      if (dist > stats.meleeRange) {
         sendToClient?.("invalid_target");
         return false;
       }
@@ -120,7 +112,7 @@ export class CombatSystem {
       if (findEntityAtTile) {
         const target = findEntityAtTile(targetTileX, targetTileY);
         // Can't attack self or dead
-        if (!target || !target.alive || target.sessionId === attacker.sessionId) {
+        if (!target || !EntityUtils.isAlive(target) || target.sessionId === attacker.sessionId) {
           sendToClient?.("invalid_target");
           return false;
         }
@@ -175,7 +167,7 @@ export class CombatSystem {
     sendToClient?: SendToClientFn,
   ): boolean {
     const cs = this.getCombatState(caster.sessionId);
-    const stats = getStats(caster);
+    const stats = EntityUtils.getStats(caster);
     if (!stats) return false;
 
     const spell = SPELLS[spellId];
@@ -229,15 +221,14 @@ export class CombatSystem {
 
     // Self-target spells (range 0) don't need range check
     if (spell.rangeTiles > 0) {
-      const dx = Math.abs(targetTileX - caster.tileX);
-      const dy = Math.abs(targetTileY - caster.tileY);
-      if (dx + dy > spell.rangeTiles) return false;
+      const dist = MathUtils.manhattanDist(EntityUtils.getPosition(caster), { x: targetTileX, y: targetTileY });
+      if (dist > spell.rangeTiles) return false;
     }
 
     // For single-target offensive spells (rangeTiles > 0, not AoE), validate target exists before mana deduction
     if (spell.rangeTiles > 0 && spell.effect !== "aoe" && findEntityAtTile) {
       const target = findEntityAtTile(targetTileX, targetTileY);
-      if (!target || !target.alive || target.sessionId === caster.sessionId) {
+      if (!target || !EntityUtils.isAlive(target) || target.sessionId === caster.sessionId) {
         sendToClient?.("invalid_target");
         return false;
       }
@@ -298,7 +289,7 @@ export class CombatSystem {
       }
 
       const attacker = getEntity(windup.attackerSessionId);
-      if (!attacker || !attacker.alive) {
+      if (!attacker || !EntityUtils.isAlive(attacker)) {
         const cs = this.state.get(windup.attackerSessionId);
         if (cs) cs.windupAction = null;
         continue;
@@ -354,7 +345,7 @@ export class CombatSystem {
       }
 
       const entity = getEntity(sessionId);
-      if (!entity || !entity.alive) {
+      if (!entity || !EntityUtils.isAlive(entity)) {
         cs.bufferedAction = null;
         continue;
       }
@@ -396,10 +387,10 @@ export class CombatSystem {
     onDeath: (entity: Entity, killerSessionId: string) => void,
     now: number
   ) {
-    const stats = getStats(attacker)!;
+    const stats = EntityUtils.getStats(attacker)!;
     const target = findEntityAtTile(windup.targetTileX, windup.targetTileY);
 
-    if (target && target.alive && target.sessionId !== attacker.sessionId) {
+    if (target && EntityUtils.isAlive(target) && target.sessionId !== attacker.sessionId) {
       // Check invulnerability
       if (this.buffSystem.isInvulnerable(target.sessionId, now)) {
         broadcast("attack_hit", {
@@ -544,7 +535,7 @@ export class CombatSystem {
 
     // Single-target damage/dot/stun
     const target = findEntityAtTile(windup.targetTileX, windup.targetTileY);
-    if (target && target.alive && target.sessionId !== attacker.sessionId) {
+    if (target && EntityUtils.isAlive(target) && target.sessionId !== attacker.sessionId) {
       this.applySpellToTarget(attacker, target, spell, scalingValue, broadcast, onDeath, now);
     }
   }

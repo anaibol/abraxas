@@ -15,8 +15,8 @@ import { logger } from "../logger";
 
 import { PersistenceService } from "../services/PersistenceService";
 import { MessageHandler } from "../handlers/MessageHandler";
-
-type Entity = Player | Npc;
+import { SpatialLookup } from "../utils/SpatialLookup";
+import { EntityUtils, Entity } from "../utils/EntityUtils";
 
 export class ArenaRoom extends Room<GameState> {
   static mapData: TileMap;
@@ -30,6 +30,7 @@ export class ArenaRoom extends Room<GameState> {
   private respawnSystem = new RespawnSystem(this.inventorySystem);
   private npcSystem!: NpcSystem;
   private messageHandler!: MessageHandler;
+  private spatial!: SpatialLookup;
   private spawnIndex = 0;
 
   onCreate(_options: Record<string, unknown>) {
@@ -37,6 +38,7 @@ export class ArenaRoom extends Room<GameState> {
     this.map = ArenaRoom.mapData;
     this.drops.setInventorySystem(this.inventorySystem);
     this.npcSystem = new NpcSystem(this.state, this.movement, this.combat);
+    this.spatial = new SpatialLookup(this.state);
 
     if (!this.map) {
       throw new Error("ArenaRoom.mapData must be set before room creation");
@@ -51,8 +53,8 @@ export class ArenaRoom extends Room<GameState> {
         this.inventorySystem,
         this.drops,
         this.broadcast.bind(this),
-        this.findEntityAtTile.bind(this),
-        this.isTileOccupied.bind(this)
+        this.spatial.findEntityAtTile.bind(this.spatial),
+        this.spatial.isTileOccupied.bind(this.spatial)
     );
 
     // Spawn NPCs
@@ -284,12 +286,12 @@ export class ArenaRoom extends Room<GameState> {
     this.buffSystem.tick(
       now,
       (sid) => {
-        const entity = this.findEntityBySessionId(sid);
-        return entity instanceof Player ? entity : undefined;
+        const entity = this.spatial.findEntityBySessionId(sid);
+        return entity && EntityUtils.isPlayer(entity) ? entity : undefined;
       },
       broadcast,
       (player) => {
-        if (player instanceof Player) {
+        if (EntityUtils.isPlayer(player)) {
           this.onEntityDeath(player, "");
         }
       },
@@ -301,18 +303,18 @@ export class ArenaRoom extends Room<GameState> {
         _deltaTime,
         this.map,
         now,
-        (x, y, excludeId) => this.isTileOccupied(x, y, excludeId),
+        (x, y, excludeId) => this.spatial.isTileOccupied(x, y, excludeId),
         this.state.tick,
         this.roomId,
-        (x, y) => this.findEntityAtTile(x, y),
+        (x, y) => this.spatial.findEntityAtTile(x, y),
         broadcast
     );
 
     this.combat.processWindups(
       now,
-      (x, y) => this.findEntityAtTile(x, y),
-      (cx, cy, radius, excludeId) => this.findEntitiesInRadius(cx, cy, radius, excludeId),
-      (sid) => this.findEntityBySessionId(sid),
+      (x, y) => this.spatial.findEntityAtTile(x, y),
+      (cx, cy, radius, excludeId) => this.spatial.findEntitiesInRadius(cx, cy, radius, excludeId),
+      (sid) => this.spatial.findEntityBySessionId(sid),
       broadcast,
       this.state.tick,
       this.roomId,
@@ -321,11 +323,11 @@ export class ArenaRoom extends Room<GameState> {
 
     this.combat.processBufferedActions(
       now,
-      (sid) => this.findEntityBySessionId(sid),
+      (sid) => this.spatial.findEntityBySessionId(sid),
       broadcast,
       this.state.tick,
       this.roomId,
-      (x: number, y: number) => this.findEntityAtTile(x, y),
+      (x: number, y: number) => this.spatial.findEntityAtTile(x, y),
       (sessionId) => {
         const c = this.clients.find((cl) => cl.sessionId === sessionId);
         return (type: string, data?: Record<string, unknown>) => c?.send(type, data ?? {});
@@ -342,77 +344,8 @@ export class ArenaRoom extends Room<GameState> {
     );
   }
 
-  private findEntityBySessionId(sessionId: string): Entity | undefined {
-      if (this.state.players.has(sessionId)) return this.state.players.get(sessionId);
-      if (this.state.npcs.has(sessionId)) return this.state.npcs.get(sessionId);
-      return undefined;
-  }
-
-  private findEntityAtTile(x: number, y: number): Entity | undefined {
-    for (const [, player] of this.state.players) {
-      if (player.tileX === x && player.tileY === y && player.alive) {
-        return player;
-      }
-    }
-    for (const [, npc] of this.state.npcs) {
-        if (npc.tileX === x && npc.tileY === y && npc.alive) {
-            return npc;
-        }
-    }
-    return undefined;
-  }
-
-  private findEntitiesInRadius(cx: number, cy: number, radius: number, excludeId: string): Entity[] {
-    const result: Entity[] = [];
-    for (const [, player] of this.state.players) {
-      if (player.sessionId === excludeId || !player.alive) continue;
-      const dx = Math.abs(player.tileX - cx);
-      const dy = Math.abs(player.tileY - cy);
-      if (dx + dy <= radius) {
-        result.push(player);
-      }
-    }
-    for (const [, npc] of this.state.npcs) {
-        if (npc.sessionId === excludeId || !npc.alive) continue;
-        const dx = Math.abs(npc.tileX - cx);
-        const dy = Math.abs(npc.tileY - cy);
-        if (dx + dy <= radius) {
-            result.push(npc);
-        }
-    }
-    return result;
-  }
-
-  private isTileOccupied(
-    x: number,
-    y: number,
-    excludeId: string
-  ): boolean {
-    for (const [, player] of this.state.players) {
-      if (
-        player.sessionId !== excludeId &&
-        player.tileX === x &&
-        player.tileY === y &&
-        player.alive
-      ) {
-        return true;
-      }
-    }
-    for (const [, npc] of this.state.npcs) {
-        if (
-            npc.sessionId !== excludeId &&
-            npc.tileX === x &&
-            npc.tileY === y &&
-            npc.alive
-        ) {
-            return true;
-        }
-    }
-    return false;
-  }
-
   private onEntityDeath(entity: Entity, killerSessionId: string) {
-    if (entity instanceof Player) {
+    if (EntityUtils.isPlayer(entity)) {
         // It's a player
         this.onPlayerDeath(entity, killerSessionId);
     } else {
@@ -426,7 +359,7 @@ export class ArenaRoom extends Room<GameState> {
 
       if (killerSessionId) {
           const killer = this.state.players.get(killerSessionId);
-          if (killer && killer.alive) {
+          if (killer && EntityUtils.isAlive(killer)) {
              this.handleNpcKillRewards(killer, npc);
           }
       }
@@ -500,10 +433,7 @@ export class ArenaRoom extends Room<GameState> {
                   if (entry.itemId === "gold") {
                        this.drops.spawnGoldDrop(
                           this.state.drops,
-                          npc.tileX + offsetX, // Note: tileX is int, but DropSystem might handle float positions? 
-                          // DropSystemSchema uses x: number (float ok).
-                          // Map collision check might be needed if drops block or need to be on valid tile.
-                          // Usually drops just sit on top.
+                          npc.tileX + offsetX, 
                           npc.tileY + offsetY,
                           quantity,
                           this.roomId,
@@ -565,11 +495,11 @@ export class ArenaRoom extends Room<GameState> {
     // Broadcast kill feed
     let killerName = "";
     if (killerSessionId) {
-        const killer = this.findEntityBySessionId(killerSessionId);
+        const killer = this.spatial.findEntityBySessionId(killerSessionId);
         if (killer) {
-            if (killer instanceof Player) { // It's a Player
+            if (EntityUtils.isPlayer(killer)) { // It's a Player
                 killerName = killer.name;
-            } else if (killer instanceof Npc) { // It's an NPC
+            } else if (EntityUtils.isNpc(killer)) { // It's an NPC
                 killerName = killer.type;
             }
         }

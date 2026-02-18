@@ -1,13 +1,14 @@
-import { 
-  ClassStats, 
-  NPC_STATS, 
-  TileMap, 
-  Direction, 
-  NpcType, 
-  ServerMessages, 
-  BroadcastFn, 
-  NPC_RESPAWN_TIME_MS, 
-  AGGRO_RANGE 
+import {
+  ClassStats,
+  NPC_STATS,
+  TileMap,
+  Direction,
+  NpcType,
+  ServerMessages,
+  BroadcastFn,
+  NPC_RESPAWN_TIME_MS,
+  AGGRO_RANGE,
+  MathUtils
 } from "@abraxas/shared";
 import { Npc } from "../schema/Npc";
 import { Player } from "../schema/Player";
@@ -15,8 +16,7 @@ import { GameState } from "../schema/GameState";
 import { MovementSystem } from "./MovementSystem";
 import { CombatSystem } from "./CombatSystem";
 import { logger } from "../logger";
-
-type Entity = Player | Npc;
+import { EntityUtils, Entity } from "../utils/EntityUtils";
 
 export class NpcSystem {
   private respawns: { type: string; deadAt: number }[] = [];
@@ -29,7 +29,7 @@ export class NpcSystem {
 
   spawnNpcs(count: number, map: TileMap) {
     const types = Object.keys(NPC_STATS);
-    
+
     for (let i = 0; i < count; i++) {
         const type = types[Math.floor(Math.random() * types.length)];
         this.spawnNpc(type, map);
@@ -42,7 +42,7 @@ export class NpcSystem {
     if (type === "orc" || type === "skeleton" || type === "goblin" || type === "wolf") {
       npc.type = type;
     }
-    
+
     // Find valid spawn location
     let attempts = 0;
     while (attempts < 100) {
@@ -75,11 +75,11 @@ export class NpcSystem {
   }
 
   tick(
-    dt: number, 
-    map: TileMap, 
-    now: number, 
-    occupiedCheck: (x: number, y: number, excludeId: string) => boolean, 
-    tickCount: number, 
+    dt: number,
+    map: TileMap,
+    now: number,
+    occupiedCheck: (x: number, y: number, excludeId: string) => boolean,
+    tickCount: number,
     roomId: string,
     findEntityAtTile: (x: number, y: number) => Entity | undefined,
     broadcast: BroadcastFn
@@ -95,7 +95,7 @@ export class NpcSystem {
 
     // AI Logic
     this.state.npcs.forEach((npc) => {
-        if (!npc.alive) return;
+        if (!EntityUtils.isAlive(npc)) return;
 
         // Simple State Machine:
         // 1. Find nearest player
@@ -106,12 +106,10 @@ export class NpcSystem {
         let minDist = Infinity;
 
         this.state.players.forEach((player) => {
-            if (!player.alive || player.stealthed) return; // Don't aggro dead or stealthed
+            if (!EntityUtils.isAlive(player) || player.stealthed) return; // Don't aggro dead or stealthed
+
             // Check if player is on same map (implicit)
-            
-            const dx = player.tileX - npc.tileX;
-            const dy = player.tileY - npc.tileY;
-            const dist = Math.sqrt(dx*dx + dy*dy);
+            const dist = MathUtils.dist(EntityUtils.getPosition(player), EntityUtils.getPosition(npc));
             if (dist < minDist) {
                 minDist = dist;
                 nearestPlayerId = player.sessionId;
@@ -120,22 +118,14 @@ export class NpcSystem {
 
         if (nearestPlayerId && minDist <= AGGRO_RANGE) {
             const target = this.state.players.get(nearestPlayerId)!;
-            const dist = Math.abs(target.tileX - npc.tileX) + Math.abs(target.tileY - npc.tileY); // Manhattan for grid range check
+            const dist = MathUtils.manhattanDist(EntityUtils.getPosition(target), EntityUtils.getPosition(npc)); // Manhattan for grid range check
             const stats = NPC_STATS[npc.type];
 
             if (dist <= stats.meleeRange) {
                 // Face target
-                let dx = 0;
-                let dy = 0;
-                if (target.tileX > npc.tileX) dx = 1;
-                else if (target.tileX < npc.tileX) dx = -1;
-                if (target.tileY > npc.tileY) dy = 1;
-                else if (target.tileY < npc.tileY) dy = -1;
-                
-                if (dx === 1) npc.facing = Direction.RIGHT;
-                else if (dx === -1) npc.facing = Direction.LEFT;
-                else if (dy === 1) npc.facing = Direction.DOWN;
-                else if (dy === -1) npc.facing = Direction.UP;
+                const npcPos = EntityUtils.getPosition(npc);
+                const targetPos = EntityUtils.getPosition(target);
+                npc.facing = MathUtils.getDirection(npcPos, targetPos);
 
                 // Attack
                 this.combatSystem.tryAttack(
@@ -150,17 +140,16 @@ export class NpcSystem {
                 );
             } else {
                 // Move towards
-                let dx = 0;
-                let dy = 0;
-                if (target.tileX > npc.tileX) dx = 1;
-                else if (target.tileX < npc.tileX) dx = -1;
-                
-                if (target.tileY > npc.tileY) dy = 1;
-                else if (target.tileY < npc.tileY) dy = -1;
+                const npcPos = EntityUtils.getPosition(npc);
+                const targetPos = EntityUtils.getPosition(target);
+
+                const dx = target.tileX - npc.tileX;
+                const dy = target.tileY - npc.tileY;
 
                 // Prefer axis with larger distance
                 let moveDir: Direction | null = null;
-                if (Math.abs(target.tileX - npc.tileX) > Math.abs(target.tileY - npc.tileY)) {
+
+                if (Math.abs(dx) > Math.abs(dy)) {
                      // Try X first
                      if (dx > 0) moveDir = Direction.RIGHT;
                      else if (dx < 0) moveDir = Direction.LEFT;
@@ -178,8 +167,9 @@ export class NpcSystem {
 
     // Handle dead NPCs removal
     this.state.npcs.forEach((npc) => {
-        if (!npc.alive && !this.respawns.some(r => r.type === npc.type && Date.now() - r.deadAt < 100)) { // preventing double add, though logic below ensures single removal
-             // Actually, we should check if they are already in respawn list? 
+        if (!EntityUtils.isAlive(npc) && !this.respawns.some(r => r.type === npc.type && Date.now() - r.deadAt < 100)) {
+             // preventing double add, though logic below ensures single removal
+             // Actually, we should check if they are already in respawn list?
              // Or rely on ArenaRoom calling handleDeath?
              // ArenaRoom calls onDeath callback. We should likely handle NPC death there or expose a method.
         }

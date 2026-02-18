@@ -3,8 +3,7 @@ import { DIRECTION_DELTA, CLASS_STATS, NPC_STATS } from "@abraxas/shared";
 import type { Player } from "../schema/Player";
 import type { Npc } from "../schema/Npc";
 import { logger } from "../logger";
-
-type Entity = Player | Npc;
+import { EntityUtils, Entity } from "../utils/EntityUtils";
 
 interface EntityTimers {
   lastMoveMs: number;
@@ -37,13 +36,7 @@ export class MovementSystem {
   ): boolean {
     const timers = this.getTimers(entity.sessionId);
     
-    let stats: ClassStats;
-    if ("classType" in entity) {
-        stats = CLASS_STATS[entity.classType];
-    } else {
-        stats = NPC_STATS[entity.type];
-    }
-
+    const stats = EntityUtils.getStats(entity);
     if (!stats) return false;
 
     const moveIntervalMs = 1000 / stats.speedTilesPerSecond;
@@ -54,7 +47,7 @@ export class MovementSystem {
     // Check movement timing (with 15ms tolerance for network/clock jitter)
     if (now - timers.lastMoveMs < moveIntervalMs - 15) {
       // Only log debug for players to avoid spamming for NPCs
-      if ("classType" in entity) {
+      if (EntityUtils.isPlayer(entity)) {
         logger.debug({
             room: roomId,
             tick,
@@ -85,7 +78,7 @@ export class MovementSystem {
       return false;
     }
 
-    const posBefore = { x: entity.tileX, y: entity.tileY };
+    const posBefore = EntityUtils.getPosition(entity);
     entity.tileX = newX;
     entity.tileY = newY;
     
@@ -97,7 +90,7 @@ export class MovementSystem {
     }
 
     // Log only for players
-    if ("classType" in entity) {
+    if (EntityUtils.isPlayer(entity)) {
         logger.info({
             room: roomId,
             tick,
