@@ -148,6 +148,9 @@ export async function createGameServer(options: {
 
   const server = defineServer({
     transport: new BunWebSockets(),
+    // devMode keeps room state alive across server restarts during local dev.
+    // Never enable this in production.
+    devMode: process.env.NODE_ENV !== "production",
     rooms: {
       arena: defineRoom(ArenaRoom),
     },

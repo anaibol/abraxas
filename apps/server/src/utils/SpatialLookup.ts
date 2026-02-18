@@ -18,6 +18,13 @@ export class SpatialLookup {
     return `${Math.floor(x)},${Math.floor(y)}`;
   }
 
+  /** Clears and rebuilds the grid from the current state — call after devMode state restore. */
+  rebuild(): void {
+    this.grid.clear();
+    this.state.players.forEach((p) => this.addToGrid(p));
+    this.state.npcs.forEach((n) => this.addToGrid(n));
+  }
+
   addToGrid(entity: Entity) {
     if (!entity.alive) return;
     const key = this.getKey(entity.tileX, entity.tileY);

@@ -438,6 +438,31 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     });
   }
 
+  // ── devMode: persist out-of-state data across hot restarts ──────────────
+
+  /**
+   * Called before the room is cached on server shutdown (devMode only).
+   * Return any JSON-serializable data that lives outside `this.state`.
+   */
+  onCacheRoom() {
+    return { spawnIndex: this.spawnIndex };
+  }
+
+  /**
+   * Called after the room and its state have been restored (devMode only).
+   * Rebuild the spatial grid from the now-restored state so collision /
+   * entity lookup works correctly without requiring clients to re-join.
+   */
+  onRestoreRoom(cached: { spawnIndex: number }): void {
+    this.spawnIndex = cached.spawnIndex;
+    // State is already restored at this point — rebuild the in-memory grid.
+    this.spatial.rebuild();
+    logger.info({
+      room: this.roomId,
+      message: `[ArenaRoom] Room restored — ${this.state.players.size} players, ${this.state.npcs.size} npcs`,
+    });
+  }
+
   async onLeave(client: Client, code?: number) {
     // CloseCode.CONSENTED = normal/voluntary close. Any other code = abrupt disconnect.
     if (code !== CloseCode.CONSENTED) {
