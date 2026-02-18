@@ -26,8 +26,8 @@ export async function createGameServer(options: {
 
   const app = transport.getExpressApp();
 
-  // Basic middleware to parse JSON bodies for our API routes
   app.use((req: any, res: any, next: any) => {
+    console.error(`[DEBUG server.ts] Request: ${req.method} ${req.url}`);
     if (req.url.startsWith("/api/") && req.method === "POST" && req.headers["content-type"]?.includes("application/json")) {
       let body = "";
       req.on("data", (chunk: any) => body += chunk);

@@ -34,7 +34,8 @@ export class MessageHandler {
         private broadcast: BroadcastCallback,
         private isTileOccupied: (x: number, y: number, excludeId: string) => boolean,
         private findClientByName: (name: string) => Client | undefined,
-        private quests: QuestSystem
+        private quests: QuestSystem,
+        private gainXp: (player: Player, amount: number) => void
     ) {}
 
     handleMove(client: Client, direction: Direction): void {
@@ -162,6 +163,16 @@ export class MessageHandler {
             client.send("error", { message: "Too far to interact" });
             return;
         }
+        
+        // Quest Progress: Talk
+        this.quests.updateProgress(player.userId, player.dbId, "talk", npc.type, 1).then(updatedQuests => {
+            for (const quest of updatedQuests) {
+                client.send("quest_update", { quest });
+                if (quest.status === "completed") {
+                    client.send("notification", { message: `Quest Completed: ${QUESTS[quest.questId].title}` });
+                }
+            }
+        });
 
         if (npc.type === "merchant") {
             const inventory = MERCHANT_INVENTORY.general_store || [];
@@ -230,7 +241,7 @@ export class MessageHandler {
         this.quests.completeQuest(player.userId, player.dbId, questId).then(questDef => {
             if (questDef) {
                 // Grant rewards
-                player.xp += questDef.rewards.exp;
+                this.gainXp(player, questDef.rewards.exp);
                 player.gold += questDef.rewards.gold;
                 
                 if (questDef.rewards.items) {

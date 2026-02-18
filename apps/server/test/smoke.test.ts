@@ -11,6 +11,8 @@ import { prisma } from "../src/database/db";
 const TEST_PORT = 2568;
 let server: any;
 let testMap: TileMap;
+let clientA: Client;
+let clientB: Client;
 
 /**
  * Test map (arena.test.json):
@@ -31,6 +33,9 @@ beforeAll(async () => {
   server = await createGameServer({ port: TEST_PORT, map: testMap });
   // Ensure Bun.serve is ready
   await new Promise(r => setTimeout(r, 500));
+
+  clientA = new Client(`ws://127.0.0.1:${TEST_PORT}`);
+  clientB = new Client(`ws://127.0.0.1:${TEST_PORT}`);
 });
 
 afterAll(async () => {
@@ -73,9 +78,6 @@ function expectPlayer(room: Room<GameState>, sessionId: string): Player {
 
 describe("Arena multiplayer smoke test", () => {
   test("full game flow: join, move, blocked move, melee, spell, disconnect", async () => {
-    const clientA = new Client(`ws://localhost:${TEST_PORT}`);
-    const clientB = new Client(`ws://localhost:${TEST_PORT}`);
-
     // ---- Step 1: Both clients join ----
     const testSuffix = Date.now().toString();
     const nameA = "Warrior_" + testSuffix;
@@ -97,6 +99,8 @@ describe("Arena multiplayer smoke test", () => {
     const tokenA = AuthService.generateToken({ userId: userA.id, username: nameA });
     const tokenB = AuthService.generateToken({ userId: userB.id, username: nameB });
 
+    process.stderr.write("DEBUG: Server is up, waiting 30s for manual probing...\n");
+    await new Promise(r => setTimeout(r, 10000));
     const roomA: Room<GameState> = await clientA.joinOrCreate("arena", {
       name: nameA,
       classType: "warrior",

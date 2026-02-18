@@ -50,18 +50,16 @@ export class ArenaRoom extends Room<any> {
         this.roomMapName = options.mapName || "arena.test";
         process.stderr.write(`[ArenaRoom] Map name: ${this.roomMapName}\n`);
         
-        // Use MapService injected map
-        this.map = await MapService.getMap(this.roomMapName);
-        
-        if (!this.map) {
+        const loadedMap = await MapService.getMap(this.roomMapName);
+        if (!loadedMap) {
             process.stderr.write(`[ArenaRoom] Failed to load map: ${this.roomMapName}\n`);
             throw new Error(`Failed to load map: ${this.roomMapName}`);
         }
+        this.map = loadedMap;
         process.stderr.write("[ArenaRoom] Map loaded\n");
 
         this.drops.setInventorySystem(this.inventorySystem);
         
-        // Initialize utilities and systems in dependency order
         this.spatial = new SpatialLookup(this.state);
         this.movement = new MovementSystem(this.spatial);
         this.combat = new CombatSystem(this.buffSystem, this.spatial);
@@ -87,79 +85,59 @@ export class ArenaRoom extends Room<any> {
                 if (!player) return undefined;
                 return this.clients.find(c => c.sessionId === (player as any).sessionId);
             },
-            this.quests
+            this.quests,
+            this.gainXp.bind(this)
         );
 
-        // Spawn predefined NPCs
         if (this.map.npcs) {
             for (const npcDef of this.map.npcs) {
                 this.npcSystem.spawnNpcAt(npcDef.type, this.map, npcDef.x, npcDef.y);
             }
         }
 
-        // Spawn random NPCs
         const npcCount = this.map.npcCount !== undefined ? this.map.npcCount : 20;
         if (npcCount > 0) {
             this.npcSystem.spawnNpcs(npcCount, this.map);
         }
 
-        this.onMessage("friend_request", (client, data: { targetName: string }) => {
-            this.messageHandler.handleFriendRequest(client, data.targetName);
-        });
-
-        this.onMessage("friend_accept", (client, data: { requesterId: string }) => {
-            this.messageHandler.handleFriendAccept(client, data.requesterId);
-        });
-
         this.setSimulationInterval((dt) => this.tick(dt), TICK_MS);
         this.setPatchRate(TICK_MS);
 
+        // Movement & Combat
         this.onMessage("move", (client, data: { direction: Direction }) => {
-          this.messageHandler.handleMove(client, data.direction);
+            this.messageHandler.handleMove(client, data.direction);
         });
 
         this.onMessage("attack", (client, data?: { targetTileX?: number; targetTileY?: number }) => {
-          this.messageHandler.handleAttack(client, data?.targetTileX, data?.targetTileY);
+            this.messageHandler.handleAttack(client, data?.targetTileX, data?.targetTileY);
         });
 
-        this.onMessage(
-          "cast",
-          (
-            client,
-            data: { spellId: string; targetTileX: number; targetTileY: number }
-          ) => {
+        this.onMessage("cast", (client, data: { spellId: string; targetTileX: number; targetTileY: number }) => {
             this.messageHandler.handleCast(client, data);
-          }
-        );
+        });
 
+        // Inventory
         this.onMessage("pickup", (client, data: { dropId: string }) => {
-          this.messageHandler.handlePickup(client, data.dropId);
+            this.messageHandler.handlePickup(client, data.dropId);
         });
 
         this.onMessage("equip", (client, data: { itemId: string }) => {
-          this.messageHandler.handleEquip(client, data.itemId);
+            this.messageHandler.handleEquip(client, data.itemId);
         });
 
         this.onMessage("unequip", (client, data: { slot: EquipmentSlot }) => {
-          this.messageHandler.handleUnequip(client, data.slot);
+            this.messageHandler.handleUnequip(client, data.slot);
         });
 
         this.onMessage("use_item", (client, data: { itemId: string }) => {
-          this.messageHandler.handleUseItem(client, data.itemId);
+            this.messageHandler.handleUseItem(client, data.itemId);
         });
 
         this.onMessage("drop_item", (client, data: { itemId: string }) => {
-          this.messageHandler.handleDropItem(client, data.itemId);
+            this.messageHandler.handleDropItem(client, data.itemId);
         });
 
-        this.onMessage("chat", (client, data: { message: string }) => {
-            this.messageHandler.handleChat(client, data.message);
-        });
-
-        this.onMessage("audio", (client, data: ArrayBuffer) => {
-            this.broadcast("audio", { sessionId: client.sessionId, data }, { except: client });
-        });
-
+        // NPCs & Quests
         this.onMessage("interact", (client, data: { npcId: string }) => {
             this.messageHandler.handleInteract(client, data.npcId);
         });
@@ -180,12 +158,43 @@ export class ArenaRoom extends Room<any> {
             this.messageHandler.handleQuestComplete(client, data.questId);
         });
 
-        this.onMessage("ping", (client) => {
-          client.send("pong", { serverTime: Date.now() });
+        // Social
+        this.onMessage("chat", (client, data: { message: string }) => {
+            this.messageHandler.handleChat(client, data.message);
         });
-        
-        this.onMessage("audio", (client, message: ArrayBuffer) => {
-            this.broadcast("audio", message, { except: client });
+
+        this.onMessage("friend_request", (client, data: { targetName: string }) => {
+            this.messageHandler.handleFriendRequest(client, data.targetName);
+        });
+
+        this.onMessage("friend_accept", (client, data: { requesterId: string }) => {
+            this.messageHandler.handleFriendAccept(client, data.requesterId);
+        });
+
+        // Party
+        this.onMessage("party_invite", (client, data: { targetSessionId: string }) => {
+            this.messageHandler.handlePartyInvite(client, data.targetSessionId);
+        });
+
+        this.onMessage("party_accept", (client, data: { partyId: string }) => {
+            this.messageHandler.handlePartyAccept(client, data.partyId);
+        });
+
+        this.onMessage("party_leave", (client) => {
+            this.messageHandler.handlePartyLeave(client);
+        });
+
+        this.onMessage("party_kick", (client, data: { targetSessionId: string }) => {
+            this.messageHandler.handlePartyKick(client, data.targetSessionId);
+        });
+
+        // Network
+        this.onMessage("ping", (client) => {
+            client.send("pong", { serverTime: Date.now() });
+        });
+
+        this.onMessage("audio", (client, data: ArrayBuffer) => {
+            this.broadcast("audio", { sessionId: client.sessionId, data }, { except: client });
         });
 
         logger.info({ room: this.roomId, intent: "room_created", result: "ok" });
@@ -197,91 +206,6 @@ export class ArenaRoom extends Room<any> {
         }
         throw e;
     }
-        this.messageHandler.handleFriendRequest(client, data.targetName);
-    });
-
-    this.onMessage("friend_accept", (client, data: { requesterId: string }) => {
-        this.messageHandler.handleFriendAccept(client, data.requesterId);
-    });
-
-    this.setSimulationInterval((dt) => this.tick(dt), TICK_MS);
-    this.setPatchRate(TICK_MS);
-
-    this.onMessage("move", (client, data: { direction: Direction }) => {
-      this.messageHandler.handleMove(client, data.direction);
-    });
-
-    this.onMessage("attack", (client, data?: { targetTileX?: number; targetTileY?: number }) => {
-      this.messageHandler.handleAttack(client, data?.targetTileX, data?.targetTileY);
-    });
-
-    this.onMessage(
-      "cast",
-      (
-        client,
-        data: { spellId: string; targetTileX: number; targetTileY: number }
-      ) => {
-        this.messageHandler.handleCast(client, data);
-      }
-    );
-
-    this.onMessage("pickup", (client, data: { dropId: string }) => {
-      this.messageHandler.handlePickup(client, data.dropId);
-    });
-
-    this.onMessage("equip", (client, data: { itemId: string }) => {
-      this.messageHandler.handleEquip(client, data.itemId);
-    });
-
-    this.onMessage("unequip", (client, data: { slot: EquipmentSlot }) => {
-      this.messageHandler.handleUnequip(client, data.slot);
-    });
-
-    this.onMessage("use_item", (client, data: { itemId: string }) => {
-      this.messageHandler.handleUseItem(client, data.itemId);
-    });
-
-    this.onMessage("drop_item", (client, data: { itemId: string }) => {
-      this.messageHandler.handleDropItem(client, data.itemId);
-    });
-
-    this.onMessage("chat", (client, data: { message: string }) => {
-        this.messageHandler.handleChat(client, data.message);
-    });
-
-    this.onMessage("audio", (client, data: ArrayBuffer) => {
-        this.broadcast("audio", { sessionId: client.sessionId, data }, { except: client });
-    });
-
-    this.onMessage("interact", (client, data: { npcId: string }) => {
-        this.messageHandler.handleInteract(client, data.npcId);
-    });
-
-    this.onMessage("buy_item", (client, data: { itemId: string; quantity: number }) => {
-        this.messageHandler.handleBuyItem(client, data);
-    });
-
-    this.onMessage("sell_item", (client, data: { itemId: string; quantity: number }) => {
-        this.messageHandler.handleSellItem(client, data);
-    });
-
-    this.onMessage("quest_accept", (client, data: { questId: string }) => {
-        this.messageHandler.handleQuestAccept(client, data.questId);
-    });
-
-    this.onMessage("quest_complete", (client, data: { questId: string }) => {
-        this.messageHandler.handleQuestComplete(client, data.questId);
-    });
-
-    this.onMessage("ping", (client) => {
-      client.send("pong", { serverTime: Date.now() });
-    });
-    
-    this.onMessage("audio", (client, message: ArrayBuffer) => {
-        this.broadcast("audio", message, { except: client });
-    });
-
-    logger.info({ room: this.roomId, intent: "room_created", result: "ok" });
   }
 
   async onAuth(client: Client, options: JoinOptions) {
@@ -584,40 +508,7 @@ export class ArenaRoom extends Room<any> {
       // 1. Experience & Leveling
       const stats = NPC_STATS[npc.type];
       if (stats && stats.expReward) {
-          player.xp += stats.expReward;
-          // Level up check
-          while (player.xp >= player.maxXp) {
-              player.xp -= player.maxXp;
-              player.level++;
-              
-              const nextLevelEntry = EXP_TABLE[player.level]; 
-              if (nextLevelEntry !== undefined) {
-                  player.maxXp = nextLevelEntry;
-              } else {
-                  // Fallback if table runs out
-                  player.maxXp = Math.floor(player.maxXp * 1.2);
-              }
-
-              // Stat Increases (simple +5 to all + recovery)
-              player.maxHp += 20;
-              player.maxMana += 10;
-              player.str += 2;
-              player.agi += 2;
-              player.intStat += 2;
-
-              player.hp = player.maxHp;
-              player.mana = player.maxMana;
-
-              this.broadcast("level_up", {
-                  sessionId: player.sessionId,
-                  level: player.level,
-              });
-              
-              const client = this.clients.find(c => c.sessionId === player.sessionId);
-              if (client) {
-                  client.send("notification", { message: `Level Up! You are now level ${player.level}!` });
-              }
-          }
+          this.gainXp(player, stats.expReward);
       }
 
       // 3. Quest Progress
@@ -738,5 +629,41 @@ export class ArenaRoom extends Room<any> {
       result: "ok",
       posAfter: { x: player.tileX, y: player.tileY },
     });
+  }
+
+  public gainXp(player: Player, amount: number) {
+      player.xp += amount;
+      
+      // Level up check
+      while (player.xp >= player.maxXp) {
+          player.xp -= player.maxXp;
+          player.level++;
+          
+          const nextLevelEntry = EXP_TABLE[player.level]; 
+          if (nextLevelEntry !== undefined) {
+              player.maxXp = nextLevelEntry;
+          } else {
+              player.maxXp = Math.floor(player.maxXp * 1.2);
+          }
+
+          player.maxHp += 20;
+          player.maxMana += 10;
+          player.str += 2;
+          player.agi += 2;
+          player.intStat += 2;
+
+          player.hp = player.maxHp;
+          player.mana = player.maxMana;
+
+          this.broadcast("level_up", {
+              sessionId: player.sessionId,
+              level: player.level,
+          });
+          
+          const client = this.clients.find(c => c.sessionId === player.sessionId);
+          if (client) {
+              client.send("notification", { message: `Level Up! You are now level ${player.level}!` });
+          }
+      }
   }
 }
