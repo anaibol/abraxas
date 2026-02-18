@@ -1,6 +1,6 @@
 import { EquipSlot, Prisma } from "../generated/prisma";
 import { prisma } from "../database/db";
-import { CLASS_STATS, Direction, ClassType } from "@abraxas/shared";
+import { Direction, ClassType } from "@abraxas/shared";
 import type { InventoryEntry, EquipmentData } from "@abraxas/shared";
 import { logger } from "../logger";
 
@@ -37,58 +37,15 @@ const CHAR_INCLUDE = {
 } as const;
 
 export class PersistenceService {
-  static async loadChar(userId: string, charName: string) {
-    return prisma.character.findFirst({
-      where: { accountId: userId, name: charName },
+  static async loadChar(id: string) {
+    return prisma.character.findUnique({
+      where: { id },
       include: CHAR_INCLUDE,
     });
   }
 
-  static async createChar(
-    userId: string,
-    charName: string,
-    classType: ClassType,
-    x: number,
-    y: number,
-    mapName: string,
-  ) {
-    const stats = CLASS_STATS[classType];
-    if (!stats) throw new Error("Invalid class type");
-
-    try {
-      return await prisma.character.create({
-        data: {
-          account: { connect: { id: userId } },
-          name: charName,
-          class: classType,
-          mapId: mapName,
-          x,
-          y,
-          stats: {
-            create: {
-              hp: stats.hp,
-              maxHp: stats.hp,
-              mp: stats.mana,
-              maxMp: stats.mana,
-              str: stats.str,
-              agi: stats.agi,
-              int: stats.int,
-            },
-          },
-          inventory: { create: { size: 40 } },
-        },
-        include: CHAR_INCLUDE,
-      });
-    } catch (e: unknown) {
-      if (typeof e === "object" && e !== null && "code" in e && e.code === "P2002") {
-        throw new Error("Character name already taken");
-      }
-      throw e;
-    }
-  }
-
   static async saveChar(
-    charId: string,
+    id: string,
     data: {
       x: number;
       y: number;
@@ -114,7 +71,7 @@ export class PersistenceService {
       const facingStr = (Direction[data.facing] ?? "DOWN").toLowerCase();
 
       const char = await prisma.character.update({
-        where: { id: charId },
+        where: { id },
         data: {
           x: data.x,
           y: data.y,
