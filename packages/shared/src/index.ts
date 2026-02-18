@@ -6,3 +6,4 @@ export * from "./loot";
 export * from "./buffs";
 export * from "./types/NpcAttributes";
 export * from "./utils/MathUtils";
+export * from "./utils/names";

@@ -139,7 +139,7 @@ export class CombatSystem {
     cs.windupAction = windup;
     this.activeWindups.push(windup);
 
-    broadcast("attack_start", {
+    broadcast(ServerMessageType.AttackStart, {
       sessionId: attacker.sessionId,
       facing: attacker.facing,
     });
@@ -257,7 +257,7 @@ export class CombatSystem {
     cs.windupAction = windup;
     this.activeWindups.push(windup);
 
-    broadcast("cast_start", {
+    broadcast(ServerMessageType.CastStart, {
       sessionId: caster.sessionId,
       spellId,
       targetTileX: finalTargetX,
@@ -411,12 +411,12 @@ export class CombatSystem {
 
       target.hp -= result.damage;
 
-      broadcast("attack_hit", {
+      broadcast(ServerMessageType.AttackHit, {
         sessionId: attacker.sessionId,
         targetSessionId: target.sessionId,
       });
 
-      broadcast("damage", {
+      broadcast(ServerMessageType.Damage, {
         targetSessionId: target.sessionId,
         amount: result.damage,
         hpAfter: target.hp,
@@ -430,7 +430,7 @@ export class CombatSystem {
         onDeath(target, attacker.sessionId);
       }
     } else {
-      broadcast("attack_hit", {
+      broadcast(ServerMessageType.AttackHit, {
         sessionId: attacker.sessionId,
         targetSessionId: null,
       });
@@ -450,7 +450,7 @@ export class CombatSystem {
     const spell = SPELLS[windup.spellId!];
     if (!spell) return;
 
-    broadcast("cast_hit", {
+    broadcast(ServerMessageType.CastHit, {
       sessionId: attacker.sessionId,
       spellId: windup.spellId ?? "",
       targetTileX: windup.targetTileX,
@@ -477,7 +477,7 @@ export class CombatSystem {
           spell.durationMs,
           now
         );
-        broadcast("buff_applied", {
+        broadcast(ServerMessageType.BuffApplied, {
           sessionId: attacker.sessionId,
           spellId: spell.id,
           durationMs: spell.durationMs,
@@ -489,7 +489,7 @@ export class CombatSystem {
     if (spell.effect === "stealth") {
       if (spell.durationMs) {
         this.buffSystem.applyStealth(attacker.sessionId, spell.durationMs, now);
-        broadcast("stealth_applied", {
+        broadcast(ServerMessageType.StealthApplied, {
           sessionId: attacker.sessionId,
           durationMs: spell.durationMs,
         });
@@ -500,7 +500,7 @@ export class CombatSystem {
     if (spell.effect === "heal") {
       const healAmount = calcHealAmount(spell.baseDamage, casterInt, spell.scalingRatio);
       attacker.hp = Math.min(attacker.maxHp, attacker.hp + healAmount);
-      broadcast("heal", {
+      broadcast(ServerMessageType.Heal, {
         sessionId: attacker.sessionId,
         amount: healAmount,
         hpAfter: attacker.hp,
@@ -552,7 +552,7 @@ export class CombatSystem {
     if (damage > 0) {
       target.hp -= damage;
 
-      broadcast("damage", {
+      broadcast(ServerMessageType.Damage, {
         targetSessionId: target.sessionId,
         amount: damage,
         hpAfter: target.hp,
@@ -584,7 +584,7 @@ export class CombatSystem {
     // Apply stun
     if (spell.effect === "stun" && spell.durationMs) {
       this.buffSystem.applyStun(target.sessionId, spell.durationMs, now);
-      broadcast("stun_applied", {
+      broadcast(ServerMessageType.StunApplied, {
         targetSessionId: target.sessionId,
         durationMs: spell.durationMs,
       });

@@ -195,7 +195,7 @@ export enum ServerMessageType {
   OpenDialogue = "open_dialogue",
 }
 
-export type WelcomeData = ServerMessages[ServerMessageType.Welcome];
+
 
 export type ServerMessages = {
   [ServerMessageType.Welcome]: {
@@ -247,6 +247,8 @@ export type ServerMessages = {
   [ServerMessageType.QuestAvailable]: { npcId: string; questIds: string[] };
   [ServerMessageType.OpenDialogue]: { npcId: string; text: string; options: { text: string; action: string; data?: any }[] };
 };
+
+export type WelcomeData = ServerMessages[ServerMessageType.Welcome];
 
 export enum ClientMessageType {
   Move = "move",

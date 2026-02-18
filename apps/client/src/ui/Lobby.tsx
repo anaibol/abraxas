@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Box, Flex, Text, Input, Button, Grid } from "@chakra-ui/react";
-import type { ClassType } from "@abraxas/shared";
+import { type ClassType, getRandomName } from "@abraxas/shared";
 
 interface LobbyProps {
   onJoin: (name: string, classType: ClassType, token: string) => void;
@@ -34,7 +34,7 @@ const CLASS_INFO: Record<ClassType, { icon: string; color: string; desc: string 
 
 export function Lobby({ onJoin, connecting }: LobbyProps) {
   const [mode, setMode] = useState<"login" | "register" | "class_select">("login");
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState(getRandomName());
   const [password, setPassword] = useState("");
   const [token, setToken] = useState("");
   const [classType, setClassType] = useState<ClassType>("warrior");
