@@ -1,10 +1,10 @@
 import { prisma } from "../database/db";
 import { AuthService } from "../database/auth";
-import { CLASS_STATS, Direction } from "@abraxas/shared";
+import { CLASS_STATS, Direction, ClassType } from "@abraxas/shared";
 import type { InventoryEntry, EquipmentData } from "@abraxas/shared";
 
 export class PersistenceService {
-    static async authenticateUser(username: string, passwordHash: string): Promise<any> {
+    static async authenticateUser(username: string, passwordHash: string) {
         // Find existing user
         let user = await prisma.user.findUnique({
             where: { username }
@@ -39,7 +39,7 @@ export class PersistenceService {
         });
     }
 
-    static async createPlayer(userId: string, playerName: string, classType: string, x: number, y: number) {
+    static async createPlayer(userId: string, playerName: string, classType: ClassType, x: number, y: number) {
         const stats = CLASS_STATS[classType];
         if (!stats) throw new Error("Invalid class type");
 
@@ -72,7 +72,7 @@ export class PersistenceService {
             x: number, y: number, hp: number, maxHp: number, mana: number, maxMana: number,
             str: number, agi: number, intStat: number, facing: Direction,
             gold: number, level: number, xp: number, maxXp: number,
-            inventory: InventoryEntry[], equipment: EquipmentData, classType: string
+            inventory: InventoryEntry[], equipment: EquipmentData, classType: ClassType
         }
     ) {
         try {

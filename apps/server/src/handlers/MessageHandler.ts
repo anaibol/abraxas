@@ -273,6 +273,6 @@ export class MessageHandler {
             }
         });
         // Let's make SocialSystem handle party chat broadcast too.
-        (this.social as any).broadcastToParty(partyId, type, message);
+        this.social.broadcastToParty(partyId, type, message);
     }
 }

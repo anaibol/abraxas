@@ -17,6 +17,7 @@ import { PersistenceService } from "../services/PersistenceService";
 import { AuthService } from "../database/auth";
 import { prisma } from "../database/db";
 import { MessageHandler } from "../handlers/MessageHandler";
+import { SocialSystem } from "../systems/SocialSystem";
 import { SpatialLookup } from "../utils/SpatialLookup";
 import { EntityUtils, Entity } from "../utils/EntityUtils";
 
@@ -31,6 +32,7 @@ export class ArenaRoom extends Room<GameState> {
   private inventorySystem = new InventorySystem();
   private respawnSystem = new RespawnSystem(this.inventorySystem);
   private npcSystem!: NpcSystem;
+  private social!: SocialSystem;
   private messageHandler!: MessageHandler;
   private spatial!: SpatialLookup;
   private spawnIndex = 0;
@@ -58,6 +60,7 @@ export class ArenaRoom extends Room<GameState> {
         this.combat,
         this.inventorySystem,
         this.drops,
+        this.social,
         this.broadcast.bind(this),
         this.spatial.isTileOccupied.bind(this.spatial)
     );
@@ -182,7 +185,7 @@ export class ArenaRoom extends Room<GameState> {
     player.sessionId = client.sessionId;
     player.userId = user.id;
     player.name = dbPlayer.name;
-    player.classType = dbPlayer.classType; 
+    player.classType = dbPlayer.classType as ClassType; 
     
     player.tileX = dbPlayer.x;
     player.tileY = dbPlayer.y;
@@ -264,7 +267,7 @@ export class ArenaRoom extends Room<GameState> {
     const player = this.state.players.get(client.sessionId);
     if (player) {
         // Clean up party membership
-        this.messageHandler.handleLeaveParty(client);
+        this.messageHandler.handlePartyLeave(client);
 
         const inventory: InventoryEntry[] = [];
         player.inventory.forEach(item => {

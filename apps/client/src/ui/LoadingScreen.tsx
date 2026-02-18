@@ -19,7 +19,7 @@ export function LoadingScreen() {
       direction="column"
       gap="4"
     >
-      <Spinner size="xl" color={P.gold} thickness="4px" speed="0.8s" />
+      <Spinner size="xl" color={P.gold} />
       <Box textAlign="center">
         <Text
           fontSize="24px"

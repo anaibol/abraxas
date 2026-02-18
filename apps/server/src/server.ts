@@ -18,7 +18,7 @@ WebSocketClient.prototype.raw = function (data: unknown, options?: unknown, cb?:
   if (Array.isArray(data)) {
     data = new Uint8Array(data);
   }
-  return (origRaw as any).call(this, data, options, cb);
+  return (origRaw as (this: WebSocketClient, data: any, options?: any, cb?: () => void) => void).call(this, data, options, cb);
 };
 
 const MIME_TYPES: Record<string, string> = {

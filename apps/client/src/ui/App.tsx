@@ -10,6 +10,7 @@ import { KillFeed, type KillFeedEntry } from "./KillFeed";
 import { Console, type ConsoleMessage } from "./Console";
 import { Minimap } from "./Minimap";
 import { MerchantShop } from "./MerchantShop";
+import { SocialPanel } from "./SocialPanel";
 import type { ClassType, TileMap, EquipmentSlot } from "@abraxas/shared";
 import { NetworkManager } from "../network/NetworkManager";
 import Phaser from "phaser";
@@ -46,6 +47,7 @@ export function App() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [mapData, setMapData] = useState<TileMap | null>(null);
   const [shopData, setShopData] = useState<{ npcId: string; inventory: string[] } | null>(null);
+  const [partyData, setPartyData] = useState<{ partyId: string; leaderId: string; members: { sessionId: string; name: string }[] } | null>(null);
 
   const gameContainerRef = useRef<HTMLDivElement>(null);
   const phaserGameRef = useRef<Phaser.Game | null>(null);
@@ -182,6 +184,22 @@ export function App() {
           setShopData(data);
       });
 
+      // Listen for Party
+      network.getRoom().onMessage("party_invited", (data: { partyId: string; inviterName: string }) => {
+          toaster.create({
+              title: "Party Invitation",
+              description: `${data.inviterName} invited you to a party. Accept?`,
+              action: {
+                  label: "Accept",
+                  onClick: () => network.getRoom().send("party_accept", { partyId: data.partyId })
+              }
+          });
+      });
+
+      network.getRoom().onMessage("party_update", (data: { partyId: string; leaderId: string; members: { sessionId: string; name: string }[] }) => {
+          setPartyData(data.partyId ? data : null);
+      });
+
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           const el = gameContainerRef.current;
@@ -295,6 +313,16 @@ export function App() {
               onUseItem={(itemId) => networkRef.current?.sendUseItem(itemId)}
               onDropItem={(itemId) => networkRef.current?.sendDropItem(itemId)}
             />
+            <Box pos="absolute" top="20px" left="20px" zIndex={80}>
+                <SocialPanel 
+                    partyId={partyData?.partyId || ""}
+                    leaderId={partyData?.leaderId || ""}
+                    members={partyData?.members || []}
+                    onInvite={(sid) => networkRef.current?.getRoom().send("party_invite", { targetSessionId: sid })}
+                    onLeave={() => networkRef.current?.getRoom().send("party_leave")}
+                    onKick={(sid) => networkRef.current?.getRoom().send("party_kick", { targetSessionId: sid })}
+                />
+            </Box>
             {shopData && (
                 <MerchantShop
                     npcId={shopData.npcId}

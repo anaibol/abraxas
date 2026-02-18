@@ -135,10 +135,13 @@ export class SocialSystem {
             this.state.parties.delete(party.id);
         } else if (party.leaderSessionId === sessionId) {
             // New leader
-            party.leaderSessionId = party.memberIds[0];
-            const newLeader = this.state.players.get(party.leaderSessionId);
-            if (newLeader) {
-                this.broadcastToParty(party.id, "notification", { message: `${newLeader.name} is now the party leader` });
+            const newLeaderId = party.memberIds[0];
+            if (newLeaderId) {
+                party.leaderSessionId = newLeaderId;
+                const newLeader = this.state.players.get(newLeaderId);
+                if (newLeader) {
+                    this.broadcastToParty(party.id, "notification", { message: `${newLeader.name} is now the party leader` });
+                }
             }
         }
     }
@@ -153,13 +156,13 @@ export class SocialSystem {
         });
 
         this.broadcastToParty(partyId, "party_update", {
-            partyId,
+            partyId: party.id,
             leaderId: party.leaderSessionId,
             members
         });
     }
 
-    private broadcastToParty(partyId: string, type: string, message: any): void {
+    public broadcastToParty(partyId: string, type: string, message: any): void {
         const party = this.state.parties.get(partyId);
         if (!party) return;
 
