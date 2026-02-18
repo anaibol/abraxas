@@ -82,12 +82,12 @@ export class MovementSystem {
     }
 
     const posBefore = EntityUtils.getPosition(entity);
-    
-    // Update Spatial Grid BEFORE modifying entity (need old pos)
-    this.spatial.updatePosition(entity, entity.tileX, entity.tileY);
 
     entity.tileX = newX;
     entity.tileY = newY;
+
+    // Update Spatial Grid
+    this.spatial.updatePosition(entity, posBefore.x, posBefore.y);
     
     // Accumulated timing: advance from last move time, not from `now`.
     timers.lastMoveMs += moveIntervalMs;

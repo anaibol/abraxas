@@ -18,13 +18,16 @@ import { CombatSystem } from "./CombatSystem";
 import { logger } from "../logger";
 import { EntityUtils, Entity } from "../utils/EntityUtils";
 
+import { SpatialLookup } from "../utils/SpatialLookup";
+
 export class NpcSystem {
   private respawns: { type: string; deadAt: number }[] = [];
 
   constructor(
     private state: GameState,
     private movementSystem: MovementSystem,
-    private combatSystem: CombatSystem
+    private combatSystem: CombatSystem,
+    private spatial: SpatialLookup
   ) {}
 
   spawnNpcs(count: number, map: TileMap) {
@@ -66,6 +69,7 @@ export class NpcSystem {
     npc.alive = true;
 
     this.state.npcs.set(npc.sessionId, npc);
+    this.spatial.addToGrid(npc);
     logger.info({
         intent: "spawn_npc",
         type: type,
@@ -179,5 +183,6 @@ export class NpcSystem {
   handleDeath(npc: Npc) {
       this.respawns.push({ type: npc.type, deadAt: Date.now() });
       this.state.npcs.delete(npc.sessionId);
+      this.spatial.removeFromGrid(npc);
   }
 }

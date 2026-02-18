@@ -22,7 +22,7 @@ export class ArenaRoom extends Room<GameState> {
   static mapData: TileMap;
 
   private map!: TileMap;
-  private movement = new MovementSystem();
+  private movement!: MovementSystem;
   private buffSystem = new BuffSystem();
   private combat = new CombatSystem(this.buffSystem);
   private drops = new DropSystem();
@@ -37,8 +37,11 @@ export class ArenaRoom extends Room<GameState> {
     this.setState(new GameState());
     this.map = ArenaRoom.mapData;
     this.drops.setInventorySystem(this.inventorySystem);
-    this.npcSystem = new NpcSystem(this.state, this.movement, this.combat);
+    
+    // Initialize utilities and systems in dependency order
     this.spatial = new SpatialLookup(this.state);
+    this.movement = new MovementSystem(this.spatial);
+    this.npcSystem = new NpcSystem(this.state, this.movement, this.combat, this.spatial);
 
     if (!this.map) {
       throw new Error("ArenaRoom.mapData must be set before room creation");
@@ -206,6 +209,7 @@ export class ArenaRoom extends Room<GameState> {
     }
 
     this.state.players.set(client.sessionId, player);
+    this.spatial.addToGrid(player); // Register in spatial grid
 
     client.send("welcome", {
       sessionId: client.sessionId,
@@ -262,6 +266,7 @@ export class ArenaRoom extends Room<GameState> {
         };
 
         await PersistenceService.savePlayer(player.name, playerData);
+        this.spatial.removeFromGrid(player); // Remove from spatial grid
     }
 
     this.state.players.delete(client.sessionId);

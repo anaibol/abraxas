@@ -8,9 +8,17 @@ import { resolve } from "path";
 // Initialize Prisma Client with Adapter
 console.log("PersistenceService: DATABASE_URL:", process.env.DATABASE_URL);
 
-const dbPath = process.env.DATABASE_URL || "file:dev.db";
-// Ensure absolute file URL for local SQLite
-const url = dbPath.startsWith("file:") ? `file://${resolve(process.cwd(), dbPath.replace("file:", ""))}` : dbPath;
+const DEFAULT_DB_PATH = "file:../../dev.db";
+const dbPath = process.env.DATABASE_URL || DEFAULT_DB_PATH;
+console.log("PersistenceService: DATABASE_URL (env):", process.env.DATABASE_URL);
+
+let url = dbPath;
+if (dbPath === DEFAULT_DB_PATH) {
+   // Resolve default path relative to this file to ensure it hits apps/server/dev.db
+   // regardless of where the script is run from (CWD)
+   const relativePath = dbPath.replace("file:", "");
+   url = `file://${resolve(import.meta.dir, relativePath)}`;
+}
 console.log("PersistenceService: Using URL:", url);
 
 const adapter = new PrismaLibSql({
