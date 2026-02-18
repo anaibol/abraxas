@@ -6,6 +6,7 @@ import {
   CloseCode,
 } from "@colyseus/core";
 import { z } from "zod";
+import { StateView } from "@colyseus/schema";
 import { GameState } from "../schema/GameState";
 import { Player } from "../schema/Player";
 import { Npc } from "../schema/Npc";
@@ -407,6 +408,11 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     }
 
     this.state.players.set(client.sessionId, player);
+
+    // Give this client exclusive visibility of their own private @view() fields
+    client.view = new StateView();
+    client.view.add(player);
+
     this.spatial.addToGrid(player);
 
     this.friends.setUserOnline(user.id, client.sessionId);
