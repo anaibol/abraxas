@@ -80,7 +80,8 @@ export class DropSystem {
     dropId: string,
     drops: MapSchema<Drop>,
     roomId: string,
-    tick: number
+    tick: number,
+    onError?: (message: string) => void
   ): boolean {
     const drop = drops.get(dropId);
     if (!drop) return false;
@@ -99,6 +100,7 @@ export class DropSystem {
     // Handle item drops
     if (drop.itemType === "item" && drop.itemId && this.inventorySystem) {
       if (!this.inventorySystem.addItem(player, drop.itemId, drop.quantity)) {
+        onError?.("Inventory full");
         return false; // Inventory full
       }
       drops.delete(dropId);

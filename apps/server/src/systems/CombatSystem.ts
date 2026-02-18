@@ -86,12 +86,14 @@ export class CombatSystem {
     // Check GCD
     if (now - cs.lastGcdMs < GCD_MS) {
       this.tryBuffer(cs, { type: "attack", targetTileX, targetTileY, bufferedAt: now });
+      sendToClient?.("error", { message: "Global cooldown" });
       return false;
     }
 
     // Check melee cooldown
     if (now - cs.lastMeleeMs < stats.meleeCooldownMs) {
       this.tryBuffer(cs, { type: "attack", targetTileX, targetTileY, bufferedAt: now });
+      sendToClient?.("error", { message: "Attack on cooldown" });
       return false;
     }
 
@@ -196,6 +198,7 @@ export class CombatSystem {
         targetTileY,
         bufferedAt: now,
       });
+      sendToClient?.("error", { message: "Global cooldown" });
       return false;
     }
 
@@ -209,11 +212,15 @@ export class CombatSystem {
         targetTileY,
         bufferedAt: now,
       });
+      sendToClient?.("error", { message: "Spell on cooldown" });
       return false;
     }
 
     // Check mana
-    if (caster.mana < spell.manaCost) return false;
+    if (caster.mana < spell.manaCost) {
+        sendToClient?.("error", { message: "Not enough mana" });
+        return false;
+    }
 
     // Self-target spells (range 0) don't need range check
     if (spell.rangeTiles > 0) {

@@ -136,6 +136,7 @@ export type ServerMessages = {
   invalid_target: null;
   pong: { serverTime: number };
   level_up: { sessionId: string; level: number };
+  error: { message: string };
 };
 
 export interface BroadcastFn {

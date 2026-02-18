@@ -88,7 +88,8 @@ export class MessageHandler {
             dropId,
             this.state.drops,
             this.roomId,
-            this.state.tick
+            this.state.tick,
+            (msg) => client.send("error", { message: msg })
         );
     }
 
