@@ -14,7 +14,10 @@ export const NPC_APPEARANCE: Record<string, { bodyId: number; headId: number }> 
   skeleton: { bodyId: 35, headId: 0 },
   goblin:   { bodyId: 45, headId: 0 }, // Reusing assassin body for now if no specific goblin
   wolf:     { bodyId: 65, headId: 0 },
-  merchant: { bodyId: 5, headId: 0 }, // Common Merchant body (AO ID 5)
+  merchant: { bodyId: 5, headId: 0 }, 
+  spider:   { bodyId: 10, headId: 0 },
+  ghost:    { bodyId: 15, headId: 0 },
+  lich:     { bodyId: 70, headId: 0 },
 };
 
 export const MERCHANT_INVENTORY: Record<string, string[]> = {
@@ -167,6 +170,39 @@ export const NPC_STATS: Record<string, ClassStats> = {
     meleeWindupMs: 0,
     spells: [],
   },
+  spider: {
+    hp: 50,
+    str: 10,
+    agi: 25,
+    int: 5,
+    speedTilesPerSecond: 8,
+    meleeRange: 1,
+    meleeCooldownMs: 400,
+    meleeWindupMs: 80,
+    spells: ["poison_bite"],
+  },
+  ghost: {
+    hp: 70,
+    str: 5,
+    agi: 10,
+    int: 20,
+    speedTilesPerSecond: 4,
+    meleeRange: 1,
+    meleeCooldownMs: 1000,
+    meleeWindupMs: 200,
+    spells: ["soul_drain"],
+  },
+  lich: {
+    hp: 1500,
+    str: 10,
+    agi: 10,
+    int: 50,
+    speedTilesPerSecond: 4,
+    meleeRange: 6,
+    meleeCooldownMs: 1500,
+    meleeWindupMs: 500,
+    spells: ["shadow_bolt", "summon_skeleton"],
+  },
 };
 
 export const EXP_TABLE = [
@@ -228,6 +264,23 @@ export const NPC_DROPS: Record<string, DropTableEntry[]> = {
     wolf: [
         { itemId: "health_potion", chance: 0.05, min: 1, max: 1 },
         { itemId: "gold", chance: 0.4, min: 5, max: 15 },
+    ],
+    spider: [
+        { itemId: "mana_potion", chance: 0.1, min: 1, max: 1 },
+        { itemId: "gold", chance: 0.3, min: 10, max: 25 },
+    ],
+    ghost: [
+        { itemId: "ring_of_intelligence", chance: 0.05, min: 1, max: 1 },
+        { itemId: "mana_potion", chance: 0.15, min: 1, max: 2 },
+        { itemId: "gold", chance: 0.2, min: 20, max: 50 },
+    ],
+    lich: [
+        { itemId: "steel_sword", chance: 0.5, min: 1, max: 1 },
+        { itemId: "chainmail", chance: 0.4, min: 1, max: 1 },
+        { itemId: "ring_of_intelligence", chance: 0.2, min: 1, max: 1 },
+        { itemId: "health_potion", chance: 1.0, min: 5, max: 10 },
+        { itemId: "mana_potion", chance: 1.0, min: 5, max: 10 },
+        { itemId: "gold", chance: 1.0, min: 500, max: 1500 },
     ],
 };
 
@@ -517,5 +570,61 @@ export const SPELLS: Record<string, SpellDef> = {
     buffStat: "str",
     buffAmount: 12,
     fxId: 16,
+  },
+  // ── NPC Spells ──
+  poison_bite: {
+    id: "poison_bite",
+    rangeTiles: 1,
+    manaCost: 0,
+    baseDamage: 5,
+    scalingStat: "agi",
+    scalingRatio: 0.2,
+    cooldownMs: 2000,
+    windupMs: 100,
+    effect: "dot",
+    key: "",
+    dotDamage: 3,
+    dotIntervalMs: 1000,
+    dotDurationMs: 5000,
+    fxId: 19,
+  },
+  soul_drain: {
+    id: "soul_drain",
+    rangeTiles: 1,
+    manaCost: 0,
+    baseDamage: 10,
+    scalingStat: "int",
+    scalingRatio: 0.5,
+    cooldownMs: 3000,
+    windupMs: 200,
+    effect: "damage",
+    key: "",
+    fxId: 22,
+  },
+  shadow_bolt: {
+    id: "shadow_bolt",
+    rangeTiles: 6,
+    manaCost: 0,
+    baseDamage: 40,
+    scalingStat: "int",
+    scalingRatio: 1.0,
+    cooldownMs: 2000,
+    windupMs: 300,
+    effect: "damage",
+    key: "",
+    fxId: 3, // Fireball fx for now
+  },
+  summon_skeleton: {
+    id: "summon_skeleton",
+    rangeTiles: 0,
+    manaCost: 0,
+    baseDamage: 0,
+    scalingStat: "int",
+    scalingRatio: 0,
+    cooldownMs: 10000,
+    windupMs: 500,
+    effect: "summon",
+    key: "",
+    fxId: 16, // Warp fx
   },
 };

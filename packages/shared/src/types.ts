@@ -5,7 +5,7 @@ export enum Direction {
   RIGHT = 3
 }
 export type ClassType = "warrior" | "wizard" | "archer" | "assassin" | "paladin" | "druid";
-export type NpcType = "orc" | "skeleton" | "goblin" | "wolf" | "merchant";
+export type NpcType = "orc" | "skeleton" | "goblin" | "wolf" | "merchant" | "spider" | "ghost" | "lich";
 
 export interface JoinOptions {
   name: string;
@@ -48,7 +48,7 @@ export interface ClassStats {
 }
 
 
-export type SpellEffect = "damage" | "heal" | "dot" | "buff" | "stun" | "stealth" | "aoe";
+export type SpellEffect = "damage" | "heal" | "dot" | "buff" | "stun" | "stealth" | "aoe" | "summon";
 
 export interface SpellDef {
   id: string;

@@ -272,7 +272,8 @@ export class CombatSystem {
     broadcast: BroadcastFn,
     tick: number,
     roomId: string,
-    onDeath: (entity: Entity, killerSessionId: string) => void
+    onDeath: (entity: Entity, killerSessionId: string) => void,
+    onSummon?: (caster: Entity, spellId: string, x: number, y: number) => void
   ): void {
     const remaining: WindupAction[] = [];
 
@@ -310,7 +311,8 @@ export class CombatSystem {
           tick,
           roomId,
           onDeath,
-          now
+          now,
+          onSummon
         );
       }
     }
@@ -442,7 +444,8 @@ export class CombatSystem {
     tick: number,
     roomId: string,
     onDeath: (entity: Entity, killerSessionId: string) => void,
-    now: number
+    now: number,
+    onSummon?: (caster: Entity, spellId: string, x: number, y: number) => void
   ): void {
     const spell = SPELLS[windup.spellId!];
     if (!spell) return;
@@ -503,6 +506,11 @@ export class CombatSystem {
         hpAfter: attacker.hp,
       });
       return;
+    }
+
+    if (spell.effect === "summon") {
+        onSummon?.(attacker, spell.id, windup.targetTileX, windup.targetTileY);
+        return;
     }
 
     // AoE spells hit multiple targets

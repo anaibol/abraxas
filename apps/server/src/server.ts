@@ -11,19 +11,17 @@ export async function createGameServer(options: {
   map: TileMap;
   staticDir?: string;
 }): Promise<Server> {
-  console.log(`[server.ts] Initializing BunWebSockets transport on port ${options.port}`);
   const transport = new BunWebSockets();
   const server = new Server({
     transport,
   });
 
-  console.log("[server.ts] Defining room: arena");
   server.define("arena", ArenaRoom);
 
   const app = transport.getExpressApp();
 
   // Basic middleware to parse JSON bodies
-  app.use((req, res, next) => {
+  app.use((req: any, res: any, next: any) => {
     if (req.method === "POST" && req.headers["content-type"]?.includes("application/json")) {
       let body = "";
       req.on("data", (chunk: any) => body += chunk);
@@ -39,7 +37,7 @@ export async function createGameServer(options: {
   });
 
   // API Routes for Authentication
-  app.post("/api/register", async (req, res) => {
+  app.post("/api/register", async (req: any, res: any) => {
     try {
       const { username, password } = req.body;
       if (!username || !password || username.length < 3 || password.length < 6) {
@@ -64,7 +62,7 @@ export async function createGameServer(options: {
     }
   });
 
-  app.post("/api/login", async (req, res) => {
+  app.post("/api/login", async (req: any, res: any) => {
     try {
       const { username, password } = req.body;
       const user = await prisma.user.findUnique({ where: { username } });
@@ -103,7 +101,7 @@ export async function createGameServer(options: {
     };
 
     // Very simple static middleware for the shimmed Express app
-    app.use((req, res, next) => {
+    app.use((req: any, res: any, next?: any) => {
         const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
         let urlPath = url.pathname;
         if (urlPath === "/") urlPath = "/index.html";
@@ -120,7 +118,7 @@ export async function createGameServer(options: {
     });
 
     // SPA fallback
-    app.use((req, res) => {
+    app.use((req: any, res: any) => {
         const indexPath = join(options.staticDir!, "index.html");
         if (existsSync(indexPath)) {
             res.status(200).header("Content-Type", "text/html").send(readFileSync(indexPath));
@@ -130,7 +128,6 @@ export async function createGameServer(options: {
     });
   }
 
-  console.log(`[server.ts] Starting server on port ${options.port}...`);
   await server.listen(options.port);
 
   logger.info({ intent: "server_start", result: "ok", port: options.port });

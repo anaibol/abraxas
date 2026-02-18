@@ -39,7 +39,7 @@ export class ArenaRoom extends Room<GameState> {
   private spatial!: SpatialLookup;
   private spawnIndex = 0;
 
-  async onCreate(options: any) {
+  async onCreate(options: JoinOptions & { mapName?: string }) {
     console.log(`[ArenaRoom] onCreate called with options: ${JSON.stringify(options)}`);
     this.setState(new GameState());
     
@@ -58,10 +58,6 @@ export class ArenaRoom extends Room<GameState> {
     this.movement = new MovementSystem(this.spatial);
     this.combat = new CombatSystem(this.buffSystem, this.spatial);
     this.npcSystem = new NpcSystem(this.state, this.movement, this.combat, this.spatial);
-
-    if (!this.map) {
-      throw new Error("ArenaRoom.mapData must be set before room creation");
-    }
 
     this.social = new SocialSystem(this.state, (sid: string) => this.clients.find(c => c.sessionId === sid));
     this.friends = new FriendsSystem(this.state, (sid: string) => this.clients.find(c => c.sessionId === sid));
@@ -186,7 +182,7 @@ export class ArenaRoom extends Room<GameState> {
     return { user };
   }
 
-  async onJoin(client: Client, options: JoinOptions, auth: any) {
+  async onJoin(client: Client, options: JoinOptions & { mapName?: string }, auth?: any) {
     const classType = options?.classType || "warrior";
     if (!classType || !CLASS_STATS[classType]) {
       logger.warn({ room: this.roomId, clientId: client.sessionId, intent: "join", result: "error", message: `Invalid classType: ${classType}` });
@@ -326,6 +322,7 @@ export class ArenaRoom extends Room<GameState> {
         const playerData = {
             x: player.tileX,
             y: player.tileY,
+            mapName: this.roomMapName,
             hp: player.hp,
             maxHp: player.maxHp,
             mana: player.mana,
@@ -341,7 +338,6 @@ export class ArenaRoom extends Room<GameState> {
             inventory,
             equipment,
             classType: player.classType,
-            mapName: this.roomMapName
         };
 
         await PersistenceService.savePlayer(player.userId, player.name, playerData);
@@ -390,7 +386,8 @@ export class ArenaRoom extends Room<GameState> {
         (x, y, excludeId) => this.spatial.isTileOccupied(x, y, excludeId),
         this.state.tick,
         this.roomId,
-        broadcast
+        broadcast,
+        (caster, spellId, x, y) => this.onSummon(caster, spellId, x, y)
     );
 
     this.combat.processWindups(
@@ -398,7 +395,8 @@ export class ArenaRoom extends Room<GameState> {
       broadcast,
       this.state.tick,
       this.roomId,
-      (entity, killerSessionId) => this.onEntityDeath(entity, killerSessionId)
+      (entity, killerSessionId) => this.onEntityDeath(entity, killerSessionId),
+      (caster, spellId, x, y) => this.onSummon(caster, spellId, x, y)
     );
 
     this.combat.processBufferedActions(
@@ -443,6 +441,20 @@ export class ArenaRoom extends Room<GameState> {
       }
 
       this.broadcast("death", { sessionId: npc.sessionId, killerSessionId });
+  }
+
+  private onSummon(caster: Entity, spellId: string, x: number, y: number) {
+      if (spellId === "summon_skeleton") {
+          // Spawn 2-3 skeletons around the target area
+          const count = 2 + Math.floor(Math.random() * 2);
+          for (let i = 0; i < count; i++) {
+              const rx = x + Math.floor(Math.random() * 3) - 1;
+              const ry = y + Math.floor(Math.random() * 3) - 1;
+              if (this.map.collision[ry]?.[rx] === 0) {
+                  this.npcSystem.spawnNpcAt("skeleton", this.map, rx, ry);
+              }
+          }
+      }
   }
 
   private handleNpcKillRewards(player: Player, npc: Npc) {

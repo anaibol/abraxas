@@ -121,7 +121,8 @@ export class NpcSystem {
     occupiedCheck: (x: number, y: number, excludeId: string) => boolean,
     tickCount: number,
     roomId: string,
-    broadcast: BroadcastFn
+    broadcast: BroadcastFn,
+    onSummon?: (caster: Entity, spellId: string, x: number, y: number) => void
   ): void {
     // Handle respawns
     for (let i = this.respawns.length - 1; i >= 0; i--) {
@@ -144,7 +145,7 @@ export class NpcSystem {
                 this.updateChase(npc, map, now, occupiedCheck, tickCount, roomId);
                 break;
             case NpcState.ATTACK:
-                this.updateAttack(npc, dt, now, broadcast, tickCount, roomId);
+                this.updateAttack(npc, dt, now, broadcast, tickCount, roomId, onSummon);
                 break;
             default:
                 npc.state = NpcState.IDLE;
@@ -203,6 +204,15 @@ export class NpcSystem {
 
       // If in attack range, switch to attack
       if (dist <= stats.meleeRange) {
+          // If it's a ranged NPC and target is too close, try to kite (move away)
+          if (stats.meleeRange > 1 && dist < Math.max(2, stats.meleeRange / 2)) {
+              const awayDir = this.getAwayDirection(npc, target);
+              if (awayDir != null) {
+                  this.movementSystem.tryMove(npc, awayDir, map, now, occupiedCheck, tickCount, roomId);
+              }
+              npc.state = NpcState.ATTACK; // Still attack while kiting if possible
+              return;
+          }
           npc.state = NpcState.ATTACK;
           return;
       }
@@ -242,13 +252,50 @@ export class NpcSystem {
       }
   }
 
+  private getAwayDirection(npc: Npc, target: Entity): Direction | null {
+      const dx = npc.tileX - target.tileX;
+      const dy = npc.tileY - target.tileY;
+
+      if (Math.abs(dx) > Math.abs(dy)) {
+          return dx > 0 ? Direction.RIGHT : Direction.LEFT;
+      } else {
+          return dy > 0 ? Direction.DOWN : Direction.UP;
+      }
+  }
+
+  private tryUseSpell(npc: Npc, now: number, broadcast: BroadcastFn, tick: number, roomId: string): boolean {
+      const stats = NPC_STATS[npc.type];
+      if (!stats || !stats.spells.length) return false;
+
+      // Pick a random spell
+      const spellId = stats.spells[Math.floor(Math.random() * stats.spells.length)];
+      
+      // NPCs don't have mana usually, or it's infinite for them
+      // We'll just use combatSystem.tryCast
+      // We need a target though.
+      const target = this.spatial.findEntityBySessionId(npc.targetId);
+      if (!target || !target.alive) return false;
+
+      return this.combatSystem.tryCast(
+          npc,
+          spellId,
+          target.tileX,
+          target.tileY,
+          now,
+          broadcast,
+          tick,
+          roomId
+      );
+  }
+
   private updateAttack(
       npc: Npc, 
       dt: number,
       now: number,
       broadcast: BroadcastFn,
       tickCount: number, 
-      roomId: string
+      roomId: string,
+      onSummon?: (caster: Entity, spellId: string, x: number, y: number) => void
   ): void {
       const target = this.spatial.findEntityBySessionId(npc.targetId);
       if (!target || !target.alive) {
@@ -269,16 +316,22 @@ export class NpcSystem {
       // Face target
       npc.facing = MathUtils.getDirection(npcPos, targetPos);
 
-      // Attack
+      // Try spells first
+      if (stats.spells && stats.spells.length > 0) {
+          if (this.tryUseSpell(npc, now, broadcast, tickCount, roomId)) {
+              return;
+          }
+      }
+
+      // Default melee attack
       this.combatSystem.tryAttack(
             npc,
             now,
             broadcast,
             tickCount,
             roomId,
-            undefined, // targetId not needed for melee logic usually, uses tile
-            undefined,
-            undefined
+            target.tileX,
+            target.tileY
       );
   }
 
