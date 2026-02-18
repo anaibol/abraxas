@@ -92,7 +92,7 @@ export class FriendsSystem {
                 }
             }
         } catch (e) {
-            logger.error("Error sending friend request:", e);
+            logger.error({ message: "Error sending friend request", error: String(e) });
         }
     }
 
@@ -115,7 +115,7 @@ export class FriendsSystem {
                 await this.sendUpdateToUser(requesterId, requesterSessionId);
             }
         } catch (e) {
-            logger.error("Error accepting friend request:", e);
+            logger.error({ message: "Error accepting friend request", error: String(e) });
         }
     }
 

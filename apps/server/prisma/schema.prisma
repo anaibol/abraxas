@@ -51,6 +51,7 @@ model Player {
 
   name      String
   classType String
+  mapName   String @default("arena")
 
   // Position
   x      Int    @default(0)

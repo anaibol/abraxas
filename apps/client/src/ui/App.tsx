@@ -48,6 +48,7 @@ export function App() {
   const [mapData, setMapData] = useState<TileMap | null>(null);
   const [shopData, setShopData] = useState<{ npcId: string; inventory: string[] } | null>(null);
   const [partyData, setPartyData] = useState<{ partyId: string; leaderId: string; members: { sessionId: string; name: string }[] } | null>(null);
+  const [friendsData, setFriendsData] = useState<{ id: string; name: string; online: boolean }[]>([]);
 
   const gameContainerRef = useRef<HTMLDivElement>(null);
   const phaserGameRef = useRef<Phaser.Game | null>(null);
@@ -120,11 +121,23 @@ export function App() {
   }, [isChatOpen]);
 
 
-  const handleJoin = useCallback(async (name: string, classType: ClassType, token: string) => {
+  const handleJoin = useCallback(async (name: string, classType: ClassType, token: string, mapName?: string) => {
     setConnecting(true);
+    if (mapName) setIsLoading(true); // If warping, show loading
+
     try {
+      // Cleanup old game if exists
+      if (phaserGameRef.current) {
+          phaserGameRef.current.destroy(true);
+          phaserGameRef.current = null;
+      }
+      // Cleanup old network if exists
+      if (networkRef.current) {
+          networkRef.current.disconnect();
+      }
+
       const network = new NetworkManager<GameState>();
-      await network.connect(name, classType, token);
+      await network.connect(name, classType, token, mapName);
       networkRef.current = network;
       roomRef.current = network.getRoom();
       
@@ -134,33 +147,38 @@ export function App() {
           height: welcome.mapHeight,
           tileSize: welcome.tileSize,
           collision: welcome.collision,
-          spawns: [] // Not needed for client map display usually
+          spawns: [] 
       });
 
       setPlayerState((prev) => ({ ...prev, name, classType }));
       setPhase("game");
-      setIsLoading(true); // Start loading screen until scene is ready
+      if (!mapName) setIsLoading(true); // Initial join also triggers loading
+
+      network.onWarp = (data) => {
+          handleJoin(name, classType, token, data.targetMap);
+      };
       
       // Add welcome message
       setConsoleMessages([{
         id: ++consoleMsgId,
-        text: `Welcome to the game, ${name}!`,
+        text: mapName ? `Traveling to ${mapName}...` : `Welcome to the game, ${name}!`,
         color: "#ffff00",
         timestamp: Date.now()
       }]);
       
       // Listen for chat
-      network.getRoom().onMessage("chat", (data: { senderId: string, senderName: string, message: string }) => {
+      network.getRoom().onMessage("chat", (data: { senderId: string, senderName: string, message: string, channel?: string }) => {
            setConsoleMessages(prev => {
                 const newMsg: ConsoleMessage = {
                     id: ++consoleMsgId,
                     text: `${data.senderName}: ${data.message}`,
-                    color: "#ffffff",
-                    timestamp: Date.now()
+                    color: data.channel === "party" ? "#aaaaff" : data.channel === "whisper" ? "#ff88ff" : "#ffffff",
+                    timestamp: Date.now(),
+                    channel: data.channel as any
                 };
-                 const next = [...prev, newMsg];
-                 if (next.length > 50) return next.slice(next.length - 50);
-                 return next;
+                const next = [...prev, newMsg];
+                if (next.length > 50) return next.slice(next.length - 50);
+                return next;
            });
       });
 
@@ -200,6 +218,23 @@ export function App() {
           setPartyData(data.partyId ? data : null);
       });
 
+      // Friend system listeners
+      network.getRoom().onMessage("friend_invited", (data: { requesterId: string; requesterName: string }) => {
+        toaster.create({
+          title: "Friend Request",
+          description: `${data.requesterName} wants to be your friend.`,
+          type: "info",
+          action: {
+            label: "Accept",
+            onClick: () => networkRef.current?.sendFriendAccept(data.requesterId)
+          }
+        });
+      });
+
+      network.getRoom().onMessage("friend_update", (data: { friends: any[] }) => {
+        setFriendsData(data.friends);
+      });
+
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           const el = gameContainerRef.current;
@@ -230,7 +265,10 @@ export function App() {
                  return next;
                });
             },
-            () => setIsLoading(false), // onReady
+            () => {
+                setIsLoading(false);
+                setConnecting(false);
+            }, // onReady
             (message: string) => { // onError
                 toaster.create({
                     title: "Error",
@@ -238,6 +276,7 @@ export function App() {
                     type: "error",
                     duration: 3000,
                 });
+                setConnecting(false);
             }
           );
 
@@ -261,7 +300,12 @@ export function App() {
     } catch (err) {
       console.error("Failed to connect:", err);
       setConnecting(false);
-      alert("Failed to connect to server. Is it running?");
+      setIsLoading(false);
+      toaster.create({
+          title: "Connection Failed",
+          description: "Failed to connect to server. Is it running?",
+          type: "error"
+      });
     }
   }, []);
 
@@ -317,10 +361,17 @@ export function App() {
                 <SocialPanel 
                     partyId={partyData?.partyId || ""}
                     leaderId={partyData?.leaderId || ""}
-                    members={partyData?.members || []}
-                    onInvite={(sid) => networkRef.current?.getRoom().send("party_invite", { targetSessionId: sid })}
-                    onLeave={() => networkRef.current?.getRoom().send("party_leave")}
-                    onKick={(sid) => networkRef.current?.getRoom().send("party_kick", { targetSessionId: sid })}
+                    partyMembers={partyData?.members || []}
+                    onPartyInvite={(sid: string) => networkRef.current?.sendPartyInvite(sid)}
+                    onPartyLeave={() => networkRef.current?.sendPartyLeave()}
+                    onPartyKick={(sid: string) => networkRef.current?.sendPartyKick(sid)}
+                    
+                    friends={friendsData}
+                    onFriendRequest={(name: string) => networkRef.current?.sendFriendRequest(name)}
+                    onFriendAccept={(rid: string) => networkRef.current?.sendFriendAccept(rid)}
+                    onWhisper={(name: string) => {
+                        setIsChatOpen(true);
+                    }}
                 />
             </Box>
             {shopData && (

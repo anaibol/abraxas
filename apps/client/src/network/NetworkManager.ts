@@ -29,8 +29,10 @@ export class NetworkManager<SC = unknown> {
     this.client = new Client(serverUrl ?? getServerUrl());
   }
 
-  async connect(name: string, classType: ClassType, token?: string): Promise<Room<SC>> {
-    this.room = await this.client.joinOrCreate<SC>("arena", { name, classType, token });
+  public onWarp: ((data: { targetMap: string; targetX: number; targetY: number }) => void) | null = null;
+
+  async connect(name: string, classType: ClassType, token?: string, mapName?: string): Promise<Room<SC>> {
+    this.room = await this.client.joinOrCreate<SC>("arena", { name, classType, token, mapName });
 
     const welcomePromise = new Promise<WelcomeData>((resolve) => {
       this.welcomeResolve = resolve;
@@ -42,6 +44,10 @@ export class NetworkManager<SC = unknown> {
         this.welcomeResolve(data);
         this.welcomeResolve = null;
       }
+    });
+
+    this.room.onMessage("warp", (data: { targetMap: string; targetX: number; targetY: number }) => {
+        if (this.onWarp) this.onWarp(data);
     });
 
     await welcomePromise;
@@ -100,6 +106,45 @@ export class NetworkManager<SC = unknown> {
 
   sendChat(message: string) {
     this.room?.send("chat", { message });
+  }
+
+  // Party System
+  sendPartyInvite(targetSessionId: string) {
+    this.room?.send("party_invite", { targetSessionId });
+  }
+
+  sendPartyAccept(partyId: string) {
+    this.room?.send("party_accept", { partyId });
+  }
+
+  sendPartyLeave() {
+    this.room?.send("party_leave", {});
+  }
+
+  sendPartyKick(targetSessionId: string) {
+    this.room?.send("party_kick", { targetSessionId });
+  }
+
+  // Friend System
+  sendFriendRequest(targetName: string) {
+    this.room?.send("friend_request", { targetName });
+  }
+
+  sendFriendAccept(requesterId: string) {
+    this.room?.send("friend_accept", { requesterId });
+  }
+
+  // Interaction
+  sendInteract(npcId: string) {
+    this.room?.send("interact", { npcId });
+  }
+
+  sendBuyItem(itemId: string, quantity: number) {
+    this.room?.send("buy_item", { itemId, quantity });
+  }
+
+  sendSellItem(itemId: string, quantity: number, npcId?: string) {
+    this.room?.send("sell_item", { itemId, quantity, npcId });
   }
 
   sendPing() {

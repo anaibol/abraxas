@@ -39,7 +39,7 @@ export class PersistenceService {
         });
     }
 
-    static async createPlayer(userId: string, playerName: string, classType: ClassType, x: number, y: number) {
+    static async createPlayer(userId: string, playerName: string, classType: ClassType, x: number, y: number, mapName: string) {
         const stats = CLASS_STATS[classType];
         if (!stats) throw new Error("Invalid class type");
 
@@ -48,6 +48,7 @@ export class PersistenceService {
                  userId,
                  name: playerName,
                  classType,
+                 mapName,
                  x,
                  y,
                  hp: stats.hp,
@@ -69,7 +70,7 @@ export class PersistenceService {
         userId: string,
         name: string, 
         data: {
-            x: number, y: number, hp: number, maxHp: number, mana: number, maxMana: number,
+            x: number, y: number, mapName: string, hp: number, maxHp: number, mana: number, maxMana: number,
             str: number, agi: number, intStat: number, facing: Direction,
             gold: number, level: number, xp: number, maxXp: number,
             inventory: InventoryEntry[], equipment: EquipmentData, classType: ClassType
@@ -84,6 +85,7 @@ export class PersistenceService {
                 data: {
                     x: data.x,
                     y: data.y,
+                    mapName: data.mapName,
                     hp: data.hp,
                     maxHp: data.maxHp,
                     mana: data.mana,

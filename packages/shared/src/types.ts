@@ -13,6 +13,14 @@ export interface JoinOptions {
   token?: string;
 }
 
+export interface Warp {
+  x: number;
+  y: number;
+  targetMap: string;
+  targetX: number;
+  targetY: number;
+}
+
 export interface TileMap {
   width: number;
   height: number;
@@ -22,6 +30,7 @@ export interface TileMap {
   npcCount?: number;
   merchantCount?: number;
   npcs?: { type: string; x: number; y: number }[];
+  warps?: Warp[];
 }
 
 export interface ClassStats {
@@ -156,6 +165,8 @@ export type ServerMessages = {
   party_leave: {};
   party_kick: { targetSessionId: string };
   party_update: { partyId: string; leaderId: string; members: { sessionId: string; name: string }[] };
+  // Multi-map Support
+  warp: { targetMap: string; targetX: number; targetY: number };
 };
 
 export interface BroadcastFn {

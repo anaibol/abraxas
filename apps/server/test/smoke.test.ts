@@ -28,6 +28,8 @@ beforeAll(async () => {
   );
   const map: TileMap = await Bun.file(mapPath).json();
   server = await createGameServer({ port: TEST_PORT, map });
+  // Ensure Bun.serve is ready
+  await new Promise(r => setTimeout(r, 500));
 });
 
 afterAll(async () => {
@@ -98,12 +100,14 @@ describe("Arena multiplayer smoke test", () => {
       name: nameA,
       classType: "warrior",
       token: tokenA,
+      mapName: "arena",
     });
 
     const roomB: Room<GameState> = await clientB.joinOrCreate("arena", {
       name: nameB,
       classType: "wizard",
       token: tokenB,
+      mapName: "arena",
     });
     // Wait until both rooms see 2 players
     await waitForState(roomA, (state) => state.players.size >= 2);

@@ -13,6 +13,7 @@ import { CLASS_STATS, TICK_MS, STARTING_EQUIPMENT, ITEMS, KILL_GOLD_BONUS, NPC_S
 import { TileMap, Direction, ServerMessages, ClassType, JoinOptions, EquipmentSlot, InventoryEntry, EquipmentData } from "@abraxas/shared";
 import { logger } from "../logger";
 
+import { MapService } from "../services/MapService";
 import { PersistenceService } from "../services/PersistenceService";
 import { AuthService } from "../database/auth";
 import { prisma } from "../database/db";
@@ -23,9 +24,8 @@ import { SpatialLookup } from "../utils/SpatialLookup";
 import { EntityUtils, Entity } from "../utils/EntityUtils";
 
 export class ArenaRoom extends Room<GameState> {
-  static mapData: TileMap;
-
   private map!: TileMap;
+  private roomMapName!: string;
   private movement!: MovementSystem;
   private buffSystem = new BuffSystem();
   private combat!: CombatSystem;
@@ -39,9 +39,18 @@ export class ArenaRoom extends Room<GameState> {
   private spatial!: SpatialLookup;
   private spawnIndex = 0;
 
-  onCreate(_options: Record<string, unknown>) {
+  async onCreate(options: any) {
+    console.log(`[ArenaRoom] onCreate called with options: ${JSON.stringify(options)}`);
     this.setState(new GameState());
-    this.map = ArenaRoom.mapData;
+    
+    this.roomMapName = options.mapName || "arena";
+    console.log(`[ArenaRoom] Attempting to load map: ${this.roomMapName}`);
+    const mapData = await MapService.getMap(this.roomMapName);
+    if (!mapData) {
+        throw new Error(`Failed to load map: ${this.roomMapName}`);
+    }
+    this.map = mapData;
+
     this.drops.setInventorySystem(this.inventorySystem);
     
     // Initialize utilities and systems in dependency order
@@ -197,7 +206,16 @@ export class ArenaRoom extends Room<GameState> {
          // Create new character at spawn point
          const spawn = this.map.spawns[this.spawnIndex % this.map.spawns.length];
          this.spawnIndex++;
-         dbPlayer = await PersistenceService.createPlayer(user.id, playerName, classType, spawn.x, spawn.y);
+         dbPlayer = await PersistenceService.createPlayer(user.id, playerName, classType, spawn.x, spawn.y, this.roomMapName);
+    } else {
+        // If player is already saved, check if they are in the correct room
+        if (dbPlayer.mapName !== this.roomMapName) {
+            // If they are joining the wrong room, we should really redirect them or just teleport them here if we allow it.
+            // For portals, the client will join the correct room.
+            // If they login and join a random room, we might want to teleport them to their last saved map's room.
+            // For now, let's just update their mapName if they specifically joined this room.
+            logger.info({ room: this.roomId, clientId: client.sessionId, message: `Player ${playerName} joined ${this.roomMapName} but was last in ${dbPlayer.mapName}. Teleporting.` });
+        }
     }
 
     const player = new Player();
@@ -322,7 +340,8 @@ export class ArenaRoom extends Room<GameState> {
             maxXp: player.maxXp,
             inventory,
             equipment,
-            classType: player.classType
+            classType: player.classType,
+            mapName: this.roomMapName
         };
 
         await PersistenceService.savePlayer(player.userId, player.name, playerData);

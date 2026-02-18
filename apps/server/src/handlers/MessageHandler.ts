@@ -40,7 +40,7 @@ export class MessageHandler {
         if (!player || !player.alive) return;
         if (player.stunned) return;
 
-        this.movement.tryMove(
+        if (this.movement.tryMove(
             player,
             direction,
             this.map,
@@ -48,7 +48,17 @@ export class MessageHandler {
             this.isTileOccupied,
             this.state.tick,
             this.roomId
-        );
+        )) {
+            // Check for warps
+            const warp = this.map.warps?.find(w => w.x === player.tileX && w.y === player.tileY);
+            if (warp) {
+                client.send("warp", {
+                    targetMap: warp.targetMap,
+                    targetX: warp.targetX,
+                    targetY: warp.targetY
+                });
+            }
+        }
     }
 
     handleAttack(client: Client, targetTileX?: number, targetTileY?: number): void {

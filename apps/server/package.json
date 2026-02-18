@@ -11,9 +11,9 @@
   },
   "dependencies": {
     "@abraxas/shared": "workspace:*",
-    "@colyseus/core": "^0.15.0",
-    "@colyseus/schema": "^2.0.0",
-    "@colyseus/ws-transport": "^0.15.0",
+    "@colyseus/bun-websockets": "^0.17.7",
+    "@colyseus/core": "^0.17.36",
+    "@colyseus/schema": "^4.0.12",
     "@libsql/client": "^0.17.0",
     "@prisma/adapter-libsql": "^7.4.0",
     "@prisma/client": "^7.4.0",
@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "colyseus.js": "^0.15.0",
+    "colyseus.js": "^0.16.22",
     "prisma": "^7.4.0"
   }
 }
