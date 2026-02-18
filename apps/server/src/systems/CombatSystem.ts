@@ -97,35 +97,29 @@ export class CombatSystem {
       return false;
     }
 
-    // Determine target tile
-    let finalTargetX: number;
-    let finalTargetY: number;
-
-    if (targetTileX != null && targetTileY != null && stats.meleeRange > 1) {
-      // Ranged attack with explicit target tile — validate before committing
-      const dist = MathUtils.manhattanDist(EntityUtils.getPosition(attacker), { x: targetTileX, y: targetTileY });
-      if (dist > stats.meleeRange) {
-        sendToClient?.("invalid_target");
-        return false;
-      }
-
-      // Validate a living enemy exists at the target tile
-      const target = this.spatial.findEntityAtTile(targetTileX, targetTileY);
-      // Can't attack self or dead
-      if (!target || !target.alive || target.sessionId === attacker.sessionId) {
-          sendToClient?.("invalid_target");
-          return false;
-      }
-
-      finalTargetX = targetTileX;
-      finalTargetY = targetTileY;
+    // Determine target entity and position
+    let target = this.spatial.findEntityAtTile(targetTileX ?? -1, targetTileY ?? -1);
+    
+    // Target validation for ranged
+    if (stats.meleeRange > 1) {
+        if (!target || !target.alive || target.sessionId === attacker.sessionId) {
+            sendToClient?.("invalid_target");
+            return false;
+        }
+        const dist = MathUtils.manhattanDist(EntityUtils.getPosition(attacker), { x: target.tileX, y: target.tileY });
+        if (dist > stats.meleeRange) {
+            sendToClient?.("invalid_target");
+            return false;
+        }
     } else {
-      // Melee attack: target tile at meleeRange in facing direction
-      const delta = DIRECTION_DELTA[attacker.facing];
-      const range = stats.meleeRange;
-      finalTargetX = attacker.tileX + delta.dx * range;
-      finalTargetY = attacker.tileY + delta.dy * range;
+        // Melee logic: use facing if no target tile specified or if specified tile is too far
+        const delta = DIRECTION_DELTA[attacker.facing];
+        targetTileX = attacker.tileX + delta.dx;
+        targetTileY = attacker.tileY + delta.dy;
     }
+
+    const finalTargetX = targetTileX!;
+    const finalTargetY = targetTileY!;
 
     cs.lastGcdMs = now;
     cs.lastMeleeMs = now;
