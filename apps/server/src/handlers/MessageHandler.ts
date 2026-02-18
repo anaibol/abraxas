@@ -266,7 +266,7 @@ export class MessageHandler {
       .then((updatedQuests) => this.sendQuestUpdates(client, updatedQuests));
 
     if (npc.type === "merchant") {
-      const inventory = MERCHANT_INVENTORY.general_store || [];
+      const inventory = MERCHANT_INVENTORY.general_store ?? [];
       // Bug Fix: Send inventory only if near. (Distance check already done above for all interactions)
       client.send(ServerMessageType.OpenShop, { npcId: data.npcId, inventory });
       return;
@@ -290,24 +290,22 @@ export class MessageHandler {
       return;
     }
 
-    for (const questId of Object.keys(QUESTS)) {
-      const state = this.quests.getQuestState(player.userId, questId);
-      if (state && state.status === "COMPLETED") {
-        const questDef = QUESTS[questId];
-        if (questDef.npcId === npc.type) {
-          client.send(ServerMessageType.OpenDialogue, {
-            npcId: data.npcId,
-            text: `Great job on ${questDef.title}! Here is your reward.`,
-            options: [
-              {
-                text: "Complete Quest",
-                action: "quest_complete",
-                data: { questId },
-              },
-            ],
-          });
-          return;
-        }
+    for (const state of this.quests.getPlayerQuestStates(player.userId)) {
+      if (state.status !== "COMPLETED") continue;
+      const questDef = QUESTS[state.questId];
+      if (questDef?.npcId === npc.type) {
+        client.send(ServerMessageType.OpenDialogue, {
+          npcId: data.npcId,
+          text: `Great job on ${questDef.title}! Here is your reward.`,
+          options: [
+            {
+              text: "Complete Quest",
+              action: "quest_complete",
+              data: { questId: state.questId },
+            },
+          ],
+        });
+        return;
       }
     }
 
@@ -381,6 +379,18 @@ export class MessageHandler {
       });
   }
 
+  private isNearMerchant(player: Player): boolean {
+    return Array.from(this.state.npcs.values()).some(
+      (n) =>
+        n.type === "merchant" &&
+        n.alive &&
+        MathUtils.manhattanDist(
+          { x: player.tileX, y: player.tileY },
+          { x: n.tileX, y: n.tileY },
+        ) <= 3,
+    );
+  }
+
   handleBuyItem(
     client: Client,
     data: ClientMessages[ClientMessageType.BuyItem],
@@ -388,18 +398,7 @@ export class MessageHandler {
     const player = this.getActivePlayer(client);
     if (!player) return;
 
-    // Bug Fix: Remote merchant exploit. Ensure proximity to any merchant NPC.
-    const merchants = Array.from(this.state.npcs.values()).filter(
-      (n) => n.type === "merchant" && n.alive,
-    );
-    const nearMerchant = merchants.some(
-      (m) =>
-        MathUtils.manhattanDist(
-          { x: player.tileX, y: player.tileY },
-          { x: m.tileX, y: m.tileY },
-        ) <= 3,
-    );
-    if (!nearMerchant) {
+    if (!this.isNearMerchant(player)) {
       this.sendError(client, "You are too far from a merchant");
       return;
     }
@@ -433,18 +432,7 @@ export class MessageHandler {
     const player = this.getActivePlayer(client);
     if (!player) return;
 
-    // Bug Fix: Remote merchant exploit. Ensure proximity to any merchant NPC.
-    const merchants = Array.from(this.state.npcs.values()).filter(
-      (n) => n.type === "merchant" && n.alive,
-    );
-    const nearMerchant = merchants.some(
-      (m) =>
-        MathUtils.manhattanDist(
-          { x: player.tileX, y: player.tileY },
-          { x: m.tileX, y: m.tileY },
-        ) <= 3,
-    );
-    if (!nearMerchant) {
+    if (!this.isNearMerchant(player)) {
       this.sendError(client, "You are too far from a merchant");
       return;
     }

@@ -1,18 +1,8 @@
-import { CharacterClass, EquipSlot, Prisma } from "../generated/prisma";
+import { EquipSlot, Prisma } from "../generated/prisma";
 import { prisma } from "../database/db";
-import { AuthService } from "../database/auth";
 import { CLASS_STATS, Direction, ClassType } from "@abraxas/shared";
 import type { InventoryEntry, EquipmentData } from "@abraxas/shared";
-
-/** Maps game ClassType strings to Prisma CharacterClass enum values. */
-const CLASS_TYPE_MAP: Partial<Record<string, CharacterClass>> = {
-  warrior: CharacterClass.WARRIOR,
-  wizard: CharacterClass.MAGE,
-  archer: CharacterClass.RANGER,
-  assassin: CharacterClass.ROGUE,
-  paladin: CharacterClass.CLERIC,
-  druid: CharacterClass.CLERIC,
-};
+import { logger } from "../logger";
 
 /** Maps EquipmentData keys to Prisma EquipSlot enum values. */
 const EQUIPMENT_SLOT_MAP: Partial<Record<keyof EquipmentData, EquipSlot>> = {
@@ -47,24 +37,6 @@ const PLAYER_INCLUDE = {
 } as const;
 
 export class PersistenceService {
-  static async authenticateUser(username: string, passwordHash: string) {
-    let user = await prisma.account.findUnique({ where: { username } });
-
-    if (!user) {
-      user = await prisma.account.create({
-        data: { username, password: passwordHash },
-      });
-    } else {
-      const isValid = await AuthService.verifyPassword(
-        passwordHash,
-        user.password,
-      );
-      if (!isValid) return null;
-    }
-
-    return user;
-  }
-
   static async loadPlayer(userId: string, playerName: string) {
     return prisma.character.findFirst({
       where: { accountId: userId, name: playerName },
@@ -83,14 +55,12 @@ export class PersistenceService {
     const stats = CLASS_STATS[classType];
     if (!stats) throw new Error("Invalid class type");
 
-    const characterClass = CLASS_TYPE_MAP[classType] ?? CharacterClass.WARRIOR;
-
     try {
       return await prisma.character.create({
         data: {
           account: { connect: { id: userId } },
           name: playerName,
-          class: characterClass,
+          class: classType,
           mapId: mapName,
           x,
           y,
@@ -109,10 +79,10 @@ export class PersistenceService {
         },
         include: PLAYER_INCLUDE,
       });
-    } catch (e) {
+    } catch (e: unknown) {
       if (
-        e instanceof Prisma.PrismaClientKnownRequestError &&
-        e.code === "P2002"
+        e instanceof Error &&
+        (e as { code?: string }).code === "P2002"
       ) {
         throw new Error("Character name already taken");
       }
@@ -121,12 +91,11 @@ export class PersistenceService {
   }
 
   static async savePlayer(
-    userId: string,
-    name: string,
+    characterId: string,
     data: {
       x: number;
       y: number;
-      mapName: string;
+      mapId: string;
       hp: number;
       maxHp: number;
       mana: number;
@@ -147,12 +116,12 @@ export class PersistenceService {
     try {
       const facingStr = (Direction[data.facing] ?? "DOWN").toLowerCase();
 
-      await prisma.character.update({
-        where: { name },
+      const character = await prisma.character.update({
+        where: { id: characterId },
         data: {
           x: data.x,
           y: data.y,
-          mapId: data.mapName,
+          mapId: data.mapId,
           gold: BigInt(data.gold),
           level: data.level,
           exp: BigInt(data.xp),
@@ -169,18 +138,15 @@ export class PersistenceService {
             },
           },
         },
-      });
-
-      const character = await prisma.character.findUnique({
-        where: { name },
         include: { inventory: true },
       });
 
-      if (!character?.inventory) return;
+      if (!character.inventory) return;
+      const inventoryId = character.inventory.id;
 
       await prisma.$transaction(async (tx) => {
         const currentSlots = await tx.inventorySlot.findMany({
-          where: { inventoryId: character.inventory!.id },
+          where: { inventoryId },
           include: { item: { include: { itemDef: true } } },
         });
 
@@ -220,7 +186,7 @@ export class PersistenceService {
 
               await tx.inventorySlot.create({
                 data: {
-                  inventoryId: character.inventory!.id,
+                  inventoryId,
                   idx: item.slotIndex,
                   itemId: instance.id,
                   qty: item.quantity,
@@ -280,7 +246,7 @@ export class PersistenceService {
         }
       });
     } catch (e) {
-      console.error("Failed to save player", e);
+      logger.error({ message: "Failed to save player", error: String(e) });
     }
   }
 }
