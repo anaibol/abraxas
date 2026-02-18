@@ -1,11 +1,18 @@
 import { Client, Room } from "colyseus.js";
-import type { ClassType, Direction, EquipmentSlot, WelcomeData, ServerMessages } from "@abraxas/shared";
+import type {
+  ClassType,
+  Direction,
+  EquipmentSlot,
+  WelcomeData,
+  ServerMessages,
+} from "@abraxas/shared";
 import { ClientMessageType, ServerMessageType } from "@abraxas/shared";
 
-
-
 function getServerUrl(): string {
-  if (typeof window !== "undefined" && window.location.hostname !== "localhost") {
+  if (
+    typeof window !== "undefined" &&
+    window.location.hostname !== "localhost"
+  ) {
     const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
     return `${proto}//${window.location.host}`;
   }
@@ -22,18 +29,30 @@ export class NetworkManager<SC = unknown> {
     this.client = new Client(serverUrl ?? getServerUrl());
   }
 
-  private _send(type: string | number, payload?: any) {
+  private _send(type: string | number, payload?: unknown) {
     try {
-      this.room?.send(type as any, payload);
-    } catch (e) {
+      this.room?.send(type, payload);
+    } catch {
       // ignore if not connected
     }
   }
 
-  public onWarp: ((data: { targetMap: string; targetX: number; targetY: number }) => void) | null = null;
+  public onWarp:
+    | ((data: { targetMap: string; targetX: number; targetY: number }) => void)
+    | null = null;
 
-  async connect(name: string, classType: ClassType, token?: string, mapName?: string): Promise<Room<SC>> {
-    this.room = await this.client.joinOrCreate<SC>("arena", { name, classType, token, mapName });
+  async connect(
+    name: string,
+    classType: ClassType,
+    token?: string,
+    mapName?: string,
+  ): Promise<Room<SC>> {
+    this.room = await this.client.joinOrCreate<SC>("arena", {
+      name,
+      classType,
+      token,
+      mapName,
+    });
 
     const welcomePromise = new Promise<WelcomeData>((resolve) => {
       this.welcomeResolve = resolve;
@@ -47,19 +66,26 @@ export class NetworkManager<SC = unknown> {
       }
     });
 
-    this.room.onMessage(ServerMessageType.Warp, (data: ServerMessages[ServerMessageType.Warp]) => {
+    this.room.onMessage(
+      ServerMessageType.Warp,
+      (data: ServerMessages[ServerMessageType.Warp]) => {
         if (this.onWarp) this.onWarp(data);
-    });
+      },
+    );
 
-    this.room.onMessage(ServerMessageType.Audio, (data: ServerMessages[ServerMessageType.Audio]) => {
+    this.room.onMessage(
+      ServerMessageType.Audio,
+      (data: ServerMessages[ServerMessageType.Audio]) => {
         if (this.onAudioData) this.onAudioData(data.sessionId, data.data);
-    });
+      },
+    );
 
     await welcomePromise;
     return this.room;
   }
 
-  public onAudioData: ((sessionId: string, data: ArrayBuffer) => void) | null = null;
+  public onAudioData: ((sessionId: string, data: ArrayBuffer) => void) | null =
+    null;
 
   sendAudio(data: ArrayBuffer) {
     this._send(ClientMessageType.Audio, data);
