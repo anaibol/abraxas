@@ -104,7 +104,7 @@ export class NpcSystem {
         }
     }
 
-    // AI Logic
+    // AI Logic & Dead NPCs cleanup
     this.state.npcs.forEach((npc) => {
         if (!npc.alive) return;
 
@@ -121,13 +121,6 @@ export class NpcSystem {
             default:
                 npc.state = NpcState.IDLE;
                 break;
-        }
-    });
-
-    // Handle dead NPCs removal
-    this.state.npcs.forEach((npc) => {
-        if (!npc.alive && !this.respawns.some(r => r.type === npc.type && Date.now() - r.deadAt < 100)) {
-             // Logic handled via handleDeath now
         }
     });
   }
@@ -206,8 +199,16 @@ export class NpcSystem {
             else if (dy < 0) moveDir = Direction.UP;
       }
 
-      if (moveDir) {
-          this.movementSystem.tryMove(npc, moveDir, map, now, occupiedCheck, tickCount, roomId);
+      if (moveDir != null) {
+          const success = this.movementSystem.tryMove(npc, moveDir, map, now, occupiedCheck, tickCount, roomId);
+          
+          // Basic Obstacle Avoidance: if stuck, try a perpendicular direction
+          if (!success) {
+             const alternativeDir = (moveDir === Direction.LEFT || moveDir === Direction.RIGHT) 
+                ? (dy > 0 ? Direction.DOWN : Direction.UP)
+                : (dx > 0 ? Direction.RIGHT : Direction.LEFT);
+             this.movementSystem.tryMove(npc, alternativeDir, map, now, occupiedCheck, tickCount, roomId);
+          }
       }
   }
 
