@@ -25,7 +25,6 @@ export interface TargetingState {
 export class InputHandler {
   private scene: Phaser.Scene;
   private network: NetworkManager;
-  private classType: string;
   private meleeRange: number;
   private moveKeys: Record<number, Phaser.Input.Keyboard.Key> = {};
   private ctrlKey!: Phaser.Input.Keyboard.Key;
@@ -37,7 +36,6 @@ export class InputHandler {
   }[] = [];
   private lastMoveSentMs = 0;
   private moveIntervalMs: number;
-  private tileSize: number;
   private onLocalMove?: (direction: Direction) => void;
   private onEnterTargeting?: (rangeTiles: number) => void;
   private onExitTargeting?: () => void;
@@ -66,8 +64,6 @@ export class InputHandler {
   ) {
     this.scene = scene;
     this.network = network;
-    this.classType = classType;
-    this.tileSize = tileSize;
     this.onLocalMove = onLocalMove;
     this.onEnterTargeting = onEnterTargeting;
     this.onExitTargeting = onExitTargeting;
