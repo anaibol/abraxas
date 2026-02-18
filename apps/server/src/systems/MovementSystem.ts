@@ -4,6 +4,7 @@ import type { Player } from "../schema/Player";
 import type { Npc } from "../schema/Npc";
 import { logger } from "../logger";
 import { EntityUtils, Entity } from "../utils/EntityUtils";
+import { SpatialLookup } from "../utils/SpatialLookup";
 
 interface EntityTimers {
   lastMoveMs: number;
@@ -11,6 +12,8 @@ interface EntityTimers {
 
 export class MovementSystem {
   private timers = new Map<string, EntityTimers>();
+
+  constructor(private spatial: SpatialLookup) {}
 
   private getTimers(sessionId: string): EntityTimers {
     let t = this.timers.get(sessionId);
@@ -79,6 +82,10 @@ export class MovementSystem {
     }
 
     const posBefore = EntityUtils.getPosition(entity);
+    
+    // Update Spatial Grid BEFORE modifying entity (need old pos)
+    this.spatial.updatePosition(entity, entity.tileX, entity.tileY);
+
     entity.tileX = newX;
     entity.tileY = newY;
     

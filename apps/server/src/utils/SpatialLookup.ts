@@ -4,12 +4,6 @@ import { Npc } from "../schema/Npc";
 import { EntityUtils, Entity } from "./EntityUtils";
 import { MathUtils } from "@abraxas/shared";
 
-import { GameState } from "../schema/GameState";
-import { Player } from "../schema/Player";
-import { Npc } from "../schema/Npc";
-import { EntityUtils, Entity } from "./EntityUtils";
-import { MathUtils } from "@abraxas/shared";
-
 export class SpatialLookup {
   // Spatial Hash Grid: "x,y" -> Set<sessionId>
   private grid = new Map<string, Set<string>>();
