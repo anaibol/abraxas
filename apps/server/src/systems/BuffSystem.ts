@@ -7,6 +7,7 @@ import {
   PlayerBuffState,
   ServerMessageType,
 } from "@abraxas/shared";
+import { broadcastDamage, broadcastDeath } from "../utils/ServerEvents";
 
 export class BuffSystem {
   private state = new Map<string, PlayerBuffState>();
@@ -135,17 +136,13 @@ export class BuffSystem {
           dot.lastTickAt = now;
           player.hp -= dot.damage;
 
-          broadcast(ServerMessageType.Damage, {
-            targetSessionId: sessionId,
-            amount: dot.damage,
-            hpAfter: player.hp,
-            type: "dot",
-          });
+          // Broadcast damage caused by DoT
+          broadcastDamage(broadcast, sessionId, dot.damage, player.hp, "dot");
 
           if (player.hp <= 0) {
             player.hp = 0;
             player.alive = false;
-            broadcast(ServerMessageType.Death, { sessionId });
+            broadcastDeath(broadcast, sessionId);
             onDeath(player);
             break;
           }

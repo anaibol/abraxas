@@ -591,27 +591,17 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     this.combat.processWindups(
       now,
       broadcast,
-      this.state.tick,
-      this.roomId,
       (entity: Entity, killerSessionId: string) =>
         this.onEntityDeath(entity, killerSessionId),
       (caster: Entity, spellId: string, x: number, y: number) =>
         this.onSummon(caster, spellId, x, y),
     );
 
-    this.combat.processBufferedActions(
-      now,
-      broadcast,
-      this.state.tick,
-      this.roomId,
-      (sessionId: string) => {
-        const c = this.clients.find((cl: Client) => cl.sessionId === sessionId);
-        return <T extends ServerMessageType>(
-          type: T,
-          data?: ServerMessages[T],
-        ) => c?.send(type, data);
-      },
-    );
+    this.combat.processBufferedActions(now, broadcast, (sessionId: string) => {
+      const c = this.clients.find((cl: Client) => cl.sessionId === sessionId);
+      return <T extends ServerMessageType>(type: T, data?: ServerMessages[T]) =>
+        c?.send(type, data);
+    });
 
     this.drops.expireDrops(this.state.drops, now);
 

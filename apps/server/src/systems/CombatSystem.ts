@@ -1,6 +1,4 @@
 import {
-  CLASS_STATS,
-  NPC_STATS,
   SPELLS,
   GCD_MS,
   BUFFER_WINDOW_MS,
@@ -9,33 +7,37 @@ import {
   calcRangedDamage,
   calcSpellDamage,
   calcHealAmount,
-  MathUtils
+  MathUtils,
 } from "@abraxas/shared";
 import type {
-  Direction,
   SpellDef,
-  ClassStats,
   BufferedAction,
   WindupAction,
-  EntityCombatState
+  EntityCombatState,
 } from "@abraxas/shared";
-import type { Player } from "../schema/Player";
-import type { Npc } from "../schema/Npc";
 import type { BuffSystem } from "./BuffSystem";
 import { EntityUtils, Entity } from "../utils/EntityUtils";
 import { SpatialLookup } from "../utils/SpatialLookup";
 
-import { ServerMessages, BroadcastFn, ServerMessageType } from "@abraxas/shared";
+import {
+  ServerMessages,
+  BroadcastFn,
+  ServerMessageType,
+} from "@abraxas/shared";
+import { broadcastDamage, broadcastDeath, broadcastAttackHit } from "../utils/ServerEvents";
 
-type SendToClientFn = <T extends ServerMessageType>(type: T, data?: ServerMessages[T]) => void;
+type SendToClientFn = <T extends ServerMessageType>(
+  type: T,
+  data?: ServerMessages[T],
+) => void;
 
 export class CombatSystem {
   private state = new Map<string, EntityCombatState>();
   private activeWindups: WindupAction[] = [];
-  
+
   constructor(
-      private buffSystem: BuffSystem,
-      private spatial: SpatialLookup
+    private buffSystem: BuffSystem,
+    private spatial: SpatialLookup,
   ) {}
 
   private getCombatState(sessionId: string): EntityCombatState {
@@ -56,7 +58,7 @@ export class CombatSystem {
   removeEntity(sessionId: string): void {
     this.state.delete(sessionId);
     this.activeWindups = this.activeWindups.filter(
-      (w) => w.attackerSessionId !== sessionId
+      (w) => w.attackerSessionId !== sessionId,
     );
   }
 
@@ -77,43 +79,66 @@ export class CombatSystem {
 
     // Check if in windup
     if (cs.windupAction) {
-      this.tryBuffer(cs, { type: "attack", targetTileX, targetTileY, bufferedAt: now });
+      this.tryBuffer(cs, {
+        type: "attack",
+        targetTileX,
+        targetTileY,
+        bufferedAt: now,
+      });
       return false;
     }
 
     // Check GCD
     if (now - cs.lastGcdMs < GCD_MS) {
-      this.tryBuffer(cs, { type: "attack", targetTileX, targetTileY, bufferedAt: now });
+      this.tryBuffer(cs, {
+        type: "attack",
+        targetTileX,
+        targetTileY,
+        bufferedAt: now,
+      });
       sendToClient?.(ServerMessageType.Error, { message: "Global cooldown" });
       return false;
     }
 
     // Check melee cooldown
     if (now - cs.lastMeleeMs < stats.meleeCooldownMs) {
-      this.tryBuffer(cs, { type: "attack", targetTileX, targetTileY, bufferedAt: now });
-      sendToClient?.(ServerMessageType.Error, { message: "Attack on cooldown" });
+      this.tryBuffer(cs, {
+        type: "attack",
+        targetTileX,
+        targetTileY,
+        bufferedAt: now,
+      });
+      sendToClient?.(ServerMessageType.Error, {
+        message: "Attack on cooldown",
+      });
       return false;
     }
 
     // Determine target entity and position
-    let target = this.spatial.findEntityAtTile(targetTileX ?? -1, targetTileY ?? -1);
-    
+    let target = this.spatial.findEntityAtTile(
+      targetTileX ?? -1,
+      targetTileY ?? -1,
+    );
+
     // Target validation for ranged
     if (stats.meleeRange > 1) {
-        if (!target || !target.alive || target.sessionId === attacker.sessionId) {
-            sendToClient?.(ServerMessageType.InvalidTarget);
-            return false;
-        }
-        const dist = MathUtils.manhattanDist(EntityUtils.getPosition(attacker), { x: target.tileX, y: target.tileY });
-        if (dist > stats.meleeRange) {
-            sendToClient?.(ServerMessageType.InvalidTarget);
-            return false;
-        }
+      if (!target || !target.alive || target.sessionId === attacker.sessionId) {
+        sendToClient?.(ServerMessageType.InvalidTarget);
+        return false;
+      }
+      const dist = MathUtils.manhattanDist(EntityUtils.getPosition(attacker), {
+        x: target.tileX,
+        y: target.tileY,
+      });
+      if (dist > stats.meleeRange) {
+        sendToClient?.(ServerMessageType.InvalidTarget);
+        return false;
+      }
     } else {
-        // Melee logic: use facing if no target tile specified or if specified tile is too far
-        const delta = DIRECTION_DELTA[attacker.facing];
-        targetTileX = attacker.tileX + delta.dx;
-        targetTileY = attacker.tileY + delta.dy;
+      // Melee logic: use facing if no target tile specified or if specified tile is too far
+      const delta = DIRECTION_DELTA[attacker.facing];
+      targetTileX = attacker.tileX + delta.dx;
+      targetTileY = attacker.tileY + delta.dy;
     }
 
     const finalTargetX = targetTileX!;
@@ -208,13 +233,16 @@ export class CombatSystem {
 
     // Check mana
     if (caster.mana < spell.manaCost) {
-        sendToClient?.(ServerMessageType.Error, { message: "Not enough mana" });
-        return false;
+      sendToClient?.(ServerMessageType.Error, { message: "Not enough mana" });
+      return false;
     }
 
     // Self-target spells (range 0) don't need range check
     if (spell.rangeTiles > 0) {
-      const dist = MathUtils.manhattanDist(EntityUtils.getPosition(caster), { x: targetTileX, y: targetTileY });
+      const dist = MathUtils.manhattanDist(EntityUtils.getPosition(caster), {
+        x: targetTileX,
+        y: targetTileY,
+      });
       if (dist > spell.rangeTiles) return false;
     }
 
@@ -266,10 +294,8 @@ export class CombatSystem {
   processWindups(
     now: number,
     broadcast: BroadcastFn,
-    tick: number,
-    roomId: string,
     onDeath: (entity: Entity, killerSessionId: string) => void,
-    onSummon?: (caster: Entity, spellId: string, x: number, y: number) => void
+    onSummon?: (caster: Entity, spellId: string, x: number, y: number) => void,
   ): void {
     const remaining: WindupAction[] = [];
 
@@ -279,7 +305,9 @@ export class CombatSystem {
         continue;
       }
 
-      const attacker = this.spatial.findEntityBySessionId(windup.attackerSessionId);
+      const attacker = this.spatial.findEntityBySessionId(
+        windup.attackerSessionId,
+      );
       if (!attacker || !attacker.alive) {
         const cs = this.state.get(windup.attackerSessionId);
         if (cs) cs.windupAction = null;
@@ -290,26 +318,9 @@ export class CombatSystem {
       if (cs) cs.windupAction = null;
 
       if (windup.type === "melee") {
-        this.resolveMelee(
-          attacker,
-          windup,
-          broadcast,
-          tick,
-          roomId,
-          onDeath,
-          now
-        );
+        this.resolveMelee(attacker, windup, broadcast, onDeath, now);
       } else {
-        this.resolveSpell(
-          attacker,
-          windup,
-          broadcast,
-          tick,
-          roomId,
-          onDeath,
-          now,
-          onSummon
-        );
+        this.resolveSpell(attacker, windup, broadcast, onDeath, now, onSummon);
       }
     }
 
@@ -319,8 +330,6 @@ export class CombatSystem {
   processBufferedActions(
     now: number,
     broadcast: BroadcastFn,
-    tick: number,
-    roomId: string,
     sendToClientFor?: (sessionId: string) => SendToClientFn,
   ): void {
     for (const [sessionId, cs] of this.state.entries()) {
@@ -340,7 +349,14 @@ export class CombatSystem {
       const action = cs.bufferedAction;
       const sendToClient = sendToClientFor?.(sessionId);
       if (action.type === "attack") {
-        this.tryAttack(entity, now, broadcast, action.targetTileX, action.targetTileY, sendToClient);
+        this.tryAttack(
+          entity,
+          now,
+          broadcast,
+          action.targetTileX,
+          action.targetTileY,
+          sendToClient,
+        );
       } else if (action.type === "cast") {
         this.tryCast(
           entity,
@@ -361,67 +377,67 @@ export class CombatSystem {
     }
   }
 
+  private killTarget(
+    target: Entity,
+    killerSessionId: string,
+    broadcast: BroadcastFn,
+    onDeath: (entity: Entity, killerSessionId: string) => void,
+  ): void {
+    target.hp = 0;
+    target.alive = false;
+    broadcastDeath(broadcast, target.sessionId, killerSessionId);
+    onDeath(target, killerSessionId);
+  }
+
   private resolveMelee(
     attacker: Entity,
     windup: WindupAction,
     broadcast: BroadcastFn,
-    tick: number,
-    roomId: string,
     onDeath: (entity: Entity, killerSessionId: string) => void,
-    now: number
+    now: number,
   ): void {
     const stats = EntityUtils.getStats(attacker)!;
-    const target = this.spatial.findEntityAtTile(windup.targetTileX, windup.targetTileY);
+    const target = this.spatial.findEntityAtTile(
+      windup.targetTileX,
+      windup.targetTileY,
+    );
 
     if (target && target.alive && target.sessionId !== attacker.sessionId) {
       // Check invulnerability
       if (this.buffSystem.isInvulnerable(target.sessionId, now)) {
-        broadcast(ServerMessageType.AttackHit, {
-          sessionId: attacker.sessionId,
-          targetSessionId: target.sessionId,
-          dodged: true,
-        });
+        broadcastAttackHit(broadcast, attacker.sessionId, target.sessionId, true);
         return;
       }
 
       // Use ranged formula for archer, melee for others
-      const attackerStr = attacker.str + this.buffSystem.getBuffBonus(attacker.sessionId, "str", now);
-      const attackerAgi = attacker.agi + this.buffSystem.getBuffBonus(attacker.sessionId, "agi", now);
-      const defenderStr = target.str + this.buffSystem.getBuffBonus(target.sessionId, "str", now);
-      const defenderAgi = target.agi + this.buffSystem.getBuffBonus(target.sessionId, "agi", now);
+      const attackerStr =
+        attacker.str +
+        this.buffSystem.getBuffBonus(attacker.sessionId, "str", now);
+      const attackerAgi =
+        attacker.agi +
+        this.buffSystem.getBuffBonus(attacker.sessionId, "agi", now);
+      const defenderStr =
+        target.str + this.buffSystem.getBuffBonus(target.sessionId, "str", now);
+      const defenderAgi =
+        target.agi + this.buffSystem.getBuffBonus(target.sessionId, "agi", now);
 
-      const result = stats.meleeRange > 1
-        ? calcRangedDamage(attackerAgi, defenderStr, defenderAgi)
-        : calcMeleeDamage(attackerStr, defenderStr, defenderAgi);
+      const result =
+        stats.meleeRange > 1
+          ? calcRangedDamage(attackerAgi, defenderStr, defenderAgi)
+          : calcMeleeDamage(attackerStr, defenderStr, defenderAgi);
 
       if (result.dodged) {
-        broadcast(ServerMessageType.AttackHit, {
-          sessionId: attacker.sessionId,
-          targetSessionId: target.sessionId,
-          dodged: true,
-        });
+        broadcastAttackHit(broadcast, attacker.sessionId, target.sessionId, true);
         return;
       }
 
       target.hp -= result.damage;
 
-      broadcast(ServerMessageType.AttackHit, {
-        sessionId: attacker.sessionId,
-        targetSessionId: target.sessionId,
-      });
-
-      broadcast(ServerMessageType.Damage, {
-        targetSessionId: target.sessionId,
-        amount: result.damage,
-        hpAfter: target.hp,
-        type: "physical",
-      });
+      broadcastAttackHit(broadcast, attacker.sessionId, target.sessionId);
+      broadcastDamage(broadcast, target.sessionId, result.damage, target.hp, "physical");
 
       if (target.hp <= 0) {
-        target.hp = 0;
-        target.alive = false;
-        broadcast(ServerMessageType.Death, { sessionId: target.sessionId, killerSessionId: attacker.sessionId });
-        onDeath(target, attacker.sessionId);
+        this.killTarget(target, attacker.sessionId, broadcast, onDeath);
       }
     } else {
       broadcast(ServerMessageType.AttackHit, {
@@ -435,11 +451,9 @@ export class CombatSystem {
     attacker: Entity,
     windup: WindupAction,
     broadcast: BroadcastFn,
-    tick: number,
-    roomId: string,
     onDeath: (entity: Entity, killerSessionId: string) => void,
     now: number,
-    onSummon?: (caster: Entity, spellId: string, x: number, y: number) => void
+    onSummon?: (caster: Entity, spellId: string, x: number, y: number) => void,
   ): void {
     const spell = SPELLS[windup.spellId!];
     if (!spell) return;
@@ -452,16 +466,25 @@ export class CombatSystem {
       fxId: spell.fxId,
     });
 
-    const casterInt = attacker.intStat + this.buffSystem.getBuffBonus(attacker.sessionId, "int", now);
-    const casterStr = attacker.str + this.buffSystem.getBuffBonus(attacker.sessionId, "str", now);
-    const casterAgi = attacker.agi + this.buffSystem.getBuffBonus(attacker.sessionId, "agi", now);
-    const scalingValue = spell.scalingStat === "str" ? casterStr
-      : spell.scalingStat === "agi" ? casterAgi
-      : casterInt;
+    const casterInt =
+      attacker.intStat +
+      this.buffSystem.getBuffBonus(attacker.sessionId, "int", now);
+    const casterStr =
+      attacker.str +
+      this.buffSystem.getBuffBonus(attacker.sessionId, "str", now);
+    const casterAgi =
+      attacker.agi +
+      this.buffSystem.getBuffBonus(attacker.sessionId, "agi", now);
+    const scalingValue =
+      spell.scalingStat === "str"
+        ? casterStr
+        : spell.scalingStat === "agi"
+          ? casterAgi
+          : casterInt;
 
     // Self-target effects
     if (spell.effect === "buff") {
-// ... existing buff logic ...
+      // ... existing buff logic ...
       if (spell.buffStat && spell.buffAmount && spell.durationMs) {
         this.buffSystem.addBuff(
           attacker.sessionId,
@@ -469,7 +492,7 @@ export class CombatSystem {
           spell.buffStat,
           spell.buffAmount,
           spell.durationMs,
-          now
+          now,
         );
         broadcast(ServerMessageType.BuffApplied, {
           sessionId: attacker.sessionId,
@@ -492,7 +515,11 @@ export class CombatSystem {
     }
 
     if (spell.effect === "heal") {
-      const healAmount = calcHealAmount(spell.baseDamage, casterInt, spell.scalingRatio);
+      const healAmount = calcHealAmount(
+        spell.baseDamage,
+        casterInt,
+        spell.scalingRatio,
+      );
       attacker.hp = Math.min(attacker.maxHp, attacker.hp + healAmount);
       broadcast(ServerMessageType.Heal, {
         sessionId: attacker.sessionId,
@@ -503,8 +530,8 @@ export class CombatSystem {
     }
 
     if (spell.effect === "summon") {
-        onSummon?.(attacker, spell.id, windup.targetTileX, windup.targetTileY);
-        return;
+      onSummon?.(attacker, spell.id, windup.targetTileX, windup.targetTileY);
+      return;
     }
 
     // AoE spells hit multiple targets
@@ -513,18 +540,37 @@ export class CombatSystem {
         windup.targetTileX,
         windup.targetTileY,
         spell.aoeRadius,
-        attacker.sessionId
+        attacker.sessionId,
       );
       for (const target of targets) {
-        this.applySpellToTarget(attacker, target, spell, scalingValue, broadcast, onDeath, now);
+        this.applySpellToTarget(
+          attacker,
+          target,
+          spell,
+          scalingValue,
+          broadcast,
+          onDeath,
+          now,
+        );
       }
       return;
     }
 
     // Single-target damage/dot/stun
-    const target = this.spatial.findEntityAtTile(windup.targetTileX, windup.targetTileY);
+    const target = this.spatial.findEntityAtTile(
+      windup.targetTileX,
+      windup.targetTileY,
+    );
     if (target && target.alive && target.sessionId !== attacker.sessionId) {
-      this.applySpellToTarget(attacker, target, spell, scalingValue, broadcast, onDeath, now);
+      this.applySpellToTarget(
+        attacker,
+        target,
+        spell,
+        scalingValue,
+        broadcast,
+        onDeath,
+        now,
+      );
     }
   }
 
@@ -535,35 +581,39 @@ export class CombatSystem {
     scalingValue: number,
     broadcast: BroadcastFn,
     onDeath: (entity: Entity, killerSessionId: string) => void,
-    now: number
+    now: number,
   ): void {
     // Check invulnerability
     if (this.buffSystem.isInvulnerable(target.sessionId, now)) return;
 
-    const defenderInt = target.intStat + this.buffSystem.getBuffBonus(target.sessionId, "int", now);
-    const damage = calcSpellDamage(spell.baseDamage, scalingValue, spell.scalingRatio, defenderInt);
+    const defenderInt =
+      target.intStat +
+      this.buffSystem.getBuffBonus(target.sessionId, "int", now);
+    const damage = calcSpellDamage(
+      spell.baseDamage,
+      scalingValue,
+      spell.scalingRatio,
+      defenderInt,
+    );
 
     if (damage > 0) {
       target.hp -= damage;
 
-      broadcast(ServerMessageType.Damage, {
-        targetSessionId: target.sessionId,
-        amount: damage,
-        hpAfter: target.hp,
-        type: "magic",
-      });
+      broadcastDamage(broadcast, target.sessionId, damage, target.hp, "magic");
 
       if (target.hp <= 0) {
-        target.hp = 0;
-        target.alive = false;
-        broadcast(ServerMessageType.Death, { sessionId: target.sessionId, killerSessionId: attacker.sessionId });
-        onDeath(target, attacker.sessionId);
+        this.killTarget(target, attacker.sessionId, broadcast, onDeath);
         return;
       }
     }
 
     // Apply DoT
-    if (spell.effect === "dot" && spell.dotDamage && spell.dotIntervalMs && spell.dotDurationMs) {
+    if (
+      spell.effect === "dot" &&
+      spell.dotDamage &&
+      spell.dotIntervalMs &&
+      spell.dotDurationMs
+    ) {
       this.buffSystem.addDoT(
         target.sessionId,
         attacker.sessionId,
@@ -571,7 +621,7 @@ export class CombatSystem {
         spell.dotDamage,
         spell.dotIntervalMs,
         spell.dotDurationMs,
-        now
+        now,
       );
     }
 

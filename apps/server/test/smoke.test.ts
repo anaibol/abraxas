@@ -140,6 +140,11 @@ describe("Arena multiplayer smoke test", () => {
         const reservation = JSON.parse(text);
         
         // Now try to consume it manually
+        // Check server state
+        const driver = (server as any)["driver"];
+        const matchMaker = (server as any)["matchMaker"]; // or driver?
+        console.log("TEST: Driver rooms keys:", Object.keys(driver.rooms || {}));
+        
         const wsUrl = `ws://localhost:${TEST_PORT}/${reservation.processId}/${reservation.roomId}?sessionId=${reservation.sessionId}`;
         console.log("TEST: Connecting manual WS to:", wsUrl);
         
@@ -155,18 +160,37 @@ describe("Arena multiplayer smoke test", () => {
         console.log("TEST: Manual reservation failed:", e);
     }
 
-    const roomA: Room<GameState> = await clientA.joinOrCreate("arena", {
+    async function joinWithRetry(client: Client, opts: any, attempts = 3) {
+      let lastErr: any;
+      for (let i = 0; i < attempts; i++) {
+        try {
+          return await client.joinOrCreate("arena", opts);
+        } catch (e: any) {
+          lastErr = e;
+          // If reservation expired (524), retry after a short delay
+          const msg = (e && (e.message || e.toString())) || '';
+          if (msg.includes('seat reservation expired') || (e && e.code === 524)) {
+            await wait(300);
+            continue;
+          }
+          throw e;
+        }
+      }
+      throw lastErr;
+    }
+
+    const roomA: Room<GameState> = await joinWithRetry(clientA, {
       name: nameA,
       classType: "warrior",
       token: tokenA,
-      mapName: "arena.test"
+      mapName: "arena.test",
     });
 
-    const roomB: Room<GameState> = await clientB.joinOrCreate("arena", {
+    const roomB: Room<GameState> = await joinWithRetry(clientB, {
       name: nameB,
       classType: "wizard",
       token: tokenB,
-      mapName: "arena.test"
+      mapName: "arena.test",
     });
     // Wait until both rooms see 2 players
     await waitForState(roomA, (state) => state.players.size >= 2);

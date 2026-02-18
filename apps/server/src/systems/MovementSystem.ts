@@ -1,7 +1,5 @@
-import type { Direction, TileMap, ClassStats } from "@abraxas/shared";
-import { DIRECTION_DELTA, CLASS_STATS, NPC_STATS } from "@abraxas/shared";
-import type { Player } from "../schema/Player";
-import type { Npc } from "../schema/Npc";
+import type { Direction, TileMap } from "@abraxas/shared";
+import { DIRECTION_DELTA } from "@abraxas/shared";
 import { logger } from "../logger";
 import { EntityUtils, Entity } from "../utils/EntityUtils";
 import { SpatialLookup } from "../utils/SpatialLookup";
@@ -35,10 +33,10 @@ export class MovementSystem {
     now: number,
     occupiedCheck: (x: number, y: number, excludeId: string) => boolean,
     tick: number,
-    roomId: string
+    roomId: string,
   ): boolean {
     const timers = this.getTimers(entity.sessionId);
-    
+
     const stats = EntityUtils.getStats(entity);
     if (!stats) return false;
 
@@ -52,11 +50,11 @@ export class MovementSystem {
       // Only log debug for players to avoid spamming for NPCs
       if (EntityUtils.isPlayer(entity)) {
         logger.debug({
-            room: roomId,
-            tick,
-            clientId: entity.sessionId,
-            intent: "move",
-            result: "too_fast",
+          room: roomId,
+          tick,
+          clientId: entity.sessionId,
+          intent: "move",
+          result: "too_fast",
         });
       }
       return false;
@@ -88,7 +86,7 @@ export class MovementSystem {
 
     // Update Spatial Grid
     this.spatial.updatePosition(entity, posBefore.x, posBefore.y);
-    
+
     // Accumulated timing: advance from last move time, not from `now`.
     timers.lastMoveMs += moveIntervalMs;
     // Cap drift so we don't allow burst moves after a long idle
@@ -98,15 +96,15 @@ export class MovementSystem {
 
     // Log only for players
     if (EntityUtils.isPlayer(entity)) {
-        logger.info({
-            room: roomId,
-            tick,
-            clientId: entity.sessionId,
-            intent: "move",
-            result: "ok",
-            posBefore,
-            posAfter: { x: newX, y: newY },
-        });
+      logger.info({
+        room: roomId,
+        tick,
+        clientId: entity.sessionId,
+        intent: "move",
+        result: "ok",
+        posBefore,
+        posAfter: { x: newX, y: newY },
+      });
     }
 
     return true;
