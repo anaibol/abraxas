@@ -8,8 +8,10 @@ interface PendingRespawn {
   respawnAt: number;
 }
 
+import { ServerMessageType, ServerMessages } from "@abraxas/shared";
+
 interface BroadcastFn {
-  (type: string, data: Record<string, unknown>): void;
+  <T extends ServerMessageType>(type: T, data: ServerMessages[T]): void;
 }
 
 export class RespawnSystem {
@@ -70,7 +72,7 @@ export class RespawnSystem {
       // Give starting equipment
       this.giveStartingEquipment(player);
 
-      broadcast("respawn", {
+      broadcast(ServerMessageType.Respawn, {
         sessionId: player.sessionId,
         tileX: spawn.x,
         tileY: spawn.y,

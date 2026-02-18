@@ -86,7 +86,7 @@ export class CombatSystem {
     // Check GCD
     if (now - cs.lastGcdMs < GCD_MS) {
       this.tryBuffer(cs, { type: "attack", targetTileX, targetTileY, bufferedAt: now });
-      sendToClient?.("error", { message: "Global cooldown" });
+      sendToClient?.(ServerMessageType.Error, { message: "Global cooldown" });
       return false;
     }
 
@@ -192,7 +192,7 @@ export class CombatSystem {
         targetTileY,
         bufferedAt: now,
       });
-      sendToClient?.("error", { message: "Global cooldown" });
+      sendToClient?.(ServerMessageType.Error, { message: "Global cooldown" });
       return false;
     }
 
@@ -382,7 +382,7 @@ export class CombatSystem {
     if (target && target.alive && target.sessionId !== attacker.sessionId) {
       // Check invulnerability
       if (this.buffSystem.isInvulnerable(target.sessionId, now)) {
-        broadcast("attack_hit", {
+        broadcast(ServerMessageType.AttackHit, {
           sessionId: attacker.sessionId,
           targetSessionId: target.sessionId,
           dodged: true,
@@ -401,7 +401,7 @@ export class CombatSystem {
         : calcMeleeDamage(attackerStr, defenderStr, defenderAgi);
 
       if (result.dodged) {
-        broadcast("attack_hit", {
+        broadcast(ServerMessageType.AttackHit, {
           sessionId: attacker.sessionId,
           targetSessionId: target.sessionId,
           dodged: true,
@@ -426,7 +426,7 @@ export class CombatSystem {
       if (target.hp <= 0) {
         target.hp = 0;
         target.alive = false;
-        broadcast("death", { sessionId: target.sessionId, killerSessionId: attacker.sessionId });
+        broadcast(ServerMessageType.Death, { sessionId: target.sessionId, killerSessionId: attacker.sessionId });
         onDeath(target, attacker.sessionId);
       }
     } else {
@@ -562,7 +562,7 @@ export class CombatSystem {
       if (target.hp <= 0) {
         target.hp = 0;
         target.alive = false;
-        broadcast("death", { sessionId: target.sessionId, killerSessionId: attacker.sessionId });
+        broadcast(ServerMessageType.Death, { sessionId: target.sessionId, killerSessionId: attacker.sessionId });
         onDeath(target, attacker.sessionId);
         return;
       }

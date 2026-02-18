@@ -4,6 +4,7 @@ import { Player } from "../schema/Player";
 import { Party } from "../schema/Party";
 import { ArraySchema } from "@colyseus/schema";
 import { logger } from "../logger";
+import { ServerMessageType, ServerMessages } from "@abraxas/shared";
 
 export class SocialSystem {
     private invitations = new Map<string, { partyId: string; inviterSessionId: string }>();
@@ -21,7 +22,7 @@ export class SocialSystem {
 
         // Check if target is already in a party
         if (target.partyId) {
-            client.send("error", { message: "Player is already in a party" });
+            client.send(ServerMessageType.Error, { message: "Player is already in a party" });
             return;
         }
 
@@ -39,7 +40,7 @@ export class SocialSystem {
         } else {
             const party = this.state.parties.get(partyId);
             if (party && party.leaderSessionId !== inviter.sessionId) {
-                client.send("error", { message: "Only the party leader can invite" });
+                client.send(ServerMessageType.Error, { message: "Only the party leader can invite" });
                 return;
             }
         }
@@ -48,15 +49,15 @@ export class SocialSystem {
         this.invitations.set(targetSessionId, { partyId, inviterSessionId: inviter.sessionId });
         const targetClient = this.findClient(targetSessionId);
         if (targetClient) {
-            targetClient.send("party_invited", { partyId, inviterName: inviter.name });
-            client.send("notification", { message: `Invited ${target.name} to party` });
+            targetClient.send(ServerMessageType.PartyInvited, { partyId, inviterName: inviter.name });
+            client.send(ServerMessageType.Notification, { message: `Invited ${target.name} to party` });
         }
     }
 
     handleAcceptInvite(client: Client, partyId: string): void {
         const invite = this.invitations.get(client.sessionId);
         if (!invite || invite.partyId !== partyId) {
-            client.send("error", { message: "No active invitation for this party" });
+            client.send(ServerMessageType.Error, { message: "No active invitation for this party" });
             return;
         }
 
@@ -69,7 +70,7 @@ export class SocialSystem {
         }
 
         if (party.memberIds.length >= 5) {
-            client.send("error", { message: "Party is full" });
+            client.send(ServerMessageType.Error, { message: "Party is full" });
             this.invitations.delete(client.sessionId);
             return;
         }
@@ -80,7 +81,7 @@ export class SocialSystem {
         this.invitations.delete(client.sessionId);
 
         this.broadcastPartyUpdate(partyId);
-        this.broadcastToParty(partyId, "notification", { message: `${player.name} joined the party` });
+        this.broadcastToParty(partyId, ServerMessageType.Notification, { message: `${player.name} joined the party` });
     }
 
     handleLeaveParty(client: Client): void {
@@ -94,9 +95,9 @@ export class SocialSystem {
         this.removePlayerFromParty(party, client.sessionId);
         player.partyId = "";
 
-        this.broadcastToParty(partyId, "notification", { message: `${player.name} left the party` });
+        this.broadcastToParty(partyId, ServerMessageType.Notification, { message: `${player.name} left the party` });
         this.broadcastPartyUpdate(partyId);
-        client.send("party_update", { partyId: "", leaderId: "", members: [] });
+        client.send(ServerMessageType.PartyUpdate, { partyId: "", leaderId: "", members: [] });
     }
 
     handleKickPlayer(client: Client, targetSessionId: string): void {
@@ -105,7 +106,7 @@ export class SocialSystem {
 
         const party = this.state.parties.get(player.partyId);
         if (!party || party.leaderSessionId !== client.sessionId) {
-            client.send("error", { message: "Only the leader can kick players" });
+            client.send(ServerMessageType.Error, { message: "Only the leader can kick players" });
             return;
         }
 
@@ -118,8 +119,8 @@ export class SocialSystem {
             
             const targetClient = this.findClient(targetSessionId);
             if (targetClient) {
-                targetClient.send("notification", { message: "You were kicked from the party" });
-                targetClient.send("party_update", { partyId: "", leaderId: "", members: [] });
+                targetClient.send(ServerMessageType.Notification, { message: "You were kicked from the party" });
+                targetClient.send(ServerMessageType.PartyUpdate, { partyId: "", leaderId: "", members: [] });
             }
             this.broadcastPartyUpdate(party.id);
         }
@@ -140,7 +141,7 @@ export class SocialSystem {
                 party.leaderSessionId = newLeaderId;
                 const newLeader = this.state.players.get(newLeaderId);
                 if (newLeader) {
-                    this.broadcastToParty(party.id, "notification", { message: `${newLeader.name} is now the party leader` });
+                    this.broadcastToParty(party.id, ServerMessageType.Notification, { message: `${newLeader.name} is now the party leader` });
                 }
             }
         }
@@ -155,14 +156,14 @@ export class SocialSystem {
             return { sessionId: sid, name: p ? p.name : "Unknown" };
         });
 
-        this.broadcastToParty(partyId, "party_update", {
+        this.broadcastToParty(partyId, ServerMessageType.PartyUpdate, {
             partyId: party.id,
             leaderId: party.leaderSessionId,
             members
         });
     }
 
-    public broadcastToParty(partyId: string, type: string, message: any): void {
+    public broadcastToParty<T extends ServerMessageType>(partyId: string, type: T, message: ServerMessages[T]): void {
         const party = this.state.parties.get(partyId);
         if (!party) return;
 

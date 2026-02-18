@@ -2,6 +2,7 @@ import { Client } from "@colyseus/core";
 import { GameState } from "../schema/GameState";
 import { prisma } from "../database/db";
 import { logger } from "../logger";
+import { ServerMessageType } from "@abraxas/shared";
 
 export class FriendsSystem {
     private onlineUsers = new Map<string, string>(); // userId -> sessionId
@@ -53,12 +54,12 @@ export class FriendsSystem {
         });
 
         if (!targetUser) {
-            client.send("error", { message: "Player not found" });
+            client.send(ServerMessageType.Error, { message: "Player not found" });
             return;
         }
 
         if (targetUser.id === player.userId) {
-            client.send("error", { message: "You cannot friend yourself" });
+            client.send(ServerMessageType.Error, { message: "You cannot friend yourself" });
             return;
         }
 
@@ -78,14 +79,14 @@ export class FriendsSystem {
                 }
             });
 
-            client.send("notification", { message: `Friend request sent to ${targetName}` });
+            client.send(ServerMessageType.Notification, { message: `Friend request sent to ${targetName}` });
             
             // Notify target if online
             const targetSessionId = this.onlineUsers.get(targetUser.id);
             if (targetSessionId) {
                 const targetClient = this.findClient(targetSessionId);
                 if (targetClient) {
-                    targetClient.send("friend_invited", { 
+                    targetClient.send(ServerMessageType.FriendInvited, { 
                         requesterId: player.userId, 
                         requesterName: player.name 
                     });
@@ -106,7 +107,7 @@ export class FriendsSystem {
                 data: { status: "ACCEPTED" }
             });
 
-            client.send("notification", { message: "Friend request accepted" });
+            client.send(ServerMessageType.Notification, { message: "Friend request accepted" });
             
             await this.sendUpdateToUser(player.userId, client.sessionId);
             
@@ -165,6 +166,6 @@ export class FriendsSystem {
             }
         }
 
-        client.send("friend_update", { friends });
+        client.send(ServerMessageType.FriendUpdate, { friends });
     }
 }

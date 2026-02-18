@@ -47,7 +47,7 @@ import { QuestSystem } from "../systems/QuestSystem";
 
 console.error("[ArenaRoom.ts] Module loading...");
 
-export class ArenaRoom extends Room<any> {
+export class ArenaRoom extends Room<{ state: GameState }> {
   constructor() {
     super();
     console.error("[ArenaRoom] Constructor called");

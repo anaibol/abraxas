@@ -1,9 +1,9 @@
 import type { Player } from "../schema/Player";
 import { logger } from "../logger";
-import { Buff, DoT, PlayerBuffState, ServerMessages } from "@abraxas/shared";
+import { Buff, DoT, PlayerBuffState, ServerMessages, ServerMessageType } from "@abraxas/shared";
 
 interface BroadcastFn {
-  <T extends keyof ServerMessages>(type: T, data: ServerMessages[T]): void;
+  <T extends ServerMessageType>(type: T, data: ServerMessages[T]): void;
 }
 
 export class BuffSystem {
@@ -124,7 +124,7 @@ export class BuffSystem {
           dot.lastTickAt = now;
           player.hp -= dot.damage;
 
-          broadcast("damage", {
+          broadcast(ServerMessageType.Damage, {
             targetSessionId: sessionId,
             amount: dot.damage,
             hpAfter: player.hp,
@@ -134,7 +134,7 @@ export class BuffSystem {
           if (player.hp <= 0) {
             player.hp = 0;
             player.alive = false;
-            broadcast("death", { sessionId });
+            broadcast(ServerMessageType.Death, { sessionId });
             onDeath(player);
             break;
           }

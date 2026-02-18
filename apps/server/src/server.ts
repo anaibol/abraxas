@@ -133,6 +133,7 @@ export async function createGameServer(options: {
 
   console.error(`[server.ts] Starting listen on port ${options.port}...`);
   await server.listen(options.port);
+  console.error(`[server.ts] Registered handlers: ${Object.keys((server as any).matchmaker.handlers)}`);
 
   console.error({ intent: "server_start", result: "ok", port: options.port });
 
