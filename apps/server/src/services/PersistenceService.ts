@@ -59,7 +59,7 @@ export class PersistenceService {
                  agi: stats.agi,
                  intStat: stats.int,
                  facing: "down",
-             },
+             } as any,
              include: {
                  inventory: true
              }
@@ -93,7 +93,7 @@ export class PersistenceService {
                     str: data.str,
                     agi: data.agi,
                     intStat: data.intStat,
-                    facing: typeof data.facing === 'string' ? data.facing : Direction[data.facing]?.toLowerCase() || "down",
+                    facing: typeof data.facing === 'string' ? data.facing : (Direction[data.facing]?.toLowerCase() || "down"),
                     gold: data.gold,
                     level: data.level,
                     xp: data.xp,
@@ -105,7 +105,7 @@ export class PersistenceService {
                     equipShield: data.equipment.shield,
                     equipHelmet: data.equipment.helmet,
                     equipRing: data.equipment.ring,
-                }
+                } as any
             });
 
             // 2. Update Inventory (Delete and recreate - simple but could be optimized)
