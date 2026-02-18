@@ -87,6 +87,17 @@ export class NetworkManager<SC = unknown> {
   public onAudioData: ((sessionId: string, data: ArrayBuffer) => void) | null =
     null;
 
+  /** Measures round-trip latency. Calls onResult with RTT in ms when Pong arrives. */
+  ping(onResult: (rtt: number) => void): void {
+    if (!this.room) return;
+    const sentAt = Date.now();
+    const off = this.room.onMessage(ServerMessageType.Pong, () => {
+      onResult(Date.now() - sentAt);
+      off(); // unsubscribe after first response
+    });
+    this._send(ClientMessageType.Ping, {});
+  }
+
   sendAudio(data: ArrayBuffer) {
     this._send(ClientMessageType.Audio, data);
   }

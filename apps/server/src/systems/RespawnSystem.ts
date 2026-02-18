@@ -77,11 +77,7 @@ export class RespawnSystem {
       // Give starting equipment
       this.giveStartingEquipment(player);
 
-      broadcast(ServerMessageType.Respawn, {
-        sessionId: player.sessionId,
-        tileX: spawn.x,
-        tileY: spawn.y,
-      });
+      broadcast(ServerMessageType.Respawn, { sessionId: player.sessionId, tileX: spawn.x, tileY: spawn.y });
     }
 
     this.pending = remaining;

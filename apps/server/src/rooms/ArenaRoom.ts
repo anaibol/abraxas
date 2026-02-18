@@ -475,7 +475,27 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     });
   }
 
-  async onLeave(client: Client) {
+  async onLeave(client: Client, code?: number) {
+    // code 1000 = normal/consented close. Any other code = abrupt disconnect.
+    if (code !== 1000) {
+      try {
+        await this.allowReconnection(client, 30);
+        logger.info({
+          room: this.roomId,
+          clientId: client.sessionId,
+          intent: "reconnected",
+          result: "ok",
+        });
+        return; // player reconnected — keep their state intact
+      } catch {
+        // reconnection timed out — fall through to cleanup
+      }
+    }
+
+    await this.removePlayer(client);
+  }
+
+  private async removePlayer(client: Client) {
     const player = this.state.players.get(client.sessionId);
     if (player) {
       this.messageHandler.handlePartyLeave(client);

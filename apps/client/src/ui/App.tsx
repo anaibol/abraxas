@@ -1,4 +1,12 @@
-import { ChakraProvider, createToaster, Toaster, ToastRoot, ToastTitle, ToastDescription, ToastCloseTrigger } from "@chakra-ui/react";
+import {
+  ChakraProvider,
+  createToaster,
+  Toaster,
+  ToastRoot,
+  ToastTitle,
+  ToastDescription,
+  ToastCloseTrigger,
+} from "@chakra-ui/react";
 import { Box, Flex } from "@chakra-ui/react";
 import { useState, useRef, useCallback, useEffect } from "react";
 import { system } from "./theme";
@@ -11,7 +19,12 @@ import { Console, type ConsoleMessage } from "./Console";
 import { Minimap } from "./Minimap";
 import { MerchantShop } from "./MerchantShop";
 import { SocialPanel } from "./SocialPanel";
-import type { ClassType, TileMap, EquipmentSlot, PlayerQuestState } from "@abraxas/shared";
+import type {
+  ClassType,
+  TileMap,
+  EquipmentSlot,
+  PlayerQuestState,
+} from "@abraxas/shared";
 import { getRandomName } from "@abraxas/shared";
 import { QuestDialogue } from "./QuestDialogue";
 import { NetworkManager } from "../network/NetworkManager";
@@ -49,11 +62,24 @@ export function App() {
   const [consoleMessages, setConsoleMessages] = useState<ConsoleMessage[]>([]);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [mapData, setMapData] = useState<TileMap | null>(null);
-  const [shopData, setShopData] = useState<{ npcId: string; inventory: string[] } | null>(null);
-  const [partyData, setPartyData] = useState<{ partyId: string; leaderId: string; members: { sessionId: string; name: string }[] } | null>(null);
-  const [friendsData, setFriendsData] = useState<{ id: string; name: string; online: boolean }[]>([]);
+  const [shopData, setShopData] = useState<{
+    npcId: string;
+    inventory: string[];
+  } | null>(null);
+  const [partyData, setPartyData] = useState<{
+    partyId: string;
+    leaderId: string;
+    members: { sessionId: string; name: string }[];
+  } | null>(null);
+  const [friendsData, setFriendsData] = useState<
+    { id: string; name: string; online: boolean }[]
+  >([]);
   const [quests, setQuests] = useState<PlayerQuestState[]>([]);
-  const [dialogueData, setDialogueData] = useState<{ npcId: string; text: string; options: any[] } | null>(null);
+  const [dialogueData, setDialogueData] = useState<{
+    npcId: string;
+    text: string;
+    options: any[];
+  } | null>(null);
   const [isRecording, setIsRecording] = useState(false);
 
   const gameContainerRef = useRef<HTMLDivElement>(null);
@@ -61,7 +87,7 @@ export function App() {
   const networkRef = useRef<NetworkManager<GameState> | null>(null);
   const audioManagerRef = useRef<AudioManager | null>(null);
   const wasAliveRef = useRef(true);
-  
+
   // Ref to room state for minimap to access latest data without re-rendering App constantly
   const roomRef = useRef<Room<GameState> | null>(null);
 
@@ -81,7 +107,9 @@ export function App() {
   useEffect(() => {
     if (killFeed.length === 0) return;
     const timer = setTimeout(() => {
-      setKillFeed((prev) => prev.filter((e) => Date.now() - e.timestamp < 8000));
+      setKillFeed((prev) =>
+        prev.filter((e) => Date.now() - e.timestamp < 8000),
+      );
     }, 8000);
     return () => clearTimeout(timer);
   }, [killFeed]);
@@ -91,309 +119,404 @@ export function App() {
     if (phase !== "game") return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === "Enter") {
-             if (isChatOpen) {
-                 // Close chat (sending handled by Console component if it was focused)
-                 // But wait, if we are focused on input, this keydown might fire too?
-                 // We should letting Console handle the send, and this just toggles state?
-                 // If chat is open, enter sends and closes?
-             } else {
-                 setIsChatOpen(true);
-             }
+      if (e.key === "Enter") {
+        if (isChatOpen) {
+          // Close chat (sending handled by Console component if it was focused)
+          // But wait, if we are focused on input, this keydown might fire too?
+          // We should letting Console handle the send, and this just toggles state?
+          // If chat is open, enter sends and closes?
+        } else {
+          setIsChatOpen(true);
         }
-        if (e.key === "Escape" && isChatOpen) {
-            setIsChatOpen(false);
-        }
+      }
+      if (e.key === "Escape" && isChatOpen) {
+        setIsChatOpen(false);
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [phase, isChatOpen]);
 
-  // When chat is open, we should probably disable game inputs? 
+  // When chat is open, we should probably disable game inputs?
   // GameScene listens to keys. We might need to tell GameScene to ignore input.
   // Or just rely on input focus stealing events?
   // Phaser input usually keeps working unless we explicitly stop it.
 
   useEffect(() => {
-      const game = phaserGameRef.current;
-      if (game) {
-          game.input.enabled = !isChatOpen;
-          if (isChatOpen) {
-              // Reset keys to avoid stuck inputs
-              // @ts-ignore
-              game.input.keyboard?.resetKeys();
-          }
+    const game = phaserGameRef.current;
+    if (game) {
+      game.input.enabled = !isChatOpen;
+      if (isChatOpen) {
+        // Reset keys to avoid stuck inputs
+        // @ts-ignore
+        game.input.keyboard?.resetKeys();
       }
+    }
   }, [isChatOpen]);
-  
+
   // Audio Hotkey Logic
   useEffect(() => {
-      if (phase !== "game" || isChatOpen) return;
+    if (phase !== "game" || isChatOpen) return;
 
-      const handleKey = (e: KeyboardEvent) => {
-          if (e.key.toLowerCase() === "v") {
-              if (e.type === "keydown" && !isRecording) {
-                  setIsRecording(true);
-                  if (audioManagerRef.current) {
-                      audioManagerRef.current.startRecording((buffer) => {
-                          networkRef.current?.sendAudio(buffer);
-                      });
-                  }
-              } else if (e.type === "keyup" && isRecording) {
-                  setIsRecording(false);
-                  audioManagerRef.current?.stopRecording();
-              }
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() === "v") {
+        if (e.type === "keydown" && !isRecording) {
+          setIsRecording(true);
+          if (audioManagerRef.current) {
+            audioManagerRef.current.startRecording((buffer) => {
+              networkRef.current?.sendAudio(buffer);
+            });
           }
-      };
+        } else if (e.type === "keyup" && isRecording) {
+          setIsRecording(false);
+          audioManagerRef.current?.stopRecording();
+        }
+      }
+    };
 
-      window.addEventListener("keydown", handleKey);
-      window.addEventListener("keyup", handleKey);
-      return () => {
-          window.removeEventListener("keydown", handleKey);
-          window.removeEventListener("keyup", handleKey);
-      };
+    window.addEventListener("keydown", handleKey);
+    window.addEventListener("keyup", handleKey);
+    return () => {
+      window.removeEventListener("keydown", handleKey);
+      window.removeEventListener("keyup", handleKey);
+    };
   }, [phase, isChatOpen, isRecording]);
 
   // Cleanup audio manager on unmount
   useEffect(() => {
-      return () => {
-          audioManagerRef.current?.cleanup();
-      };
+    return () => {
+      audioManagerRef.current?.cleanup();
+    };
   }, []);
 
+  const handleJoin = useCallback(
+    async (
+      name: string,
+      classType: ClassType,
+      token: string,
+      mapName?: string,
+    ) => {
+      setConnecting(true);
+      if (mapName) setIsLoading(true); // If warping, show loading
 
-  const handleJoin = useCallback(async (name: string, classType: ClassType, token: string, mapName?: string) => {
-    setConnecting(true);
-    if (mapName) setIsLoading(true); // If warping, show loading
-
-    try {
-      // Cleanup old game if exists
-      if (phaserGameRef.current) {
+      try {
+        // Cleanup old game if exists
+        if (phaserGameRef.current) {
           phaserGameRef.current.destroy(true);
           phaserGameRef.current = null;
-      }
-      // Cleanup old network if exists
-      if (networkRef.current) {
+        }
+        // Cleanup old network if exists
+        if (networkRef.current) {
           networkRef.current.disconnect();
-      }
+        }
 
-      const network = new NetworkManager<GameState>();
-      await network.connect(name, classType, token, mapName);
-      networkRef.current = network;
-      roomRef.current = network.getRoom();
-      
-      const welcome = network.getWelcomeData();
-      
-      // Initialize Audio Manager
-      if (!audioManagerRef.current) {
+        const network = new NetworkManager<GameState>();
+        await network.connect(name, classType, token, mapName);
+        networkRef.current = network;
+        roomRef.current = network.getRoom();
+
+        const welcome = network.getWelcomeData();
+
+        // Initialize Audio Manager
+        if (!audioManagerRef.current) {
           const am = new AudioManager();
           try {
-              await am.init();
-              audioManagerRef.current = am;
+            await am.init();
+            audioManagerRef.current = am;
           } catch (err) {
-              console.error("AudioManager init failed:", err);
+            console.error("AudioManager init failed:", err);
           }
-      }
+        }
 
-      setMapData({
+        setMapData({
           width: welcome.mapWidth,
           height: welcome.mapHeight,
           tileSize: welcome.tileSize,
           collision: welcome.collision,
-          spawns: [] 
-      });
+          spawns: [],
+        });
 
-      setPlayerState((prev) => ({ ...prev, name, classType }));
-      setPhase("game");
-      if (!mapName) setIsLoading(true); // Initial join also triggers loading
+        setPlayerState((prev) => ({ ...prev, name, classType }));
+        setPhase("game");
+        if (!mapName) setIsLoading(true); // Initial join also triggers loading
 
-      network.onWarp = (data) => {
+        network.onWarp = (data) => {
           handleJoin(name, classType, token, data.targetMap);
-      };
-      
-      // Add welcome message
-      setConsoleMessages([{
-        id: ++consoleMsgId,
-        text: mapName ? `Traveling to ${mapName}...` : `Welcome to the game, ${name}!`,
-        color: "#ffff00",
-        timestamp: Date.now()
-      }]);
-      
-      // Listen for chat
-      network.getRoom().onMessage("chat", (data: { senderId: string, senderName: string, message: string, channel?: string }) => {
-           setConsoleMessages(prev => {
+        };
+
+        // Add welcome message
+        setConsoleMessages([
+          {
+            id: ++consoleMsgId,
+            text: mapName
+              ? `Traveling to ${mapName}...`
+              : `Welcome to the game, ${name}!`,
+            color: "#ffff00",
+            timestamp: Date.now(),
+          },
+        ]);
+
+        // Listen for chat
+        network
+          .getRoom()
+          .onMessage(
+            "chat",
+            (data: {
+              senderId: string;
+              senderName: string;
+              message: string;
+              channel?: string;
+            }) => {
+              setConsoleMessages((prev) => {
                 const newMsg: ConsoleMessage = {
-                    id: ++consoleMsgId,
-                    text: `${data.senderName}: ${data.message}`,
-                    color: data.channel === "party" ? "#aaaaff" : data.channel === "whisper" ? "#ff88ff" : "#ffffff",
-                    timestamp: Date.now(),
-                    channel: data.channel as any
+                  id: ++consoleMsgId,
+                  text: `${data.senderName}: ${data.message}`,
+                  color:
+                    data.channel === "party"
+                      ? "#aaaaff"
+                      : data.channel === "whisper"
+                        ? "#ff88ff"
+                        : "#ffffff",
+                  timestamp: Date.now(),
+                  channel: data.channel as any,
                 };
                 const next = [...prev, newMsg];
                 if (next.length > 50) return next.slice(next.length - 50);
                 return next;
-           });
-      });
-
-      // Listen for notifications
-        network.getRoom().onMessage("notification", (data: { message: string }) => {
-           setConsoleMessages(prev => {
-                const newMsg: ConsoleMessage = {
-                    id: ++consoleMsgId,
-                    text: data.message,
-                    color: "#00ff00",
-                    timestamp: Date.now()
-                };
-                 const next = [...prev, newMsg];
-                 if (next.length > 50) return next.slice(next.length - 50);
-                 return next;
-           });
-      });
-
-      // Listen for Shop
-      network.getRoom().onMessage("open_shop", (data: { npcId: string; inventory: string[] }) => {
-          setShopData(data);
-      });
-
-      // Listen for Dialogue
-      network.getRoom().onMessage("open_dialogue", (data: { npcId: string; text: string; options: any[] }) => {
-          setDialogueData(data);
-      });
-
-      // Listen for Quests
-      network.getRoom().onMessage("quest_list", (data: { quests: PlayerQuestState[] }) => {
-          setQuests(data.quests);
-      });
-
-      network.getRoom().onMessage("quest_update", (data: { quest: PlayerQuestState }) => {
-          setQuests(prev => {
-              const idx = prev.findIndex(q => q.questId === data.quest.questId);
-              if (idx >= 0) {
-                  const next = [...prev];
-                  next[idx] = data.quest;
-                  return next;
-              }
-              return [...prev, data.quest];
-          });
-      });
-
-      // Listen for Party
-      network.getRoom().onMessage("party_invited", (data: { partyId: string; inviterName: string }) => {
-          toaster.create({
-              title: "Party Invitation",
-              description: `${data.inviterName} invited you to a party. Accept?`,
-              action: {
-                  label: "Accept",
-                  onClick: () => network.getRoom().send("party_accept", { partyId: data.partyId })
-              }
-          });
-      });
-
-      network.getRoom().onMessage("party_update", (data: { partyId: string; leaderId: string; members: { sessionId: string; name: string }[] }) => {
-          setPartyData(data.partyId ? data : null);
-      });
-
-      // Friend system listeners
-      network.getRoom().onMessage("friend_invited", (data: { requesterId: string; requesterName: string }) => {
-        toaster.create({
-          title: "Friend Request",
-          description: `${data.requesterName} wants to be your friend.`,
-          type: "info",
-          action: {
-            label: "Accept",
-            onClick: () => networkRef.current?.sendFriendAccept(data.requesterId)
-          }
-        });
-      });
-
-      network.getRoom().onMessage("friend_update", (data: { friends: any[] }) => {
-        setFriendsData(data.friends);
-      });
-
-      // Listen for audio
-      network.getRoom().onMessage("audio", (buffer: ArrayBuffer) => {
-          audioManagerRef.current?.playAudioChunk(buffer);
-      });
-
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          const el = gameContainerRef.current;
-          if (!el) return;
-
-          const gameScene = new GameScene(
-            network,
-            (state: PlayerState) => {
-              setPlayerState(state);
+              });
             },
-            (killerName: string, victimName: string) => {
-              setKillFeed((prev) => [
-                ...prev.slice(-9),
-                { id: ++killFeedId, killerName, victimName, timestamp: Date.now() },
-              ]);
-            },
-            (text: string, color?: string) => {
-               setConsoleMessages((prev) => {
-                 const newMsg: ConsoleMessage = {
-                   id: ++consoleMsgId,
-                   text,
-                   color,
-                   timestamp: Date.now()
-                 };
-                 // Keep last 50 messages
-                 const next = [...prev, newMsg];
-                 if (next.length > 50) return next.slice(next.length - 50);
-                 return next;
-               });
-            },
-            () => {
-                setIsLoading(false);
-                setConnecting(false);
-            }, // onReady
-            (message: string) => { // onError
-                toaster.create({
-                    title: "Error",
-                    description: message,
-                    type: "error",
-                    duration: 3000,
-                });
-                setConnecting(false);
-            }
           );
 
-          const preloaderScene = new PreloaderScene();
+        // Listen for notifications
+        network
+          .getRoom()
+          .onMessage("notification", (data: { message: string }) => {
+            setConsoleMessages((prev) => {
+              const newMsg: ConsoleMessage = {
+                id: ++consoleMsgId,
+                text: data.message,
+                color: "#00ff00",
+                timestamp: Date.now(),
+              };
+              const next = [...prev, newMsg];
+              if (next.length > 50) return next.slice(next.length - 50);
+              return next;
+            });
+          });
 
-          phaserGameRef.current = new Phaser.Game({
-            type: Phaser.AUTO,
-            parent: el,
-            width: el.clientWidth,
-            height: el.clientHeight,
-            backgroundColor: "#08080c",
-            scene: [preloaderScene, gameScene],
-            scale: {
-              mode: Phaser.Scale.RESIZE,
-              autoCenter: Phaser.Scale.CENTER_BOTH,
+        // Listen for Shop
+        network
+          .getRoom()
+          .onMessage(
+            "open_shop",
+            (data: { npcId: string; inventory: string[] }) => {
+              setShopData(data);
             },
-            pixelArt: true,
+          );
+
+        // Listen for Dialogue
+        network
+          .getRoom()
+          .onMessage(
+            "open_dialogue",
+            (data: { npcId: string; text: string; options: any[] }) => {
+              setDialogueData(data);
+            },
+          );
+
+        // Listen for Quests
+        network
+          .getRoom()
+          .onMessage("quest_list", (data: { quests: PlayerQuestState[] }) => {
+            setQuests(data.quests);
+          });
+
+        network
+          .getRoom()
+          .onMessage("quest_update", (data: { quest: PlayerQuestState }) => {
+            setQuests((prev) => {
+              const idx = prev.findIndex(
+                (q) => q.questId === data.quest.questId,
+              );
+              if (idx >= 0) {
+                const next = [...prev];
+                next[idx] = data.quest;
+                return next;
+              }
+              return [...prev, data.quest];
+            });
+          });
+
+        // Listen for Party
+        network
+          .getRoom()
+          .onMessage(
+            "party_invited",
+            (data: { partyId: string; inviterName: string }) => {
+              toaster.create({
+                title: "Party Invitation",
+                description: `${data.inviterName} invited you to a party. Accept?`,
+                action: {
+                  label: "Accept",
+                  onClick: () =>
+                    network
+                      .getRoom()
+                      .send("party_accept", { partyId: data.partyId }),
+                },
+              });
+            },
+          );
+
+        network
+          .getRoom()
+          .onMessage(
+            "party_update",
+            (data: {
+              partyId: string;
+              leaderId: string;
+              members: { sessionId: string; name: string }[];
+            }) => {
+              setPartyData(data.partyId ? data : null);
+            },
+          );
+
+        // Friend system listeners
+        network
+          .getRoom()
+          .onMessage(
+            "friend_invited",
+            (data: { requesterId: string; requesterName: string }) => {
+              toaster.create({
+                title: "Friend Request",
+                description: `${data.requesterName} wants to be your friend.`,
+                type: "info",
+                action: {
+                  label: "Accept",
+                  onClick: () =>
+                    networkRef.current?.sendFriendAccept(data.requesterId),
+                },
+              });
+            },
+          );
+
+        network
+          .getRoom()
+          .onMessage("friend_update", (data: { friends: any[] }) => {
+            setFriendsData(data.friends);
+          });
+
+        // Listen for audio
+        network.getRoom().onMessage("audio", (buffer: ArrayBuffer) => {
+          audioManagerRef.current?.playAudioChunk(buffer);
+        });
+
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            const el = gameContainerRef.current;
+            if (!el) return;
+
+            const gameScene = new GameScene(
+              network,
+              (state: PlayerState) => {
+                setPlayerState(state);
+              },
+              (killerName: string, victimName: string) => {
+                setKillFeed((prev) => [
+                  ...prev.slice(-9),
+                  {
+                    id: ++killFeedId,
+                    killerName,
+                    victimName,
+                    timestamp: Date.now(),
+                  },
+                ]);
+              },
+              (text: string, color?: string) => {
+                setConsoleMessages((prev) => {
+                  const newMsg: ConsoleMessage = {
+                    id: ++consoleMsgId,
+                    text,
+                    color,
+                    timestamp: Date.now(),
+                  };
+                  // Keep last 50 messages
+                  const next = [...prev, newMsg];
+                  if (next.length > 50) return next.slice(next.length - 50);
+                  return next;
+                });
+              },
+              () => {
+                setIsLoading(false);
+                setConnecting(false);
+              }, // onReady
+              (message: string) => {
+                // onError
+                toaster.create({
+                  title: "Error",
+                  description: message,
+                  type: "error",
+                  duration: 3000,
+                });
+                setConnecting(false);
+              },
+            );
+
+            const preloaderScene = new PreloaderScene();
+
+            phaserGameRef.current = new Phaser.Game({
+              type: Phaser.AUTO,
+              parent: el,
+              width: el.clientWidth,
+              height: el.clientHeight,
+              backgroundColor: "#08080c",
+              scene: [preloaderScene, gameScene],
+              scale: {
+                mode: Phaser.Scale.RESIZE,
+                autoCenter: Phaser.Scale.CENTER_BOTH,
+              },
+              pixelArt: true,
+            });
           });
         });
-      });
-    } catch (err) {
-      console.error("Failed to connect:", err);
-      setConnecting(false);
-      setIsLoading(false);
-      toaster.create({
+      } catch (err) {
+        console.error("Failed to connect:", err);
+        setConnecting(false);
+        setIsLoading(false);
+        toaster.create({
           title: "Connection Failed",
           description: "Failed to connect to server. Is it running?",
-          type: "error"
-      });
-    }
-  }, []);
+          type: "error",
+        });
+      }
+    },
+    [],
+  );
+
+  const addConsoleMessage = (text: string, color?: string) => {
+    setConsoleMessages((prev) => {
+      const next = [
+        ...prev,
+        { id: ++consoleMsgId, text, color, timestamp: Date.now() },
+      ];
+      return next.length > 50 ? next.slice(next.length - 50) : next;
+    });
+  };
 
   const handleSendChat = (msg: string) => {
-      networkRef.current?.sendChat(msg);
-      // Close chat after sending?
+    const trimmed = msg.trim();
+
+    // Client-side /ping command: measure RTT without sending to server as chat
+    if (trimmed === "/ping") {
+      networkRef.current?.ping((rtt) => {
+        addConsoleMessage(`Pong! ${rtt}ms`, "#00ffff");
+      });
       setIsChatOpen(false);
+      return;
+    }
+
+    networkRef.current?.sendChat(msg);
+    setIsChatOpen(false);
   };
 
   useEffect(() => {
@@ -401,35 +524,52 @@ export function App() {
       phaserGameRef.current?.destroy(true);
     };
   }, []);
-  
+
   // Minimap rendering helper
 
   return (
     <ChakraProvider value={system}>
       <Toaster toaster={toaster}>
         {(toast) => (
-          <ToastRoot key={toast.id} bg={toast.type === "error" ? "#770000" : "#d4a843"} p="4" borderRadius="md">
-            <ToastTitle color="white" fontWeight="bold">{toast.title}</ToastTitle>
-            <ToastDescription color="whiteAlpha.900">{toast.description}</ToastDescription>
+          <ToastRoot
+            key={toast.id}
+            bg={toast.type === "error" ? "#770000" : "#d4a843"}
+            p="4"
+            borderRadius="md"
+          >
+            <ToastTitle color="white" fontWeight="bold">
+              {toast.title}
+            </ToastTitle>
+            <ToastDescription color="whiteAlpha.900">
+              {toast.description}
+            </ToastDescription>
             <ToastCloseTrigger color="white" />
           </ToastRoot>
         )}
       </Toaster>
-      {phase === "lobby" && <Lobby onJoin={handleJoin} connecting={connecting} />}
+      {phase === "lobby" && (
+        <Lobby onJoin={handleJoin} connecting={connecting} />
+      )}
       {phase === "game" && mapData && (
         <>
           {isLoading && <LoadingScreen />}
           <Flex pos="fixed" inset="0" bg="#08080c">
-            <Box ref={gameContainerRef} flex="1" h="100%" minW="0" overflow="hidden" />
+            <Box
+              ref={gameContainerRef}
+              flex="1"
+              h="100%"
+              minW="0"
+              overflow="hidden"
+            />
             <Box pos="absolute" top="20px" right="20px" zIndex={90}>
-                {roomRef.current && (
-                    <Minimap 
-                        map={mapData} 
-                        players={roomRef.current.state?.players} 
-                        npcs={roomRef.current.state?.npcs} 
-                        currentPlayerId={roomRef.current.sessionId} 
-                    />
-                )}
+              {roomRef.current && (
+                <Minimap
+                  map={mapData}
+                  players={roomRef.current.state?.players}
+                  npcs={roomRef.current.state?.npcs}
+                  currentPlayerId={roomRef.current.sessionId}
+                />
+              )}
             </Box>
             <Sidebar
               state={playerState}
@@ -441,49 +581,66 @@ export function App() {
               onDropItem={(itemId) => networkRef.current?.sendDropItem(itemId)}
             />
             <Box pos="absolute" top="20px" left="20px" zIndex={80}>
-                <SocialPanel 
-                    partyId={partyData?.partyId || ""}
-                    leaderId={partyData?.leaderId || ""}
-                    partyMembers={partyData?.members || []}
-                    onPartyInvite={(sid: string) => networkRef.current?.sendPartyInvite(sid)}
-                    onPartyLeave={() => networkRef.current?.sendPartyLeave()}
-                    onPartyKick={(sid: string) => networkRef.current?.sendPartyKick(sid)}
-                    
-                    friends={friendsData}
-                    onFriendRequest={(name: string) => networkRef.current?.sendFriendRequest(name)}
-                    onFriendAccept={(rid: string) => networkRef.current?.sendFriendAccept(rid)}
-                    onWhisper={(name: string) => {
-                        setIsChatOpen(true);
-                    }}
-                />
+              <SocialPanel
+                partyId={partyData?.partyId || ""}
+                leaderId={partyData?.leaderId || ""}
+                partyMembers={partyData?.members || []}
+                onPartyInvite={(sid: string) =>
+                  networkRef.current?.sendPartyInvite(sid)
+                }
+                onPartyLeave={() => networkRef.current?.sendPartyLeave()}
+                onPartyKick={(sid: string) =>
+                  networkRef.current?.sendPartyKick(sid)
+                }
+                friends={friendsData}
+                onFriendRequest={(name: string) =>
+                  networkRef.current?.sendFriendRequest(name)
+                }
+                onFriendAccept={(rid: string) =>
+                  networkRef.current?.sendFriendAccept(rid)
+                }
+                onWhisper={(name: string) => {
+                  setIsChatOpen(true);
+                }}
+              />
             </Box>
             {shopData && (
-                <MerchantShop
-                    npcId={shopData.npcId}
-                    merchantInventory={shopData.inventory}
-                    playerGold={playerState.gold || 0}
-                    playerInventory={playerState.inventory || []}
-                    onBuy={(itemId, qty) => networkRef.current?.getRoom().send("buy_item", { itemId, quantity: qty })}
-                    onSell={(itemId, qty) => networkRef.current?.getRoom().send("sell_item", { itemId, quantity: qty })}
-                    onClose={() => setShopData(null)}
-                />
+              <MerchantShop
+                npcId={shopData.npcId}
+                merchantInventory={shopData.inventory}
+                playerGold={playerState.gold || 0}
+                playerInventory={playerState.inventory || []}
+                onBuy={(itemId, qty) =>
+                  networkRef.current
+                    ?.getRoom()
+                    .send("buy_item", { itemId, quantity: qty })
+                }
+                onSell={(itemId, qty) =>
+                  networkRef.current
+                    ?.getRoom()
+                    .send("sell_item", { itemId, quantity: qty })
+                }
+                onClose={() => setShopData(null)}
+              />
             )}
             {dialogueData && (
-                <QuestDialogue
-                    npcId={dialogueData.npcId}
-                    text={dialogueData.text}
-                    options={dialogueData.options}
-                    onAction={(action, data) => networkRef.current?.getRoom().send(action, data)}
-                    onClose={() => setDialogueData(null)}
-                />
+              <QuestDialogue
+                npcId={dialogueData.npcId}
+                text={dialogueData.text}
+                options={dialogueData.options}
+                onAction={(action, data) =>
+                  networkRef.current?.getRoom().send(action, data)
+                }
+                onClose={() => setDialogueData(null)}
+              />
             )}
           </Flex>
           <DeathOverlay visible={showDeath} deathTime={deathTime} />
           <KillFeed entries={killFeed} />
-          <Console 
-            messages={consoleMessages} 
-            isChatOpen={isChatOpen} 
-            onSendChat={handleSendChat} 
+          <Console
+            messages={consoleMessages}
+            isChatOpen={isChatOpen}
+            onSendChat={handleSendChat}
           />
         </>
       )}

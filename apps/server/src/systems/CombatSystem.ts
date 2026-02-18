@@ -382,10 +382,7 @@ export class CombatSystem {
   ): void {
     target.hp = 0;
     target.alive = false;
-    broadcast(ServerMessageType.Death, {
-      sessionId: target.sessionId,
-      killerSessionId,
-    });
+    broadcast(ServerMessageType.Death, { sessionId: target.sessionId, killerSessionId });
     onDeath(target, killerSessionId);
   }
 
@@ -457,10 +454,7 @@ export class CombatSystem {
         this.killTarget(target, attacker.sessionId, broadcast, onDeath);
       }
     } else {
-      broadcast(ServerMessageType.AttackHit, {
-        sessionId: attacker.sessionId,
-        targetSessionId: null,
-      });
+      broadcast(ServerMessageType.AttackHit, { sessionId: attacker.sessionId, targetSessionId: null });
     }
   }
 
