@@ -105,7 +105,7 @@ export class GameEventHandler {
 
   private onAttackHit(data: ServerMessages["attack_hit"]) {
     if (data.targetSessionId) {
-      this.spriteManager.flashSprite(data.targetSessionId, 0xff0000);
+      this.spriteManager.flashSprite(data.targetSessionId);
     }
   }
 
