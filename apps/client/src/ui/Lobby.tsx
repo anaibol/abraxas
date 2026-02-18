@@ -3,7 +3,7 @@ import { Box, Flex, Text, Input, Button, Grid } from "@chakra-ui/react";
 import { type ClassType, getRandomName } from "@abraxas/shared";
 
 interface LobbyProps {
-  onJoin: (name: string, classType: ClassType, token: string) => void;
+  onJoin: (charId: string, classType: ClassType, token: string) => void;
   connecting: boolean;
 }
 
@@ -75,6 +75,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
   // After a successful login, the server returns the character name + class.
   // We store them so the class_select screen can pre-fill and join correctly.
   const [resolvedCharName, setResolvedCharName] = useState("");
+  const [resolvedCharId, setResolvedCharId] = useState("");
   const [resolvedClass, setResolvedClass] = useState<ClassType>("warrior");
   const [token, setToken] = useState("");
 
@@ -106,6 +107,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
       }
 
       setToken(data.token);
+      setResolvedCharId(data.charId ?? "");
 
       if (mode === "login") {
         // Server tells us the char's name and class from the DB.
@@ -114,11 +116,9 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
         setResolvedCharName(name);
         setResolvedClass(cls);
         setClassType(cls);
-        // Login: jump straight to game — no need to re-select class.
-        onJoin(name, cls, data.token);
+        onJoin(data.charId, cls, data.token);
       } else {
-        // Registration: char was created; go to class_select to confirm
-        // the chosen class before entering the arena.
+        // Registration: go to class_select to confirm the chosen class.
         setResolvedCharName(charName.trim() || username);
         setResolvedClass(classType);
         setMode("class_select");
@@ -321,7 +321,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
               bg={connecting ? P.goldDark : P.goldDim}
               color="#08080c"
               disabled={connecting}
-              onClick={() => onJoin(resolvedCharName, classType, token)}
+              onClick={() => onJoin(resolvedCharId, classType, token)}
               fontFamily={P.font}
               fontWeight="700"
               fontSize="13px"

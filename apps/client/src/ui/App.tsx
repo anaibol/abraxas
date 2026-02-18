@@ -193,7 +193,7 @@ export function App() {
 
   const handleJoin = useCallback(
     async (
-      name: string,
+      charId: string,
       classType: ClassType,
       token: string,
       mapName?: string,
@@ -213,7 +213,7 @@ export function App() {
         }
 
         const network = new NetworkManager();
-        await network.connect(name, classType, token, mapName);
+        await network.connect(charId, classType, token, mapName);
         networkRef.current = network;
         roomRef.current = network.getRoom();
 
@@ -238,12 +238,12 @@ export function App() {
           spawns: [],
         });
 
-        setPlayerState((prev) => ({ ...prev, name, classType }));
+        setPlayerState((prev) => ({ ...prev, classType }));
         setPhase("game");
         if (!mapName) setIsLoading(true); // Initial join also triggers loading
 
         network.onWarp = (data) => {
-          handleJoin(name, classType, token, data.targetMap);
+          handleJoin(charId, classType, token, data.targetMap);
         };
 
         // Add welcome message

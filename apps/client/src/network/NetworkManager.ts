@@ -59,7 +59,7 @@ export class NetworkManager {
     | null = null;
 
   async connect(
-    name: string,
+    charId: string,
     classType: ClassType,
     token?: string,
     mapName?: string,
@@ -75,7 +75,7 @@ export class NetworkManager {
     // reducing join bandwidth.
     this.room = await this.client.joinOrCreate(
       "arena",
-      { name, classType, mapName },
+      { charId, classType, mapName },
       GameState,
     );
 
