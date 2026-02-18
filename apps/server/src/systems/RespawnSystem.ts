@@ -42,6 +42,7 @@ export class RespawnSystem {
     getPlayer: (sessionId: string) => Player | undefined,
     map: TileMap,
     broadcast: BroadcastFn,
+    onRespawn?: (player: Player) => void,
   ): void {
     const remaining: PendingRespawn[] = [];
 
@@ -73,6 +74,9 @@ export class RespawnSystem {
 
       // Give starting equipment
       this.giveStartingEquipment(player);
+
+      // Re-add to spatial grid at the new tile
+      onRespawn?.(player);
 
       broadcast(ServerMessageType.Respawn, {
         sessionId: player.sessionId,

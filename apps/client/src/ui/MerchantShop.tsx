@@ -26,6 +26,7 @@ const P = {
 export function MerchantShop({ npcId, merchantInventory, playerGold, playerInventory, onBuy, onSell, onClose }: MerchantShopProps) {
   const [selectedItem, setSelectedItem] = useState<ItemDef | null>(null);
   const [tab, setTab] = useState<"buy" | "sell">("buy");
+  const [quantity, setQuantity] = useState<number>(1);
 
   return (
     <Box
@@ -142,17 +143,23 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
         <Box mt="6" p="4" border="1px solid" borderColor={P.goldDark} borderRadius="2px" bg="#0a0a0f">
           <Text color={P.gold} fontSize="16px" mb="1">{selectedItem.name}</Text>
           <Text color="#888" fontSize="12px" mb="4">{selectedItem.slot.toUpperCase()} - {selectedItem.rarity.toUpperCase()}</Text>
+          <Flex align="center" mb="4">
+            <Text color="#fff" mr="4">Quantity:</Text>
+            <Button size="xs" onClick={() => setQuantity(Math.max(1, quantity - 1))}>-</Button>
+            <Text color="#fff" mx="4" w="30px" textAlign="center">{quantity}</Text>
+            <Button size="xs" onClick={() => setQuantity(quantity + 1)}>+</Button>
+          </Flex>
           <Button
             w="100%"
             bg={P.goldDim}
             color="#000"
             _hover={{ bg: P.gold }}
             onClick={() => {
-              if (tab === "buy") onBuy(selectedItem.id, 1);
-              else onSell(selectedItem.id, 1);
+              if (tab === "buy") onBuy(selectedItem.id, quantity);
+              else onSell(selectedItem.id, quantity);
             }}
           >
-            {tab === "buy" ? `BUY FOR ${selectedItem.goldValue}` : `SELL FOR ${Math.floor(selectedItem.goldValue * 0.5)}`}
+            {tab === "buy" ? `BUY FOR ${selectedItem.goldValue * quantity}` : `SELL FOR ${Math.floor(selectedItem.goldValue * 0.5) * quantity}`}
           </Button>
         </Box>
       )}

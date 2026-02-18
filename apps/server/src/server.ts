@@ -17,6 +17,18 @@ import { prisma } from "./database/db";
 import { MapService } from "./services/MapService";
 import type { Request, Response, NextFunction } from "express";
 
+// Global error handlers to catch silent crashes in tests
+process.on("uncaughtException", (e) => {
+  logger.error({
+    message: "UNCAUGHT EXCEPTION",
+    error: String(e),
+    stack: e.stack,
+  });
+});
+process.on("unhandledRejection", (reason) => {
+  logger.error({ message: "UNHANDLED REJECTION", reason: String(reason) });
+});
+
 // Minimal MIME-type map for the built client assets
 const MIME: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
@@ -72,7 +84,7 @@ const registerEndpoint = createEndpoint(
           characters: {
             create: {
               name: playerName,
-              class: (classType.toUpperCase() as any), // Warrior -> WARRIOR
+              class: classType.toUpperCase() as any, // Enum mapping
               stats: {
                 create: {
                   hp: stats.hp,
@@ -135,11 +147,21 @@ const loginEndpoint = createEndpoint(
         return ctx.json({ error: "Invalid credentials" }, { status: 401 });
       }
 
+      // Return the first character name so the client knows which name to join with
+      const character = await prisma.character.findFirst({
+        where: { accountId: user.id },
+        select: { name: true, class: true },
+      });
+
       const token = AuthService.generateToken({
         userId: user.id,
         username: user.username,
       });
-      return ctx.json({ token });
+      return ctx.json({
+        token,
+        playerName: character?.name ?? user.username,
+        classType: character?.class?.toLowerCase() ?? "warrior",
+      });
     } catch (e) {
       logger.error({ message: "Login error", error: String(e) });
       return ctx.json({ error: "Login failed" }, { status: 500 });
@@ -158,8 +180,9 @@ export async function createGameServer(options: {
   const server = defineServer({
     transport: new BunWebSockets(),
     // devMode keeps room state alive across server restarts during local dev.
-    // Never enable this in production.
-    devMode: process.env.NODE_ENV !== "production",
+    // Never enable this in production or during tests.
+    devMode:
+      process.env.NODE_ENV !== "production" && process.env.NODE_ENV !== "test",
     rooms: {
       arena: defineRoom(ArenaRoom),
     },
@@ -212,7 +235,7 @@ export async function createGameServer(options: {
   // Bind to "::" (IPv6 wildcard) which on Linux enables dual-stack:
   // accepts both IPv4 and IPv6 connections. Required for Fly.io health
   // checks, which connect via the machine's internal IPv6 address.
-  await server.listen(options.port, "::");
+  await server.listen(options.port, "0.0.0.0");
 
   logger.info({ intent: "server_start", result: "ok", port: options.port });
 

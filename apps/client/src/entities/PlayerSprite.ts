@@ -1,6 +1,19 @@
 import Phaser from "phaser";
-import { TILE_SIZE, CLASS_STATS, NPC_STATS, CLASS_APPEARANCE, NPC_APPEARANCE, ITEMS, Direction, DIRECTION_DELTA } from "@abraxas/shared";
-import { AoGrhResolver, type DirectionEntry, type BodyEntry } from "../assets/AoGrhResolver";
+import {
+  TILE_SIZE,
+  CLASS_STATS,
+  NPC_STATS,
+  CLASS_APPEARANCE,
+  NPC_APPEARANCE,
+  ITEMS,
+  Direction,
+  DIRECTION_DELTA,
+} from "@abraxas/shared";
+import {
+  AoGrhResolver,
+  type DirectionEntry,
+  type BodyEntry,
+} from "../assets/AoGrhResolver";
 
 const DIR_NAME_MAP: Record<number, "down" | "up" | "left" | "right"> = {
   [Direction.DOWN]: "down",
@@ -59,7 +72,7 @@ export class PlayerSprite {
     tileY: number,
     classType: string,
     name: string,
-    isLocal: boolean
+    isLocal: boolean,
   ) {
     this.sessionId = sessionId;
     this.classType = classType;
@@ -67,24 +80,29 @@ export class PlayerSprite {
 
     const stats = CLASS_STATS[classType] || NPC_STATS[classType];
     if (!stats) {
-        console.warn(`No stats found for class/type: ${classType}, defaulting to warrior`);
-        const defaultStats = CLASS_STATS.warrior;
-         this.pixelsPerSecond = defaultStats.speedTilesPerSecond * TILE_SIZE;
-         this.maxHp = defaultStats.hp;
-         this.maxMana = defaultStats.mana || 0;
+      console.warn(
+        `No stats found for class/type: ${classType}, defaulting to warrior`,
+      );
+      const defaultStats = CLASS_STATS.warrior;
+      this.pixelsPerSecond = defaultStats.speedTilesPerSecond * TILE_SIZE;
+      this.maxHp = defaultStats.hp;
+      this.maxMana = defaultStats.mana;
     } else {
-        this.pixelsPerSecond = stats.speedTilesPerSecond * TILE_SIZE;
-        this.maxHp = stats.hp;
-        this.maxMana = stats.mana || 0;
+      this.pixelsPerSecond = stats.speedTilesPerSecond * TILE_SIZE;
+      this.maxHp = stats.hp;
+      this.maxMana = stats.mana ?? 0;
     }
 
     const res = scene.registry.get("aoResolver");
     if (res instanceof AoGrhResolver) {
-        this.resolver = res;
+      this.resolver = res;
     } else {
-        throw new Error("AoGrhResolver not found in registry");
+      throw new Error("AoGrhResolver not found in registry");
     }
-    const appearance = CLASS_APPEARANCE[classType] ?? NPC_APPEARANCE[classType] ?? CLASS_APPEARANCE.warrior;
+    const appearance =
+      CLASS_APPEARANCE[classType] ??
+      NPC_APPEARANCE[classType] ??
+      CLASS_APPEARANCE.warrior;
     this.bodyEntry = this.resolver.getBodyEntry(appearance.bodyId)!;
     this.headEntry = this.resolver.getHeadEntry(appearance.headId)!;
 
@@ -103,8 +121,10 @@ export class PlayerSprite {
     const bodyGrhId = this.bodyEntry.down;
     const bodyStatic = this.resolver.resolveStaticGrh(bodyGrhId)!;
     this.bodySprite = scene.add.sprite(
-      0, TILE_SIZE / 2,
-      `ao-${bodyStatic.grafico}`, `grh-${bodyStatic.id}`
+      0,
+      TILE_SIZE / 2,
+      `ao-${bodyStatic.grafico}`,
+      `grh-${bodyStatic.id}`,
     );
     this.bodySprite.setOrigin(0.5, 1);
 
@@ -112,8 +132,10 @@ export class PlayerSprite {
     const headGrhId = this.headEntry.down;
     const headStatic = this.resolver.resolveStaticGrh(headGrhId)!;
     this.headSprite = scene.add.sprite(
-      0, 0,
-      `ao-${headStatic.grafico}`, `grh-${headStatic.id}`
+      0,
+      0,
+      `ao-${headStatic.grafico}`,
+      `grh-${headStatic.id}`,
     );
     this.headSprite.setOrigin(0.5, 0);
     this.updateHeadPosition();
@@ -128,9 +150,27 @@ export class PlayerSprite {
 
     // HP/Mana bars below feet
     const barWidth = TILE_SIZE - 6;
-    this.hpBarBg = scene.add.rectangle(0, TILE_SIZE / 2 + 2, barWidth, 3, 0x333333);
-    this.hpBar = scene.add.rectangle(0, TILE_SIZE / 2 + 2, barWidth, 3, 0x33cc33);
-    this.manaBar = scene.add.rectangle(0, TILE_SIZE / 2 + 6, barWidth, 2, 0x3388ff);
+    this.hpBarBg = scene.add.rectangle(
+      0,
+      TILE_SIZE / 2 + 2,
+      barWidth,
+      3,
+      0x333333,
+    );
+    this.hpBar = scene.add.rectangle(
+      0,
+      TILE_SIZE / 2 + 2,
+      barWidth,
+      3,
+      0x33cc33,
+    );
+    this.manaBar = scene.add.rectangle(
+      0,
+      TILE_SIZE / 2 + 6,
+      barWidth,
+      2,
+      0x3388ff,
+    );
 
     this.speakingIcon = scene.add.text(0, -45, "🎤", {
       fontSize: "16px",
@@ -190,7 +230,10 @@ export class PlayerSprite {
   }
 
   reconcileServer(serverTileX: number, serverTileY: number) {
-    if (serverTileX !== this.lastServerTileX || serverTileY !== this.lastServerTileY) {
+    if (
+      serverTileX !== this.lastServerTileX ||
+      serverTileY !== this.lastServerTileY
+    ) {
       this.lastServerTileX = serverTileX;
       this.lastServerTileY = serverTileY;
       if (this.pendingPredictions > 0) {
@@ -198,11 +241,15 @@ export class PlayerSprite {
       }
     }
 
-    const timedOut = this.pendingPredictions > 0 &&
+    const timedOut =
+      this.pendingPredictions > 0 &&
       performance.now() - this.lastPredictTime > 300;
 
     if (this.pendingPredictions === 0 || timedOut) {
-      if (this.predictedTileX !== serverTileX || this.predictedTileY !== serverTileY) {
+      if (
+        this.predictedTileX !== serverTileX ||
+        this.predictedTileY !== serverTileY
+      ) {
         this.predictedTileX = serverTileX;
         this.predictedTileY = serverTileY;
         this.targetX = serverTileX * TILE_SIZE + TILE_SIZE / 2;
@@ -221,7 +268,10 @@ export class PlayerSprite {
     const headGrhId = this.headEntry[dirName];
     const headStatic = this.resolver.resolveStaticGrh(headGrhId);
     if (headStatic) {
-      this.headSprite.setTexture(`ao-${headStatic.grafico}`, `grh-${headStatic.id}`);
+      this.headSprite.setTexture(
+        `ao-${headStatic.grafico}`,
+        `grh-${headStatic.id}`,
+      );
     }
 
     // Update head position (body frame size may vary by direction)
@@ -247,7 +297,10 @@ export class PlayerSprite {
     const bodyStatic = this.resolver.resolveStaticGrh(bodyGrhId);
     if (bodyStatic) {
       this.bodySprite.stop();
-      this.bodySprite.setTexture(`ao-${bodyStatic.grafico}`, `grh-${bodyStatic.id}`);
+      this.bodySprite.setTexture(
+        `ao-${bodyStatic.grafico}`,
+        `grh-${bodyStatic.id}`,
+      );
     }
     // Stop equipment anims too
     if (this.weaponSprite) {
@@ -285,7 +338,11 @@ export class PlayerSprite {
     if (this.weaponSprite && this.curWeaponAoId) {
       const weaponEntry = this.resolver.getWeaponEntry(this.curWeaponAoId);
       if (weaponEntry) {
-        const wAnimKey = this.resolver.ensureAnimation(scene, weaponEntry[dirName], "weapon");
+        const wAnimKey = this.resolver.ensureAnimation(
+          scene,
+          weaponEntry[dirName],
+          "weapon",
+        );
         if (wAnimKey) this.weaponSprite.play(wAnimKey, true);
       }
     }
@@ -294,7 +351,11 @@ export class PlayerSprite {
     if (this.shieldSprite && this.curShieldAoId) {
       const shieldEntry = this.resolver.getShieldEntry(this.curShieldAoId);
       if (shieldEntry) {
-        const sAnimKey = this.resolver.ensureAnimation(scene, shieldEntry[dirName], "shield");
+        const sAnimKey = this.resolver.ensureAnimation(
+          scene,
+          shieldEntry[dirName],
+          "shield",
+        );
         if (sAnimKey) this.shieldSprite.play(sAnimKey, true);
       }
     }
@@ -308,7 +369,11 @@ export class PlayerSprite {
       if (weaponEntry) {
         if (this.isMoving) {
           const scene = this.container.scene;
-          const wAnimKey = this.resolver.ensureAnimation(scene, weaponEntry[dirName], "weapon");
+          const wAnimKey = this.resolver.ensureAnimation(
+            scene,
+            weaponEntry[dirName],
+            "weapon",
+          );
           if (wAnimKey) this.weaponSprite.play(wAnimKey, true);
         } else {
           const ws = this.resolver.resolveStaticGrh(weaponEntry[dirName]);
@@ -326,7 +391,11 @@ export class PlayerSprite {
       if (shieldEntry) {
         if (this.isMoving) {
           const scene = this.container.scene;
-          const sAnimKey = this.resolver.ensureAnimation(scene, shieldEntry[dirName], "shield");
+          const sAnimKey = this.resolver.ensureAnimation(
+            scene,
+            shieldEntry[dirName],
+            "shield",
+          );
           if (sAnimKey) this.shieldSprite.play(sAnimKey, true);
         } else {
           const ss = this.resolver.resolveStaticGrh(shieldEntry[dirName]);
@@ -396,7 +465,11 @@ export class PlayerSprite {
    * Update equipment visuals based on item IDs from server.
    * Pass empty string for no equipment in that slot.
    */
-  updateEquipment(weaponItemId: string, shieldItemId: string, helmetItemId: string) {
+  updateEquipment(
+    weaponItemId: string,
+    shieldItemId: string,
+    helmetItemId: string,
+  ) {
     const scene = this.container.scene;
     const dirName = DIR_NAME_MAP[this.currentDir];
 
@@ -422,13 +495,19 @@ export class PlayerSprite {
           const ws = this.resolver.resolveStaticGrh(weaponEntry[dirName]);
           if (ws) {
             this.weaponSprite = scene.add.sprite(
-              0, TILE_SIZE / 2,
-              `ao-${ws.grafico}`, `grh-${ws.id}`
+              0,
+              TILE_SIZE / 2,
+              `ao-${ws.grafico}`,
+              `grh-${ws.id}`,
             );
             this.weaponSprite.setOrigin(0.5, 1);
             this.container.add(this.weaponSprite);
             if (this.isMoving) {
-              const wAnimKey = this.resolver.ensureAnimation(scene, weaponEntry[dirName], "weapon");
+              const wAnimKey = this.resolver.ensureAnimation(
+                scene,
+                weaponEntry[dirName],
+                "weapon",
+              );
               if (wAnimKey) this.weaponSprite.play(wAnimKey, true);
             }
           }
@@ -449,13 +528,19 @@ export class PlayerSprite {
           const ss = this.resolver.resolveStaticGrh(shieldEntry[dirName]);
           if (ss) {
             this.shieldSprite = scene.add.sprite(
-              0, TILE_SIZE / 2,
-              `ao-${ss.grafico}`, `grh-${ss.id}`
+              0,
+              TILE_SIZE / 2,
+              `ao-${ss.grafico}`,
+              `grh-${ss.id}`,
             );
             this.shieldSprite.setOrigin(0.5, 1);
             this.container.add(this.shieldSprite);
             if (this.isMoving) {
-              const sAnimKey = this.resolver.ensureAnimation(scene, shieldEntry[dirName], "shield");
+              const sAnimKey = this.resolver.ensureAnimation(
+                scene,
+                shieldEntry[dirName],
+                "shield",
+              );
               if (sAnimKey) this.shieldSprite.play(sAnimKey, true);
             }
           }
@@ -476,8 +561,10 @@ export class PlayerSprite {
           const hs = this.resolver.resolveStaticGrh(helmetEntry[dirName]);
           if (hs) {
             this.helmetSprite = scene.add.sprite(
-              0, 0,
-              `ao-${hs.grafico}`, `grh-${hs.id}`
+              0,
+              0,
+              `ao-${hs.grafico}`,
+              `grh-${hs.id}`,
             );
             this.helmetSprite.setOrigin(0.5, 0);
             this.container.add(this.helmetSprite);
@@ -542,9 +629,9 @@ export class PlayerSprite {
   }
 
   showSpeakingIndicator(visible: boolean) {
-      if (this.speakingIcon) {
-          this.speakingIcon.setVisible(visible);
-      }
+    if (this.speakingIcon) {
+      this.speakingIcon.setVisible(visible);
+    }
   }
 
   destroy() {

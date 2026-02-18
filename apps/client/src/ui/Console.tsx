@@ -29,7 +29,14 @@ export function Console({ messages, onSendChat, isChatOpen }: ConsoleProps) {
   }, [messages, activeChannel]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    // If we're already near the bottom, scroll to bottom
+    const container = bottomRef.current?.parentElement;
+    if (container) {
+      const isVisible = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
+      if (isVisible) {
+        bottomRef.current?.scrollIntoView({ behavior: "auto" });
+      }
+    }
   }, [filteredMessages]);
 
   useEffect(() => {

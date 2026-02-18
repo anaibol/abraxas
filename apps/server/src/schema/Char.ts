@@ -14,12 +14,18 @@ export abstract class Char extends Schema {
   @type("uint16") tileY: number = 0;
   @type("uint8") facing: Direction = Direction.DOWN;
 
-  // hp is tracked via _hp; the setter keeps `alive` in sync automatically.
-  @type("int16") _hp: number = 0;
+  // Combat stats (common to players and NPCs)
+  @type("uint8") str: number = 0;
+  @type("uint8") agi: number = 0;
+  @type("uint8") intStat: number = 0;
+
+  // hp is the Colyseus-tracked field; `alive` is kept in sync by the setter.
+  // _hp is a plain backing field — NOT decorated — to avoid double-registration.
+  private _hp: number = 0;
   @type("int16") maxHp: number = 0;
 
   @type("int16")
-  get hp() {
+  get hp(): number {
     return this._hp;
   }
   set hp(value: number) {
@@ -33,6 +39,9 @@ export abstract class Char extends Schema {
 
   /** Returns the combat stats for this entity (class or NPC stats). */
   abstract getStats(): NpcStats | undefined;
+
+  /** Returns the spell definition if the entity can use it. */
+  abstract getSpell(spellId: string): any;
 
   /** Returns the tile position as a plain object. */
   getPosition() {

@@ -1,7 +1,7 @@
 import { type, ArraySchema, view } from "@colyseus/schema";
 import { Char } from "./Char";
 import { InventoryItem } from "./InventoryItem";
-import { CLASS_STATS } from "@abraxas/shared";
+import { CLASS_STATS, SPELLS } from "@abraxas/shared";
 import type { ClassType, ClassStats } from "@abraxas/shared";
 
 export class Player extends Char {
@@ -18,11 +18,6 @@ export class Player extends Char {
   /** Mana — only the local player's mana bar is rendered */
   @view() @type("int16") mana: number = 0;
   @view() @type("int16") maxMana: number = 0;
-
-  /** Base stats — shown only in the local player's sidebar */
-  @view() @type("uint8") str: number = 0;
-  @view() @type("uint8") agi: number = 0;
-  @view() @type("uint8") intStat: number = 0;
 
   /** Economy — no other player should see your gold */
   @view() @type("uint16") gold: number = 0;
@@ -44,5 +39,9 @@ export class Player extends Char {
 
   getStats(): ClassStats {
     return CLASS_STATS[this.classType];
+  }
+
+  getSpell(spellId: string) {
+    return (SPELLS as any)[spellId];
   }
 }

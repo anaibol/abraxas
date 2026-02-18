@@ -27,8 +27,33 @@ export const MathUtils = {
     }
   },
   
-  // Helper to get delta from direction, just wrapping the constant for consistency if needed
-  getDelta(dir: Direction) {
-      return DIRECTION_DELTA[dir];
+  // Returns an array of points on the line between p1 and p2 (inclusive of p1, exclusive of p2 or inclusive depending on use)
+  getLine(p1: Point, p2: Point): Point[] {
+    const points: Point[] = [];
+    let x1 = p1.x;
+    let y1 = p1.y;
+    const x2 = p2.x;
+    const y2 = p2.y;
+
+    const dx = Math.abs(x2 - x1);
+    const dy = Math.abs(y2 - y1);
+    const sx = x1 < x2 ? 1 : -1;
+    const sy = y1 < y2 ? 1 : -1;
+    let err = dx - dy;
+
+    while (true) {
+      points.push({ x: x1, y: y1 });
+      if (x1 === x2 && y1 === y2) break;
+      const e2 = 2 * err;
+      if (e2 > -dy) {
+        err -= dy;
+        x1 += sx;
+      }
+      if (e2 < dx) {
+        err += dx;
+        y1 += sy;
+      }
+    }
+    return points;
   }
 };

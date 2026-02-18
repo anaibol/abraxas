@@ -56,11 +56,11 @@ export function QuestLog({ quests }: QuestLogProps) {
 
                                 <VStack align="stretch" gap="1.5">
                                     {def.requirements.map((req, i) => {
-                                        const current = q.progress[req.target] || 0;
+                                        const current = q.progress[req.target] ?? 0;
                                         const pct = Math.min(100, (current / req.count) * 100);
                                         
                                         return (
-                                            <Box key={i}>
+                                            <Box key={`${q.questId}-req-${i}`}>
                                                 <Flex justify="space-between" fontSize="9px" color={P.goldMuted} mb="0.5">
                                                     <Text>
                                                         {req.type === "kill" ? `Kill ${req.target}s` : `Talk to ${req.target}`}

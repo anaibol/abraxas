@@ -4,14 +4,17 @@ import {
   calcSpellDamage,
   calcHealAmount,
   MathUtils,
-  ServerMessages,
-  BroadcastFn,
+  SPELLS,
+  GCD_MS,
   ServerMessageType,
 } from "@abraxas/shared";
 import type {
+  ServerMessages,
+  BroadcastFn,
   SpellDef,
   WindupAction,
   EntityCombatState,
+  TileMap,
 } from "@abraxas/shared";
 import type { BuffSystem } from "./BuffSystem";
 import { SpatialLookup, Entity } from "../utils/SpatialLookup";
@@ -29,6 +32,7 @@ export class CombatSystem {
   constructor(
     private spatial: SpatialLookup,
     private buffSystem: BuffSystem,
+    private map: TileMap,
   ) {}
 
   getEntityState(sessionId: string): EntityCombatState {
@@ -49,6 +53,18 @@ export class CombatSystem {
     this.activeWindups.delete(sessionId);
   }
 
+  hasLineOfSight(p1: { x: number; y: number }, p2: { x: number; y: number }): boolean {
+    const line = MathUtils.getLine(p1, p2);
+    // Skip first and last tiles (attacker and target)
+    for (let i = 1; i < line.length - 1; i++) {
+        const tile = line[i];
+        if (this.map.collision[tile.y]?.[tile.x] === 1) {
+            return false;
+        }
+    }
+    return true;
+  }
+
   // Compatible with ArenaRoom's expectation
   processWindups(
     now: number,
@@ -66,9 +82,9 @@ export class CombatSystem {
 
   // Placeholder for compatible ArenaRoom call
   processBufferedActions(
-    _now: number, 
-    _broadcast: BroadcastFn, 
-    _getSendToClient?: (sessionId: string) => SendToClientFn | undefined
+    _now: number,
+    _broadcast: BroadcastFn,
+    _getSendToClient?: (sessionId: string) => SendToClientFn | undefined,
   ) {}
 
   tryAttack(
@@ -82,7 +98,7 @@ export class CombatSystem {
     const cs = this.getEntityState(attacker.sessionId);
     const stats = attacker.getStats()!;
 
-    if (now < cs.lastGcdMs + 500) return false;
+    if (now < cs.lastGcdMs + GCD_MS) return false;
     if (this.activeWindups.has(attacker.sessionId)) return false;
 
     if (stats.meleeRange > 1) {
@@ -99,6 +115,11 @@ export class CombatSystem {
         sendToClient?.(ServerMessageType.InvalidTarget);
         return false;
       }
+      
+      if (!this.hasLineOfSight(attacker.getPosition(), { x: targetTileX, y: targetTileY })) {
+        sendToClient?.(ServerMessageType.InvalidTarget);
+        return false;
+      }
     }
 
     const windup: WindupAction = {
@@ -112,9 +133,7 @@ export class CombatSystem {
     this.activeWindups.set(attacker.sessionId, windup);
     broadcast(ServerMessageType.AttackStart, {
       sessionId: attacker.sessionId,
-      targetTileX,
-      targetTileY,
-      windupMs: 300,
+      facing: attacker.facing,
     });
 
     return true;
@@ -130,16 +149,18 @@ export class CombatSystem {
     sendToClient?: SendToClientFn,
   ): boolean {
     const cs = this.getEntityState(caster.sessionId);
-    const spell = caster.getSpell?.(spellId);
+    const spell = SPELLS[spellId];
     if (!spell) return false;
 
-    if (now < cs.lastGcdMs + 500) return false;
+    if (now < cs.lastGcdMs + GCD_MS) return false;
     const cd = cs.spellCooldowns.get(spellId) || 0;
     if (now < cd) return false;
     if (this.activeWindups.has(caster.sessionId)) return false;
 
     if (caster instanceof Player && caster.mana < spell.manaCost) {
-      sendToClient?.(ServerMessageType.Notification, { message: "Not enough mana" });
+      sendToClient?.(ServerMessageType.Notification, {
+        message: "Not enough mana",
+      });
       return false;
     }
 
@@ -152,12 +173,17 @@ export class CombatSystem {
       return false;
     }
 
+    if (!this.hasLineOfSight(caster.getPosition(), { x: targetTileX, y: targetTileY })) {
+      sendToClient?.(ServerMessageType.InvalidTarget);
+      return false;
+    }
+
     if (caster instanceof Player) {
       caster.mana -= spell.manaCost;
     }
 
     cs.lastGcdMs = now;
-    cs.spellCooldowns.set(spellId, now + (spell.cooldownMs || 0));
+    cs.spellCooldowns.set(spellId, now + spell.cooldownMs);
 
     const windup: WindupAction = {
       type: "spell",
@@ -169,12 +195,11 @@ export class CombatSystem {
     };
 
     this.activeWindups.set(caster.sessionId, windup);
-    broadcast(ServerMessageType.AttackStart, {
+    broadcast(ServerMessageType.CastStart, {
       sessionId: caster.sessionId,
+      spellId,
       targetTileX,
       targetTileY,
-      windupMs: spell.windupMs,
-      spellId,
     });
 
     return true;
@@ -187,7 +212,9 @@ export class CombatSystem {
     now: number,
     onSummon?: (caster: Entity, spellId: string, x: number, y: number) => void,
   ) {
-    const attacker = this.spatial.findEntityBySessionId(windup.attackerSessionId);
+    const attacker = this.spatial.findEntityBySessionId(
+      windup.attackerSessionId,
+    );
     if (!attacker || !attacker.alive) return;
 
     if (windup.type === "melee") {
@@ -215,7 +242,7 @@ export class CombatSystem {
         x: target.tileX,
         y: target.tileY,
       });
-      if (dist > stats.meleeRange + 1) {
+      if (dist > stats.meleeRange) {
         broadcast(ServerMessageType.AttackHit, {
           sessionId: attacker.sessionId,
           targetSessionId: null,
@@ -253,7 +280,6 @@ export class CombatSystem {
         broadcast(ServerMessageType.AttackHit, {
           sessionId: attacker.sessionId,
           targetSessionId: target.sessionId,
-          damage: result.damage,
         });
 
         if (target.hp <= 0) {
@@ -276,7 +302,7 @@ export class CombatSystem {
     now: number,
     onSummon?: (caster: Entity, spellId: string, x: number, y: number) => void,
   ): void {
-    const spell = attacker.getSpell?.(windup.spellId!);
+    const spell = SPELLS[windup.spellId!];
     if (!spell) return;
 
     // Handle summon spells
@@ -285,11 +311,12 @@ export class CombatSystem {
       return;
     }
 
-    if ((spell as any).aoeTiles > 0) {
+    const aoeRadius = spell.aoeRadius ?? 0;
+    if (aoeRadius > 0) {
       const victims = this.spatial.findEntitiesInRadius(
         windup.targetTileX,
         windup.targetTileY,
-        (spell as any).aoeTiles,
+        aoeRadius,
       );
       for (const victim of victims) {
         if (victim.sessionId === attacker.sessionId) continue;
@@ -312,7 +339,7 @@ export class CombatSystem {
           x: target.tileX,
           y: target.tileY,
         });
-        if (dist > spell.rangeTiles + 2) {
+        if (dist > spell.rangeTiles) {
           return;
         }
 
@@ -338,53 +365,68 @@ export class CombatSystem {
   ) {
     if (this.buffSystem.isInvulnerable(target.sessionId, now)) return;
 
-    const scalingStatName = (spell as any).scalingStat || "intStat";
+    const scalingStatName = spell.scalingStat || "int";
     const scalingStatValue = this.boosted(attacker, scalingStatName, now);
 
-    if ((spell as any).effect === "damage" || (spell as any).baseDamage > 0) {
-      const defenderInt = this.boosted(target, "intStat", now);
+    if (spell.effect === "damage" || spell.baseDamage > 0) {
+      const defenderInt = this.boosted(target, "int", now);
       const damage = calcSpellDamage(
-          (spell as any).baseDamage || 0, 
-          scalingStatValue, 
-          (spell as any).scalingRatio || 1, 
-          defenderInt
+        spell.baseDamage,
+        scalingStatValue,
+        spell.scalingRatio,
+        defenderInt,
       );
       target.hp -= damage;
-      broadcast(ServerMessageType.AttackHit, {
-        sessionId: attacker.sessionId,
+      // Note: AttackHit is reused for spell hits in some systems,
+      // but CastHit/Damage are the specialized types.
+      broadcast(ServerMessageType.Damage, {
         targetSessionId: target.sessionId,
-        damage,
-        spellId: spell.id,
+        amount: damage,
+        hpAfter: target.hp,
+        type: "magic",
       });
 
       if (target.hp <= 0) {
         onDeath(target, attacker.sessionId);
       }
-    } else if ((spell as any).effect === "heal") {
+    } else if (spell.effect === "heal") {
       const heal = calcHealAmount(
-          (spell as any).baseDamage || 0, 
-          scalingStatValue, 
-          (spell as any).scalingRatio || 1
+        spell.baseDamage,
+        scalingStatValue,
+        spell.scalingRatio,
       );
       target.hp = Math.min(target.maxHp, target.hp + heal);
+      broadcast(ServerMessageType.Heal, {
+        sessionId: target.sessionId,
+        amount: heal,
+        hpAfter: target.hp,
+      });
     }
 
-    if ((spell as any).effect === "stun" || (spell as any).buffStat === "stun") {
-        this.buffSystem.applyStun(target.sessionId, (spell as any).durationMs || 1000, now);
-    } else if ((spell as any).effect === "buff" || (spell as any).buffStat) {
-        this.buffSystem.addBuff(
-            target.sessionId, 
-            spell.id, 
-            (spell as any).buffStat || "armor", 
-            (spell as any).buffAmount || 10, 
-            (spell as any).durationMs || 5000, 
-            now
-        );
+    if (spell.effect === "stun" || spell.buffStat === "stun") {
+      this.buffSystem.applyStun(
+        target.sessionId,
+        spell.durationMs || 1000,
+        now,
+      );
+    } else if (spell.effect === "buff" || spell.buffStat) {
+      this.buffSystem.addBuff(
+        target.sessionId,
+        spell.id,
+        spell.buffStat || "armor",
+        spell.buffAmount || 10,
+        spell.durationMs || 5000,
+        now,
+      );
     }
   }
 
   private boosted(entity: Entity, stat: string, now: number): number {
-    const base = (entity as any)[stat] || 0;
+    let base = 0;
+    if (stat === "str") base = entity.str;
+    else if (stat === "agi") base = entity.agi;
+    else if (stat === "int" || stat === "intStat") base = entity.intStat;
+
     const bonus = this.buffSystem.getBuffBonus(entity.sessionId, stat, now);
     return base + bonus;
   }

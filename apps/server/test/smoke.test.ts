@@ -99,69 +99,12 @@ describe("Arena multiplayer smoke test", () => {
     const tokenA = AuthService.generateToken({ userId: userA.id, username: nameA });
     const tokenB = AuthService.generateToken({ userId: userB.id, username: nameB });
 
-    console.log("TEST: Attempting manual WebSocket connection...");
-    try {
-        const wsUrl = `ws://127.0.0.1:${TEST_PORT}/matchmake/joinOrCreate/arena`;
-        const ws = new WebSocket(wsUrl);
-        ws.onopen = () => console.log("TEST: Manual WS connected!");
-        ws.onerror = (e) => console.log("TEST: Manual WS error:", e);
-        ws.onclose = (e) => console.log("TEST: Manual WS closed:", e.code, e.reason);
-        await new Promise(r => setTimeout(r, 500));
-        ws.close();
-    } catch (e) {
-        console.log("TEST: Manual WS failed:", e);
-    }
+    async function joinWithRetry(client: Client, token: string, opts: any, attempts = 3) {
+      // Set token correctly for Colyseus 0.17
+      client.auth.token = token;
 
-    // Debug: Check seat reservation manually
-    try {
-        console.log("TEST: Manual fetch joinOrCreate request...");
-        const response = await fetch(`http://localhost:${TEST_PORT}/matchmake/joinOrCreate/arena`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            body: JSON.stringify({
-                name: nameA,
-                classType: "warrior",
-                token: tokenA,
-                mapName: "arena.test"
-            })
-        });
-        
-        console.log("TEST: Fetch status:", response.status, response.statusText);
-        const text = await response.text();
-        console.log("TEST: Fetch response:", text);
-
-        if (!response.ok) {
-             throw new Error(`Fetch failed: ${response.status} ${text}`);
-        }
-
-        const reservation = JSON.parse(text);
-        
-        // Now try to consume it manually
-        // Check server state
-        const driver = (server as any)["driver"];
-        const matchMaker = (server as any)["matchMaker"]; // or driver?
-        console.log("TEST: Driver rooms keys:", Object.keys(driver.rooms || {}));
-        
-        const wsUrl = `ws://localhost:${TEST_PORT}/${reservation.processId}/${reservation.roomId}?sessionId=${reservation.sessionId}`;
-        console.log("TEST: Connecting manual WS to:", wsUrl);
-        
-        const ws = new WebSocket(wsUrl);
-        ws.onopen = () => console.log("TEST: Manual WS (reservation) connected!");
-        ws.onerror = (e) => console.log("TEST: Manual WS (reservation) error:", e);
-        ws.onclose = (e) => console.log("TEST: Manual WS (reservation) closed:", e.code, e.reason);
-        
-        await new Promise(r => setTimeout(r, 1000));
-        ws.close();
-        
-    } catch (e) {
-        console.log("TEST: Manual reservation failed:", e);
-    }
-
-    async function joinWithRetry(client: Client, opts: any, attempts = 3) {
       let lastErr: any;
+
       for (let i = 0; i < attempts; i++) {
         try {
           return await client.joinOrCreate("arena", opts);
@@ -179,17 +122,15 @@ describe("Arena multiplayer smoke test", () => {
       throw lastErr;
     }
 
-    const roomA: Room<GameState> = await joinWithRetry(clientA, {
+    const roomA: Room<GameState> = await joinWithRetry(clientA, tokenA, {
       name: nameA,
       classType: "warrior",
-      token: tokenA,
       mapName: "arena.test",
     });
 
-    const roomB: Room<GameState> = await joinWithRetry(clientB, {
+    const roomB: Room<GameState> = await joinWithRetry(clientB, tokenB, {
       name: nameB,
       classType: "wizard",
-      token: tokenB,
       mapName: "arena.test",
     });
     // Wait until both rooms see 2 players

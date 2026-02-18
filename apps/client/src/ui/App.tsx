@@ -588,8 +588,8 @@ export function App() {
             />
             <Box pos="absolute" top="20px" left="20px" zIndex={80}>
               <SocialPanel
-                partyId={partyData?.partyId || ""}
-                leaderId={partyData?.leaderId || ""}
+                partyId={partyData?.partyId ?? ""}
+                leaderId={partyData?.leaderId ?? ""}
                 partyMembers={partyData?.members || []}
                 onPartyInvite={(sid: string) =>
                   networkRef.current?.sendPartyInvite(sid)
@@ -614,8 +614,8 @@ export function App() {
               <MerchantShop
                 npcId={shopData.npcId}
                 merchantInventory={shopData.inventory}
-                playerGold={playerState.gold || 0}
-                playerInventory={playerState.inventory || []}
+                playerGold={playerState.gold ?? 0}
+                playerInventory={playerState.inventory ?? []}
                 onBuy={(itemId, qty) =>
                   networkRef.current?.sendBuyItem(itemId, qty)
                 }

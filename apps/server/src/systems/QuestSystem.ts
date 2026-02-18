@@ -24,7 +24,7 @@ export class QuestSystem {
       questStates.set(dbQuest.questDef.code, {
         questId: dbQuest.questDef.code,
         status: dbQuest.status.toLowerCase() as QuestStatus,
-        progress: dbQuest.progressJson ? (dbQuest.progressJson as any) : {},
+        progress: (dbQuest.progressJson as Record<string, number>) || {},
       });
     }
     this.playerQuests.set(userId, questStates);
@@ -73,7 +73,7 @@ export class QuestSystem {
         characterId,
         questDefId: dbQuestDef.id,
         status: "IN_PROGRESS",
-        progressJson: initialState.progress as any,
+        progressJson: initialState.progress,
       },
     });
 
@@ -93,20 +93,21 @@ export class QuestSystem {
 
     const updatedQuests: PlayerQuestState[] = [];
 
-    for (const [questId, state] of userQuests.entries()) {
+    for (const state of userQuests.values()) {
       if (state.status !== "active") continue;
 
-      const questDef = QUESTS[questId];
-      let changed = false;
+      const questDef = QUESTS[state.questId];
+      if (!questDef) continue;
+      
+      // Check if this quest even cares about this type/target
+      const relevantReq = questDef.requirements.find(r => r.type === type && r.target === target);
+      if (!relevantReq) continue;
 
-      for (const req of questDef.requirements) {
-        if (req.type === type && req.target === target) {
-          const current = state.progress[target] || 0;
-          if (current < req.count) {
-            state.progress[target] = Math.min(req.count, current + amount);
-            changed = true;
-          }
-        }
+      let changed = false;
+      const current = state.progress[target] || 0;
+      if (current < relevantReq.count) {
+        state.progress[target] = Math.min(relevantReq.count, current + amount);
+        changed = true;
       }
 
       if (changed) {
@@ -118,8 +119,10 @@ export class QuestSystem {
           state.status = "completed";
         }
 
+        const dbQuestDefId = (questDef as any).dbId; // Assuming we might want to cache this
+        // For now, keep findUnique or optimize it
         const dbQuestDef = await prisma.questDef.findUnique({
-          where: { code: questId },
+          where: { code: state.questId },
         });
 
         if (dbQuestDef) {
@@ -127,7 +130,7 @@ export class QuestSystem {
             where: { characterId_questDefId: { characterId, questDefId: dbQuestDef.id } },
             data: {
               status: state.status === "completed" ? "COMPLETED" : "IN_PROGRESS",
-              progressJson: state.progress as any,
+              progressJson: state.progress,
             },
           });
         }

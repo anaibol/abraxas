@@ -180,6 +180,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
   async onCreate(options: JoinOptions & { mapName?: string }) {
     try {
       logger.info({ message: "[ArenaRoom] Entering onCreate" });
+      this.autoDispose = false; // Prevent premature shutdown during tests
       this.seatReservationTimeout = 60;
       this.setState(new GameState());
       logger.info({ message: "[ArenaRoom] State initialized" });
@@ -201,7 +202,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 
       this.spatial = new SpatialLookup(this.state);
       this.movement = new MovementSystem(this.spatial);
-      this.combat = new CombatSystem(this.spatial, this.buffSystem);
+      this.combat = new CombatSystem(this.spatial, this.buffSystem, this.map);
       this.npcSystem = new NpcSystem(
         this.state,
         this.movement,
@@ -267,187 +268,250 @@ export class ArenaRoom extends Room<{ state: GameState }> {
    * Static onAuth runs before the room instance is created — invalid tokens
    * are rejected without spinning up a room.
    */
-  static async onAuth(
-    token: string,
-    _options: JoinOptions & { mapName?: string },
-    context: AuthContext,
-  ) {
-    if (!token) {
-      logger.error({ message: "[ArenaRoom] onAuth: No token provided" });
-      throw new Error("Token required");
-    }
-    const payload = AuthService.verifyToken(token);
-    if (!payload) {
-      logger.error({ message: "[ArenaRoom] onAuth: Invalid token" });
-      throw new Error("Invalid token");
-    }
-    const dbUser = await prisma.account.findUnique({
-      where: { id: payload.userId },
-    });
-    if (!dbUser) {
-      logger.error({
-        message: `[ArenaRoom] onAuth: User ${payload.userId} not found`,
+  static async onAuth(token: string, options: any, context: AuthContext) {
+    const actualToken =
+      (typeof token === "string" ? token : null) ||
+      context?.token ||
+      options?.token;
+
+    if (!actualToken || typeof actualToken !== "string") {
+      logger.warn({
+        message: `[ArenaRoom] onAuth missing token. type=${typeof actualToken}`,
+        tokenParam: token,
+        contextToken: context?.token,
+        optionsToken: options?.token,
       });
-      throw new Error("User not found");
+      throw new Error("Authentication token required");
     }
-    logger.info({
-      message: `[ArenaRoom] onAuth ok — user=${dbUser.username} ip=${context.ip ?? "?"}`,
-    });
-    return { user: dbUser };
+
+    try {
+      const payload = AuthService.verifyToken(actualToken);
+      if (!payload) {
+        throw new Error("Invalid token");
+      }
+
+      const dbUser = await prisma.account.findUnique({
+        where: { id: payload.userId },
+      });
+
+      if (!dbUser) {
+        throw new Error("User associated with token not found");
+      }
+
+      logger.info({
+        message: `[ArenaRoom] onAuth success: ${dbUser.username}`,
+        isWebSocket: !!context.ip,
+      });
+
+      return dbUser;
+    } catch (e: any) {
+      logger.error({ message: `[ArenaRoom] onAuth failed: ${e.message}` });
+      throw e;
+    }
   }
 
   async onJoin(
     client: Client,
     options: JoinOptions & { mapName?: string },
-    auth: { user: any },
+    auth: any,
   ) {
-    const classType = options?.classType || "warrior";
-    if (!classType || !CLASS_STATS[classType]) {
-      logger.warn({
+    try {
+      logger.info({
+        message: `[ArenaRoom] onJoin START: client=${client.sessionId} user=${auth?.username}`,
+      });
+      const classType = options?.classType || "warrior";
+      if (!classType || !CLASS_STATS[classType]) {
+        logger.warn({
+          room: this.roomId,
+          clientId: client.sessionId,
+          intent: "join",
+          result: "error",
+          message: `Invalid classType: ${classType}`,
+        });
+        client.leave();
+        return;
+      }
+
+      const user = auth;
+      // Use the character name the client sent (set from DB after login/register).
+      // Fall back to account username only if not provided.
+      const playerName = options?.name || user.username;
+      logger.info({
+        message: `[ArenaRoom] onJoin: playerName=${playerName} userId=${user.id}`,
+      });
+
+      logger.info({
+        message: `[ArenaRoom] onJoin logic starting for ${playerName}`,
+      });
+      let dbPlayer = await PersistenceService.loadPlayer(user.id, playerName);
+      logger.info({ message: `[ArenaRoom] dbPlayer loaded: ${!!dbPlayer}` });
+
+      if (!dbPlayer) {
+        const spawn = this.map.spawns[this.spawnIndex % this.map.spawns.length];
+        this.spawnIndex++;
+        dbPlayer = await PersistenceService.createPlayer(
+          user.id,
+          playerName,
+          classType,
+          spawn.x,
+          spawn.y,
+          this.roomMapName,
+        );
+      } else {
+        if (dbPlayer.mapId !== this.roomMapName) {
+          logger.info({
+            room: this.roomId,
+            clientId: client.sessionId,
+            message: `Player ${playerName} joined ${this.roomMapName} but was last in ${dbPlayer.mapId}. Teleporting.`,
+          });
+        }
+      }
+      logger.info({ message: "[ArenaRoom] ensuring dbPlayer is present" });
+
+      if (!dbPlayer) {
+        logger.error({ message: "Failed to load or create player" });
+        client.leave();
+        return;
+      }
+
+      const player = new Player();
+      player.sessionId = client.sessionId;
+      player.dbId = dbPlayer.id;
+      player.userId = user.id;
+      player.name = playerName;
+      player.classType = (dbPlayer.class as string).toLowerCase() as ClassType;
+      player.tileX = dbPlayer.x;
+      player.tileY = dbPlayer.y;
+
+      const stats = dbPlayer.stats;
+      if (stats) {
+        player.hp = stats.hp;
+        player.maxHp = stats.maxHp;
+        player.mana = stats.mp;
+        player.maxMana = stats.maxMp;
+        player.str = stats.str;
+        player.agi = stats.agi;
+        player.intStat = stats.int;
+      }
+
+      player.gold = Number(dbPlayer.gold);
+      player.level = dbPlayer.level;
+      player.xp = Number(dbPlayer.exp);
+      player.maxXp = EXP_TABLE[player.level] ?? 100;
+
+      // Map Inventory
+      if (dbPlayer.inventory && dbPlayer.inventory.slots) {
+        for (const slot of dbPlayer.inventory.slots) {
+          if (slot.item && slot.item.itemDef) {
+            const invItem = new InventoryItem();
+            invItem.itemId = slot.item.itemDef.code;
+            invItem.quantity = slot.qty;
+            invItem.slotIndex = slot.idx;
+            player.inventory.push(invItem);
+          }
+        }
+      }
+
+      const dirMap: Record<string, Direction> = {
+        UP: Direction.UP,
+        DOWN: Direction.DOWN,
+        LEFT: Direction.LEFT,
+        RIGHT: Direction.RIGHT,
+      };
+      player.facing = dirMap[dbPlayer.facing.toUpperCase()] ?? Direction.DOWN;
+      player.alive = player.hp > 0;
+
+      // Give starting gear if totally empty
+      if (
+        player.inventory.length === 0 &&
+        !player.equipWeapon &&
+        !player.equipArmor &&
+        !player.equipShield &&
+        !player.equipHelmet &&
+        player.gold === 0
+      ) {
+        const startingGear = STARTING_EQUIPMENT[classType];
+        if (startingGear) {
+          player.gold = startingGear.gold;
+          for (const itemId of startingGear.items) {
+            this.inventorySystem.addItem(player, itemId);
+            const def = ITEMS[itemId];
+            if (def && def.slot !== "consumable") {
+              this.inventorySystem.equipItem(player, itemId);
+            }
+          }
+          this.inventorySystem.recalcStats(player);
+          player.hp = player.maxHp;
+          player.mana = player.maxMana;
+        }
+      }
+
+      this.state.players.set(client.sessionId, player);
+
+      // Give this client exclusive visibility of their own private @view() fields
+      client.view = new StateView();
+      client.view.add(player);
+
+      this.spatial.addToGrid(player);
+
+      logger.info({ message: "[ArenaRoom] notifying friends" });
+      this.friends.setUserOnline(user.id, client.sessionId);
+      await this.friends.sendUpdateToUser(user.id, client.sessionId);
+      logger.info({ message: "[ArenaRoom] mapping equipment" });
+
+      // Map Equipments
+      if (dbPlayer.equipments) {
+        for (const eq of dbPlayer.equipments) {
+          if (eq.item && eq.item.itemDef) {
+            const code = eq.item.itemDef.code;
+            switch (eq.slot) {
+              case "WEAPON_MAIN":
+                player.equipWeapon = code;
+                break;
+              case "WEAPON_OFF":
+                player.equipShield = code;
+                break;
+              case "HEAD":
+                player.equipHelmet = code;
+                break;
+              case "CHEST":
+                player.equipArmor = code;
+                break;
+              case "RING1":
+                player.equipRing = code;
+                break;
+            }
+          }
+        }
+      }
+
+      const quests = await this.quests.loadPlayerQuests(user.id, dbPlayer.id);
+      client.send(ServerMessageType.QuestList, { quests });
+
+      client.send(ServerMessageType.Welcome, {
+        sessionId: client.sessionId,
+        tileX: player.tileX,
+        tileY: player.tileY,
+        mapWidth: this.map.width,
+        mapHeight: this.map.height,
+        tileSize: this.map.tileSize,
+        collision: this.map.collision,
+      });
+      logger.info({
         room: this.roomId,
         clientId: client.sessionId,
         intent: "join",
-        result: "error",
-        message: `Invalid classType: ${classType}`,
+        result: "ok",
+        posAfter: { x: player.tileX, y: player.tileY },
       });
-      client.leave();
-      return;
+    } catch (e: any) {
+      logger.error({
+        message: `[ArenaRoom] error in onJoin: ${e.message}`,
+        stack: e.stack,
+      });
+      client.leave(4000); // Custom error code
+      throw e;
     }
-
-    const user = auth.user;
-    const playerName = user.username;
-
-    let dbPlayer = await PersistenceService.loadPlayer(user.id, playerName);
-
-    if (!dbPlayer) {
-      const spawn = this.map.spawns[this.spawnIndex % this.map.spawns.length];
-      this.spawnIndex++;
-      dbPlayer = await PersistenceService.createPlayer(
-        user.id,
-        playerName,
-        classType,
-        spawn.x,
-        spawn.y,
-        this.roomMapName,
-      );
-    } else {
-      if (dbPlayer.mapId !== this.roomMapName) {
-        logger.info({
-          room: this.roomId,
-          clientId: client.sessionId,
-          message: `Player ${playerName} joined ${this.roomMapName} but was last in ${dbPlayer.mapId}. Teleporting.`,
-        });
-      }
-    }
-
-    if (!dbPlayer) {
-      logger.error({ message: "Failed to load or create player" });
-      client.leave();
-      return;
-    }
-
-    const player = new Player();
-    player.sessionId = client.sessionId;
-    player.dbId = dbPlayer.id;
-    player.userId = user.id;
-    player.name = playerName;
-    player.classType = (dbPlayer.class as string).toLowerCase() as ClassType;
-    player.tileX = dbPlayer.x;
-    player.tileY = dbPlayer.y;
-
-    const stats = dbPlayer.stats;
-    if (stats) {
-      player.hp = stats.hp;
-      player.maxHp = stats.maxHp;
-      player.mana = stats.mp;
-      player.maxMana = stats.maxMp;
-      player.str = stats.str;
-      player.agi = stats.agi;
-      player.intStat = stats.int;
-    }
-
-    player.gold = Number(dbPlayer.gold);
-    player.level = dbPlayer.level;
-    player.xp = Number(dbPlayer.exp);
-    player.maxXp = 100;
-
-    // Map Inventory
-    if (dbPlayer.inventory && dbPlayer.inventory.slots) {
-      for (const slot of dbPlayer.inventory.slots) {
-        if (slot.item && slot.item.itemDef) {
-          const invItem = new InventoryItem();
-          invItem.itemId = slot.item.itemDef.code;
-          invItem.quantity = slot.qty;
-          invItem.slotIndex = slot.idx;
-          player.inventory.push(invItem);
-        }
-      }
-    }
-
-    const dirMap: Record<string, Direction> = {
-      UP: Direction.UP,
-      DOWN: Direction.DOWN,
-      LEFT: Direction.LEFT,
-      RIGHT: Direction.RIGHT,
-    };
-    player.facing = dirMap[dbPlayer.facing.toUpperCase()] ?? Direction.DOWN;
-    player.alive = player.hp > 0;
-
-    // Give starting gear if totally empty
-    if (
-      player.inventory.length === 0 &&
-      !player.equipWeapon &&
-      !player.equipArmor &&
-      !player.equipShield &&
-      !player.equipHelmet &&
-      player.gold === 0
-    ) {
-      const startingGear = STARTING_EQUIPMENT[classType];
-      if (startingGear) {
-        player.gold = startingGear.gold;
-        for (const itemId of startingGear.items) {
-          this.inventorySystem.addItem(player, itemId);
-          const def = ITEMS[itemId];
-          if (def && def.slot !== "consumable") {
-            this.inventorySystem.equipItem(player, itemId);
-          }
-        }
-        this.inventorySystem.recalcStats(player);
-        player.hp = player.maxHp;
-        player.mana = player.maxMana;
-      }
-    }
-
-    this.state.players.set(client.sessionId, player);
-
-    // Give this client exclusive visibility of their own private @view() fields
-    client.view = new StateView();
-    client.view.add(player);
-
-    this.spatial.addToGrid(player);
-
-    this.friends.setUserOnline(user.id, client.sessionId);
-    await this.friends.sendUpdateToUser(user.id, client.sessionId);
-
-    const quests = await this.quests.loadPlayerQuests(user.id, dbPlayer.id);
-    client.send(ServerMessageType.QuestList, { quests });
-
-    client.send(ServerMessageType.Welcome, {
-      sessionId: client.sessionId,
-      tileX: player.tileX,
-      tileY: player.tileY,
-      mapWidth: this.map.width,
-      mapHeight: this.map.height,
-      tileSize: this.map.tileSize,
-      collision: this.map.collision,
-    });
-    logger.info({
-      room: this.roomId,
-      clientId: client.sessionId,
-      intent: "join",
-      result: "ok",
-      posAfter: { x: player.tileX, y: player.tileY },
-    });
   }
 
   // ── devMode: persist out-of-state data across hot restarts ──────────────
@@ -608,6 +672,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       (sid: string) => this.state.players.get(sid),
       this.map,
       broadcast,
+      (player: Player) => this.spatial.addToGrid(player),
     );
   }
 
@@ -637,16 +702,26 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 
   private onSummon(_caster: Entity, spellId: string, x: number, y: number) {
     if (spellId === "summon_skeleton") {
-      // Bug Fix: Infinite summon DOS. Cap number of skeletons in room.
-      const currentSkeletons = Array.from(this.state.npcs.values()).filter(n => n.type === 'skeleton').length;
+      // Global and type-specific limit to prevent DoS
+      const totalNpcs = this.state.npcs.size;
+      if (totalNpcs > 200) return;
+
+      const currentSkeletons = Array.from(this.state.npcs.values()).filter(
+        (n) => n.type === "skeleton",
+      ).length;
       if (currentSkeletons > 50) return;
 
       const count = 2 + Math.floor(Math.random() * 2);
       for (let i = 0; i < count; i++) {
         const rx = x + Math.floor(Math.random() * 3) - 1;
         const ry = y + Math.floor(Math.random() * 3) - 1;
-        if (this.map.collision[ry]?.[rx] === 0) {
-          this.npcSystem.spawnNpcAt("skeleton", this.map, rx, ry);
+        if (rx >= 0 && rx < this.map.width && ry >= 0 && ry < this.map.height) {
+          if (
+            this.map.collision[ry]?.[rx] === 0 &&
+            !this.spatial.isTileOccupied(rx, ry, "")
+          ) {
+            this.npcSystem.spawnNpcAt("skeleton", this.map, rx, ry);
+          }
         }
       }
     }
@@ -699,6 +774,11 @@ export class ArenaRoom extends Room<{ state: GameState }> {
   }
 
   private onPlayerDeath(player: Player, killerSessionId?: string) {
+    // Mark dead immediately so the entity is no longer attackable / occupied
+    player.hp = 0;
+    player.alive = false;
+    this.spatial.removeFromGrid(player);
+
     const droppedItems = this.inventorySystem.dropAllItems(player);
     for (const { itemId, quantity } of droppedItems) {
       this.drops.spawnItemDrop(
@@ -770,23 +850,19 @@ export class ArenaRoom extends Room<{ state: GameState }> {
   }
 
   public gainXp(player: Player, amount: number) {
+    if (amount <= 0) return;
     player.xp += amount;
 
-    while (player.xp >= player.maxXp) {
+    let levelsGained = 0;
+    const maxSafety = 100; // Prevent infinite loop if EXP_TABLE is broken
+
+    while (
+      player.xp >= player.maxXp &&
+      player.level < 20 &&
+      levelsGained < maxSafety
+    ) {
       player.xp -= player.maxXp;
       player.level++;
-
-      const nextLevelEntry = EXP_TABLE[player.level];
-      if (nextLevelEntry !== undefined) {
-        player.maxXp = nextLevelEntry;
-      } else {
-        player.maxXp = Math.floor(player.maxXp * 1.2);
-      }
-
-      player.maxHp += 20;
-      player.maxMana += 10;
-      player.str += 2;
-      player.agi += 2;
       player.intStat += 2;
 
       player.hp = player.maxHp;

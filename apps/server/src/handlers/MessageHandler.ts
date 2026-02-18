@@ -336,7 +336,10 @@ export class MessageHandler {
         }
       })
       .catch((err) => {
-        console.error(`Failed to accept quest ${data.questId} for player ${player.name}:`, err);
+        console.error(
+          `Failed to accept quest ${data.questId} for player ${player.name}:`,
+          err,
+        );
         this.sendError(client, "Failed to accept quest");
       });
   }
@@ -370,7 +373,10 @@ export class MessageHandler {
         }
       })
       .catch((err) => {
-        console.error(`Failed to complete quest ${data.questId} for player ${player.name}:`, err);
+        console.error(
+          `Failed to complete quest ${data.questId} for player ${player.name}:`,
+          err,
+        );
         this.sendError(client, "Failed to complete quest");
       });
   }
@@ -383,8 +389,16 @@ export class MessageHandler {
     if (!player) return;
 
     // Bug Fix: Remote merchant exploit. Ensure proximity to any merchant NPC.
-    const merchants = Array.from(this.state.npcs.values()).filter(n => n.type === 'merchant' && n.alive);
-    const nearMerchant = merchants.some(m => MathUtils.manhattanDist({ x: player.tileX, y: player.tileY }, { x: m.tileX, y: m.tileY }) <= 3);
+    const merchants = Array.from(this.state.npcs.values()).filter(
+      (n) => n.type === "merchant" && n.alive,
+    );
+    const nearMerchant = merchants.some(
+      (m) =>
+        MathUtils.manhattanDist(
+          { x: player.tileX, y: player.tileY },
+          { x: m.tileX, y: m.tileY },
+        ) <= 3,
+    );
     if (!nearMerchant) {
       this.sendError(client, "You are too far from a merchant");
       return;
@@ -420,8 +434,16 @@ export class MessageHandler {
     if (!player) return;
 
     // Bug Fix: Remote merchant exploit. Ensure proximity to any merchant NPC.
-    const merchants = Array.from(this.state.npcs.values()).filter(n => n.type === 'merchant' && n.alive);
-    const nearMerchant = merchants.some(m => MathUtils.manhattanDist({ x: player.tileX, y: player.tileY }, { x: m.tileX, y: m.tileY }) <= 3);
+    const merchants = Array.from(this.state.npcs.values()).filter(
+      (n) => n.type === "merchant" && n.alive,
+    );
+    const nearMerchant = merchants.some(
+      (m) =>
+        MathUtils.manhattanDist(
+          { x: player.tileX, y: player.tileY },
+          { x: m.tileX, y: m.tileY },
+        ) <= 3,
+    );
     if (!nearMerchant) {
       this.sendError(client, "You are too far from a merchant");
       return;
@@ -447,73 +469,51 @@ export class MessageHandler {
     client: Client,
     data: ClientMessages[ClientMessageType.Chat],
   ): void {
-    const message = data.message;
-    const player = this.state.players.get(client.sessionId);
+    const player = this.getActivePlayer(client);
     if (!player) return;
 
-    if (message.startsWith("/party ") || message.startsWith("/p ")) {
-      const prefix = message.startsWith("/p ") ? "/p " : "/party ";
-      const partyMsg = message.replace(prefix, "");
-      if (partyMsg) {
-        if (!player.partyId) {
-          this.sendError(client, "You are not in a party");
-          return;
-        }
-        this.social.broadcastToParty(player.partyId, ServerMessageType.Chat, {
-          senderId: player.sessionId,
-          senderName: player.name,
-          message: partyMsg,
-          channel: "party" as const,
-        });
-      }
-      return;
-    }
+    const chatMsg = data.message.trim().slice(0, 100);
+    const safeText = chatMsg.replace(/[<>]/g, "").trim();
+    if (safeText.length === 0) return;
 
-    const text = message.trim().slice(0, 100);
-    // Bug Fix: Prevent chat spoofing by sanitizing special brackets in names
     const safePlayerName = player.name.replace(/[\[\]]/g, "");
-    
-    if (text.length > 0) {
-      if (text.startsWith("/w ") || text.startsWith("/whisper ")) {
-        const parts = text.split(" ");
-        if (parts.length < 3) {
-          this.sendError(client, "Usage: /w <name> <message>");
-          return;
-        }
-        const targetName = parts[1];
-        const msg = parts.slice(2).join(" ");
-        const targetClient = this.findClientByName(targetName);
 
-        if (!targetClient) {
-          this.sendError(
-            client,
-            `Player '${targetName}' not found or offline.`,
-          );
-          return;
-        }
+    if (safeText.startsWith("/w ") || safeText.startsWith("/whisper ")) {
+      const parts = safeText.split(" ");
+      if (parts.length < 3) {
+        this.sendError(client, "Usage: /w <name> <message>");
+        return;
+      }
+      const targetName = parts[1];
+      const whisperMsg = parts.slice(2).join(" ");
+      const targetClient = this.findClientByName(targetName);
 
-        const whisperData: ServerMessages[ServerMessageType.Chat] = {
-          senderId: player.sessionId,
-          senderName: `[To: ${targetName}]`,
-          message: msg,
-          channel: "whisper" as const,
-        };
-
-        client.send(ServerMessageType.Chat, whisperData);
-        targetClient.send(ServerMessageType.Chat, {
-          ...whisperData,
-          senderName: `[From: ${safePlayerName}]`,
-        });
+      if (!targetClient) {
+        this.sendError(client, `Player '${targetName}' not found or offline.`);
         return;
       }
 
-      this.broadcast(ServerMessageType.Chat, {
+      const whisperData: ServerMessages[ServerMessageType.Chat] = {
         senderId: player.sessionId,
-        senderName: safePlayerName,
-        message: text,
-        channel: "global",
+        senderName: `[To: ${targetName}]`,
+        message: whisperMsg,
+        channel: "whisper" as const,
+      };
+
+      client.send(ServerMessageType.Chat, whisperData);
+      targetClient.send(ServerMessageType.Chat, {
+        ...whisperData,
+        senderName: `[From: ${safePlayerName}]`,
       });
+      return;
     }
+
+    this.broadcast(ServerMessageType.Chat, {
+      senderId: player.sessionId,
+      senderName: safePlayerName,
+      message: safeText,
+      channel: "global",
+    });
   }
 
   handleFriendRequest(

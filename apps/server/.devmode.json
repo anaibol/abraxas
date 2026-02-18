@@ -1,0 +1,13 @@
+{
+  "data": {},
+  "hash": {
+    "roomcount": {},
+    "ch:arena": {
+      "": "0"
+    },
+    "roomhistory": {
+      "vCOErYK_a": "{\"clientOptions\":{\"name\":\"Warrior_1771447072729\",\"classType\":\"warrior\",\"mapName\":\"arena.test\"},\"roomName\":\"arena\",\"processId\":\"xf0mSw-eW\",\"cache\":{\"spawnIndex\":0},\"state\":\"{\\\"players\\\":{},\\\"npcs\\\":{},\\\"drops\\\":{},\\\"parties\\\":{},\\\"tick\\\":146}\",\"clients\":[{\"sessionId\":\"Ny0XyH7je\"},{\"sessionId\":\"DfXfeji53\"},{\"sessionId\":\"EvfpcUiM7\"},{\"sessionId\":\"5C8-NWmE5\"},{\"sessionId\":\"iPXEmM3CE\"},{\"sessionId\":\"QNJB3QKzd\"},{\"sessionId\":\"pBVGkrDyu\"},{\"sessionId\":\"xRcDCE9bN\"},{\"sessionId\":\"bwINsMSID\"},{\"sessionId\":\"vVbpQPOMU\"},{\"sessionId\":\"8mYtlM-hX\"},{\"sessionId\":\"HWB3fNyaQ\"},{\"sessionId\":\"df8wfiAt_\"},{\"sessionId\":\"lT2K0dMc2\"},{\"sessionId\":\"G5WHXkJZ2\"}]}"
+    }
+  },
+  "keys": {}
+}

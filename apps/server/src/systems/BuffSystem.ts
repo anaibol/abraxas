@@ -32,9 +32,13 @@ export class BuffSystem {
     now: number,
   ): void {
     const s = this.getState(sessionId);
-    // Replace existing buff of same id
-    s.buffs = s.buffs.filter((b) => b.id !== id);
-    s.buffs.push({ id, stat, amount, expiresAt: now + durationMs });
+    const existing = s.buffs.find((b) => b.id === id);
+    if (existing) {
+      existing.expiresAt = Math.max(existing.expiresAt, now) + durationMs;
+      // Optionally update amount if it's stronger? For now just extend.
+    } else {
+      s.buffs.push({ id, stat, amount, expiresAt: now + durationMs });
+    }
   }
 
   addDoT(

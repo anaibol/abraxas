@@ -129,22 +129,23 @@ export class InventorySystem {
       onError?.("Invalid equipment slot");
       return false;
     }
-
-    // Unequip current item in that slot first
-    const currentEquipped = player[slotKey];
-    if (typeof currentEquipped === "string" && currentEquipped) {
-      if (!this.addItem(player, currentEquipped, 1, onError)) {
-        return false; // Inventory full, can't unequip current
+    const currentItem = (player as any)[slotKey];
+    
+    if (currentItem) {
+      if (player.inventory.length >= MAX_INVENTORY_SLOTS) {
+        onError?.("Inventory full - cannot unequip current item");
+        return false;
       }
+      this.unequipItem(player, def.slot as EquipmentSlot);
     }
 
-    // Remove from inventory and equip
-    this.removeItem(player, itemId);
-    setEquipSlot(player, slotKey, itemId);
-
-    // Apply stat bonuses
-    this.recalcStats(player);
-    return true;
+    // Now remove the new item from inventory and equip it
+    if (this.removeItem(player, itemId)) {
+      (player as any)[slotKey] = itemId;
+      this.recalcStats(player);
+      return true;
+    }
+    return false;
   }
 
   unequipItem(
@@ -155,13 +156,13 @@ export class InventorySystem {
     const slotKey = EQUIP_SLOT_MAP[slot];
     if (!slotKey) return false;
 
-    const itemId = player[slotKey];
+    const itemId = (player as any)[slotKey];
     if (typeof itemId !== "string" || !itemId) return false;
 
     // Try to add to inventory
     if (!this.addItem(player, itemId, 1, onError)) return false; // Inventory full
 
-    setEquipSlot(player, slotKey, "");
+    (player as any)[slotKey] = "";
     this.recalcStats(player);
     return true;
   }
@@ -207,7 +208,7 @@ export class InventorySystem {
     };
 
     for (const slotKey of Object.values(EQUIP_SLOT_MAP)) {
-      const itemId = player[slotKey];
+      const itemId = (player as any)[slotKey];
       if (typeof itemId !== "string" || !itemId) continue;
       const def = ITEMS[itemId];
       if (!def) continue;
@@ -243,22 +244,25 @@ export class InventorySystem {
   dropAllItems(player: Player): { itemId: string; quantity: number }[] {
     const dropped: { itemId: string; quantity: number }[] = [];
 
-    // Drop equipment
-    for (const slotKey of Object.values(EQUIP_SLOT_MAP)) {
-      const itemId = player[slotKey];
-      if (typeof itemId === "string" && itemId) {
-        dropped.push({ itemId, quantity: 1 });
-        setEquipSlot(player, slotKey, "");
-      }
-    }
-
     // Drop inventory
-    for (const item of player.inventory) {
-      dropped.push({ itemId: item.itemId, quantity: item.quantity });
-    }
+    player.inventory.forEach((item) => {
+      if (item && item.itemId) {
+        dropped.push({ itemId: item.itemId, quantity: item.quantity });
+      }
+    });
     player.inventory.clear();
 
-    // Recalc stats with no equipment
+    // Clear equipment too
+    const slots = Object.keys(EQUIP_SLOT_MAP) as EquipmentSlot[];
+    slots.forEach(slot => {
+      const slotKey = EQUIP_SLOT_MAP[slot];
+      const itemId = (player as any)[slotKey];
+      if (typeof itemId === "string" && itemId) {
+        dropped.push({ itemId, quantity: 1 });
+        (player as any)[slotKey] = "";
+      }
+    });
+
     this.recalcStats(player);
     return dropped;
   }

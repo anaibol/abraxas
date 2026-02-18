@@ -72,7 +72,8 @@ export class InputHandler {
     this.onPttEnd = onPttEnd;
 
     const stats = CLASS_STATS[classType];
-    this.moveIntervalMs = 1000 / stats.speedTilesPerSecond;
+    const speed = stats.speedTilesPerSecond;
+    this.moveIntervalMs = 1000 / speed;
     this.meleeRange = stats.meleeRange;
 
     // Listen for pointer clicks via Phaser's event system
@@ -258,6 +259,11 @@ export class InputHandler {
         }
       }
     }
+  }
+
+  setSpeed(tilesPerSecond: number) {
+    const speed = tilesPerSecond || 0.1;
+    this.moveIntervalMs = 1000 / speed;
   }
 
   destroy() {

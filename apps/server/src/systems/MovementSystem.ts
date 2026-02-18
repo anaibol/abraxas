@@ -40,10 +40,12 @@ export class MovementSystem {
     const stats = entity.getStats();
     if (!stats) return false;
 
-    const moveIntervalMs = 1000 / stats.speedTilesPerSecond;
+    const speed = stats.speedTilesPerSecond;
+    if (speed <= 0) return false; // Guard against stationary entities
+    const moveIntervalMs = 1000 / speed;
 
-    // Always update facing
-    entity.facing = direction;
+    // Only update facing if move is successful
+    // entity.facing = direction; // Moved down
 
     // Check movement timing (with 15ms tolerance for network/clock jitter)
     if (now - timers.lastMoveMs < moveIntervalMs - 15) {
@@ -81,6 +83,9 @@ export class MovementSystem {
 
     const posBefore = entity.getPosition();
 
+    // Only update facing if move is successful
+    entity.facing = direction;
+    
     entity.tileX = newX;
     entity.tileY = newY;
 
