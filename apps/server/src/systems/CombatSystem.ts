@@ -64,8 +64,6 @@ export class CombatSystem {
     attacker: Entity,
     now: number,
     broadcast: BroadcastFn,
-    tick: number,
-    roomId: string,
     targetTileX?: number,
     targetTileY?: number,
     sendToClient?: SendToClientFn,
@@ -154,8 +152,6 @@ export class CombatSystem {
     targetTileY: number,
     now: number,
     broadcast: BroadcastFn,
-    tick: number,
-    roomId: string,
     sendToClient?: SendToClientFn,
   ): boolean {
     const cs = this.getCombatState(caster.sessionId);
@@ -344,7 +340,7 @@ export class CombatSystem {
       const action = cs.bufferedAction;
       const sendToClient = sendToClientFor?.(sessionId);
       if (action.type === "attack") {
-        this.tryAttack(entity, now, broadcast, tick, roomId, action.targetTileX, action.targetTileY, sendToClient);
+        this.tryAttack(entity, now, broadcast, action.targetTileX, action.targetTileY, sendToClient);
       } else if (action.type === "cast") {
         this.tryCast(
           entity,
@@ -353,8 +349,6 @@ export class CombatSystem {
           action.targetTileY!,
           now,
           broadcast,
-          tick,
-          roomId,
           sendToClient,
         );
       }

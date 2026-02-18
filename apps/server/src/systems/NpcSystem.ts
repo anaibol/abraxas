@@ -121,8 +121,7 @@ export class NpcSystem {
     occupiedCheck: (x: number, y: number, excludeId: string) => boolean,
     tickCount: number,
     roomId: string,
-    broadcast: BroadcastFn,
-    onSummon?: (caster: Entity, spellId: string, x: number, y: number) => void
+    broadcast: BroadcastFn
   ): void {
     // Handle respawns
     for (let i = this.respawns.length - 1; i >= 0; i--) {
@@ -139,13 +138,13 @@ export class NpcSystem {
 
         switch (npc.state) {
             case NpcState.IDLE:
-                this.updateIdle(npc, now);
+                this.updateIdle(npc);
                 break;
             case NpcState.CHASE:
                 this.updateChase(npc, map, now, occupiedCheck, tickCount, roomId);
                 break;
             case NpcState.ATTACK:
-                this.updateAttack(npc, dt, now, broadcast, tickCount, roomId, onSummon);
+                this.updateAttack(npc, dt, now, broadcast, roomId);
                 break;
             default:
                 npc.state = NpcState.IDLE;
@@ -155,7 +154,7 @@ export class NpcSystem {
   }
 
 
-  private updateIdle(npc: Npc, now: number): void {
+  private updateIdle(npc: Npc): void {
       if (npc.type === "merchant") return; // Merchants don't aggro
       
       // Look for targets
@@ -263,7 +262,7 @@ export class NpcSystem {
       }
   }
 
-  private tryUseSpell(npc: Npc, now: number, broadcast: BroadcastFn, tick: number, roomId: string): boolean {
+  private tryUseSpell(npc: Npc, now: number, broadcast: BroadcastFn): boolean {
       const stats = NPC_STATS[npc.type];
       if (!stats || !stats.spells.length) return false;
 
@@ -282,9 +281,7 @@ export class NpcSystem {
           target.tileX,
           target.tileY,
           now,
-          broadcast,
-          tick,
-          roomId
+          broadcast
       );
   }
 
@@ -293,9 +290,7 @@ export class NpcSystem {
       dt: number,
       now: number,
       broadcast: BroadcastFn,
-      tickCount: number, 
-      roomId: string,
-      onSummon?: (caster: Entity, spellId: string, x: number, y: number) => void
+      roomId: string
   ): void {
       const target = this.spatial.findEntityBySessionId(npc.targetId);
       if (!target || !target.alive) {
@@ -318,7 +313,7 @@ export class NpcSystem {
 
       // Try spells first
       if (stats.spells && stats.spells.length > 0) {
-          if (this.tryUseSpell(npc, now, broadcast, tickCount, roomId)) {
+          if (this.tryUseSpell(npc, now, broadcast)) {
               return;
           }
       }
@@ -328,8 +323,6 @@ export class NpcSystem {
             npc,
             now,
             broadcast,
-            tickCount,
-            roomId,
             target.tileX,
             target.tileY
       );

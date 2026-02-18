@@ -106,6 +106,23 @@ export async function createGameServer(options: {
       ".map": "application/json",
     };
 
+    app.use((req: any, res: any, next: any) => {
+      const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+      let urlPath = url.pathname;
+      if (urlPath === "/") urlPath = "/index.html";
+      
+      const filePath = join(options.staticDir!, urlPath);
+      
+      if (filePath.startsWith(options.staticDir!) && existsSync(filePath) && statSync(filePath).isFile()) {
+          const ext = extname(filePath);
+          const mime = MIME_TYPES[ext] || "application/octet-stream";
+          res.status(200).header("Content-Type", mime).send(readFileSync(filePath));
+      } else {
+          next();
+      }
+    });
+
+    // SPA fallback
     app.use((req: any, res: any) => {
         const indexPath = join(options.staticDir!, "index.html");
         if (existsSync(indexPath)) {
@@ -118,7 +135,6 @@ export async function createGameServer(options: {
 
   console.error(`[server.ts] Starting listen on port ${options.port}...`);
   await server.listen(options.port);
-  console.error(`[server.ts] Registered handlers: ${Object.keys((server as any).matchmaker.handlers)}`);
 
   console.error({ intent: "server_start", result: "ok", port: options.port });
 

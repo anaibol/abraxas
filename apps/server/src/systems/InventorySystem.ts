@@ -1,10 +1,10 @@
-import { 
-  ITEMS, 
-  CLASS_STATS, 
-  type EquipmentSlot, 
-  type ItemDef, 
-  MAX_INVENTORY_SLOTS, 
-  StatBonuses 
+import {
+  ITEMS,
+  CLASS_STATS,
+  type EquipmentSlot,
+  type ItemDef,
+  MAX_INVENTORY_SLOTS,
+  StatBonuses,
 } from "@abraxas/shared";
 import type { Player } from "../schema/Player";
 import { InventoryItem } from "../schema/InventoryItem";
@@ -18,8 +18,26 @@ export const EQUIP_SLOT_MAP: Record<EquipmentSlot, keyof Player> = {
   ring: "equipRing",
 };
 
+/** Set or clear a single equipment slot on a player. */
+export function setEquipSlot(
+  player: Player,
+  slotKey: keyof Player,
+  value: string,
+): void {
+  if (slotKey === "equipWeapon") player.equipWeapon = value;
+  else if (slotKey === "equipArmor") player.equipArmor = value;
+  else if (slotKey === "equipShield") player.equipShield = value;
+  else if (slotKey === "equipHelmet") player.equipHelmet = value;
+  else if (slotKey === "equipRing") player.equipRing = value;
+}
+
 export class InventorySystem {
-  addItem(player: Player, itemId: string, quantity: number = 1, onError?: (msg: string) => void): boolean {
+  addItem(
+    player: Player,
+    itemId: string,
+    quantity: number = 1,
+    onError?: (msg: string) => void,
+  ): boolean {
     const def = ITEMS[itemId];
     if (!def) {
       onError?.("Invalid item");
@@ -64,7 +82,7 @@ export class InventorySystem {
         if (item.quantity > quantity) {
           item.quantity -= quantity;
         } else {
-             player.inventory.splice(i, 1);
+          player.inventory.splice(i, 1);
         }
         return true;
       }
@@ -79,59 +97,61 @@ export class InventorySystem {
     return undefined;
   }
 
-  equipItem(player: Player, itemId: string, onError?: (msg: string) => void): boolean {
+  equipItem(
+    player: Player,
+    itemId: string,
+    onError?: (msg: string) => void,
+  ): boolean {
     const def = ITEMS[itemId];
     if (!def) {
-        onError?.("Invalid item");
-        return false;
+      onError?.("Invalid item");
+      return false;
     }
     if (def.slot === "consumable") {
-        onError?.("Cannot equip consumable");
-        return false;
+      onError?.("Cannot equip consumable");
+      return false;
     }
 
     // Check class restriction
     if (def.requiredClass && !def.requiredClass.includes(player.classType)) {
-        onError?.(`Restricted to ${def.requiredClass.join(", ")}`);
-        return false;
+      onError?.(`Restricted to ${def.requiredClass.join(", ")}`);
+      return false;
     }
 
     // Check item is in inventory
     if (!this.findItem(player, itemId)) {
-        onError?.("Item not found");
-        return false;
+      onError?.("Item not found");
+      return false;
     }
 
     const slotKey = EQUIP_SLOT_MAP[def.slot];
     if (!slotKey) {
-        onError?.("Invalid equipment slot");
-        return false;
+      onError?.("Invalid equipment slot");
+      return false;
     }
 
     // Unequip current item in that slot first
     const currentEquipped = player[slotKey];
     if (typeof currentEquipped === "string" && currentEquipped) {
       if (!this.addItem(player, currentEquipped, 1, onError)) {
-          return false; // Inventory full, can't unequip current
+        return false; // Inventory full, can't unequip current
       }
     }
 
     // Remove from inventory and equip
     this.removeItem(player, itemId);
-    
-    // Safely assign to the specific equipment slot
-    if (slotKey === "equipWeapon") player.equipWeapon = itemId;
-    else if (slotKey === "equipArmor") player.equipArmor = itemId;
-    else if (slotKey === "equipShield") player.equipShield = itemId;
-    else if (slotKey === "equipHelmet") player.equipHelmet = itemId;
-    else if (slotKey === "equipRing") player.equipRing = itemId;
+    setEquipSlot(player, slotKey, itemId);
 
     // Apply stat bonuses
     this.recalcStats(player);
     return true;
   }
 
-  unequipItem(player: Player, slot: EquipmentSlot, onError?: (msg: string) => void): boolean {
+  unequipItem(
+    player: Player,
+    slot: EquipmentSlot,
+    onError?: (msg: string) => void,
+  ): boolean {
     const slotKey = EQUIP_SLOT_MAP[slot];
     if (!slotKey) return false;
 
@@ -141,24 +161,24 @@ export class InventorySystem {
     // Try to add to inventory
     if (!this.addItem(player, itemId, 1, onError)) return false; // Inventory full
 
-    if (slotKey === "equipWeapon") player.equipWeapon = "";
-    else if (slotKey === "equipArmor") player.equipArmor = "";
-    else if (slotKey === "equipShield") player.equipShield = "";
-    else if (slotKey === "equipHelmet") player.equipHelmet = "";
-    else if (slotKey === "equipRing") player.equipRing = "";
+    setEquipSlot(player, slotKey, "");
     this.recalcStats(player);
     return true;
   }
 
-  useItem(player: Player, itemId: string, onError?: (msg: string) => void): boolean {
+  useItem(
+    player: Player,
+    itemId: string,
+    onError?: (msg: string) => void,
+  ): boolean {
     const def = ITEMS[itemId];
     if (!def || !def.consumeEffect) {
-        onError?.("Item not usable");
-        return false;
+      onError?.("Item not usable");
+      return false;
     }
     if (!this.findItem(player, itemId)) {
-        onError?.("Item not found");
-        return false;
+      onError?.("Item not found");
+      return false;
     }
 
     // Apply consume effect
@@ -166,7 +186,10 @@ export class InventorySystem {
       player.hp = Math.min(player.maxHp, player.hp + def.consumeEffect.healHp);
     }
     if (def.consumeEffect.healMana) {
-      player.mana = Math.min(player.maxMana, player.mana + def.consumeEffect.healMana);
+      player.mana = Math.min(
+        player.maxMana,
+        player.mana + def.consumeEffect.healMana,
+      );
     }
 
     this.removeItem(player, itemId);
@@ -174,7 +197,14 @@ export class InventorySystem {
   }
 
   getEquipmentBonuses(player: Player): StatBonuses {
-    const bonuses: StatBonuses = { str: 0, agi: 0, int: 0, hp: 0, mana: 0, armor: 0 };
+    const bonuses: StatBonuses = {
+      str: 0,
+      agi: 0,
+      int: 0,
+      hp: 0,
+      mana: 0,
+      armor: 0,
+    };
 
     for (const slotKey of Object.values(EQUIP_SLOT_MAP)) {
       const itemId = player[slotKey];

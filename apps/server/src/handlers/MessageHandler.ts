@@ -80,8 +80,6 @@ export class MessageHandler {
             player,
             Date.now(),
             this.broadcast,
-            this.state.tick,
-            this.roomId,
             data.targetTileX,
             data.targetTileY,
             (type, payload) => client.send(type, payload)
@@ -99,8 +97,6 @@ export class MessageHandler {
             data.targetTileY,
             Date.now(),
             this.broadcast,
-            this.state.tick,
-            this.roomId,
             (type, payload) => client.send(type, payload)
         );
     }

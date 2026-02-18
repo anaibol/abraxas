@@ -18,10 +18,9 @@ import {
     NPC_STATS, 
     EXP_TABLE, 
     NPC_DROPS, 
-    QUESTS,
+    NPC_DROPS, 
     TileMap, 
     Direction, 
-    ServerMessages, 
     ClassType, 
     JoinOptions, 
     EquipmentSlot, 
@@ -30,7 +29,8 @@ import {
     ClientMessageType, 
     ServerMessageType, 
     ClientMessages,
-    WelcomeData
+    WelcomeData,
+    QUESTS
 } from "@abraxas/shared";
 import { logger } from "../logger";
 
@@ -45,12 +45,12 @@ import { SpatialLookup } from "../utils/SpatialLookup";
 import { EntityUtils, Entity } from "../utils/EntityUtils";
 import { QuestSystem } from "../systems/QuestSystem";
 
-console.error("[ArenaRoom.ts] Module loading...");
+// console.error("[ArenaRoom.ts] Module loading...");
 
 export class ArenaRoom extends Room<{ state: GameState }> {
   constructor() {
     super();
-    console.error("[ArenaRoom] Constructor called");
+    logger.info("[ArenaRoom] Constructor called");
   }
 
   private map!: TileMap;
@@ -71,20 +71,20 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 
   async onCreate(options: JoinOptions & { mapName?: string }) {
     try {
-        console.error("[ArenaRoom] Entering onCreate");
+        logger.info("[ArenaRoom] Entering onCreate");
         this.setState(new GameState());
-        console.error("[ArenaRoom] State initialized");
+        logger.info("[ArenaRoom] State initialized");
         
         this.roomMapName = options.mapName || "arena.test";
-        console.error(`[ArenaRoom] Map name: ${this.roomMapName}`);
+        logger.info(`[ArenaRoom] Map name: ${this.roomMapName}`);
         
         const loadedMap = await MapService.getMap(this.roomMapName);
         if (!loadedMap) {
-            console.error(`[ArenaRoom] Failed to load map: ${this.roomMapName}`);
+            logger.error(`[ArenaRoom] Failed to load map: ${this.roomMapName}`);
             throw new Error(`Failed to load map: ${this.roomMapName}`);
         }
         this.map = loadedMap;
-        console.error("[ArenaRoom] Map loaded");
+        logger.info("[ArenaRoom] Map loaded");
 
         this.drops.setInventorySystem(this.inventorySystem);
         
@@ -109,9 +109,9 @@ export class ArenaRoom extends Room<{ state: GameState }> {
             this.broadcast.bind(this),
             this.spatial.isTileOccupied.bind(this.spatial),
             (name: string) => {
-                const player = Array.from(this.state.players.values()).find((p: any) => p.name === name);
+                const player = Array.from(this.state.players.values()).find((p) => p.name === name);
                 if (!player) return undefined;
-                return this.clients.find(c => c.sessionId === (player as any).sessionId);
+                return this.clients.find(c => c.sessionId === player.sessionId);
             },
             this.quests,
             this.gainXp.bind(this)
@@ -226,37 +226,37 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         });
 
         logger.info({ room: this.roomId, intent: "room_created", result: "ok" });
-        process.stderr.write("[ArenaRoom] onCreate completed successfully\n");
-    } catch (e) {
-        process.stderr.write(`[ArenaRoom] CRITICAL ERROR IN ONCREATE: ${e}\n`);
-        if (e instanceof Error) {
-            process.stderr.write(e.stack || "No stack trace available\n");
+        logger.info("[ArenaRoom] onCreate completed successfully");
+    } catch (e: any) {
+        logger.error(`[ArenaRoom] CRITICAL ERROR IN ONCREATE: ${e}`);
+        if (e.stack) {
+            logger.error(e.stack);
         }
         throw e;
     }
   }
 
   async onAuth(client: Client, options: JoinOptions) {
-    console.error(`[ArenaRoom] onAuth entering for client ${client.sessionId}`);
+    logger.info(`[ArenaRoom] onAuth entering for client ${client.sessionId}`);
     if (!options.token) {
-        console.error("[ArenaRoom] onAuth: No token provided");
+        logger.error("[ArenaRoom] onAuth: No token provided");
         throw new Error("Token required");
     }
     const payload = AuthService.verifyToken(options.token);
     if (!payload) {
-        console.error("[ArenaRoom] onAuth: Invalid token");
+        logger.error("[ArenaRoom] onAuth: Invalid token");
         throw new Error("Invalid token");
     }
     
     // Fetch user to ensure valid
-    console.error(`[ArenaRoom] onAuth: Fetching user ${payload.userId}`);
+    logger.info(`[ArenaRoom] onAuth: Fetching user ${payload.userId}`);
     const user = await prisma.user.findUnique({ where: { id: payload.userId } });
     if (!user) {
-        console.error(`[ArenaRoom] onAuth: User ${payload.userId} not found`);
+        logger.error(`[ArenaRoom] onAuth: User ${payload.userId} not found`);
         throw new Error("User not found");
     }
 
-    console.error(`[ArenaRoom] onAuth: Success for user ${user.username}`);
+    logger.info(`[ArenaRoom] onAuth: Success for user ${user.username}`);
     return { user };
   }
 
@@ -390,7 +390,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         this.friends.setUserOffline(player.userId);
 
         const inventory: InventoryEntry[] = [];
-        (player.inventory as any).forEach((item: any) => {
+        player.inventory.forEach((item) => {
             inventory.push({ itemId: item.itemId, quantity: item.quantity, slotIndex: item.slotIndex });
         });
         
