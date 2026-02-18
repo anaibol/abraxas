@@ -7,6 +7,7 @@ import { CombatSystem } from "../systems/CombatSystem";
 import { InventorySystem } from "../systems/InventorySystem";
 import { DropSystem } from "../systems/DropSystem";
 import { SocialSystem } from "../systems/SocialSystem";
+import { FriendsSystem } from "../systems/FriendsSystem";
 import { TileMap, Direction, EquipmentSlot, ITEMS, MERCHANT_INVENTORY } from "@abraxas/shared";
 import { ServerMessages } from "@abraxas/shared";
 
@@ -28,8 +29,10 @@ export class MessageHandler {
         private inventorySystem: InventorySystem,
         private drops: DropSystem,
         private social: SocialSystem,
+        private friends: FriendsSystem,
         private broadcast: BroadcastCallback,
-        private isTileOccupied: (x: number, y: number, excludeId: string) => boolean
+        private isTileOccupied: (x: number, y: number, excludeId: string) => boolean,
+        private findClientByName: (name: string) => Client | undefined
     ) {}
 
     handleMove(client: Client, direction: Direction): void {
@@ -219,6 +222,37 @@ export class MessageHandler {
         if (player && message) {
             const text = message.trim().slice(0, 100);
             if (text.length > 0) {
+                // Whisper support: /w name message
+                if (text.startsWith("/w ") || text.startsWith("/whisper ")) {
+                    const parts = text.split(" ");
+                    if (parts.length < 3) {
+                        client.send("error", { message: "Usage: /w <name> <message>" });
+                        return;
+                    }
+                    const targetName = parts[1];
+                    const msg = parts.slice(2).join(" ");
+                    const targetClient = this.findClientByName(targetName);
+                    
+                    if (!targetClient) {
+                        client.send("error", { message: `Player '${targetName}' not found or offline.` });
+                        return;
+                    }
+
+                    const whisperData = {
+                        senderId: player.sessionId,
+                        senderName: `[To: ${targetName}]`,
+                        message: msg,
+                        channel: "whisper" as const
+                    };
+
+                    client.send("chat", whisperData);
+                    targetClient.send("chat", {
+                        ...whisperData,
+                        senderName: `[From: ${player.name}]`
+                    });
+                    return;
+                }
+
                 // Party chat support
                 if (text.startsWith("/p ") || text.startsWith("/party ")) {
                     if (!player.partyId) {
@@ -226,22 +260,34 @@ export class MessageHandler {
                         return;
                     }
                     const msg = text.startsWith("/p ") ? text.slice(3) : text.slice(7);
-                    this.broadcastToParty(player.partyId, "chat", {
+                    this.social.broadcastToParty(player.partyId, "chat", {
                         senderId: player.sessionId,
-                        senderName: `[Party] ${player.name}`,
+                        senderName: player.name,
                         message: msg,
+                        channel: "party" as const
                     });
                     return;
                 }
 
+                // Global chat
                 this.broadcast("chat", {
                     senderId: player.sessionId,
                     senderName: player.name,
                     message: text,
+                    channel: "global" as const
                 });
             }
         }
     }
+
+    handleFriendRequest(client: Client, targetName: string): void {
+        this.friends.handleFriendRequest(client, targetName);
+    }
+
+    handleFriendAccept(client: Client, requesterId: string): void {
+        this.friends.handleFriendAccept(client, requesterId);
+    }
+
 
     handlePartyInvite(client: Client, targetSessionId: string): void {
         this.social.handleInvite(client, targetSessionId);

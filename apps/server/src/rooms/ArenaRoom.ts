@@ -18,6 +18,7 @@ import { AuthService } from "../database/auth";
 import { prisma } from "../database/db";
 import { MessageHandler } from "../handlers/MessageHandler";
 import { SocialSystem } from "../systems/SocialSystem";
+import { FriendsSystem } from "../systems/FriendsSystem";
 import { SpatialLookup } from "../utils/SpatialLookup";
 import { EntityUtils, Entity } from "../utils/EntityUtils";
 
@@ -33,6 +34,7 @@ export class ArenaRoom extends Room<GameState> {
   private respawnSystem = new RespawnSystem(this.inventorySystem);
   private npcSystem!: NpcSystem;
   private social!: SocialSystem;
+  private friends!: FriendsSystem;
   private messageHandler!: MessageHandler;
   private spatial!: SpatialLookup;
   private spawnIndex = 0;
@@ -52,6 +54,9 @@ export class ArenaRoom extends Room<GameState> {
       throw new Error("ArenaRoom.mapData must be set before room creation");
     }
 
+    this.social = new SocialSystem(this.state, (sid: string) => this.clients.find(c => c.sessionId === sid));
+    this.friends = new FriendsSystem(this.state, (sid: string) => this.clients.find(c => c.sessionId === sid));
+
     this.messageHandler = new MessageHandler(
         this.state,
         this.map,
@@ -61,8 +66,14 @@ export class ArenaRoom extends Room<GameState> {
         this.inventorySystem,
         this.drops,
         this.social,
+        this.friends,
         this.broadcast.bind(this),
-        this.spatial.isTileOccupied.bind(this.spatial)
+        this.spatial.isTileOccupied.bind(this.spatial),
+        (name: string) => {
+            const player = Array.from(this.state.players.values()).find(p => p.name === name);
+            if (!player) return undefined;
+            return this.clients.find(c => c.sessionId === player.sessionId);
+        }
     );
 
     // Spawn predefined NPCs
@@ -77,6 +88,14 @@ export class ArenaRoom extends Room<GameState> {
     if (npcCount > 0) {
         this.npcSystem.spawnNpcs(npcCount, this.map);
     }
+
+    this.onMessage("friend_request", (client, data: { targetName: string }) => {
+        this.messageHandler.handleFriendRequest(client, data.targetName);
+    });
+
+    this.onMessage("friend_accept", (client, data: { requesterId: string }) => {
+        this.messageHandler.handleFriendAccept(client, data.requesterId);
+    });
 
     this.setSimulationInterval((dt) => this.tick(dt), TICK_MS);
     this.setPatchRate(TICK_MS);
@@ -245,6 +264,9 @@ export class ArenaRoom extends Room<GameState> {
     this.state.players.set(client.sessionId, player);
     this.spatial.addToGrid(player); // Register in spatial grid
 
+    this.friends.setUserOnline(user.id, client.sessionId);
+    await this.friends.sendUpdateToUser(user.id, client.sessionId);
+
     client.send("welcome", {
       sessionId: client.sessionId,
       tileX: player.tileX,
@@ -266,8 +288,9 @@ export class ArenaRoom extends Room<GameState> {
   async onLeave(client: Client) {
     const player = this.state.players.get(client.sessionId);
     if (player) {
-        // Clean up party membership
+        // Clean up social
         this.messageHandler.handlePartyLeave(client);
+        this.friends.setUserOffline(player.userId);
 
         const inventory: InventoryEntry[] = [];
         player.inventory.forEach(item => {
