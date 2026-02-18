@@ -136,11 +136,7 @@ export class CombatSystem {
 
     // Target validation for ranged
     if (stats.meleeRange > 1) {
-      if (
-        !target ||
-        !target.alive ||
-        target.sessionId === attacker.sessionId
-      ) {
+      if (!target || !target.alive || target.sessionId === attacker.sessionId) {
         sendToClient?.(ServerMessageType.InvalidTarget);
         return false;
       }
@@ -266,11 +262,7 @@ export class CombatSystem {
     // For single-target offensive spells (rangeTiles > 0, not AoE), validate target exists before mana deduction
     if (spell.rangeTiles > 0 && spell.effect !== "aoe") {
       const target = this.spatial.findEntityAtTile(targetTileX, targetTileY);
-      if (
-        !target ||
-        !target.alive ||
-        target.sessionId === caster.sessionId
-      ) {
+      if (!target || !target.alive || target.sessionId === caster.sessionId) {
         sendToClient?.(ServerMessageType.InvalidTarget);
         return false;
       }
@@ -314,7 +306,7 @@ export class CombatSystem {
   processWindups(
     now: number,
     broadcast: BroadcastFn,
-    onDeath: (entity: Entity, killerSessionId: string) => void,
+    onDeath: (entity: Entity, killerSessionId?: string) => void,
     onSummon?: (caster: Entity, spellId: string, x: number, y: number) => void,
   ): void {
     const remaining: WindupAction[] = [];
@@ -401,7 +393,7 @@ export class CombatSystem {
     target: Entity,
     killerSessionId: string,
     broadcast: BroadcastFn,
-    onDeath: (entity: Entity, killerSessionId: string) => void,
+    onDeath: (entity: Entity, killerSessionId?: string) => void,
   ): void {
     target.hp = 0;
     target.alive = false;
@@ -416,7 +408,7 @@ export class CombatSystem {
     attacker: Entity,
     windup: WindupAction,
     broadcast: BroadcastFn,
-    onDeath: (entity: Entity, killerSessionId: string) => void,
+    onDeath: (entity: Entity, killerSessionId?: string) => void,
     now: number,
   ): void {
     const stats = attacker.getStats()!;
@@ -485,7 +477,7 @@ export class CombatSystem {
     attacker: Entity,
     windup: WindupAction,
     broadcast: BroadcastFn,
-    onDeath: (entity: Entity, killerSessionId: string) => void,
+    onDeath: (entity: Entity, killerSessionId?: string) => void,
     now: number,
     onSummon?: (caster: Entity, spellId: string, x: number, y: number) => void,
   ): void {
@@ -600,7 +592,7 @@ export class CombatSystem {
     spell: SpellDef,
     scalingValue: number,
     broadcast: BroadcastFn,
-    onDeath: (entity: Entity, killerSessionId: string) => void,
+    onDeath: (entity: Entity, killerSessionId?: string) => void,
     now: number,
   ): void {
     // Check invulnerability

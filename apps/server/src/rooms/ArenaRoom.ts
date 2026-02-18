@@ -554,7 +554,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       },
       broadcast,
       (player: Player) => {
-        this.onEntityDeath(player, "");
+        this.onEntityDeath(player);
       },
       this.roomId,
       this.state.tick,
@@ -574,7 +574,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     this.combat.processWindups(
       now,
       broadcast,
-      (entity: Entity, killerSessionId: string) =>
+      (entity: Entity, killerSessionId?: string) =>
         this.onEntityDeath(entity, killerSessionId),
       (caster: Entity, spellId: string, x: number, y: number) =>
         this.onSummon(caster, spellId, x, y),
@@ -596,7 +596,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     );
   }
 
-  private onEntityDeath(entity: Entity, killerSessionId: string) {
+  private onEntityDeath(entity: Entity, killerSessionId?: string) {
     if (entity instanceof Player) {
       this.onPlayerDeath(entity, killerSessionId);
     } else {
@@ -604,7 +604,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     }
   }
 
-  private onNpcDeath(npc: Npc, killerSessionId: string) {
+  private onNpcDeath(npc: Npc, killerSessionId?: string) {
     this.npcSystem.handleDeath(npc);
 
     if (killerSessionId) {
@@ -679,7 +679,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     }
   }
 
-  private onPlayerDeath(player: Player, killerSessionId: string) {
+  private onPlayerDeath(player: Player, killerSessionId?: string) {
     const droppedItems = this.inventorySystem.dropAllItems(player);
     for (const { itemId, quantity } of droppedItems) {
       this.drops.spawnItemDrop(
