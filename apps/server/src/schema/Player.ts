@@ -1,33 +1,15 @@
-import { Schema, type, ArraySchema, view } from "@colyseus/schema";
+import { type, ArraySchema, view } from "@colyseus/schema";
+import { Char } from "./Char";
 import { InventoryItem } from "./InventoryItem";
-import { Direction } from "@abraxas/shared";
 import type { ClassType } from "@abraxas/shared";
 
-export class Player extends Schema {
+export class Player extends Char {
   // ── Shared (visible to all clients) ─────────────────────────────────────
-  @type("string") sessionId: string = "";
-  @type("string") name: string = "";
   @type("string") partyId: string = "";
   @type("string") classType: ClassType = "warrior";
-  @type("uint16") tileX: number = 0;
-  @type("uint16") tileY: number = 0;
-  @type("uint8") facing: Direction = Direction.DOWN;
-  @type("int16") _hp: number = 0;
-  @type("int16") maxHp: number = 0;
-
-  @type("int16")
-  get hp() {
-    return this._hp;
-  }
-  set hp(value: number) {
-    this._hp = value;
-    this.alive = this._hp > 0;
-  }
-  @type("boolean") alive: boolean = true;
-  @type("boolean") stealthed: boolean = false;
-  @type("boolean") stunned: boolean = false;
 
   // ── Private (only visible to the owning client via StateView) ────────────
+
   /** Internal DB references — never needed by other clients */
   @view() @type("string") userId: string = "";
   @view() @type("string") dbId: string = "";

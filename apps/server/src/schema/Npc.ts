@@ -1,36 +1,16 @@
-import { Schema, type } from "@colyseus/schema";
-import { Direction } from "@abraxas/shared";
+import { type } from "@colyseus/schema";
+import { Char } from "./Char";
 import type { NpcType } from "@abraxas/shared";
 
-export class Npc extends Schema {
-  @type("string") sessionId: string = "";
-  @type("string") equipment: string = "{}";
+export class Npc extends Char {
+  @type("string") type: NpcType = "orc";
 
-  // AI State
+  // AI state
   @type("string") state: string = "idle";
   @type("string") targetId: string = "";
-  @type("string") name: string = "";
-  @type("string") type: NpcType = "orc"; 
-  @type("uint16") tileX: number = 0;
-  @type("uint16") tileY: number = 0;
-  @type("uint8") facing: Direction = Direction.DOWN;
-  @type("int16") _hp: number = 0;
-  @type("int16") maxHp: number = 0;
 
-  @type("int16")
-  get hp() { return this._hp; }
-  set hp(value: number) {
-      this._hp = value;
-      this.alive = this._hp > 0;
-  }
-  @type("boolean") alive: boolean = true;
+  // Combat stats (public — all clients can see NPC strength)
   @type("uint8") str: number = 0;
   @type("uint8") agi: number = 0;
   @type("uint8") intStat: number = 0;
-  @type("int16") mana: number = 0;
-  @type("boolean") stealthed: boolean = false;
-  @type("boolean") stunned: boolean = false;
-  
-  // NPCs don't need inventory/equip for now, but maybe loot table reference?
-  // For now simple.
 }

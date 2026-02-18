@@ -705,15 +705,16 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       player.gold = 0;
     }
 
+    // Only player killers receive a gold bonus
+    if (killerSessionId) {
+      const killerPlayer = this.state.players.get(killerSessionId);
+      if (killerPlayer) killerPlayer.gold += KILL_GOLD_BONUS;
+    }
+
     let killerName = "";
     if (killerSessionId) {
       const killer = this.spatial.findEntityBySessionId(killerSessionId);
-      if (killer) {
-        killerName = isPlayer(killer) ? killer.name : killer.type;
-        if (isPlayer(killer)) {
-          killer.gold += KILL_GOLD_BONUS;
-        }
-      }
+      killerName = killer ? (isPlayer(killer) ? killer.name : killer.type) : "";
     }
 
     this.broadcast(ServerMessageType.KillFeed, {

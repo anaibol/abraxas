@@ -19,6 +19,7 @@ import type { BuffSystem } from "./BuffSystem";
 import {
   getEntityStats,
   getEntityPosition,
+  isPlayer,
   Entity,
 } from "../utils/EntityUtils";
 import { SpatialLookup } from "../utils/SpatialLookup";
@@ -248,8 +249,8 @@ export class CombatSystem {
       return false;
     }
 
-    // Check mana
-    if (caster.mana < spell.manaCost) {
+    // Check mana (NPCs have no mana pool; their spells always have manaCost 0)
+    if (isPlayer(caster) && caster.mana < spell.manaCost) {
       sendToClient?.(ServerMessageType.Error, { message: "Not enough mana" });
       return false;
     }
@@ -272,8 +273,8 @@ export class CombatSystem {
       }
     }
 
-    // Deduct mana at cast start
-    caster.mana -= spell.manaCost;
+    // Deduct mana at cast start (players only)
+    if (isPlayer(caster)) caster.mana -= spell.manaCost;
 
     cs.lastGcdMs = now;
     cs.spellCooldowns.set(spellId, now);

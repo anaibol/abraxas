@@ -86,7 +86,7 @@ export interface TileMap {
 
 export interface ClassStats {
   hp: number;
-  mana: number;
+  mana?: number;
   str: number;
   agi: number;
   int: number;

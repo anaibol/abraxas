@@ -56,7 +56,6 @@ export class NpcSystem {
     const stats = NPC_STATS[type];
     npc.hp = stats.hp;
     npc.maxHp = stats.hp;
-    npc.mana = stats.mana;
     npc.str = stats.str;
     npc.agi = stats.agi;
     npc.intStat = stats.int;
