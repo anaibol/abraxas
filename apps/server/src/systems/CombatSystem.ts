@@ -136,7 +136,11 @@ export class CombatSystem {
 
     // Target validation for ranged
     if (stats.meleeRange > 1) {
-      if (!target || !target.alive || target.sessionId === attacker.sessionId) {
+      if (
+        !target ||
+        !target.alive ||
+        target.sessionId === attacker.sessionId
+      ) {
         sendToClient?.(ServerMessageType.InvalidTarget);
         return false;
       }
@@ -262,7 +266,11 @@ export class CombatSystem {
     // For single-target offensive spells (rangeTiles > 0, not AoE), validate target exists before mana deduction
     if (spell.rangeTiles > 0 && spell.effect !== "aoe") {
       const target = this.spatial.findEntityAtTile(targetTileX, targetTileY);
-      if (!target || !target.alive || target.sessionId === caster.sessionId) {
+      if (
+        !target ||
+        !target.alive ||
+        target.sessionId === caster.sessionId
+      ) {
         sendToClient?.(ServerMessageType.InvalidTarget);
         return false;
       }

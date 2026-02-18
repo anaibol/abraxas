@@ -78,7 +78,12 @@ export class SpatialLookup {
     // Return first entity found in cell
     for (const sessionId of cell) {
       const entity = this.findEntityBySessionId(sessionId);
-      if (entity && entity.alive && entity.tileX === x && entity.tileY === y) {
+      if (
+        entity &&
+        entity.alive &&
+        entity.tileX === x &&
+        entity.tileY === y
+      ) {
         return entity;
       }
     }
