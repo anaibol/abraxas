@@ -17,7 +17,31 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  players Player[]
+  players  Player[]
+  friends  RequesterFriend[] @relation("Requester")
+  friendOf RecipientFriend[] @relation("Recipient")
+}
+
+model RequesterFriend {
+  id          String   @id @default(uuid())
+  requesterId String
+  requester   User     @relation("Requester", fields: [requesterId], references: [id])
+  recipientId String
+  status      String   @default("PENDING") // PENDING, ACCEPTED
+  createdAt   DateTime @default(now())
+
+  @@unique([requesterId, recipientId])
+}
+
+model RecipientFriend {
+  id          String   @id @default(uuid())
+  recipientId String
+  recipient   User     @relation("Recipient", fields: [recipientId], references: [id])
+  requesterId String
+  status      String   @default("PENDING")
+  createdAt   DateTime @default(now())
+
+  @@unique([recipientId, requesterId])
 }
 
 model Player {
