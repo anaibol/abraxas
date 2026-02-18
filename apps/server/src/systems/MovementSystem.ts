@@ -1,7 +1,12 @@
 import type { Direction, TileMap } from "@abraxas/shared";
 import { DIRECTION_DELTA } from "@abraxas/shared";
 import { logger } from "../logger";
-import { EntityUtils, Entity } from "../utils/EntityUtils";
+import {
+  getEntityStats,
+  getEntityPosition,
+  isPlayer,
+  Entity,
+} from "../utils/EntityUtils";
 import { SpatialLookup } from "../utils/SpatialLookup";
 
 interface EntityTimers {
@@ -37,7 +42,7 @@ export class MovementSystem {
   ): boolean {
     const timers = this.getTimers(entity.sessionId);
 
-    const stats = EntityUtils.getStats(entity);
+    const stats = getEntityStats(entity);
     if (!stats) return false;
 
     const moveIntervalMs = 1000 / stats.speedTilesPerSecond;
@@ -48,7 +53,7 @@ export class MovementSystem {
     // Check movement timing (with 15ms tolerance for network/clock jitter)
     if (now - timers.lastMoveMs < moveIntervalMs - 15) {
       // Only log debug for players to avoid spamming for NPCs
-      if (EntityUtils.isPlayer(entity)) {
+      if (isPlayer(entity)) {
         logger.debug({
           room: roomId,
           tick,
@@ -79,7 +84,7 @@ export class MovementSystem {
       return false;
     }
 
-    const posBefore = EntityUtils.getPosition(entity);
+    const posBefore = getEntityPosition(entity);
 
     entity.tileX = newX;
     entity.tileY = newY;
@@ -95,7 +100,7 @@ export class MovementSystem {
     }
 
     // Log only for players
-    if (EntityUtils.isPlayer(entity)) {
+    if (isPlayer(entity)) {
       logger.info({
         room: roomId,
         tick,

@@ -24,8 +24,9 @@ import type {
   TileMap,
   EquipmentSlot,
   PlayerQuestState,
+  ServerMessages,
 } from "@abraxas/shared";
-import { getRandomName } from "@abraxas/shared";
+import { getRandomName, ServerMessageType } from "@abraxas/shared";
 import { QuestDialogue } from "./QuestDialogue";
 import { NetworkManager } from "../network/NetworkManager";
 import { AudioManager } from "../managers/AudioManager";
@@ -212,7 +213,8 @@ export function App() {
         }
 
         const network = new NetworkManager<GameState>();
-        await network.connect(name, classType, token, mapName);
+        // Pass GameState class so server skips sending schema definition on join
+        await network.connect(name, classType, GameState, token, mapName);
         networkRef.current = network;
         roomRef.current = network.getRoom();
 
@@ -261,13 +263,8 @@ export function App() {
         network
           .getRoom()
           .onMessage(
-            "chat",
-            (data: {
-              senderId: string;
-              senderName: string;
-              message: string;
-              channel?: string;
-            }) => {
+            ServerMessageType.Chat,
+            (data: ServerMessages[ServerMessageType.Chat]) => {
               setConsoleMessages((prev) => {
                 const newMsg: ConsoleMessage = {
                   id: ++consoleMsgId,
@@ -291,26 +288,29 @@ export function App() {
         // Listen for notifications
         network
           .getRoom()
-          .onMessage("notification", (data: { message: string }) => {
-            setConsoleMessages((prev) => {
-              const newMsg: ConsoleMessage = {
-                id: ++consoleMsgId,
-                text: data.message,
-                color: "#00ff00",
-                timestamp: Date.now(),
-              };
-              const next = [...prev, newMsg];
-              if (next.length > 50) return next.slice(next.length - 50);
-              return next;
-            });
-          });
+          .onMessage(
+            ServerMessageType.Notification,
+            (data: ServerMessages[ServerMessageType.Notification]) => {
+              setConsoleMessages((prev) => {
+                const newMsg: ConsoleMessage = {
+                  id: ++consoleMsgId,
+                  text: data.message,
+                  color: "#00ff00",
+                  timestamp: Date.now(),
+                };
+                const next = [...prev, newMsg];
+                if (next.length > 50) return next.slice(next.length - 50);
+                return next;
+              });
+            },
+          );
 
         // Listen for Shop
         network
           .getRoom()
           .onMessage(
-            "open_shop",
-            (data: { npcId: string; inventory: string[] }) => {
+            ServerMessageType.OpenShop,
+            (data: ServerMessages[ServerMessageType.OpenShop]) => {
               setShopData(data);
             },
           );
@@ -319,8 +319,8 @@ export function App() {
         network
           .getRoom()
           .onMessage(
-            "open_dialogue",
-            (data: { npcId: string; text: string; options: any[] }) => {
+            ServerMessageType.OpenDialogue,
+            (data: ServerMessages[ServerMessageType.OpenDialogue]) => {
               setDialogueData(data);
             },
           );
@@ -328,41 +328,44 @@ export function App() {
         // Listen for Quests
         network
           .getRoom()
-          .onMessage("quest_list", (data: { quests: PlayerQuestState[] }) => {
-            setQuests(data.quests);
-          });
+          .onMessage(
+            ServerMessageType.QuestList,
+            (data: ServerMessages[ServerMessageType.QuestList]) => {
+              setQuests(data.quests);
+            },
+          );
 
         network
           .getRoom()
-          .onMessage("quest_update", (data: { quest: PlayerQuestState }) => {
-            setQuests((prev) => {
-              const idx = prev.findIndex(
-                (q) => q.questId === data.quest.questId,
-              );
-              if (idx >= 0) {
-                const next = [...prev];
-                next[idx] = data.quest;
-                return next;
-              }
-              return [...prev, data.quest];
-            });
-          });
+          .onMessage(
+            ServerMessageType.QuestUpdate,
+            (data: ServerMessages[ServerMessageType.QuestUpdate]) => {
+              setQuests((prev) => {
+                const idx = prev.findIndex(
+                  (q) => q.questId === data.quest.questId,
+                );
+                if (idx >= 0) {
+                  const next = [...prev];
+                  next[idx] = data.quest;
+                  return next;
+                }
+                return [...prev, data.quest];
+              });
+            },
+          );
 
         // Listen for Party
         network
           .getRoom()
           .onMessage(
-            "party_invited",
-            (data: { partyId: string; inviterName: string }) => {
+            ServerMessageType.PartyInvited,
+            (data: ServerMessages[ServerMessageType.PartyInvited]) => {
               toaster.create({
                 title: "Party Invitation",
                 description: `${data.inviterName} invited you to a party. Accept?`,
                 action: {
                   label: "Accept",
-                  onClick: () =>
-                    network
-                      .getRoom()
-                      .send("party_accept", { partyId: data.partyId }),
+                  onClick: () => network.sendPartyAccept(data.partyId),
                 },
               });
             },
@@ -371,12 +374,8 @@ export function App() {
         network
           .getRoom()
           .onMessage(
-            "party_update",
-            (data: {
-              partyId: string;
-              leaderId: string;
-              members: { sessionId: string; name: string }[];
-            }) => {
+            ServerMessageType.PartyUpdate,
+            (data: ServerMessages[ServerMessageType.PartyUpdate]) => {
               setPartyData(data.partyId ? data : null);
             },
           );
@@ -385,8 +384,8 @@ export function App() {
         network
           .getRoom()
           .onMessage(
-            "friend_invited",
-            (data: { requesterId: string; requesterName: string }) => {
+            ServerMessageType.FriendInvited,
+            (data: ServerMessages[ServerMessageType.FriendInvited]) => {
               toaster.create({
                 title: "Friend Request",
                 description: `${data.requesterName} wants to be your friend.`,
@@ -402,14 +401,22 @@ export function App() {
 
         network
           .getRoom()
-          .onMessage("friend_update", (data: { friends: any[] }) => {
-            setFriendsData(data.friends);
-          });
+          .onMessage(
+            ServerMessageType.FriendUpdate,
+            (data: ServerMessages[ServerMessageType.FriendUpdate]) => {
+              setFriendsData(data.friends);
+            },
+          );
 
         // Listen for audio
-        network.getRoom().onMessage("audio", (buffer: ArrayBuffer) => {
-          audioManagerRef.current?.playAudioChunk(buffer);
-        });
+        network
+          .getRoom()
+          .onMessage(
+            ServerMessageType.Audio,
+            (data: ServerMessages[ServerMessageType.Audio]) => {
+              audioManagerRef.current?.playAudioChunk(data.data);
+            },
+          );
 
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
@@ -611,14 +618,10 @@ export function App() {
                 playerGold={playerState.gold || 0}
                 playerInventory={playerState.inventory || []}
                 onBuy={(itemId, qty) =>
-                  networkRef.current
-                    ?.getRoom()
-                    .send("buy_item", { itemId, quantity: qty })
+                  networkRef.current?.sendBuyItem(itemId, qty)
                 }
                 onSell={(itemId, qty) =>
-                  networkRef.current
-                    ?.getRoom()
-                    .send("sell_item", { itemId, quantity: qty })
+                  networkRef.current?.sendSellItem(itemId, qty)
                 }
                 onClose={() => setShopData(null)}
               />

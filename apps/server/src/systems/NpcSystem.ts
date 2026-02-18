@@ -17,7 +17,7 @@ import { GameState } from "../schema/GameState";
 import { MovementSystem } from "./MovementSystem";
 import { CombatSystem } from "./CombatSystem";
 import { logger } from "../logger";
-import { EntityUtils, Entity } from "../utils/EntityUtils";
+import { getEntityPosition, isAttackable, Entity } from "../utils/EntityUtils";
 
 import { SpatialLookup } from "../utils/SpatialLookup";
 
@@ -144,11 +144,11 @@ export class NpcSystem {
     );
     let nearest: Entity | null = null;
     let minDist = Infinity;
-    const npcPos = EntityUtils.getPosition(npc);
+    const npcPos = getEntityPosition(npc);
 
     for (const entity of players) {
-      if (EntityUtils.isAttackable(entity)) {
-        const dist = MathUtils.dist(npcPos, EntityUtils.getPosition(entity));
+      if (isAttackable(entity)) {
+        const dist = MathUtils.dist(npcPos, getEntityPosition(entity));
         if (dist < minDist) {
           minDist = dist;
           nearest = entity;
@@ -173,14 +173,14 @@ export class NpcSystem {
     const target = this.spatial.findEntityBySessionId(npc.targetId);
 
     // Target lost or dead
-    if (!target || !EntityUtils.isAttackable(target)) {
+    if (!target || !isAttackable(target)) {
       npc.targetId = "";
       npc.state = NpcState.IDLE;
       return;
     }
 
-    const npcPos = EntityUtils.getPosition(npc);
-    const targetPos = EntityUtils.getPosition(target);
+    const npcPos = getEntityPosition(npc);
+    const targetPos = getEntityPosition(target);
     const dist = MathUtils.manhattanDist(npcPos, targetPos);
     const stats = NPC_STATS[npc.type];
 
@@ -296,13 +296,13 @@ export class NpcSystem {
 
   private updateAttack(npc: Npc, now: number, broadcast: BroadcastFn): void {
     const target = this.spatial.findEntityBySessionId(npc.targetId);
-    if (!target || !EntityUtils.isAttackable(target)) {
+    if (!target || !isAttackable(target)) {
       npc.state = NpcState.IDLE;
       return;
     }
 
-    const npcPos = EntityUtils.getPosition(npc);
-    const targetPos = EntityUtils.getPosition(target);
+    const npcPos = getEntityPosition(npc);
+    const targetPos = getEntityPosition(target);
     const dist = MathUtils.manhattanDist(npcPos, targetPos);
     const stats = NPC_STATS[npc.type];
 

@@ -49,7 +49,7 @@ import { MessageHandler } from "../handlers/MessageHandler";
 import { SocialSystem } from "../systems/SocialSystem";
 import { FriendsSystem } from "../systems/FriendsSystem";
 import { SpatialLookup } from "../utils/SpatialLookup";
-import { EntityUtils, Entity } from "../utils/EntityUtils";
+import { isPlayer, isNpc, Entity } from "../utils/EntityUtils";
 import { QuestSystem } from "../systems/QuestSystem";
 
 export class ArenaRoom extends Room<{ state: GameState }> {
@@ -524,11 +524,11 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       now,
       (sid: string) => {
         const entity = this.spatial.findEntityBySessionId(sid);
-        return entity && EntityUtils.isPlayer(entity) ? entity : undefined;
+        return entity && isPlayer(entity) ? entity : undefined;
       },
       broadcast,
       (player: Entity) => {
-        if (EntityUtils.isPlayer(player)) {
+        if (isPlayer(player)) {
           this.onEntityDeath(player, "");
         }
       },
@@ -573,7 +573,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
   }
 
   private onEntityDeath(entity: Entity, killerSessionId: string) {
-    if (EntityUtils.isPlayer(entity)) {
+    if (isPlayer(entity)) {
       this.onPlayerDeath(entity, killerSessionId);
     } else {
       this.onNpcDeath(entity, killerSessionId);
@@ -698,9 +698,9 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     if (killerSessionId) {
       const killer = this.spatial.findEntityBySessionId(killerSessionId);
       if (killer) {
-        if (EntityUtils.isPlayer(killer)) {
+        if (isPlayer(killer)) {
           killerName = killer.name;
-        } else if (EntityUtils.isNpc(killer)) {
+        } else if (isNpc(killer)) {
           killerName = killer.type;
         }
       }

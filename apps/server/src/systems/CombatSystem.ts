@@ -16,7 +16,11 @@ import type {
   EntityCombatState,
 } from "@abraxas/shared";
 import type { BuffSystem } from "./BuffSystem";
-import { EntityUtils, Entity } from "../utils/EntityUtils";
+import {
+  getEntityStats,
+  getEntityPosition,
+  Entity,
+} from "../utils/EntityUtils";
 import { SpatialLookup } from "../utils/SpatialLookup";
 
 import {
@@ -70,7 +74,7 @@ export class CombatSystem {
     sendToClient?: SendToClientFn,
   ): boolean {
     const cs = this.getCombatState(attacker.sessionId);
-    const stats = EntityUtils.getStats(attacker);
+    const stats = getEntityStats(attacker);
     if (!stats) return false;
 
     // Can't attack while stunned
@@ -125,7 +129,7 @@ export class CombatSystem {
         sendToClient?.(ServerMessageType.InvalidTarget);
         return false;
       }
-      const dist = MathUtils.manhattanDist(EntityUtils.getPosition(attacker), {
+      const dist = MathUtils.manhattanDist(getEntityPosition(attacker), {
         x: target.tileX,
         y: target.tileY,
       });
@@ -178,7 +182,7 @@ export class CombatSystem {
     sendToClient?: SendToClientFn,
   ): boolean {
     const cs = this.getCombatState(caster.sessionId);
-    const stats = EntityUtils.getStats(caster);
+    const stats = getEntityStats(caster);
     if (!stats) return false;
 
     const spell = SPELLS[spellId];
@@ -237,7 +241,7 @@ export class CombatSystem {
 
     // Self-target spells (range 0) don't need range check
     if (spell.rangeTiles > 0) {
-      const dist = MathUtils.manhattanDist(EntityUtils.getPosition(caster), {
+      const dist = MathUtils.manhattanDist(getEntityPosition(caster), {
         x: targetTileX,
         y: targetTileY,
       });
@@ -382,7 +386,10 @@ export class CombatSystem {
   ): void {
     target.hp = 0;
     target.alive = false;
-    broadcast(ServerMessageType.Death, { sessionId: target.sessionId, killerSessionId });
+    broadcast(ServerMessageType.Death, {
+      sessionId: target.sessionId,
+      killerSessionId,
+    });
     onDeath(target, killerSessionId);
   }
 
@@ -393,7 +400,7 @@ export class CombatSystem {
     onDeath: (entity: Entity, killerSessionId: string) => void,
     now: number,
   ): void {
-    const stats = EntityUtils.getStats(attacker)!;
+    const stats = getEntityStats(attacker)!;
     const target = this.spatial.findEntityAtTile(
       windup.targetTileX,
       windup.targetTileY,
@@ -454,7 +461,10 @@ export class CombatSystem {
         this.killTarget(target, attacker.sessionId, broadcast, onDeath);
       }
     } else {
-      broadcast(ServerMessageType.AttackHit, { sessionId: attacker.sessionId, targetSessionId: null });
+      broadcast(ServerMessageType.AttackHit, {
+        sessionId: attacker.sessionId,
+        targetSessionId: null,
+      });
     }
   }
 

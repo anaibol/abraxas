@@ -60,15 +60,16 @@ export class NetworkManager<SC = unknown> {
   async connect(
     name: string,
     classType: ClassType,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    stateClass: new (...args: any[]) => SC,
     token?: string,
     mapName?: string,
   ): Promise<ClientRoom<SC>> {
-    this.room = await this.client.joinOrCreate<SC>("arena", {
-      name,
-      classType,
-      token,
-      mapName,
-    });
+    this.room = await this.client.joinOrCreate(
+      "arena",
+      { name, classType, token, mapName },
+      stateClass,
+    );
 
     const welcomePromise = new Promise<WelcomeData>((resolve) => {
       this.welcomeResolve = resolve;

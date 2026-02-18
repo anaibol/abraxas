@@ -97,6 +97,12 @@ const registerEndpoint = createEndpoint(
   },
 );
 
+const healthEndpoint = createEndpoint(
+  "/health",
+  { method: "GET" },
+  async (ctx) => ctx.json({ ok: true }),
+);
+
 const loginEndpoint = createEndpoint(
   "/api/login",
   {
@@ -145,7 +151,7 @@ export async function createGameServer(options: {
     rooms: {
       arena: defineRoom(ArenaRoom),
     },
-    routes: createRouter({ registerEndpoint, loginEndpoint }),
+    routes: createRouter({ healthEndpoint, registerEndpoint, loginEndpoint }),
     express: (app) => {
       // Serve the built client via Bun.file() — no Express needed
       if (options.staticDir) {
@@ -191,7 +197,10 @@ export async function createGameServer(options: {
     },
   });
 
-  await server.listen(options.port, "0.0.0.0");
+  // Bind to "::" (IPv6 wildcard) which on Linux enables dual-stack:
+  // accepts both IPv4 and IPv6 connections. Required for Fly.io health
+  // checks, which connect via the machine's internal IPv6 address.
+  await server.listen(options.port, "::");
 
   logger.info({ intent: "server_start", result: "ok", port: options.port });
 
