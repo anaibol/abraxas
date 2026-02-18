@@ -1,4 +1,4 @@
-import { ClassType } from "./types";
+import { ClassType, EquipmentSlot } from "./types";
 
 export type ItemSlot = "weapon" | "armor" | "shield" | "helmet" | "ring" | "consumable";
 export type ItemRarity = "common" | "uncommon" | "rare";
@@ -396,5 +396,4 @@ export const ITEMS: Record<string, ItemDef> = {
   },
 };
 
-export type EquipmentSlot = "weapon" | "armor" | "shield" | "helmet" | "ring";
-export const EQUIPMENT_SLOTS: readonly EquipmentSlot[] = ["weapon", "armor", "shield", "helmet", "ring"];
+

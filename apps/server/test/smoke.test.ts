@@ -99,8 +99,6 @@ describe("Arena multiplayer smoke test", () => {
     const tokenA = AuthService.generateToken({ userId: userA.id, username: nameA });
     const tokenB = AuthService.generateToken({ userId: userB.id, username: nameB });
 
-    process.stderr.write("DEBUG: Server is up, waiting 30s for manual probing...\n");
-    await new Promise(r => setTimeout(r, 10000));
     const roomA: Room<GameState> = await clientA.joinOrCreate("arena", {
       name: nameA,
       classType: "warrior",

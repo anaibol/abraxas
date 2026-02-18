@@ -4,6 +4,8 @@ export enum Direction {
   LEFT = 2,
   RIGHT = 3
 }
+export type EquipmentSlot = "weapon" | "armor" | "shield" | "helmet" | "ring";
+export const EQUIPMENT_SLOTS: readonly EquipmentSlot[] = ["weapon", "armor", "shield", "helmet", "ring"];
 export type ClassType = "warrior" | "wizard" | "archer" | "assassin" | "paladin" | "druid";
 export type NpcType = "orc" | "skeleton" | "goblin" | "wolf" | "merchant" | "spider" | "ghost" | "lich";
 
@@ -150,8 +152,51 @@ export interface NpcEntityState extends BaseEntityState {
 
 export type EntityState = PlayerEntityState | NpcEntityState;
 
+export enum ServerMessageType {
+  Welcome = "welcome",
+  AttackStart = "attack_start",
+  AttackHit = "attack_hit",
+  CastStart = "cast_start",
+  CastHit = "cast_hit",
+  Damage = "damage",
+  Heal = "heal",
+  Death = "death",
+  Respawn = "respawn",
+  BuffApplied = "buff_applied",
+  StealthApplied = "stealth_applied",
+  StunApplied = "stun_applied",
+  KillFeed = "kill_feed",
+  Chat = "chat",
+  Notification = "notification",
+  ItemUsed = "item_used",
+  InvalidTarget = "invalid_target",
+  Pong = "pong",
+  LevelUp = "level_up",
+  OpenShop = "open_shop",
+  BuyItem = "buy_item",
+  SellItem = "sell_item",
+  Error = "error",
+  FriendRequest = "friend_request",
+  FriendInvited = "friend_invited",
+  FriendAccept = "friend_accept",
+  FriendRemove = "friend_remove",
+  FriendUpdate = "friend_update",
+  PartyInvite = "party_invite",
+  PartyInvited = "party_invited",
+  PartyAccept = "party_accept",
+  PartyLeave = "party_leave",
+  PartyKick = "party_kick",
+  PartyUpdate = "party_update",
+  Warp = "warp",
+  Audio = "audio",
+  QuestList = "quest_list",
+  QuestUpdate = "quest_update",
+  QuestAvailable = "quest_available",
+  OpenDialogue = "open_dialogue",
+}
+
 export type ServerMessages = {
-  welcome: {
+  [ServerMessageType.Welcome]: {
     sessionId: string;
     tileX: number;
     tileY: number;
@@ -160,50 +205,95 @@ export type ServerMessages = {
     tileSize: number;
     collision: number[][];
   };
-  attack_start: { sessionId: string; facing: Direction };
-  attack_hit: { sessionId: string; targetSessionId: string | null; dodged?: boolean };
-  cast_start: { sessionId: string; spellId: string; targetTileX: number; targetTileY: number };
-  cast_hit: { sessionId: string; spellId: string; targetTileX: number; targetTileY: number; fxId: number };
-  damage: { targetSessionId: string; amount: number; hpAfter: number; type: "physical" | "magic" | "dot" };
-  heal: { sessionId: string; amount: number; hpAfter: number };
-  death: { sessionId: string; killerSessionId?: string };
-  respawn: { sessionId: string; tileX: number; tileY: number };
-  buff_applied: { sessionId: string; spellId: string; durationMs: number };
-  stealth_applied: { sessionId: string; durationMs: number };
-  stun_applied: { targetSessionId: string; durationMs: number };
-  kill_feed: { killerName: string; victimName: string; killerSessionId?: string; victimSessionId: string };
-  chat: { senderId: string; senderName: string; message: string; channel?: "global" | "party" | "whisper" | "system" };
-  notification: { message: string };
-  item_used: { sessionId: string; itemId: string };
-  invalid_target: null;
-  pong: { serverTime: number };
-  level_up: { sessionId: string; level: number };
-  open_shop: { npcId: string; inventory: string[] };
-  buy_item: { itemId: string; quantity: number };
-  sell_item: { itemId: string; quantity: number };
-  error: { message: string };
-  // Friend System
-  friend_request: { targetName: string };
-  friend_invited: { requesterId: string; requesterName: string };
-  friend_accept: { requesterId: string };
-  friend_remove: { friendId: string };
-  friend_update: { friends: { id: string; name: string; online: boolean }[] };
-  // Party System
-  party_invite: { targetSessionId: string };
-  party_invited: { partyId: string; inviterName: string };
-  party_accept: { partyId: string };
-  party_leave: {};
-  party_kick: { targetSessionId: string };
-  party_update: { partyId: string; leaderId: string; members: { sessionId: string; name: string }[] };
-  // Multi-map Support
-  warp: { targetMap: string; targetX: number; targetY: number };
-  // Audio Chat
-  audio: ArrayBuffer;
-  // Quest System
-  quest_list: { quests: PlayerQuestState[] };
-  quest_update: { quest: PlayerQuestState };
-  quest_available: { npcId: string; questIds: string[] };
-  open_dialogue: { npcId: string; text: string; options: { text: string; action: string; data?: any }[] };
+  [ServerMessageType.AttackStart]: { sessionId: string; facing: Direction };
+  [ServerMessageType.AttackHit]: { sessionId: string; targetSessionId: string | null; dodged?: boolean };
+  [ServerMessageType.CastStart]: { sessionId: string; spellId: string; targetTileX: number; targetTileY: number };
+  [ServerMessageType.CastHit]: { sessionId: string; spellId: string; targetTileX: number; targetTileY: number; fxId: number };
+  [ServerMessageType.Damage]: { targetSessionId: string; amount: number; hpAfter: number; type: "physical" | "magic" | "dot" };
+  [ServerMessageType.Heal]: { sessionId: string; amount: number; hpAfter: number };
+  [ServerMessageType.Death]: { sessionId: string; killerSessionId?: string };
+  [ServerMessageType.Respawn]: { sessionId: string; tileX: number; tileY: number };
+  [ServerMessageType.BuffApplied]: { sessionId: string; spellId: string; durationMs: number };
+  [ServerMessageType.StealthApplied]: { sessionId: string; durationMs: number };
+  [ServerMessageType.StunApplied]: { targetSessionId: string; durationMs: number };
+  [ServerMessageType.KillFeed]: { killerName: string; victimName: string; killerSessionId?: string; victimSessionId: string };
+  [ServerMessageType.Chat]: { senderId: string; senderName: string; message: string; channel?: "global" | "party" | "whisper" | "system" };
+  [ServerMessageType.Notification]: { message: string };
+  [ServerMessageType.ItemUsed]: { sessionId: string; itemId: string };
+  [ServerMessageType.InvalidTarget]: null;
+  [ServerMessageType.Pong]: { serverTime: number };
+  [ServerMessageType.LevelUp]: { sessionId: string; level: number };
+  [ServerMessageType.OpenShop]: { npcId: string; inventory: string[] };
+  [ServerMessageType.BuyItem]: { itemId: string; quantity: number };
+  [ServerMessageType.SellItem]: { itemId: string; quantity: number };
+  [ServerMessageType.Error]: { message: string };
+  [ServerMessageType.FriendRequest]: { targetName: string };
+  [ServerMessageType.FriendInvited]: { requesterId: string; requesterName: string };
+  [ServerMessageType.FriendAccept]: { requesterId: string };
+  [ServerMessageType.FriendRemove]: { friendId: string };
+  [ServerMessageType.FriendUpdate]: { friends: { id: string; name: string; online: boolean }[] };
+  [ServerMessageType.PartyInvite]: { targetSessionId: string };
+  [ServerMessageType.PartyInvited]: { partyId: string; inviterName: string };
+  [ServerMessageType.PartyAccept]: { partyId: string };
+  [ServerMessageType.PartyLeave]: {};
+  [ServerMessageType.PartyKick]: { targetSessionId: string };
+  [ServerMessageType.PartyUpdate]: { partyId: string; leaderId: string; members: { sessionId: string; name: string }[] };
+  [ServerMessageType.Warp]: { targetMap: string; targetX: number; targetY: number };
+  [ServerMessageType.Audio]: { sessionId: string; data: ArrayBuffer };
+  [ServerMessageType.QuestList]: { quests: PlayerQuestState[] };
+  [ServerMessageType.QuestUpdate]: { quest: PlayerQuestState };
+  [ServerMessageType.QuestAvailable]: { npcId: string; questIds: string[] };
+  [ServerMessageType.OpenDialogue]: { npcId: string; text: string; options: { text: string; action: string; data?: any }[] };
+};
+
+export enum ClientMessageType {
+  Move = "move",
+  Attack = "attack",
+  Cast = "cast",
+  Pickup = "pickup",
+  Equip = "equip",
+  Unequip = "unequip",
+  UseItem = "use_item",
+  DropItem = "drop_item",
+  Chat = "chat",
+  Audio = "audio",
+  PartyInvite = "party_invite",
+  PartyAccept = "party_accept",
+  PartyLeave = "party_leave",
+  PartyKick = "party_kick",
+  FriendRequest = "friend_request",
+  FriendAccept = "friend_accept",
+  Interact = "interact",
+  BuyItem = "buy_item",
+  SellItem = "sell_item",
+  Ping = "ping",
+  QuestAccept = "quest_accept",
+  QuestComplete = "quest_complete",
+}
+
+export type ClientMessages = {
+  [ClientMessageType.Move]: { direction: Direction };
+  [ClientMessageType.Attack]: { targetTileX?: number; targetTileY?: number };
+  [ClientMessageType.Cast]: { spellId: string; targetTileX: number; targetTileY: number };
+  [ClientMessageType.Pickup]: { dropId: string };
+  [ClientMessageType.Equip]: { itemId: string };
+  [ClientMessageType.Unequip]: { slot: EquipmentSlot };
+  [ClientMessageType.UseItem]: { itemId: string };
+  [ClientMessageType.DropItem]: { itemId: string };
+  [ClientMessageType.Chat]: { message: string };
+  [ClientMessageType.Audio]: ArrayBuffer;
+  [ClientMessageType.PartyInvite]: { targetSessionId: string };
+  [ClientMessageType.PartyAccept]: { partyId: string };
+  [ClientMessageType.PartyLeave]: {};
+  [ClientMessageType.PartyKick]: { targetSessionId: string };
+  [ClientMessageType.FriendRequest]: { targetName: string };
+  [ClientMessageType.FriendAccept]: { requesterId: string };
+  [ClientMessageType.Interact]: { npcId: string };
+  [ClientMessageType.BuyItem]: { itemId: string; quantity: number };
+  [ClientMessageType.SellItem]: { itemId: string; quantity: number; npcId?: string };
+  [ClientMessageType.Ping]: {};
+  [ClientMessageType.QuestAccept]: { questId: string };
+  [ClientMessageType.QuestComplete]: { questId: string };
 };
 
 export interface BroadcastFn {

@@ -24,7 +24,14 @@ import { SpatialLookup } from "../utils/SpatialLookup";
 import { EntityUtils, Entity } from "../utils/EntityUtils";
 import { QuestSystem } from "../systems/QuestSystem";
 
-export class ArenaRoom extends Room<any> {
+console.error("[ArenaRoom.ts] Module loading...");
+
+export class ArenaRoom extends Room<GameState> {
+  constructor() {
+    super();
+    console.error("[ArenaRoom] Constructor called");
+  }
+
   private map!: TileMap;
   private roomMapName!: string;
   private movement!: MovementSystem;
@@ -43,20 +50,20 @@ export class ArenaRoom extends Room<any> {
 
   async onCreate(options: JoinOptions & { mapName?: string }) {
     try {
-        process.stderr.write("[ArenaRoom] Entering onCreate\n");
+        console.error("[ArenaRoom] Entering onCreate");
         this.setState(new GameState());
-        process.stderr.write("[ArenaRoom] State initialized\n");
+        console.error("[ArenaRoom] State initialized");
         
         this.roomMapName = options.mapName || "arena.test";
-        process.stderr.write(`[ArenaRoom] Map name: ${this.roomMapName}\n`);
+        console.error(`[ArenaRoom] Map name: ${this.roomMapName}`);
         
         const loadedMap = await MapService.getMap(this.roomMapName);
         if (!loadedMap) {
-            process.stderr.write(`[ArenaRoom] Failed to load map: ${this.roomMapName}\n`);
+            console.error(`[ArenaRoom] Failed to load map: ${this.roomMapName}`);
             throw new Error(`Failed to load map: ${this.roomMapName}`);
         }
         this.map = loadedMap;
-        process.stderr.write("[ArenaRoom] Map loaded\n");
+        console.error("[ArenaRoom] Map loaded");
 
         this.drops.setInventorySystem(this.inventorySystem);
         
@@ -209,18 +216,26 @@ export class ArenaRoom extends Room<any> {
   }
 
   async onAuth(client: Client, options: JoinOptions) {
+    console.error(`[ArenaRoom] onAuth entering for client ${client.sessionId}`);
     if (!options.token) {
+        console.error("[ArenaRoom] onAuth: No token provided");
         throw new Error("Token required");
     }
     const payload = AuthService.verifyToken(options.token);
     if (!payload) {
+        console.error("[ArenaRoom] onAuth: Invalid token");
         throw new Error("Invalid token");
     }
     
     // Fetch user to ensure valid
+    console.error(`[ArenaRoom] onAuth: Fetching user ${payload.userId}`);
     const user = await prisma.user.findUnique({ where: { id: payload.userId } });
-    if (!user) throw new Error("User not found");
+    if (!user) {
+        console.error(`[ArenaRoom] onAuth: User ${payload.userId} not found`);
+        throw new Error("User not found");
+    }
 
+    console.error(`[ArenaRoom] onAuth: Success for user ${user.username}`);
     return { user };
   }
 
