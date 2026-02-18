@@ -147,7 +147,7 @@ export class NpcSystem {
     const npcPos = EntityUtils.getPosition(npc);
 
     for (const entity of players) {
-      if (entity.alive && entity.alive && !entity.stealthed) {
+      if (EntityUtils.isAttackable(entity)) {
         const dist = MathUtils.dist(npcPos, EntityUtils.getPosition(entity));
         if (dist < minDist) {
           minDist = dist;
@@ -173,7 +173,7 @@ export class NpcSystem {
     const target = this.spatial.findEntityBySessionId(npc.targetId);
 
     // Target lost or dead
-    if (!target || !target.alive || (target.alive && target.stealthed)) {
+    if (!target || !EntityUtils.isAttackable(target)) {
       npc.targetId = "";
       npc.state = NpcState.IDLE;
       return;
@@ -296,7 +296,7 @@ export class NpcSystem {
 
   private updateAttack(npc: Npc, now: number, broadcast: BroadcastFn): void {
     const target = this.spatial.findEntityBySessionId(npc.targetId);
-    if (!target || !target.alive) {
+    if (!target || !EntityUtils.isAttackable(target)) {
       npc.state = NpcState.IDLE;
       return;
     }
