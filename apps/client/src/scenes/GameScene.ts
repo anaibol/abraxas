@@ -30,7 +30,7 @@ type ObservableMap<T> = {
 };
 
 export class GameScene extends Phaser.Scene {
-  private network: NetworkManager<GameState>;
+  private network: NetworkManager;
   private onStateUpdate: StateCallback;
   private onKillFeed?: KillFeedCallback;
   private onConsoleMessage?: ConsoleCallback;
@@ -63,7 +63,7 @@ export class GameScene extends Phaser.Scene {
   private dropGraphics = new Map<string, Phaser.GameObjects.Arc>();
 
   constructor(
-    network: NetworkManager<GameState>,
+    network: NetworkManager,
     onStateUpdate: StateCallback,
     onKillFeed?: KillFeedCallback,
     onConsoleMessage?: ConsoleCallback,

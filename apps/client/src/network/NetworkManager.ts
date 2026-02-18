@@ -8,6 +8,7 @@ import type {
   ClientMessages,
 } from "@abraxas/shared";
 import { ClientMessageType, ServerMessageType } from "@abraxas/shared";
+import { GameState } from "../../../server/src/schema/GameState";
 
 /**
  * Room type as seen from the client side.
@@ -18,7 +19,7 @@ import { ClientMessageType, ServerMessageType } from "@abraxas/shared";
  *
  * This alias makes that intentional constraint explicit and keeps it in one place.
  */
-type ClientRoom<S> = Room<any, S>; // eslint-disable-line @typescript-eslint/no-explicit-any
+type ClientRoom = Room<any, GameState>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 function getServerUrl(): string {
   if (
@@ -31,9 +32,9 @@ function getServerUrl(): string {
   return "ws://localhost:2567";
 }
 
-export class NetworkManager<SC = unknown> {
+export class NetworkManager {
   private client: Client;
-  private room: ClientRoom<SC> | null = null;
+  private room: ClientRoom | null = null;
   private welcomeData: WelcomeData | null = null;
   private welcomeResolve: ((data: WelcomeData) => void) | null = null;
 
@@ -60,15 +61,16 @@ export class NetworkManager<SC = unknown> {
   async connect(
     name: string,
     classType: ClassType,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    stateClass: new (...args: any[]) => SC,
     token?: string,
     mapName?: string,
-  ): Promise<ClientRoom<SC>> {
+  ): Promise<ClientRoom> {
+    // Passing the GameState class (not just its type) tells the SDK the client
+    // already knows the schema shape → server skips sending the full definition,
+    // reducing join bandwidth.
     this.room = await this.client.joinOrCreate(
       "arena",
       { name, classType, token, mapName },
-      stateClass,
+      GameState,
     );
 
     const welcomePromise = new Promise<WelcomeData>((resolve) => {
@@ -113,7 +115,7 @@ export class NetworkManager<SC = unknown> {
     this._send(ClientMessageType.Audio, data);
   }
 
-  getRoom(): ClientRoom<SC> {
+  getRoom(): ClientRoom {
     if (!this.room) throw new Error("Not connected");
     return this.room;
   }

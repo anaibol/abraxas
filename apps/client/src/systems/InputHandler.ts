@@ -16,7 +16,6 @@ const SPELL_KEY_CODES: Record<string, number> = {
   R: Phaser.Input.Keyboard.KeyCodes.R,
 };
 
-
 export interface TargetingState {
   mode: "spell" | "attack";
   spellId?: string;
@@ -25,13 +24,17 @@ export interface TargetingState {
 
 export class InputHandler {
   private scene: Phaser.Scene;
-  private network: NetworkManager<any>;
+  private network: NetworkManager;
   private classType: string;
   private meleeRange: number;
   private moveKeys: Record<number, Phaser.Input.Keyboard.Key> = {};
   private ctrlKey!: Phaser.Input.Keyboard.Key;
   private escKey!: Phaser.Input.Keyboard.Key;
-  private spellKeys: { key: Phaser.Input.Keyboard.Key; spellId: string; rangeTiles: number }[] = [];
+  private spellKeys: {
+    key: Phaser.Input.Keyboard.Key;
+    spellId: string;
+    rangeTiles: number;
+  }[] = [];
   private lastMoveSentMs = 0;
   private moveIntervalMs: number;
   private tileSize: number;
@@ -51,7 +54,7 @@ export class InputHandler {
 
   constructor(
     scene: Phaser.Scene,
-    network: NetworkManager<any>,
+    network: NetworkManager,
     classType: string,
     tileSize: number,
     onLocalMove?: (direction: Direction) => void,
@@ -98,15 +101,15 @@ export class InputHandler {
       }
 
       this.ctrlKey = scene.input.keyboard.addKey(
-        Phaser.Input.Keyboard.KeyCodes.CTRL
+        Phaser.Input.Keyboard.KeyCodes.CTRL,
       );
 
       this.escKey = scene.input.keyboard.addKey(
-        Phaser.Input.Keyboard.KeyCodes.ESC
+        Phaser.Input.Keyboard.KeyCodes.ESC,
       );
 
       this.pttKey = scene.input.keyboard.addKey(
-        Phaser.Input.Keyboard.KeyCodes.V
+        Phaser.Input.Keyboard.KeyCodes.V,
       );
 
       // Dynamic spell keybinds from class config
@@ -148,11 +151,11 @@ export class InputHandler {
 
     // Push-to-Talk
     if (this.pttKey) {
-        if (Phaser.Input.Keyboard.JustDown(this.pttKey)) {
-            this.onPttStart?.();
-        } else if (Phaser.Input.Keyboard.JustUp(this.pttKey)) {
-            this.onPttEnd?.();
-        }
+      if (Phaser.Input.Keyboard.JustDown(this.pttKey)) {
+        this.onPttStart?.();
+      } else if (Phaser.Input.Keyboard.JustUp(this.pttKey)) {
+        this.onPttEnd?.();
+      }
     }
 
     // Movement: check held keys and repeat at interval (works in both idle and targeting)
@@ -185,7 +188,11 @@ export class InputHandler {
       if (leftClicked) {
         const mouseTile = getMouseTile();
         if (this.targeting.mode === "spell") {
-          this.network.sendCast(this.targeting.spellId!, mouseTile.x, mouseTile.y);
+          this.network.sendCast(
+            this.targeting.spellId!,
+            mouseTile.x,
+            mouseTile.y,
+          );
         } else {
           // attack mode (ranged attack)
           this.network.sendAttack(mouseTile.x, mouseTile.y);

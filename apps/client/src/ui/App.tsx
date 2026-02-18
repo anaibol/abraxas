@@ -85,7 +85,7 @@ export function App() {
 
   const gameContainerRef = useRef<HTMLDivElement>(null);
   const phaserGameRef = useRef<Phaser.Game | null>(null);
-  const networkRef = useRef<NetworkManager<GameState> | null>(null);
+  const networkRef = useRef<NetworkManager | null>(null);
   const audioManagerRef = useRef<AudioManager | null>(null);
   const wasAliveRef = useRef(true);
 
@@ -212,9 +212,8 @@ export function App() {
           networkRef.current.disconnect();
         }
 
-        const network = new NetworkManager<GameState>();
-        // Pass GameState class so server skips sending schema definition on join
-        await network.connect(name, classType, GameState, token, mapName);
+        const network = new NetworkManager();
+        await network.connect(name, classType, token, mapName);
         networkRef.current = network;
         roomRef.current = network.getRoom();
 
