@@ -9,6 +9,17 @@ import type {
 } from "@abraxas/shared";
 import { ClientMessageType, ServerMessageType } from "@abraxas/shared";
 
+/**
+ * Room type as seen from the client side.
+ *
+ * `@colyseus/sdk`'s `joinOrCreate<S>()` returns `Room<any, S>` where:
+ *  - 1st param = server room class type → unknown to clients by design, so `any`
+ *  - 2nd param = synchronized state schema → fully typed as `S`
+ *
+ * This alias makes that intentional constraint explicit and keeps it in one place.
+ */
+type ClientRoom<S> = Room<any, S>; // eslint-disable-line @typescript-eslint/no-explicit-any
+
 function getServerUrl(): string {
   if (
     typeof window !== "undefined" &&
@@ -22,7 +33,7 @@ function getServerUrl(): string {
 
 export class NetworkManager<SC = unknown> {
   private client: Client;
-  private room: Room<SC> | null = null;
+  private room: ClientRoom<SC> | null = null;
   private welcomeData: WelcomeData | null = null;
   private welcomeResolve: ((data: WelcomeData) => void) | null = null;
 
@@ -51,7 +62,7 @@ export class NetworkManager<SC = unknown> {
     classType: ClassType,
     token?: string,
     mapName?: string,
-  ): Promise<Room<SC>> {
+  ): Promise<ClientRoom<SC>> {
     this.room = await this.client.joinOrCreate<SC>("arena", {
       name,
       classType,
@@ -101,7 +112,7 @@ export class NetworkManager<SC = unknown> {
     this._send(ClientMessageType.Audio, data);
   }
 
-  getRoom(): Room<SC> {
+  getRoom(): ClientRoom<SC> {
     if (!this.room) throw new Error("Not connected");
     return this.room;
   }
