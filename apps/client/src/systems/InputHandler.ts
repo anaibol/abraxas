@@ -38,6 +38,7 @@ export class InputHandler {
   private onLocalMove?: (direction: Direction) => void;
   private onEnterTargeting?: (rangeTiles: number) => void;
   private onExitTargeting?: () => void;
+  private onInteract?: (tileX: number, tileY: number) => void;
 
   targeting: TargetingState | null = null;
 
@@ -53,6 +54,7 @@ export class InputHandler {
     onLocalMove?: (direction: Direction) => void,
     onEnterTargeting?: (rangeTiles: number) => void,
     onExitTargeting?: () => void,
+    onInteract?: (tileX: number, tileY: number) => void,
   ) {
     this.scene = scene;
     this.network = network;
@@ -61,6 +63,7 @@ export class InputHandler {
     this.onLocalMove = onLocalMove;
     this.onEnterTargeting = onEnterTargeting;
     this.onExitTargeting = onExitTargeting;
+    this.onInteract = onInteract;
 
     const stats = CLASS_STATS[classType];
     this.moveIntervalMs = 1000 / stats.speedTilesPerSecond;
@@ -213,6 +216,11 @@ export class InputHandler {
         // Melee class: attack immediately
         this.network.sendAttack();
       }
+    }
+
+    // Left-click: interact or select target
+    if (leftClicked) {
+      this.onInteract?.(getMouseTile().x, getMouseTile().y);
     }
 
     // Spell keys (Q/W/E/R)

@@ -9,6 +9,7 @@ import { DeathOverlay } from "./DeathOverlay";
 import { KillFeed, type KillFeedEntry } from "./KillFeed";
 import { Console, type ConsoleMessage } from "./Console";
 import { Minimap } from "./Minimap";
+import { MerchantShop } from "./MerchantShop";
 import type { ClassType, TileMap, EquipmentSlot } from "@abraxas/shared";
 import { NetworkManager } from "../network/NetworkManager";
 import Phaser from "phaser";
@@ -44,6 +45,7 @@ export function App() {
   const [consoleMessages, setConsoleMessages] = useState<ConsoleMessage[]>([]);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [mapData, setMapData] = useState<TileMap | null>(null);
+  const [shopData, setShopData] = useState<{ npcId: string; inventory: string[] } | null>(null);
 
   const gameContainerRef = useRef<HTMLDivElement>(null);
   const phaserGameRef = useRef<Phaser.Game | null>(null);
@@ -175,6 +177,11 @@ export function App() {
            });
       });
 
+      // Listen for Shop
+      network.getRoom().onMessage("open_shop", (data: { npcId: string; inventory: string[] }) => {
+          setShopData(data);
+      });
+
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           const el = gameContainerRef.current;
@@ -288,6 +295,17 @@ export function App() {
               onUseItem={(itemId) => networkRef.current?.sendUseItem(itemId)}
               onDropItem={(itemId) => networkRef.current?.sendDropItem(itemId)}
             />
+            {shopData && (
+                <MerchantShop
+                    npcId={shopData.npcId}
+                    merchantInventory={shopData.inventory}
+                    playerGold={playerState.gold || 0}
+                    playerInventory={playerState.inventory || []}
+                    onBuy={(itemId, qty) => networkRef.current?.getRoom().send("buy_item", { itemId, quantity: qty })}
+                    onSell={(itemId, qty) => networkRef.current?.getRoom().send("sell_item", { itemId, quantity: qty })}
+                    onClose={() => setShopData(null)}
+                />
+            )}
           </Flex>
           <DeathOverlay visible={showDeath} deathTime={deathTime} />
           <KillFeed entries={killFeed} />

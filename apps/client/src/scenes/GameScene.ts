@@ -118,6 +118,19 @@ export class GameScene extends Phaser.Scene {
       (direction) => this.onLocalMove(direction),
       (rangeTiles) => this.onEnterTargeting(rangeTiles),
       () => this.onExitTargeting(),
+      (tileX, tileY) => {
+          // Find if there is an NPC at this tile
+          let targetNpcId: string | null = null;
+          for (const [id, npc] of this.room.state.npcs) {
+              if (npc.tileX === tileX && npc.tileY === tileY) {
+                  targetNpcId = id;
+                  break;
+              }
+          }
+          if (targetNpcId) {
+              this.room.send("interact", { npcId: targetNpcId });
+          }
+      }
     );
 
     // Listen for player add/remove/change

@@ -32,12 +32,40 @@ export class NpcSystem {
   ) {}
 
   spawnNpcs(count: number, map: TileMap): void {
-    const types = Object.keys(NPC_STATS);
+    const types = Object.keys(NPC_STATS).filter(t => t !== "merchant");
 
+    // Spawn regular NPCs
     for (let i = 0; i < count; i++) {
         const type = types[Math.floor(Math.random() * types.length)];
         this.spawnNpc(type, map);
     }
+
+    // Spawn a Merchant near the first player spawn
+    if (map.spawns.length > 0) {
+        this.spawnNpcAt("merchant", map, map.spawns[0].x + 2, map.spawns[0].y);
+    }
+  }
+
+  private spawnNpcAt(type: string, map: TileMap, x: number, y: number): void {
+      const npc = new Npc();
+      npc.sessionId = crypto.randomUUID();
+      npc.type = type as NpcType;
+      npc.tileX = x;
+      npc.tileY = y;
+      
+      const stats = NPC_STATS[type];
+      npc.hp = stats.hp;
+      npc.maxHp = stats.hp;
+      npc.mana = stats.mana || 0;
+      npc.str = stats.str;
+      npc.agi = stats.agi;
+      npc.intStat = stats.int;
+      npc.alive = true;
+      npc.state = NpcState.IDLE;
+      npc.targetId = "";
+
+      this.state.npcs.set(npc.sessionId, npc);
+      this.spatial.addToGrid(npc);
   }
 
   private spawnNpc(type: string, map: TileMap): void {
