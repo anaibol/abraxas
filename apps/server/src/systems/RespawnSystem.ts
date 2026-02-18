@@ -58,8 +58,8 @@ export class RespawnSystem {
       player.tileY = spawn.y;
       player.hp = stats.hp;
       player.maxHp = stats.hp;
-      player.mana = stats.mana;
-      player.maxMana = stats.mana;
+      player.mana = stats.mana || 0;
+      player.maxMana = stats.mana || 0;
       player.alive = true;
       player.stealthed = false;
       player.stunned = false;
