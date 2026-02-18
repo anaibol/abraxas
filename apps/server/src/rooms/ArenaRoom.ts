@@ -1,4 +1,11 @@
-import { Room, Client } from "@colyseus/core";
+import {
+  Room,
+  Client,
+  validate,
+  type Messages,
+  CloseCode,
+} from "@colyseus/core";
+import { z } from "zod";
 import { GameState } from "../schema/GameState";
 import { Player } from "../schema/Player";
 import { Npc } from "../schema/Npc";
@@ -28,7 +35,6 @@ import {
   EquipmentData,
   ClientMessageType,
   ServerMessageType,
-  ClientMessages,
   WelcomeData,
   QUESTS,
 } from "@abraxas/shared";
@@ -66,6 +72,107 @@ export class ArenaRoom extends Room<{ state: GameState }> {
   private spatial!: SpatialLookup;
   private quests = new QuestSystem();
   private spawnIndex = 0;
+
+  // ── Message Handlers (Colyseus 0.17 messages API) ───────────────────────
+  messages: Messages<ArenaRoom> = {
+    // Movement & Combat
+    [ClientMessageType.Move]: validate(
+      z.object({ direction: z.number() }),
+      (client, data) => this.messageHandler.handleMove(client, data.direction),
+    ),
+    [ClientMessageType.Attack]: validate(
+      z.object({
+        targetTileX: z.number().optional(),
+        targetTileY: z.number().optional(),
+      }),
+      (client, data) => this.messageHandler.handleAttack(client, data),
+    ),
+    [ClientMessageType.Cast]: validate(
+      z.object({
+        spellId: z.string(),
+        targetTileX: z.number(),
+        targetTileY: z.number(),
+      }),
+      (client, data) => this.messageHandler.handleCast(client, data),
+    ),
+    // Inventory
+    [ClientMessageType.Pickup]: validate(
+      z.object({ dropId: z.string() }),
+      (client, data) => this.messageHandler.handlePickup(client, data),
+    ),
+    [ClientMessageType.Equip]: validate(
+      z.object({ itemId: z.string() }),
+      (client, data) => this.messageHandler.handleEquip(client, data),
+    ),
+    [ClientMessageType.Unequip]: validate(
+      z.object({ slot: z.string() }),
+      (client, data) => this.messageHandler.handleUnequip(client, data as any),
+    ),
+    [ClientMessageType.UseItem]: validate(
+      z.object({ itemId: z.string() }),
+      (client, data) => this.messageHandler.handleUseItem(client, data),
+    ),
+    [ClientMessageType.DropItem]: validate(
+      z.object({ itemId: z.string() }),
+      (client, data) => this.messageHandler.handleDropItem(client, data),
+    ),
+    // NPCs & Quests
+    [ClientMessageType.Interact]: validate(
+      z.object({ npcId: z.string() }),
+      (client, data) => this.messageHandler.handleInteract(client, data),
+    ),
+    [ClientMessageType.BuyItem]: validate(
+      z.object({ itemId: z.string(), quantity: z.number() }),
+      (client, data) => this.messageHandler.handleBuyItem(client, data),
+    ),
+    [ClientMessageType.SellItem]: validate(
+      z.object({
+        itemId: z.string(),
+        quantity: z.number(),
+        npcId: z.string().optional(),
+      }),
+      (client, data) => this.messageHandler.handleSellItem(client, data),
+    ),
+    [ClientMessageType.QuestAccept]: validate(
+      z.object({ questId: z.string() }),
+      (client, data) => this.messageHandler.handleQuestAccept(client, data),
+    ),
+    [ClientMessageType.QuestComplete]: validate(
+      z.object({ questId: z.string() }),
+      (client, data) => this.messageHandler.handleQuestComplete(client, data),
+    ),
+    // Social
+    [ClientMessageType.Chat]: validate(
+      z.object({ message: z.string() }),
+      (client, data) => this.messageHandler.handleChat(client, data),
+    ),
+    [ClientMessageType.FriendRequest]: validate(
+      z.object({ targetName: z.string() }),
+      (client, data) => this.messageHandler.handleFriendRequest(client, data),
+    ),
+    [ClientMessageType.FriendAccept]: validate(
+      z.object({ requesterId: z.string() }),
+      (client, data) => this.messageHandler.handleFriendAccept(client, data),
+    ),
+    // Party
+    [ClientMessageType.PartyInvite]: validate(
+      z.object({ targetSessionId: z.string() }),
+      (client, data) => this.messageHandler.handlePartyInvite(client, data),
+    ),
+    [ClientMessageType.PartyAccept]: validate(
+      z.object({ partyId: z.string() }),
+      (client, data) => this.messageHandler.handlePartyAccept(client, data),
+    ),
+    [ClientMessageType.PartyLeave]: (client: Client) =>
+      this.messageHandler.handlePartyLeave(client),
+    [ClientMessageType.PartyKick]: validate(
+      z.object({ targetSessionId: z.string() }),
+      (client, data) => this.messageHandler.handlePartyKick(client, data),
+    ),
+    // Audio (raw binary — no schema validation)
+    [ClientMessageType.Audio]: (client: Client, data: ArrayBuffer) =>
+      this.messageHandler.handleAudio(client, data),
+  };
 
   async onCreate(options: JoinOptions & { mapName?: string }) {
     try {
@@ -142,157 +249,6 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 
       this.setSimulationInterval((dt) => this.tick(dt), TICK_MS);
       this.setPatchRate(TICK_MS);
-
-      // Movement & Combat
-      this.onMessage(
-        ClientMessageType.Move,
-        (client, data: ClientMessages[ClientMessageType.Move]) => {
-          this.messageHandler.handleMove(client, data.direction);
-        },
-      );
-
-      this.onMessage(
-        ClientMessageType.Attack,
-        (client, data: ClientMessages[ClientMessageType.Attack]) => {
-          this.messageHandler.handleAttack(client, data);
-        },
-      );
-
-      this.onMessage(
-        ClientMessageType.Cast,
-        (client, data: ClientMessages[ClientMessageType.Cast]) => {
-          this.messageHandler.handleCast(client, data);
-        },
-      );
-
-      // Inventory
-      this.onMessage(
-        ClientMessageType.Pickup,
-        (client, data: ClientMessages[ClientMessageType.Pickup]) => {
-          this.messageHandler.handlePickup(client, data);
-        },
-      );
-
-      this.onMessage(
-        ClientMessageType.Equip,
-        (client, data: ClientMessages[ClientMessageType.Equip]) => {
-          this.messageHandler.handleEquip(client, data);
-        },
-      );
-
-      this.onMessage(
-        ClientMessageType.Unequip,
-        (client, data: ClientMessages[ClientMessageType.Unequip]) => {
-          this.messageHandler.handleUnequip(client, data);
-        },
-      );
-
-      this.onMessage(
-        ClientMessageType.UseItem,
-        (client, data: ClientMessages[ClientMessageType.UseItem]) => {
-          this.messageHandler.handleUseItem(client, data);
-        },
-      );
-
-      this.onMessage(
-        ClientMessageType.DropItem,
-        (client, data: ClientMessages[ClientMessageType.DropItem]) => {
-          this.messageHandler.handleDropItem(client, data);
-        },
-      );
-
-      // NPCs & Quests
-      this.onMessage(
-        ClientMessageType.Interact,
-        (client, data: ClientMessages[ClientMessageType.Interact]) => {
-          this.messageHandler.handleInteract(client, data);
-        },
-      );
-
-      this.onMessage(
-        ClientMessageType.BuyItem,
-        (client, data: ClientMessages[ClientMessageType.BuyItem]) => {
-          this.messageHandler.handleBuyItem(client, data);
-        },
-      );
-
-      this.onMessage(
-        ClientMessageType.SellItem,
-        (client, data: ClientMessages[ClientMessageType.SellItem]) => {
-          this.messageHandler.handleSellItem(client, data);
-        },
-      );
-
-      this.onMessage(
-        ClientMessageType.QuestAccept,
-        (client, data: ClientMessages[ClientMessageType.QuestAccept]) => {
-          this.messageHandler.handleQuestAccept(client, data);
-        },
-      );
-
-      this.onMessage(
-        ClientMessageType.QuestComplete,
-        (client, data: ClientMessages[ClientMessageType.QuestComplete]) => {
-          this.messageHandler.handleQuestComplete(client, data);
-        },
-      );
-
-      // Social
-      this.onMessage(
-        ClientMessageType.Chat,
-        (client, data: ClientMessages[ClientMessageType.Chat]) => {
-          this.messageHandler.handleChat(client, data);
-        },
-      );
-
-      this.onMessage(
-        ClientMessageType.FriendRequest,
-        (client, data: ClientMessages[ClientMessageType.FriendRequest]) => {
-          this.messageHandler.handleFriendRequest(client, data);
-        },
-      );
-
-      this.onMessage(
-        ClientMessageType.FriendAccept,
-        (client, data: ClientMessages[ClientMessageType.FriendAccept]) => {
-          this.messageHandler.handleFriendAccept(client, data);
-        },
-      );
-
-      // Party
-      this.onMessage(
-        ClientMessageType.PartyInvite,
-        (client, data: ClientMessages[ClientMessageType.PartyInvite]) => {
-          this.messageHandler.handlePartyInvite(client, data);
-        },
-      );
-
-      this.onMessage(
-        ClientMessageType.PartyAccept,
-        (client, data: ClientMessages[ClientMessageType.PartyAccept]) => {
-          this.messageHandler.handlePartyAccept(client, data);
-        },
-      );
-
-      this.onMessage(ClientMessageType.PartyLeave, (client) => {
-        this.messageHandler.handlePartyLeave(client);
-      });
-
-      this.onMessage(
-        ClientMessageType.PartyKick,
-        (client, data: ClientMessages[ClientMessageType.PartyKick]) => {
-          this.messageHandler.handlePartyKick(client, data);
-        },
-      );
-
-      // Network
-      this.onMessage(ClientMessageType.Ping, (client) => {
-        this.messageHandler.handlePing(client);
-      });
-
-      this.onMessage(ClientMessageType.Audio, (client, data: ArrayBuffer) => {
-        this.messageHandler.handleAudio(client, data);
-      });
 
       logger.info({ room: this.roomId, intent: "room_created", result: "ok" });
       logger.info({ message: "[ArenaRoom] onCreate completed successfully" });
@@ -476,8 +432,8 @@ export class ArenaRoom extends Room<{ state: GameState }> {
   }
 
   async onLeave(client: Client, code?: number) {
-    // code 1000 = normal/consented close. Any other code = abrupt disconnect.
-    if (code !== 1000) {
+    // CloseCode.CONSENTED = normal/voluntary close. Any other code = abrupt disconnect.
+    if (code !== CloseCode.CONSENTED) {
       try {
         await this.allowReconnection(client, 30);
         logger.info({
