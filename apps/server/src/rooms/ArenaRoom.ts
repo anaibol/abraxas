@@ -364,7 +364,7 @@ export class ArenaRoom extends Room<GameState> {
 
       if (killerSessionId) {
           const killer = this.state.players.get(killerSessionId);
-          if (killer && EntityUtils.isAlive(killer)) {
+          if (killer && killer.alive) {
              this.handleNpcKillRewards(killer, npc);
           }
       }

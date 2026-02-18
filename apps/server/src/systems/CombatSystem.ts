@@ -23,20 +23,20 @@ import type { Player } from "../schema/Player";
 import type { Npc } from "../schema/Npc";
 import type { BuffSystem } from "./BuffSystem";
 import { EntityUtils, Entity } from "../utils/EntityUtils";
+import { SpatialLookup } from "../utils/SpatialLookup";
 
 import { ServerMessages, BroadcastFn } from "@abraxas/shared";
 
-type FindEntityAtTileFn = (x: number, y: number) => Entity | undefined;
 type SendToClientFn = (type: string, data?: Record<string, unknown>) => void;
 
 export class CombatSystem {
   private state = new Map<string, EntityCombatState>();
   private activeWindups: WindupAction[] = [];
-  private buffSystem: BuffSystem;
-
-  constructor(buffSystem: BuffSystem) {
-    this.buffSystem = buffSystem;
-  }
+  
+  constructor(
+      private buffSystem: BuffSystem,
+      private spatial: SpatialLookup
+  ) {}
 
   private getCombatState(sessionId: string): EntityCombatState {
     let cs = this.state.get(sessionId);
@@ -68,7 +68,6 @@ export class CombatSystem {
     roomId: string,
     targetTileX?: number,
     targetTileY?: number,
-    findEntityAtTile?: FindEntityAtTileFn,
     sendToClient?: SendToClientFn,
   ): boolean {
     const cs = this.getCombatState(attacker.sessionId);
@@ -109,13 +108,11 @@ export class CombatSystem {
       }
 
       // Validate a living enemy exists at the target tile
-      if (findEntityAtTile) {
-        const target = findEntityAtTile(targetTileX, targetTileY);
-        // Can't attack self or dead
-        if (!target || !EntityUtils.isAlive(target) || target.sessionId === attacker.sessionId) {
+      const target = this.spatial.findEntityAtTile(targetTileX, targetTileY);
+      // Can't attack self or dead
+      if (!target || !EntityUtils.isAlive(target) || target.sessionId === attacker.sessionId) {
           sendToClient?.("invalid_target");
           return false;
-        }
       }
 
       finalTargetX = targetTileX;
@@ -163,7 +160,6 @@ export class CombatSystem {
     broadcast: BroadcastFn,
     tick: number,
     roomId: string,
-    findEntityAtTile?: FindEntityAtTileFn,
     sendToClient?: SendToClientFn,
   ): boolean {
     const cs = this.getCombatState(caster.sessionId);
@@ -226,8 +222,8 @@ export class CombatSystem {
     }
 
     // For single-target offensive spells (rangeTiles > 0, not AoE), validate target exists before mana deduction
-    if (spell.rangeTiles > 0 && spell.effect !== "aoe" && findEntityAtTile) {
-      const target = findEntityAtTile(targetTileX, targetTileY);
+    if (spell.rangeTiles > 0 && spell.effect !== "aoe") {
+      const target = this.spatial.findEntityAtTile(targetTileX, targetTileY);
       if (!target || !EntityUtils.isAlive(target) || target.sessionId === caster.sessionId) {
         sendToClient?.("invalid_target");
         return false;
@@ -272,9 +268,6 @@ export class CombatSystem {
 
   processWindups(
     now: number,
-    findEntityAtTile: (x: number, y: number) => Entity | undefined,
-    findEntitiesInRadius: (cx: number, cy: number, radius: number, excludeId: string) => Entity[],
-    getEntity: (sessionId: string) => Entity | undefined,
     broadcast: BroadcastFn,
     tick: number,
     roomId: string,
@@ -288,7 +281,7 @@ export class CombatSystem {
         continue;
       }
 
-      const attacker = getEntity(windup.attackerSessionId);
+      const attacker = this.spatial.findEntityBySessionId(windup.attackerSessionId);
       if (!attacker || !EntityUtils.isAlive(attacker)) {
         const cs = this.state.get(windup.attackerSessionId);
         if (cs) cs.windupAction = null;
@@ -302,7 +295,6 @@ export class CombatSystem {
         this.resolveMelee(
           attacker,
           windup,
-          findEntityAtTile,
           broadcast,
           tick,
           roomId,
@@ -313,8 +305,6 @@ export class CombatSystem {
         this.resolveSpell(
           attacker,
           windup,
-          findEntityAtTile,
-          findEntitiesInRadius,
           broadcast,
           tick,
           roomId,
@@ -329,11 +319,9 @@ export class CombatSystem {
 
   processBufferedActions(
     now: number,
-    getEntity: (sessionId: string) => Entity | undefined,
     broadcast: BroadcastFn,
     tick: number,
     roomId: string,
-    findEntityAtTile?: FindEntityAtTileFn,
     sendToClientFor?: (sessionId: string) => SendToClientFn,
   ) {
     for (const [sessionId, cs] of this.state.entries()) {
@@ -344,8 +332,8 @@ export class CombatSystem {
         continue;
       }
 
-      const entity = getEntity(sessionId);
-      if (!entity || !EntityUtils.isAlive(entity)) {
+      const entity = this.spatial.findEntityBySessionId(sessionId);
+      if (!entity || !entity.alive) {
         cs.bufferedAction = null;
         continue;
       }
@@ -353,7 +341,7 @@ export class CombatSystem {
       const action = cs.bufferedAction;
       const sendToClient = sendToClientFor?.(sessionId);
       if (action.type === "attack") {
-        this.tryAttack(entity, now, broadcast, tick, roomId, action.targetTileX, action.targetTileY, findEntityAtTile, sendToClient);
+        this.tryAttack(entity, now, broadcast, tick, roomId, action.targetTileX, action.targetTileY, sendToClient);
       } else if (action.type === "cast") {
         this.tryCast(
           entity,
@@ -364,7 +352,6 @@ export class CombatSystem {
           broadcast,
           tick,
           roomId,
-          findEntityAtTile,
           sendToClient,
         );
       }
@@ -380,7 +367,6 @@ export class CombatSystem {
   private resolveMelee(
     attacker: Entity,
     windup: WindupAction,
-    findEntityAtTile: (x: number, y: number) => Entity | undefined,
     broadcast: BroadcastFn,
     tick: number,
     roomId: string,
@@ -388,7 +374,7 @@ export class CombatSystem {
     now: number
   ) {
     const stats = EntityUtils.getStats(attacker)!;
-    const target = findEntityAtTile(windup.targetTileX, windup.targetTileY);
+    const target = this.spatial.findEntityAtTile(windup.targetTileX, windup.targetTileY);
 
     if (target && EntityUtils.isAlive(target) && target.sessionId !== attacker.sessionId) {
       // Check invulnerability
@@ -451,8 +437,6 @@ export class CombatSystem {
   private resolveSpell(
     attacker: Entity,
     windup: WindupAction,
-    findEntityAtTile: (x: number, y: number) => Entity | undefined,
-    findEntitiesInRadius: (cx: number, cy: number, radius: number, excludeId: string) => Entity[],
     broadcast: BroadcastFn,
     tick: number,
     roomId: string,
@@ -479,6 +463,7 @@ export class CombatSystem {
 
     // Self-target effects
     if (spell.effect === "buff") {
+// ... existing buff logic ...
       if (spell.buffStat && spell.buffAmount && spell.durationMs) {
         this.buffSystem.addBuff(
           attacker.sessionId,
@@ -521,7 +506,7 @@ export class CombatSystem {
 
     // AoE spells hit multiple targets
     if (spell.effect === "aoe" && spell.aoeRadius) {
-      const targets = findEntitiesInRadius(
+      const targets = this.spatial.findEntitiesInRadius(
         windup.targetTileX,
         windup.targetTileY,
         spell.aoeRadius,
@@ -534,7 +519,7 @@ export class CombatSystem {
     }
 
     // Single-target damage/dot/stun
-    const target = findEntityAtTile(windup.targetTileX, windup.targetTileY);
+    const target = this.spatial.findEntityAtTile(windup.targetTileX, windup.targetTileY);
     if (target && EntityUtils.isAlive(target) && target.sessionId !== attacker.sessionId) {
       this.applySpellToTarget(attacker, target, spell, scalingValue, broadcast, onDeath, now);
     }

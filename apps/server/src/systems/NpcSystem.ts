@@ -102,7 +102,7 @@ export class NpcSystem {
 
     // AI Logic
     this.state.npcs.forEach((npc) => {
-        if (!EntityUtils.isAlive(npc)) return;
+        if (!npc.alive) return;
 
         switch (npc.state) {
             case NpcState.IDLE:

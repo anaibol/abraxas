@@ -20,9 +20,6 @@ export const EntityUtils = {
     return NPC_STATS[entity.type];
   },
 
-  isAlive(entity: Entity): boolean {
-    return entity.alive;
-  },
   
   getPosition(entity: Entity) {
       return { x: entity.tileX, y: entity.tileY };
