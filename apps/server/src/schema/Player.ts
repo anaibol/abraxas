@@ -10,8 +10,15 @@ export class Player extends Schema {
   @type("uint16") tileX: number = 0;
   @type("uint16") tileY: number = 0;
   @type("uint8") facing: Direction = Direction.DOWN;
-  @type("int16") hp: number = 0;
+  @type("int16") _hp: number = 0;
   @type("int16") maxHp: number = 0;
+  
+  @type("int16") 
+  get hp() { return this._hp; }
+  set hp(value: number) {
+      this._hp = value;
+      this.alive = this._hp > 0;
+  }
   @type("int16") mana: number = 0;
   @type("int16") maxMana: number = 0;
   @type("boolean") alive: boolean = true;

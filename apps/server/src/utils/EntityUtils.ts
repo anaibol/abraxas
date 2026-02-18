@@ -21,7 +21,7 @@ export const EntityUtils = {
   },
 
   isAlive(entity: Entity): boolean {
-    return entity.alive && entity.hp > 0;
+    return entity.alive;
   },
   
   getPosition(entity: Entity) {
