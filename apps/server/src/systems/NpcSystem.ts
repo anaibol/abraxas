@@ -1,5 +1,6 @@
 import {
   NPC_STATS,
+  NPC_TYPES,
   SPELLS,
   TileMap,
   Direction,
@@ -30,12 +31,12 @@ const LEASH_MULTIPLIER = 1.5;
 /** Number of random steps taken during a PATROL wander. */
 const PATROL_STEPS = 4;
 
-interface RespawnEntry {
-  type: string;
+type RespawnEntry = {
+  type: NpcType;
   deadAt: number;
   spawnX: number;
   spawnY: number;
-}
+};
 
 export class NpcSystem {
   private respawns: RespawnEntry[] = [];
@@ -49,7 +50,7 @@ export class NpcSystem {
 
   spawnNpcs(count: number, map: TileMap): void {
     // Only randomly spawn non-passive NPC types
-    const types = Object.keys(NPC_STATS).filter((t) => !NPC_STATS[t].passive);
+    const types = NPC_TYPES.filter((t) => !NPC_STATS[t].passive);
 
     for (let i = 0; i < count; i++) {
       const type = types[Math.floor(Math.random() * types.length)];
@@ -62,10 +63,10 @@ export class NpcSystem {
     }
   }
 
-  public spawnNpcAt(type: string, map: TileMap, x: number, y: number): void {
+  public spawnNpcAt(type: NpcType, map: TileMap, x: number, y: number): void {
     const npc = new Npc();
     npc.sessionId = crypto.randomUUID();
-    npc.type = type as NpcType;
+    npc.type = type;
     npc.tileX = x;
     npc.tileY = y;
     npc.spawnX = x;
@@ -86,7 +87,7 @@ export class NpcSystem {
     this.spatial.addToGrid(npc);
   }
 
-  private spawnNpc(type: string, map: TileMap): void {
+  private spawnNpc(type: NpcType, map: TileMap): void {
     let tx = 0,
       ty = 0;
     let attempts = 0;
@@ -301,61 +302,13 @@ export class NpcSystem {
       // Ranged NPC kiting: back away if target is too close
       if (stats.meleeRange > 1 && dist < Math.max(2, stats.meleeRange / 2)) {
         const awayDir = this.getAwayDirection(npc, target);
-        this.movementSystem.tryMove(
-          npc,
-          awayDir,
-          map,
-          now,
-          occupiedCheck,
-          tickCount,
-          roomId,
-        );
+        this.movementSystem.tryMove(npc, awayDir, map, now, occupiedCheck, tickCount, roomId);
       }
       npc.state = NpcState.ATTACK;
       return;
     }
 
-    // Move towards target (prefer dominant axis; try perpendicular on block)
-    const dx = target.tileX - npc.tileX;
-    const dy = target.tileY - npc.tileY;
-    const moveDir =
-      Math.abs(dx) > Math.abs(dy)
-        ? dx > 0
-          ? Direction.RIGHT
-          : Direction.LEFT
-        : dy > 0
-          ? Direction.DOWN
-          : Direction.UP;
-
-    const success = this.movementSystem.tryMove(
-      npc,
-      moveDir,
-      map,
-      now,
-      occupiedCheck,
-      tickCount,
-      roomId,
-    );
-
-    if (!success) {
-      const altDir =
-        moveDir === Direction.LEFT || moveDir === Direction.RIGHT
-          ? dy > 0
-            ? Direction.DOWN
-            : Direction.UP
-          : dx > 0
-            ? Direction.RIGHT
-            : Direction.LEFT;
-      this.movementSystem.tryMove(
-        npc,
-        altDir,
-        map,
-        now,
-        occupiedCheck,
-        tickCount,
-        roomId,
-      );
-    }
+    this.moveTowards(npc, target.tileX, target.tileY, map, now, occupiedCheck, tickCount, roomId);
   }
 
   // ── ATTACK ───────────────────────────────────────────────────────────────
@@ -453,9 +406,7 @@ export class NpcSystem {
     tickCount: number,
     roomId: string,
   ): void {
-    const dx = npc.spawnX - npc.tileX;
-    const dy = npc.spawnY - npc.tileY;
-    const dist = Math.abs(dx) + Math.abs(dy);
+    const dist = Math.abs(npc.spawnX - npc.tileX) + Math.abs(npc.spawnY - npc.tileY);
 
     if (dist === 0) {
       // Arrived — full HP reset and go idle
@@ -467,47 +418,43 @@ export class NpcSystem {
     // Regenerate 2% of max HP per tick while returning
     npc.hp = Math.min(npc.maxHp, npc.hp + Math.ceil(npc.maxHp * 0.02));
 
-    const moveDir =
-      Math.abs(dx) > Math.abs(dy)
-        ? dx > 0
-          ? Direction.RIGHT
-          : Direction.LEFT
-        : dy > 0
-          ? Direction.DOWN
-          : Direction.UP;
-
-    const success = this.movementSystem.tryMove(
-      npc,
-      moveDir,
-      map,
-      now,
-      occupiedCheck,
-      tickCount,
-      roomId,
-    );
-
-    if (!success) {
-      const altDir =
-        moveDir === Direction.LEFT || moveDir === Direction.RIGHT
-          ? dy > 0
-            ? Direction.DOWN
-            : Direction.UP
-          : dx > 0
-            ? Direction.RIGHT
-            : Direction.LEFT;
-      this.movementSystem.tryMove(
-        npc,
-        altDir,
-        map,
-        now,
-        occupiedCheck,
-        tickCount,
-        roomId,
-      );
-    }
+    this.moveTowards(npc, npc.spawnX, npc.spawnY, map, now, occupiedCheck, tickCount, roomId);
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────────
+
+  /**
+   * Moves `npc` one step toward (targetX, targetY).
+   * Tries the dominant axis first; falls back to the perpendicular axis on collision.
+   */
+  private moveTowards(
+    npc: Npc,
+    targetX: number,
+    targetY: number,
+    map: TileMap,
+    now: number,
+    occupiedCheck: (x: number, y: number, excludeId: string) => boolean,
+    tickCount: number,
+    roomId: string,
+  ): void {
+    const dx = targetX - npc.tileX;
+    const dy = targetY - npc.tileY;
+
+    const primaryDir =
+      Math.abs(dx) > Math.abs(dy)
+        ? dx > 0 ? Direction.RIGHT : Direction.LEFT
+        : dy > 0 ? Direction.DOWN : Direction.UP;
+
+    const success = this.movementSystem.tryMove(npc, primaryDir, map, now, occupiedCheck, tickCount, roomId);
+
+    if (!success) {
+      const altDir =
+        primaryDir === Direction.LEFT || primaryDir === Direction.RIGHT
+          ? dy > 0 ? Direction.DOWN : Direction.UP
+          : dx > 0 ? Direction.RIGHT : Direction.LEFT;
+      this.movementSystem.tryMove(npc, altDir, map, now, occupiedCheck, tickCount, roomId);
+    }
+  }
 
   /** Returns the direction directly away from `target`. Never null. */
   private getAwayDirection(npc: Npc, target: Entity): Direction {

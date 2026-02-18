@@ -11,6 +11,7 @@ import { join, extname } from "path";
 import { ArenaRoom } from "./rooms/ArenaRoom";
 import type { TileMap } from "@abraxas/shared";
 import { CLASS_STATS } from "@abraxas/shared";
+import { CharacterClass } from "./generated/prisma";
 import { logger } from "./logger";
 import { AuthService } from "./database/auth";
 import { prisma } from "./database/db";
@@ -58,17 +59,13 @@ const registerEndpoint = createEndpoint(
     body: z.object({
       username: z.string().min(3).max(20),
       password: z.string().min(6),
-      playerName: z.string().min(2).max(20),
-      classType: z.string(),
+      characterName: z.string().min(2).max(20),
+      classType: z.nativeEnum(CharacterClass),
     }),
   },
   async (ctx) => {
-    const { username, password, playerName, classType } = ctx.body;
-
+    const { username, password, characterName, classType } = ctx.body;
     const stats = CLASS_STATS[classType];
-    if (!stats) {
-      return ctx.json({ error: "Invalid class type" }, { status: 400 });
-    }
 
     try {
       const existing = await prisma.account.findUnique({ where: { username } });
@@ -83,8 +80,8 @@ const registerEndpoint = createEndpoint(
           password: hashedPassword,
           characters: {
             create: {
-              name: playerName,
-              class: classType.toUpperCase() as any, // Enum mapping
+              name: characterName,
+              class: classType,
               stats: {
                 create: {
                   hp: stats.hp,
@@ -159,8 +156,8 @@ const loginEndpoint = createEndpoint(
       });
       return ctx.json({
         token,
-        playerName: character?.name ?? user.username,
-        classType: character?.class?.toLowerCase() ?? "warrior",
+        characterName: character?.name ?? user.username,
+        classType: character?.class ?? "WARRIOR",
       });
     } catch (e) {
       logger.error({ message: "Login error", error: String(e) });

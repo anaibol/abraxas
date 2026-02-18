@@ -2,18 +2,18 @@ import { type, ArraySchema, view } from "@colyseus/schema";
 import { Char } from "./Char";
 import { InventoryItem } from "./InventoryItem";
 import { CLASS_STATS, SPELLS } from "@abraxas/shared";
-import type { ClassType, ClassStats } from "@abraxas/shared";
+import type { ClassType, ClassStats, Spell } from "@abraxas/shared";
 
 export class Player extends Char {
   // ── Shared (visible to all clients) ─────────────────────────────────────
   @type("string") partyId: string = "";
-  @type("string") classType: ClassType = "warrior";
+  @type("string") classType: ClassType = "WARRIOR";
 
   // ── Private (only visible to the owning client via StateView) ────────────
 
-  /** Internal DB references — never needed by other clients */
-  @view() @type("string") userId: string = "";
-  @view() @type("string") dbId: string = "";
+  /** Internal DB references — server-only, never synced to clients */
+  userId: string = "";
+  dbId: string = "";
 
   /** Mana — only the local player's mana bar is rendered */
   @view() @type("int16") mana: number = 0;
@@ -41,7 +41,7 @@ export class Player extends Char {
     return CLASS_STATS[this.classType];
   }
 
-  getSpell(spellId: string) {
-    return (SPELLS as any)[spellId];
+  getSpell(spellId: string): Spell | undefined {
+    return SPELLS[spellId];
   }
 }

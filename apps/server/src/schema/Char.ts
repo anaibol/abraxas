@@ -1,6 +1,6 @@
 import { Schema, type } from "@colyseus/schema";
 import { Direction } from "@abraxas/shared";
-import type { NpcStats } from "@abraxas/shared";
+import type { NpcStats, Spell } from "@abraxas/shared";
 
 /**
  * Base schema shared by both Player and Npc.
@@ -41,7 +41,7 @@ export abstract class Char extends Schema {
   abstract getStats(): NpcStats | undefined;
 
   /** Returns the spell definition if the entity can use it. */
-  abstract getSpell(spellId: string): any;
+  abstract getSpell(spellId: string): Spell | undefined;
 
   /** Returns the tile position as a plain object. */
   getPosition() {
