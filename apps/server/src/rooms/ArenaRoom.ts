@@ -296,9 +296,11 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 
       logger.info({ room: this.roomId, intent: "room_created", result: "ok" });
       logger.info({ message: "[ArenaRoom] onCreate completed successfully" });
-    } catch (e: any) {
-      logger.error({ message: `[ArenaRoom] CRITICAL ERROR IN ONCREATE: ${e}` });
-      if (e.stack) {
+    } catch (e: unknown) {
+      logger.error({
+        message: `[ArenaRoom] CRITICAL ERROR IN ONCREATE: ${e}`,
+      });
+      if (e instanceof Error && e.stack) {
         logger.error({ message: e.stack });
       }
       throw e;
@@ -319,7 +321,6 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       throw new Error("Invalid token");
     }
 
-    // Fetch user to ensure valid
     logger.info({
       message: `[ArenaRoom] onAuth: Fetching user ${payload.userId}`,
     });
@@ -358,15 +359,11 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     }
 
     const user = auth.user;
-    // For now, Player Name = Username.
-    // In future, allow multiple characters per user.
     const playerName = user.username;
 
-    // Find or Create Player Character
     let dbPlayer = await PersistenceService.loadPlayer(user.id, playerName);
 
     if (!dbPlayer) {
-      // Create new character at spawn point
       const spawn = this.map.spawns[this.spawnIndex % this.map.spawns.length];
       this.spawnIndex++;
       dbPlayer = await PersistenceService.createPlayer(
@@ -378,12 +375,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         this.roomMapName,
       );
     } else {
-      // If player is already saved, check if they are in the correct room
       if (dbPlayer.mapName !== this.roomMapName) {
-        // If they are joining the wrong room, we should really redirect them or just teleport them here if we allow it.
-        // For portals, the client will join the correct room.
-        // If they login and join a random room, we might want to teleport them to their last saved map's room.
-        // For now, let's just update their mapName if they specifically joined this room.
         logger.info({
           room: this.roomId,
           clientId: client.sessionId,
@@ -398,7 +390,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     player.name = dbPlayer.name;
     player.classType = dbPlayer.classType as ClassType;
 
-    player.dbId = dbPlayer.id; // Store prisma ID
+    player.dbId = dbPlayer.id;
     player.tileX = dbPlayer.x;
     player.tileY = dbPlayer.y;
 
@@ -422,19 +414,16 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     player.xp = dbPlayer.xp;
     player.maxXp = dbPlayer.maxXp;
 
-    // Load Inventory (Relation)
     for (const item of dbPlayer.inventory) {
       this.inventorySystem.addItem(player, item.itemId, item.quantity);
     }
 
-    // Load Equipment (Fields)
     player.equipWeapon = dbPlayer.equipWeapon || "";
     player.equipShield = dbPlayer.equipShield || "";
     player.equipHelmet = dbPlayer.equipHelmet || "";
     player.equipArmor = dbPlayer.equipArmor || "";
     player.equipRing = dbPlayer.equipRing || "";
 
-    // Starting Gear for new characters (empty inv/equip)
     if (
       dbPlayer.inventory.length === 0 &&
       !player.equipWeapon &&
@@ -459,12 +448,11 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     }
 
     this.state.players.set(client.sessionId, player);
-    this.spatial.addToGrid(player); // Register in spatial grid
+    this.spatial.addToGrid(player);
 
     this.friends.setUserOnline(user.id, client.sessionId);
     await this.friends.sendUpdateToUser(user.id, client.sessionId);
 
-    // Load Quests
     const quests = await this.quests.loadPlayerQuests(user.id, dbPlayer.id);
     client.send(ServerMessageType.QuestList, { quests });
 
@@ -486,10 +474,10 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       posAfter: { x: player.tileX, y: player.tileY },
     });
   }
+
   async onLeave(client: Client) {
     const player = this.state.players.get(client.sessionId);
     if (player) {
-      // Clean up social
       this.messageHandler.handlePartyLeave(client);
       this.friends.setUserOffline(player.userId);
 
@@ -510,7 +498,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         ring: player.equipRing,
       };
 
-      const playerData = {
+      await PersistenceService.savePlayer(player.userId, player.name, {
         x: player.tileX,
         y: player.tileY,
         mapName: this.roomMapName,
@@ -529,14 +517,9 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         inventory,
         equipment,
         classType: player.classType,
-      };
+      });
 
-      await PersistenceService.savePlayer(
-        player.userId,
-        player.name,
-        playerData,
-      );
-      this.spatial.removeFromGrid(player); // Remove from spatial grid
+      this.spatial.removeFromGrid(player);
     }
 
     this.state.players.delete(client.sessionId);
@@ -614,7 +597,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     if (EntityUtils.isPlayer(entity)) {
       this.onPlayerDeath(entity, killerSessionId);
     } else {
-      this.onNpcDeath(entity as Npc, killerSessionId);
+      this.onNpcDeath(entity, killerSessionId);
     }
   }
 
@@ -634,9 +617,8 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     });
   }
 
-  private onSummon(caster: Entity, spellId: string, x: number, y: number) {
+  private onSummon(_caster: Entity, spellId: string, x: number, y: number) {
     if (spellId === "summon_skeleton") {
-      // Spawn 2-3 skeletons around the target area
       const count = 2 + Math.floor(Math.random() * 2);
       for (let i = 0; i < count; i++) {
         const rx = x + Math.floor(Math.random() * 3) - 1;
@@ -649,13 +631,11 @@ export class ArenaRoom extends Room<{ state: GameState }> {
   }
 
   private handleNpcKillRewards(player: Player, npc: Npc) {
-    // 1. Experience & Leveling
     const stats = NPC_STATS[npc.type];
     if (stats && stats.expReward) {
       this.gainXp(player, stats.expReward);
     }
 
-    // 3. Quest Progress
     this.quests
       .updateProgress(player.userId, player.dbId, "kill", npc.type, 1)
       .then((updatedQuests) => {
@@ -675,15 +655,13 @@ export class ArenaRoom extends Room<{ state: GameState }> {
           }
         }
       });
-    // 2. Drops (Diablo Style)
+
     const dropTable = NPC_DROPS[npc.type];
     if (dropTable) {
       for (const entry of dropTable) {
         if (Math.random() < entry.chance) {
           const quantity =
             Math.floor(Math.random() * (entry.max - entry.min + 1)) + entry.min;
-
-          // Spread drops slightly
           const offsetX = (Math.random() - 0.5) * 1.5;
           const offsetY = (Math.random() - 0.5) * 1.5;
 
@@ -709,7 +687,6 @@ export class ArenaRoom extends Room<{ state: GameState }> {
   }
 
   private onPlayerDeath(player: Player, killerSessionId: string) {
-    // Full-loot: drop all items and equipment
     const droppedItems = this.inventorySystem.dropAllItems(player);
     for (const { itemId, quantity } of droppedItems) {
       this.drops.spawnItemDrop(
@@ -721,7 +698,6 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       );
     }
 
-    // Drop gold
     if (player.gold > 0) {
       this.drops.spawnGoldDrop(
         this.state.drops,
@@ -732,7 +708,6 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       player.gold = 0;
     }
 
-    // Award kill bonus gold to killer
     if (killerSessionId) {
       const killer = this.state.players.get(killerSessionId);
       if (killer) {
@@ -740,7 +715,6 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       }
     }
 
-    // Broadcast kill feed
     let killerName = "";
     if (killerSessionId) {
       const killer = this.spatial.findEntityBySessionId(killerSessionId);
@@ -753,16 +727,13 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       }
     }
 
-    const boundBroadcast2 = this.broadcast.bind(this) as any;
-    broadcastKillFeed(
-      boundBroadcast2,
+    this.broadcast(ServerMessageType.KillFeed, {
       killerSessionId,
-      player.sessionId,
+      victimSessionId: player.sessionId,
       killerName,
-      player.name,
-    );
+      victimName: player.name,
+    });
 
-    // Queue respawn
     this.respawnSystem.queueRespawn(player.sessionId, Date.now());
 
     logger.info({
@@ -778,7 +749,6 @@ export class ArenaRoom extends Room<{ state: GameState }> {
   public gainXp(player: Player, amount: number) {
     player.xp += amount;
 
-    // Level up check
     while (player.xp >= player.maxXp) {
       player.xp -= player.maxXp;
       player.level++;
