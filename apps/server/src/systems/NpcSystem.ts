@@ -16,9 +16,12 @@ import { GameState } from "../schema/GameState";
 import { MovementSystem } from "./MovementSystem";
 import { CombatSystem } from "./CombatSystem";
 import { logger } from "../logger";
-import { getEntityPosition, isAttackable, Entity } from "../utils/EntityUtils";
-
-import { SpatialLookup } from "../utils/SpatialLookup";
+import {
+  SpatialLookup,
+  getEntityPosition,
+  isAttackable,
+  Entity,
+} from "../utils/SpatialLookup";
 
 export class NpcSystem {
   private respawns: { type: string; deadAt: number }[] = [];

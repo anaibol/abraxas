@@ -48,8 +48,7 @@ import { User } from "@prisma/client";
 import { MessageHandler } from "../handlers/MessageHandler";
 import { SocialSystem } from "../systems/SocialSystem";
 import { FriendsSystem } from "../systems/FriendsSystem";
-import { SpatialLookup } from "../utils/SpatialLookup";
-import { isPlayer, isNpc, Entity } from "../utils/EntityUtils";
+import { SpatialLookup, isPlayer, isNpc, Entity } from "../utils/SpatialLookup";
 import { QuestSystem } from "../systems/QuestSystem";
 
 export class ArenaRoom extends Room<{ state: GameState }> {

@@ -2,12 +2,12 @@ import type { Direction, TileMap } from "@abraxas/shared";
 import { DIRECTION_DELTA } from "@abraxas/shared";
 import { logger } from "../logger";
 import {
+  SpatialLookup,
   getEntityStats,
   getEntityPosition,
   isPlayer,
   Entity,
-} from "../utils/EntityUtils";
-import { SpatialLookup } from "../utils/SpatialLookup";
+} from "../utils/SpatialLookup";
 
 interface EntityTimers {
   lastMoveMs: number;

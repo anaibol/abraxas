@@ -17,12 +17,12 @@ import type {
 } from "@abraxas/shared";
 import type { BuffSystem } from "./BuffSystem";
 import {
+  SpatialLookup,
   getEntityStats,
   getEntityPosition,
   isPlayer,
   Entity,
-} from "../utils/EntityUtils";
-import { SpatialLookup } from "../utils/SpatialLookup";
+} from "../utils/SpatialLookup";
 
 import {
   ServerMessages,
