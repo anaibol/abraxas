@@ -217,8 +217,7 @@ export class NpcSystem {
       now: number,
       broadcast: BroadcastFn,
       tickCount: number, 
-      roomId: string,
-      findEntityAtTile: (x: number, y: number) => Entity | undefined
+      roomId: string
   ): void {
       const target = this.spatial.findEntityBySessionId(npc.targetId);
       if (!target || !target.alive) {

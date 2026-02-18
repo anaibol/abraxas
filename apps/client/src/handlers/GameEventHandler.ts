@@ -14,7 +14,8 @@ export class GameEventHandler {
         private soundManager: SoundManager,
         private inputHandler: InputHandler,
         private onConsoleMessage?: ConsoleCallback,
-        private onKillFeed?: (killer: string, victim: string) => void
+        private onKillFeed?: (killer: string, victim: string) => void,
+        private onError?: (message: string) => void
     ) {}
 
     setupListeners() {
@@ -33,6 +34,12 @@ export class GameEventHandler {
         this.room.onMessage("level_up", (data: ServerMessages["level_up"]) => this.onLevelUp(data));
         this.room.onMessage("notification", (data: ServerMessages["notification"]) => this.onNotification(data));
         this.room.onMessage("stealth_applied", (data: ServerMessages["stealth_applied"]) => this.onStealthApplied(data));
+        this.room.onMessage("error", (data: { message: string }) => this.onErrorMessage(data));
+    }
+
+    private onErrorMessage(data: { message: string }) {
+        this.onError?.(data.message);
+        this.onConsoleMessage?.(`Error: ${data.message}`, "#ff0000");
     }
 
     private onAttackStart(data: ServerMessages["attack_start"]) {

@@ -1,16 +1,10 @@
 import React, { useEffect, useRef } from "react";
 import { TileMap } from "@abraxas/shared";
 
-// Ideally we should have shared types or use the schema definition if available to client build. 
-// Given the monorepo structure, let's see how other files import Player. 
-// GameScene uses it from schema? or just treats as any? 
-// Let's check GameScene imports later. For now I'll use `any` or interface for props to be safe.
 
 import { Player } from "../../../server/src/schema/Player";
 import { Npc } from "../../../server/src/schema/Npc";
 
-// Colyseus MapSchema is similar to Map but with some differences.
-// We can use a simplified interface that covers what we use.
 interface SchemaMap<T> {
     forEach: (cb: (value: T, key: string) => void) => void;
 }

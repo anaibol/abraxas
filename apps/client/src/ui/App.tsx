@@ -1,8 +1,9 @@
-import { ChakraProvider } from "@chakra-ui/react";
+import { ChakraProvider, createToaster, Toaster, ToastRoot, ToastTitle, ToastDescription, ToastCloseTrigger } from "@chakra-ui/react";
 import { Box, Flex } from "@chakra-ui/react";
 import { useState, useRef, useCallback, useEffect } from "react";
 import { system } from "./theme";
 import { Lobby } from "./Lobby";
+import { LoadingScreen } from "./LoadingScreen";
 import { Sidebar, type PlayerState } from "./Sidebar";
 import { DeathOverlay } from "./DeathOverlay";
 import { KillFeed, type KillFeedEntry } from "./KillFeed";
@@ -16,12 +17,18 @@ import { GameScene } from "../scenes/GameScene";
 import { GameState } from "../../../server/src/schema/GameState";
 import { Room } from "colyseus.js";
 
+const toaster = createToaster({
+  placement: "top",
+  pauseOnPageIdle: true,
+});
+
 let killFeedId = 0;
 let consoleMsgId = 0;
 
 export function App() {
   const [phase, setPhase] = useState<"lobby" | "game">("lobby");
   const [connecting, setConnecting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // New loading state
   const [playerState, setPlayerState] = useState<PlayerState>({
     name: "Player",
     classType: "warrior",
@@ -128,6 +135,7 @@ export function App() {
 
       setPlayerState((prev) => ({ ...prev, name, classType }));
       setPhase("game");
+      setIsLoading(true); // Start loading screen until scene is ready
       
       // Add welcome message
       setConsoleMessages([{
@@ -196,6 +204,15 @@ export function App() {
                  if (next.length > 50) return next.slice(next.length - 50);
                  return next;
                });
+            },
+            () => setIsLoading(false), // onReady
+            (message: string) => { // onError
+                toaster.create({
+                    title: "Error",
+                    description: message,
+                    type: "error",
+                    duration: 3000,
+                });
             }
           );
 
@@ -236,37 +253,22 @@ export function App() {
   }, []);
   
   // Minimap rendering helper
-  // Since Minimap needs live data, we can pass a dummy state that forces re-render or let it handle itself.
-  // Actually, React re-renders App on playerState change (HP/Mana) which happens on tick.
-  // But players/npcs map changes are not in playerState.
-  // We can pass the raw maps from roomRef.current?.state?.players / npcs
-  // And force update Minimap every frame?
-  // Our Minimap component has a useEffect that triggers on prop change.
-  // If we pass the same Map object reference, useEffect won't trigger unless we change something else.
-  // We can force re-render of Minimap by passing a tick counter or similar, OR
-  // Better: The Minimap component should use requestAnimationFrame loop itself to draw from the mutable map references.
-  // let's check Minimap implementation again. It uses useEffect.
-  // We should probably modify Minimap to use rAF loop if passed mutable maps.
-  // For now, let's pass a tick if we have one. We don't have a tick in App state.
-  // Let's rely on React updates for now. App updates on GameScene callbacks?
-  // GameScene callback `onStatsUpdate` (setPlayerState) happens on `state.listen`.
-  // Wait, `onStatsUpdate` is only called when `me.onChange` fires.
-  // Minimap needs all entities positions.
-  
-  // To make Minimap smooth, we really should have a `useFrame` or similar.
-  // Or just let Minimap run its own loop.
-  // I will update Minimap.tsx to run a loop.
-  // Implemented `Minimap.tsx` currently relies on props.
-  // I will leave it as is for now and see if I can pass a `tick` prop from a rAF in App?
-  // No, that would re-render App too much.
-  
-  // Let's modify App to just render Minimap, and in next step modify Minimap to use rAF.
 
   return (
     <ChakraProvider value={system}>
+      <Toaster toaster={toaster}>
+        {(toast) => (
+          <ToastRoot key={toast.id} bg={toast.type === "error" ? "#770000" : "#d4a843"} p="4" borderRadius="md">
+            <ToastTitle color="white" fontWeight="bold">{toast.title}</ToastTitle>
+            <ToastDescription color="whiteAlpha.900">{toast.description}</ToastDescription>
+            <ToastCloseTrigger color="white" />
+          </ToastRoot>
+        )}
+      </Toaster>
       {phase === "lobby" && <Lobby onJoin={handleJoin} connecting={connecting} />}
       {phase === "game" && mapData && (
         <>
+          {isLoading && <LoadingScreen />}
           <Flex pos="fixed" inset="0" bg="#08080c">
             <Box ref={gameContainerRef} flex="1" h="100%" minW="0" overflow="hidden" />
             <Box pos="absolute" top="20px" right="20px" zIndex={90}>

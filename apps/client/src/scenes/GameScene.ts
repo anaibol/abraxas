@@ -26,6 +26,8 @@ export class GameScene extends Phaser.Scene {
   private onStateUpdate: StateCallback;
   private onKillFeed?: KillFeedCallback;
   private onConsoleMessage?: ConsoleCallback;
+  private onReady?: () => void;
+  private onError?: (message: string) => void;
   private room!: Room<GameState>;
   private welcome!: WelcomeData;
   private resolver!: AoGrhResolver;
@@ -52,16 +54,20 @@ export class GameScene extends Phaser.Scene {
   private dropGraphics = new Map<string, Phaser.GameObjects.Arc>();
 
   constructor(
-    network: NetworkManager,
+    network: NetworkManager<GameState>,
     onStateUpdate: StateCallback,
     onKillFeed?: KillFeedCallback,
-    onConsoleMessage?: ConsoleCallback
+    onConsoleMessage?: ConsoleCallback,
+    onReady?: () => void,
+    onError?: (message: string) => void
   ) {
     super({ key: "GameScene" });
     this.network = network;
     this.onStateUpdate = onStateUpdate;
     this.onKillFeed = onKillFeed;
     this.onConsoleMessage = onConsoleMessage;
+    this.onReady = onReady;
+    this.onError = onError;
   }
 
   create() {
@@ -131,7 +137,8 @@ export class GameScene extends Phaser.Scene {
         this.soundManager,
         this.inputHandler,
         this.onConsoleMessage,
-        this.onKillFeed
+        this.onKillFeed,
+        this.onError
     );
     gameEventHandler.setupListeners();
 
@@ -163,6 +170,9 @@ export class GameScene extends Phaser.Scene {
     });
     this.debugText.setScrollFactor(0);
     this.debugText.setDepth(100);
+
+    // Notify ready
+    this.onReady?.();
   }
 
   update(time: number, delta: number) {
