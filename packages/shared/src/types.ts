@@ -133,7 +133,7 @@ export type ServerMessages = {
   stealth_applied: { sessionId: string; durationMs: number };
   stun_applied: { targetSessionId: string; durationMs: number };
   kill_feed: { killerName: string; victimName: string; killerSessionId?: string; victimSessionId: string };
-  chat: { senderId: string; senderName: string; message: string };
+  chat: { senderId: string; senderName: string; message: string; channel?: "global" | "party" | "whisper" | "system" };
   notification: { message: string };
   item_used: { sessionId: string; itemId: string };
   invalid_target: null;
@@ -143,6 +143,12 @@ export type ServerMessages = {
   buy_item: { itemId: string; quantity: number };
   sell_item: { itemId: string; quantity: number };
   error: { message: string };
+  // Friend System
+  friend_request: { targetName: string };
+  friend_invited: { requesterId: string; requesterName: string };
+  friend_accept: { requesterId: string };
+  friend_remove: { friendId: string };
+  friend_update: { friends: { id: string; name: string; online: boolean }[] };
   // Party System
   party_invite: { targetSessionId: string };
   party_invited: { partyId: string; inviterName: string };
