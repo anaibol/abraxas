@@ -1,6 +1,12 @@
 import { ClassType, EquipmentSlot } from "./types";
 
-export type ItemSlot = "weapon" | "armor" | "shield" | "helmet" | "ring" | "consumable";
+export type ItemSlot =
+  | "weapon"
+  | "armor"
+  | "shield"
+  | "helmet"
+  | "ring"
+  | "consumable";
 export type ItemRarity = "common" | "uncommon" | "rare";
 
 export interface ItemDef {
@@ -37,8 +43,8 @@ export const ITEMS: Record<string, ItemDef> = {
     rarity: "common",
     stats: { str: 5 },
     goldValue: 20,
-    requiredClass: ["warrior", "paladin"],
-    aoWeaponId: 14, // Espada Corta
+    requiredClass: ["WARRIOR", "CLERIC"],
+    aoWeaponId: 14,
   },
   steel_sword: {
     id: "steel_sword",
@@ -47,8 +53,8 @@ export const ITEMS: Record<string, ItemDef> = {
     rarity: "uncommon",
     stats: { str: 10 },
     goldValue: 60,
-    requiredClass: ["warrior", "paladin"],
-    aoWeaponId: 21, // Espada Larga
+    requiredClass: ["WARRIOR", "CLERIC"],
+    aoWeaponId: 21,
   },
   flame_blade: {
     id: "flame_blade",
@@ -57,8 +63,8 @@ export const ITEMS: Record<string, ItemDef> = {
     rarity: "rare",
     stats: { str: 15, int: 3 },
     goldValue: 150,
-    requiredClass: ["warrior"],
-    aoWeaponId: 22, // Espada Vikinga
+    requiredClass: ["WARRIOR"],
+    aoWeaponId: 22,
   },
 
   // ── Weapons: Wizard ──
@@ -69,8 +75,8 @@ export const ITEMS: Record<string, ItemDef> = {
     rarity: "common",
     stats: { int: 6 },
     goldValue: 25,
-    requiredClass: ["wizard", "druid"],
-    aoWeaponId: 6, // Vara de Mago
+    requiredClass: ["MAGE"],
+    aoWeaponId: 6,
   },
   arcane_staff: {
     id: "arcane_staff",
@@ -79,8 +85,8 @@ export const ITEMS: Record<string, ItemDef> = {
     rarity: "uncommon",
     stats: { int: 12, mana: 20 },
     goldValue: 80,
-    requiredClass: ["wizard"],
-    aoWeaponId: 8, // Vara de Fresno
+    requiredClass: ["MAGE"],
+    aoWeaponId: 8,
   },
   staff_of_storms: {
     id: "staff_of_storms",
@@ -89,11 +95,11 @@ export const ITEMS: Record<string, ItemDef> = {
     rarity: "rare",
     stats: { int: 18, mana: 30 },
     goldValue: 180,
-    requiredClass: ["wizard"],
-    aoWeaponId: 10, // Báculo Engarzado
+    requiredClass: ["MAGE"],
+    aoWeaponId: 10,
   },
 
-  // ── Weapons: Archer ──
+  // ── Weapons: Ranger ──
   hunting_bow: {
     id: "hunting_bow",
     name: "Hunting Bow",
@@ -101,8 +107,8 @@ export const ITEMS: Record<string, ItemDef> = {
     rarity: "common",
     stats: { agi: 5 },
     goldValue: 20,
-    requiredClass: ["archer"],
-    aoWeaponId: 41, // Arco Simple
+    requiredClass: ["RANGER"],
+    aoWeaponId: 41,
   },
   longbow: {
     id: "longbow",
@@ -111,8 +117,8 @@ export const ITEMS: Record<string, ItemDef> = {
     rarity: "uncommon",
     stats: { agi: 10 },
     goldValue: 65,
-    requiredClass: ["archer"],
-    aoWeaponId: 7, // Arco Compuesto
+    requiredClass: ["RANGER"],
+    aoWeaponId: 7,
   },
   elven_bow: {
     id: "elven_bow",
@@ -121,11 +127,11 @@ export const ITEMS: Record<string, ItemDef> = {
     rarity: "rare",
     stats: { agi: 16 },
     goldValue: 160,
-    requiredClass: ["archer"],
-    aoWeaponId: 45, // Arco Compuesto Reforzado
+    requiredClass: ["RANGER"],
+    aoWeaponId: 45,
   },
 
-  // ── Weapons: Assassin ──
+  // ── Weapons: Rogue ──
   twin_daggers: {
     id: "twin_daggers",
     name: "Twin Daggers",
@@ -133,8 +139,8 @@ export const ITEMS: Record<string, ItemDef> = {
     rarity: "common",
     stats: { agi: 4, str: 2 },
     goldValue: 22,
-    requiredClass: ["assassin"],
-    aoWeaponId: 12, // Daga
+    requiredClass: ["ROGUE"],
+    aoWeaponId: 12,
   },
   shadow_daggers: {
     id: "shadow_daggers",
@@ -143,8 +149,8 @@ export const ITEMS: Record<string, ItemDef> = {
     rarity: "uncommon",
     stats: { agi: 9, str: 4 },
     goldValue: 70,
-    requiredClass: ["assassin"],
-    aoWeaponId: 35, // Daga +2
+    requiredClass: ["ROGUE"],
+    aoWeaponId: 35,
   },
   venom_blades: {
     id: "venom_blades",
@@ -153,11 +159,11 @@ export const ITEMS: Record<string, ItemDef> = {
     rarity: "rare",
     stats: { agi: 14, str: 6 },
     goldValue: 170,
-    requiredClass: ["assassin"],
-    aoWeaponId: 36, // Daga +3
+    requiredClass: ["ROGUE"],
+    aoWeaponId: 36,
   },
 
-  // ── Weapons: Paladin ──
+  // ── Weapons: Cleric ──
   holy_mace: {
     id: "holy_mace",
     name: "Holy Mace",
@@ -165,8 +171,8 @@ export const ITEMS: Record<string, ItemDef> = {
     rarity: "common",
     stats: { str: 4, int: 3 },
     goldValue: 25,
-    requiredClass: ["paladin"],
-    aoWeaponId: 4, // Garrote / Mace
+    requiredClass: ["CLERIC"],
+    aoWeaponId: 4,
   },
   blessed_hammer: {
     id: "blessed_hammer",
@@ -175,21 +181,11 @@ export const ITEMS: Record<string, ItemDef> = {
     rarity: "uncommon",
     stats: { str: 8, int: 6 },
     goldValue: 75,
-    requiredClass: ["paladin"],
-    aoWeaponId: 28, // Martillo de Guerra
+    requiredClass: ["CLERIC"],
+    aoWeaponId: 28,
   },
 
-  // ── Weapons: Druid ──
-  nature_staff: {
-    id: "nature_staff",
-    name: "Nature Staff",
-    slot: "weapon",
-    rarity: "common",
-    stats: { int: 5, hp: 10 },
-    goldValue: 22,
-    requiredClass: ["druid"],
-    aoWeaponId: 9, // Bastón Nudoso
-  },
+  // ── Weapons: MAGE (spare) ──
   elder_staff: {
     id: "elder_staff",
     name: "Elder Staff",
@@ -197,8 +193,8 @@ export const ITEMS: Record<string, ItemDef> = {
     rarity: "uncommon",
     stats: { int: 10, hp: 20 },
     goldValue: 70,
-    requiredClass: ["druid"],
-    aoWeaponId: 10, // Báculo Engarzado
+    requiredClass: ["MAGE"],
+    aoWeaponId: 10,
   },
   bronze_axe: {
     id: "bronze_axe",
@@ -207,8 +203,8 @@ export const ITEMS: Record<string, ItemDef> = {
     rarity: "common",
     stats: { str: 4 },
     goldValue: 18,
-    requiredClass: ["warrior", "paladin"],
-    aoWeaponId: 15, // Hacha de Madera (basic placeholder)
+    requiredClass: ["WARRIOR", "CLERIC"],
+    aoWeaponId: 15,
   },
   iron_dagger: {
     id: "iron_dagger",
@@ -217,8 +213,8 @@ export const ITEMS: Record<string, ItemDef> = {
     rarity: "common",
     stats: { agi: 3, str: 1 },
     goldValue: 15,
-    requiredClass: ["assassin", "archer"],
-    aoWeaponId: 12, // Daga
+    requiredClass: ["ROGUE", "RANGER"],
+    aoWeaponId: 12,
   },
 
   // ── Armor ──
@@ -237,7 +233,7 @@ export const ITEMS: Record<string, ItemDef> = {
     rarity: "uncommon",
     stats: { armor: 6, hp: 20 },
     goldValue: 50,
-    requiredClass: ["warrior", "paladin"],
+    requiredClass: ["WARRIOR", "CLERIC"],
   },
   plate_armor: {
     id: "plate_armor",
@@ -246,7 +242,7 @@ export const ITEMS: Record<string, ItemDef> = {
     rarity: "rare",
     stats: { armor: 10, hp: 30, str: 3 },
     goldValue: 140,
-    requiredClass: ["warrior", "paladin"],
+    requiredClass: ["WARRIOR", "CLERIC"],
   },
   mage_robes: {
     id: "mage_robes",
@@ -255,7 +251,7 @@ export const ITEMS: Record<string, ItemDef> = {
     rarity: "common",
     stats: { int: 3, mana: 15 },
     goldValue: 18,
-    requiredClass: ["wizard", "druid"],
+    requiredClass: ["MAGE"],
   },
   shadow_cloak: {
     id: "shadow_cloak",
@@ -264,7 +260,7 @@ export const ITEMS: Record<string, ItemDef> = {
     rarity: "uncommon",
     stats: { agi: 5, hp: 10 },
     goldValue: 45,
-    requiredClass: ["assassin", "archer"],
+    requiredClass: ["ROGUE", "RANGER"],
   },
 
   // ── Shields ──
@@ -275,8 +271,8 @@ export const ITEMS: Record<string, ItemDef> = {
     rarity: "common",
     stats: { armor: 2, hp: 5 },
     goldValue: 10,
-    requiredClass: ["warrior", "paladin"],
-    aoShieldId: 3, // Escudo de Tortuga (basic)
+    requiredClass: ["WARRIOR", "CLERIC"],
+    aoShieldId: 3,
   },
   iron_shield: {
     id: "iron_shield",
@@ -285,8 +281,8 @@ export const ITEMS: Record<string, ItemDef> = {
     rarity: "uncommon",
     stats: { armor: 5, hp: 15 },
     goldValue: 40,
-    requiredClass: ["warrior", "paladin"],
-    aoShieldId: 4, // Escudo de Hierro
+    requiredClass: ["WARRIOR", "CLERIC"],
+    aoShieldId: 4,
   },
 
   // ── Helmets ──
@@ -306,8 +302,8 @@ export const ITEMS: Record<string, ItemDef> = {
     rarity: "common",
     stats: { int: 3, mana: 10 },
     goldValue: 14,
-    requiredClass: ["wizard", "druid"],
-    aoHelmetId: 4, // Sombrero de Mago
+    requiredClass: ["MAGE"],
+    aoHelmetId: 4,
   },
   crown_of_thorns: {
     id: "crown_of_thorns",
@@ -316,7 +312,7 @@ export const ITEMS: Record<string, ItemDef> = {
     rarity: "rare",
     stats: { str: 5, int: 5, hp: 15 },
     goldValue: 120,
-    aoHelmetId: 5, // Laureles (crown-like)
+    aoHelmetId: 5,
   },
 
   // ── Rings ──
@@ -395,5 +391,3 @@ export const ITEMS: Record<string, ItemDef> = {
     stackable: true,
   },
 };
-
-

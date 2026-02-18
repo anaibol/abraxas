@@ -4,12 +4,11 @@ export const CLASS_APPEARANCE: Record<
   string,
   { bodyId: number; headId: number }
 > = {
-  warrior: { bodyId: 40, headId: 1 },
-  wizard: { bodyId: 22, headId: 3 },
-  archer: { bodyId: 60, headId: 2 },
-  assassin: { bodyId: 45, headId: 4 },
-  paladin: { bodyId: 50, headId: 5 },
-  druid: { bodyId: 55, headId: 6 },
+  WARRIOR: { bodyId: 40, headId: 1 },
+  MAGE: { bodyId: 22, headId: 3 },
+  RANGER: { bodyId: 60, headId: 2 },
+  ROGUE: { bodyId: 45, headId: 4 },
+  CLERIC: { bodyId: 50, headId: 5 },
 };
 
 export const NPC_APPEARANCE: Record<
@@ -57,7 +56,7 @@ export const DROP_EXPIRY_MS = 60000;
 export const AGGRO_RANGE = 8;
 
 export const CLASS_STATS: Record<string, ClassStats> = {
-  warrior: {
+  WARRIOR: {
     hp: 180,
     mana: 40,
     str: 25,
@@ -69,7 +68,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     meleeWindupMs: 120,
     spells: ["war_cry", "shield_bash"],
   },
-  wizard: {
+  MAGE: {
     hp: 80,
     mana: 150,
     str: 6,
@@ -81,7 +80,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     meleeWindupMs: 120,
     spells: ["fireball", "ice_bolt", "thunderstorm", "mana_shield"],
   },
-  archer: {
+  RANGER: {
     hp: 100,
     mana: 80,
     str: 10,
@@ -93,7 +92,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     meleeWindupMs: 100,
     spells: ["multi_shot", "poison_arrow", "evasion"],
   },
-  assassin: {
+  ROGUE: {
     hp: 95,
     mana: 60,
     str: 14,
@@ -105,7 +104,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     meleeWindupMs: 80,
     spells: ["backstab", "stealth", "envenom"],
   },
-  paladin: {
+  CLERIC: {
     hp: 160,
     mana: 100,
     str: 20,
@@ -116,18 +115,6 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     meleeCooldownMs: 500,
     meleeWindupMs: 140,
     spells: ["holy_strike", "heal", "divine_shield"],
-  },
-  druid: {
-    hp: 110,
-    mana: 130,
-    str: 10,
-    agi: 14,
-    int: 24,
-    speedTilesPerSecond: 7,
-    meleeRange: 1,
-    meleeCooldownMs: 550,
-    meleeWindupMs: 120,
-    spells: ["entangle", "rejuvenation", "lightning_bolt", "shapeshift"],
   },
 };
 

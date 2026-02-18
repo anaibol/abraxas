@@ -71,7 +71,7 @@ export class MessageHandler {
   ): void {
     for (const quest of updatedQuests) {
       client.send(ServerMessageType.QuestUpdate, { quest });
-      if (quest.status === "completed") {
+      if (quest.status === "COMPLETED") {
         client.send(ServerMessageType.Notification, {
           message: `Quest Completed: ${QUESTS[quest.questId].title}`,
         });
@@ -292,7 +292,7 @@ export class MessageHandler {
 
     for (const questId of Object.keys(QUESTS)) {
       const state = this.quests.getQuestState(player.userId, questId);
-      if (state && state.status === "completed") {
+      if (state && state.status === "COMPLETED") {
         const questDef = QUESTS[questId];
         if (questDef.npcId === npc.type) {
           client.send(ServerMessageType.OpenDialogue, {

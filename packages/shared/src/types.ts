@@ -12,13 +12,7 @@ export const EQUIPMENT_SLOTS: readonly EquipmentSlot[] = [
   "helmet",
   "ring",
 ];
-export type ClassType =
-  | "warrior"
-  | "wizard"
-  | "archer"
-  | "assassin"
-  | "paladin"
-  | "druid";
+export type ClassType = "WARRIOR" | "MAGE" | "ROGUE" | "CLERIC" | "RANGER";
 export type NpcType =
   | "orc"
   | "skeleton"
@@ -44,7 +38,11 @@ export interface JoinOptions {
 }
 
 export type QuestType = "kill" | "collect" | "talk";
-export type QuestStatus = "available" | "active" | "completed" | "rewarded";
+export type QuestStatus =
+  | "NOT_STARTED"
+  | "IN_PROGRESS"
+  | "COMPLETED"
+  | "TURNED_IN";
 
 export interface QuestRequirement {
   type: QuestType;
