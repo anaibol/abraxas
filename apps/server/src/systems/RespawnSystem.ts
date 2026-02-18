@@ -4,6 +4,8 @@ import {
   STARTING_EQUIPMENT,
   PLAYER_RESPAWN_TIME_MS,
   ITEMS,
+  BroadcastFn,
+  ServerMessageType,
 } from "@abraxas/shared";
 import type { Player } from "../schema/Player";
 import {
@@ -16,9 +18,6 @@ interface PendingRespawn {
   sessionId: string;
   respawnAt: number;
 }
-
-import { BroadcastFn, ServerMessageType } from "@abraxas/shared";
-import { broadcastRespawn } from "../utils/ServerEvents";
 
 export class RespawnSystem {
   private pending: PendingRespawn[] = [];
@@ -78,7 +77,11 @@ export class RespawnSystem {
       // Give starting equipment
       this.giveStartingEquipment(player);
 
-      broadcastRespawn(broadcast, player.sessionId, spawn.x, spawn.y);
+      broadcast(ServerMessageType.Respawn, {
+        sessionId: player.sessionId,
+        tileX: spawn.x,
+        tileY: spawn.y,
+      });
     }
 
     this.pending = remaining;

@@ -1,5 +1,4 @@
 import type { Player } from "../schema/Player";
-import { logger } from "../logger";
 import {
   Buff,
   BroadcastFn,
@@ -7,7 +6,6 @@ import {
   PlayerBuffState,
   ServerMessageType,
 } from "@abraxas/shared";
-import { broadcastDamage, broadcastDeath } from "../utils/ServerEvents";
 
 export class BuffSystem {
   private state = new Map<string, PlayerBuffState>();
@@ -137,12 +135,17 @@ export class BuffSystem {
           player.hp -= dot.damage;
 
           // Broadcast damage caused by DoT
-          broadcastDamage(broadcast, sessionId, dot.damage, player.hp, "dot");
+          broadcast(ServerMessageType.Damage, {
+            targetSessionId: sessionId,
+            amount: dot.damage,
+            hpAfter: player.hp,
+            type: "dot",
+          });
 
           if (player.hp <= 0) {
             player.hp = 0;
             player.alive = false;
-            broadcastDeath(broadcast, sessionId);
+            broadcast(ServerMessageType.Death, { sessionId });
             onDeath(player);
             break;
           }
