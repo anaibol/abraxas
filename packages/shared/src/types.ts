@@ -27,7 +27,7 @@ export enum NpcState {
 }
 
 export interface JoinOptions {
-  name: string;
+  charId: string;
   classType: ClassType;
 }
 

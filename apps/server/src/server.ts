@@ -101,13 +101,14 @@ const registerEndpoint = createEndpoint(
             },
           },
         },
+        include: { characters: { select: { id: true } } },
       });
 
       const token = AuthService.generateToken({
         userId: user.id,
         username: user.username,
       });
-      return ctx.json({ token });
+      return ctx.json({ token, charId: user.characters[0]?.id });
     } catch (e) {
       logger.error({ message: "Registration error", error: String(e) });
       return ctx.json({ error: "Registration failed" }, { status: 500 });
@@ -144,10 +145,9 @@ const loginEndpoint = createEndpoint(
         return ctx.json({ error: "Invalid credentials" }, { status: 401 });
       }
 
-      // Return the first char name so the client knows which name to join with
       const char = await prisma.character.findFirst({
         where: { accountId: user.id },
-        select: { name: true, class: true },
+        select: { id: true, name: true, class: true },
       });
 
       const token = AuthService.generateToken({
@@ -156,6 +156,7 @@ const loginEndpoint = createEndpoint(
       });
       return ctx.json({
         token,
+        charId: char?.id,
         charName: char?.name ?? user.username,
         classType: char?.class ?? "WARRIOR",
       });
