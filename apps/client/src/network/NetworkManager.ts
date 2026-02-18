@@ -29,8 +29,8 @@ export class NetworkManager<SC = unknown> {
     this.client = new Client(serverUrl ?? getServerUrl());
   }
 
-  async connect(name: string, classType: ClassType): Promise<Room<SC>> {
-    this.room = await this.client.joinOrCreate<SC>("arena", { name, classType });
+  async connect(name: string, classType: ClassType, token?: string): Promise<Room<SC>> {
+    this.room = await this.client.joinOrCreate<SC>("arena", { name, classType, token });
 
     const welcomePromise = new Promise<WelcomeData>((resolve) => {
       this.welcomeResolve = resolve;

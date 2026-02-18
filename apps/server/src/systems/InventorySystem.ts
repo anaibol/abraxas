@@ -19,9 +19,12 @@ export const EQUIP_SLOT_MAP: Record<EquipmentSlot, keyof Player> = {
 };
 
 export class InventorySystem {
-  addItem(player: Player, itemId: string, quantity: number = 1): boolean {
+  addItem(player: Player, itemId: string, quantity: number = 1, onError?: (msg: string) => void): boolean {
     const def = ITEMS[itemId];
-    if (!def) return false;
+    if (!def) {
+      onError?.("Invalid item");
+      return false;
+    }
 
     // For stackable items, try to stack first
     if (def.stackable) {
@@ -50,6 +53,7 @@ export class InventorySystem {
       }
     }
 
+    onError?.("Inventory full");
     return false; // Inventory full
   }
 
@@ -75,24 +79,41 @@ export class InventorySystem {
     return undefined;
   }
 
-  equipItem(player: Player, itemId: string): boolean {
+  equipItem(player: Player, itemId: string, onError?: (msg: string) => void): boolean {
     const def = ITEMS[itemId];
-    if (!def) return false;
-    if (def.slot === "consumable") return false;
+    if (!def) {
+        onError?.("Invalid item");
+        return false;
+    }
+    if (def.slot === "consumable") {
+        onError?.("Cannot equip consumable");
+        return false;
+    }
 
     // Check class restriction
-    if (def.requiredClass && !def.requiredClass.includes(player.classType)) return false;
+    if (def.requiredClass && !def.requiredClass.includes(player.classType)) {
+        onError?.(`Restricted to ${def.requiredClass.join(", ")}`);
+        return false;
+    }
 
     // Check item is in inventory
-    if (!this.findItem(player, itemId)) return false;
+    if (!this.findItem(player, itemId)) {
+        onError?.("Item not found");
+        return false;
+    }
 
     const slotKey = EQUIP_SLOT_MAP[def.slot];
-    if (!slotKey) return false;
+    if (!slotKey) {
+        onError?.("Invalid equipment slot");
+        return false;
+    }
 
     // Unequip current item in that slot first
     const currentEquipped = player[slotKey];
     if (typeof currentEquipped === "string" && currentEquipped) {
-      this.addItem(player, currentEquipped);
+      if (!this.addItem(player, currentEquipped, 1, onError)) {
+          return false; // Inventory full, can't unequip current
+      }
     }
 
     // Remove from inventory and equip
@@ -110,7 +131,7 @@ export class InventorySystem {
     return true;
   }
 
-  unequipItem(player: Player, slot: EquipmentSlot): boolean {
+  unequipItem(player: Player, slot: EquipmentSlot, onError?: (msg: string) => void): boolean {
     const slotKey = EQUIP_SLOT_MAP[slot];
     if (!slotKey) return false;
 
@@ -118,7 +139,7 @@ export class InventorySystem {
     if (typeof itemId !== "string" || !itemId) return false;
 
     // Try to add to inventory
-    if (!this.addItem(player, itemId)) return false; // Inventory full
+    if (!this.addItem(player, itemId, 1, onError)) return false; // Inventory full
 
     if (slotKey === "equipWeapon") player.equipWeapon = "";
     else if (slotKey === "equipArmor") player.equipArmor = "";
@@ -129,10 +150,16 @@ export class InventorySystem {
     return true;
   }
 
-  useItem(player: Player, itemId: string): boolean {
+  useItem(player: Player, itemId: string, onError?: (msg: string) => void): boolean {
     const def = ITEMS[itemId];
-    if (!def || !def.consumeEffect) return false;
-    if (!this.findItem(player, itemId)) return false;
+    if (!def || !def.consumeEffect) {
+        onError?.("Item not usable");
+        return false;
+    }
+    if (!this.findItem(player, itemId)) {
+        onError?.("Item not found");
+        return false;
+    }
 
     // Apply consume effect
     if (def.consumeEffect.healHp) {

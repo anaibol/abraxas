@@ -14,6 +14,8 @@ import { TileMap, Direction, ServerMessages, ClassType, JoinOptions, EquipmentSl
 import { logger } from "../logger";
 
 import { PersistenceService } from "../services/PersistenceService";
+import { AuthService } from "../database/auth";
+import { prisma } from "../database/db";
 import { MessageHandler } from "../handlers/MessageHandler";
 import { SpatialLookup } from "../utils/SpatialLookup";
 import { EntityUtils, Entity } from "../utils/EntityUtils";
@@ -119,7 +121,18 @@ export class ArenaRoom extends Room<GameState> {
   }
 
   async onAuth(client: Client, options: JoinOptions) {
-    const user = await PersistenceService.authenticateUser(options.name);
+    if (!options.token) {
+        throw new Error("Token required");
+    }
+    const payload = AuthService.verifyToken(options.token);
+    if (!payload) {
+        throw new Error("Invalid token");
+    }
+    
+    // Fetch user to ensure valid
+    const user = await prisma.user.findUnique({ where: { id: payload.userId } });
+    if (!user) throw new Error("User not found");
+
     return { user };
   }
 
@@ -132,11 +145,15 @@ export class ArenaRoom extends Room<GameState> {
     }
     
     const user = auth.user;
-    const playerName = options.name || user.username;
+    // For now, Player Name = Username. 
+    // In future, allow multiple characters per user.
+    const playerName = user.username; 
 
+    // Find or Create Player Character
     let dbPlayer = await PersistenceService.loadPlayer(user.id, playerName);
 
     if (!dbPlayer) {
+         // Create new character at spawn point
          const spawn = this.map.spawns[this.spawnIndex % this.map.spawns.length];
          this.spawnIndex++;
          dbPlayer = await PersistenceService.createPlayer(user.id, playerName, classType, spawn.x, spawn.y);
@@ -144,15 +161,10 @@ export class ArenaRoom extends Room<GameState> {
 
     const player = new Player();
     player.sessionId = client.sessionId;
-    player.name = playerName;
     player.userId = user.id;
-    player.classType = classType;
-    if (!dbPlayer) {
-        console.error(`ArenaRoom ERROR: No dbPlayer found/created for ${playerName}`);
-        client.leave(1011, "Failed to load/create player data");
-        return;
-    }
-    player.classType = classType;
+    player.name = dbPlayer.name;
+    player.classType = dbPlayer.classType; 
+    
     player.tileX = dbPlayer.x;
     player.tileY = dbPlayer.y;
 
@@ -176,27 +188,22 @@ export class ArenaRoom extends Room<GameState> {
     player.xp = dbPlayer.xp;
     player.maxXp = dbPlayer.maxXp;
 
-    try {
-        const parsedInv = JSON.parse(dbPlayer.inventory);
-        for (const item of parsedInv) {
-            this.inventorySystem.addItem(player, item.itemId, item.quantity); 
-        }
-    } catch (e) {
-        logger.error({ room: this.roomId, intent: "load_inventory", result: "error", message: "Failed to parse inventory", error: e });
+    // Load Inventory (Relation)
+    for (const item of dbPlayer.inventory) {
+        this.inventorySystem.addItem(player, item.itemId, item.quantity); 
     }
 
-    try {
-        const parsedEquip = JSON.parse(dbPlayer.equipment);
-        player.equipWeapon = parsedEquip.weapon || "";
-        player.equipShield = parsedEquip.shield || "";
-        player.equipHelmet = parsedEquip.helmet || "";
-        player.equipArmor = parsedEquip.armor || "";
-        player.equipRing = parsedEquip.ring || "";
-    } catch (e) {
-        logger.error({ room: this.roomId, intent: "load_equipment", result: "error", message: "Failed to parse equipment", error: e });
-    }
+    // Load Equipment (Fields)
+    player.equipWeapon = dbPlayer.equipWeapon || "";
+    player.equipShield = dbPlayer.equipShield || "";
+    player.equipHelmet = dbPlayer.equipHelmet || "";
+    player.equipArmor = dbPlayer.equipArmor || "";
+    player.equipRing = dbPlayer.equipRing || "";
     
-    if (dbPlayer.inventory === "[]" && dbPlayer.equipment === "{}") {
+    // Starting Gear for new characters (empty inv/equip)
+    if (dbPlayer.inventory.length === 0 && 
+        !player.equipWeapon && !player.equipArmor && !player.equipShield && !player.equipHelmet) {
+         
          const startingGear = STARTING_EQUIPMENT[classType];
          if (startingGear) {
             player.gold = startingGear.gold;

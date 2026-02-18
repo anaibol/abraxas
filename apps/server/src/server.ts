@@ -7,6 +7,8 @@ import type { TileMap } from "@abraxas/shared";
 import { logger } from "./logger";
 import { resolve, extname, join } from "path";
 import { existsSync, readFileSync, statSync } from "fs";
+import { AuthService } from "./database/auth";
+import { prisma } from "./database/db";
 
 // Patch: ws.send(plainArray) sends as text in Bun.
 // Colyseus protocol uses number[] for ROOM_STATE and patches.
@@ -16,7 +18,7 @@ WebSocketClient.prototype.raw = function (data: unknown, options?: unknown, cb?:
   if (Array.isArray(data)) {
     data = new Uint8Array(data);
   }
-  return origRaw.call(this, data as any, options, cb);
+  return (origRaw as any).call(this, data, options, cb);
 };
 
 const MIME_TYPES: Record<string, string> = {
@@ -85,6 +87,86 @@ export async function createGameServer(options: {
   });
 
   server.define("arena", ArenaRoom);
+
+  // API Routes for Authentication
+  httpServer.on("request", async (req, res) => {
+    if (req.url === "/api/register" && req.method === "POST") {
+      let body = "";
+      req.on("data", chunk => body += chunk);
+      req.on("end", async () => {
+        try {
+          const { username, password } = JSON.parse(body);
+          if (!username || !password || username.length < 3 || password.length < 6) {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ error: "Invalid username or password" }));
+            return;
+          }
+
+          const passwordHash = await AuthService.hashPassword(password);
+          // Check if user exists
+          try {
+             // We use PersistenceService to create/find, but we need strictly create here or handle logic
+             // Let's use Prisma directly or add register method to PersistenceService
+             // Actually PersistenceService.authenticateUser was a bit mixed.
+             // Let's rely on AuthService + Prisma here or refine PersistenceService.
+             
+             // Simplest: Use AuthService and Prisma directly here or move logic to a Controller.
+             // For compactness, inline here.
+             
+             // Check existing
+             const existing = await prisma.user.findUnique({ where: { username } });
+             if (existing) {
+                res.writeHead(409, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ error: "Username already taken" }));
+                return;
+             }
+
+             const user = await prisma.user.create({
+                 data: { username, password: passwordHash }
+             });
+
+             const token = AuthService.generateToken({ userId: user.id, username: user.username });
+             res.writeHead(200, { "Content-Type": "application/json" });
+             res.end(JSON.stringify({ token, username: user.username }));
+          } catch (e) {
+             console.error(e);
+             res.writeHead(500);
+             res.end(JSON.stringify({ error: "Server error" }));
+          }
+        } catch (e) {
+          res.writeHead(400);
+          res.end(JSON.stringify({ error: "Invalid JSON" }));
+        }
+      });
+      return; // Stop processing other handlers
+    }
+
+    if (req.url === "/api/login" && req.method === "POST") {
+        let body = "";
+        req.on("data", chunk => body += chunk);
+        req.on("end", async () => {
+          try {
+            const { username, password } = JSON.parse(body);
+            const user = await prisma.user.findUnique({ where: { username } });
+            
+            if (!user || !user.password || !(await AuthService.verifyPassword(password, user.password))) {
+                res.writeHead(401, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ error: "Invalid credentials" }));
+                return;
+            }
+  
+            const token = AuthService.generateToken({ userId: user.id, username: user.username });
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ token, username: user.username }));
+          } catch (e) {
+             console.error(e);
+             res.writeHead(500);
+             res.end(JSON.stringify({ error: "Server error" }));
+          }
+        });
+        return;
+    }
+  });
 
   await server.listen(options.port);
 

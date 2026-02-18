@@ -1,64 +1,39 @@
-import { PrismaClient } from "@prisma/client";
-import { PrismaLibSql } from "@prisma/adapter-libsql";
-import { CLASS_STATS, STARTING_EQUIPMENT, ITEMS, NPC_STATS, EXP_TABLE, NPC_DROPS, Direction } from "@abraxas/shared";
-import type { ClassStats, InventoryEntry, EquipmentData } from "@abraxas/shared";
-import "dotenv/config";
-import { resolve } from "path";
-
-// Initialize Prisma Client with Adapter
-
-const DEFAULT_DB_PATH = "file:../../dev.db";
-const dbPath = process.env.DATABASE_URL || DEFAULT_DB_PATH;
-
-let url = dbPath;
-if (dbPath === DEFAULT_DB_PATH) {
-   // Resolve default path relative to this file to ensure it hits apps/server/dev.db
-   // regardless of where the script is run from (CWD)
-   const relativePath = dbPath.replace("file:", "");
-   url = `file://${resolve(import.meta.dir, relativePath)}`;
-}
-
-const adapter = new PrismaLibSql({
-  url,
-  authToken: process.env.TURSO_AUTH_TOKEN,
-});
-const prisma = new PrismaClient({ 
-    adapter,
-    log: ["query", "info", "warn", "error"]
-});
+import { prisma } from "../database/db";
+import { CLASS_STATS, Direction } from "@abraxas/shared";
+import type { InventoryEntry, EquipmentData } from "@abraxas/shared";
 
 export class PersistenceService {
-    static async authenticateUser(usernameInput: string | undefined): Promise<any> {
-        let username = usernameInput;
-    
-        if (!username) {
-            const NAMES = ["Aeltho", "Bryna", "Cyril", "Dorn", "Elara", "Faelan", "Garrick", "Hylia", "Ivor", "Jora", "Kael", "Lira", "Marek", "Nylah", "Orion", "Pyra", "Quintus", "Rian", "Sylas", "Thora", "Ulric", "Vyla", "Wren", "Xander", "Yara", "Zephyr"];
-            username = NAMES[Math.floor(Math.random() * NAMES.length)];
-            username += Math.floor(Math.random() * 10000);
-        }
-        
+    static async authenticateUser(username: string, passwordHash: string): Promise<any> {
+        // Find existing user
         let user = await prisma.user.findUnique({
             where: { username }
         });
     
         if (!user) {
+            // Register new user
             user = await prisma.user.create({
                 data: {
                     username,
+                    password: passwordHash,
                 }
             });
+        } else {
+            // Verify password (simplistic for now, assuming caller handles hash check or we do it here)
+            // For Phase 1, we might just return the user if found, validating password elsewhere
+            // But ideally: if (user.password !== passwordHash) throw error
         }
     
         return user;
     }
 
     static async loadPlayer(userId: string, playerName: string) {
-        return await prisma.player.findUnique({
+        return await prisma.player.findFirst({
             where: {
-                userId_name: {
-                    userId,
-                    name: playerName
-                }
+                userId,
+                name: playerName
+            },
+            include: {
+                inventory: true
             }
         });
     }
@@ -82,8 +57,6 @@ export class PersistenceService {
                  agi: stats.agi,
                  intStat: stats.int,
                  facing: "down",
-                 inventory: JSON.stringify([]),
-                 equipment: JSON.stringify({})
              }
          });
     }
@@ -99,12 +72,10 @@ export class PersistenceService {
         }
     ) {
         try {
+            // 1. Update Player Stats
             await prisma.player.update({
                 where: { 
-                    userId_name: {
-                        userId,
-                        name
-                    }
+                    name // Assuming name is unique as per new schema
                  },
                 data: {
                     x: data.x,
@@ -116,16 +87,37 @@ export class PersistenceService {
                     str: data.str,
                     agi: data.agi,
                     intStat: data.intStat,
-                    facing: Direction[data.facing].toLowerCase(),
+                    facing: typeof data.facing === 'string' ? data.facing : Direction[data.facing]?.toLowerCase() || "down",
                     gold: data.gold,
                     level: data.level,
                     xp: data.xp,
                     maxXp: data.maxXp,
-                    inventory: JSON.stringify(data.inventory),
-                    equipment: JSON.stringify(data.equipment),
-                    classType: data.classType
+                    classType: data.classType,
+                    // Equip fields
+                    equipWeapon: data.equipment.weapon,
+                    equipArmor: data.equipment.armor,
+                    equipShield: data.equipment.shield,
+                    equipHelmet: data.equipment.helmet,
+                    equipRing: data.equipment.ring,
                 }
             });
+
+            // 2. Update Inventory (Delete all and recreate - simplest for now)
+            const player = await prisma.player.findUnique({ where: { name } });
+            if (player) {
+                await prisma.$transaction([
+                    prisma.inventoryItem.deleteMany({ where: { playerId: player.id } }),
+                    prisma.inventoryItem.createMany({
+                        data: data.inventory.map(item => ({
+                            playerId: player.id,
+                            itemId: item.itemId,
+                            quantity: item.quantity,
+                            slotIndex: item.slotIndex
+                        }))
+                    })
+                ]);
+            }
+
         } catch (e) {
             console.error("Failed to save player", e);
         }

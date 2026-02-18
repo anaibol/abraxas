@@ -10,6 +10,7 @@ export type NpcType = "orc" | "skeleton" | "goblin" | "wolf";
 export interface JoinOptions {
   name: string;
   classType: ClassType;
+  token?: string;
 }
 
 export interface TileMap {

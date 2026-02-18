@@ -96,19 +96,19 @@ export class MessageHandler {
     handleEquip(client: Client, itemId: string): void {
         const player = this.state.players.get(client.sessionId);
         if (!player || !player.alive) return;
-        this.inventorySystem.equipItem(player, itemId);
+        this.inventorySystem.equipItem(player, itemId, (msg) => client.send("error", { message: msg }));
     }
     
     handleUnequip(client: Client, slot: EquipmentSlot): void {
         const player = this.state.players.get(client.sessionId);
         if (!player || !player.alive) return;
-        this.inventorySystem.unequipItem(player, slot);
+        this.inventorySystem.unequipItem(player, slot, (msg) => client.send("error", { message: msg }));
     }
     
     handleUseItem(client: Client, itemId: string): void {
         const player = this.state.players.get(client.sessionId);
         if (!player || !player.alive) return;
-        if (this.inventorySystem.useItem(player, itemId)) {
+        if (this.inventorySystem.useItem(player, itemId, (msg) => client.send("error", { message: msg }))) {
             this.broadcast("item_used", {
                 sessionId: client.sessionId,
                 itemId,
