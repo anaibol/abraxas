@@ -350,12 +350,13 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     player.tileX = dbPlayer.x;
     player.tileY = dbPlayer.y;
 
-    const dirKey = dbPlayer.facing.toUpperCase();
-    if (dirKey === "UP") player.facing = Direction.UP;
-    else if (dirKey === "DOWN") player.facing = Direction.DOWN;
-    else if (dirKey === "LEFT") player.facing = Direction.LEFT;
-    else if (dirKey === "RIGHT") player.facing = Direction.RIGHT;
-    else player.facing = Direction.DOWN;
+    const dirMap: Record<string, Direction> = {
+      UP: Direction.UP,
+      DOWN: Direction.DOWN,
+      LEFT: Direction.LEFT,
+      RIGHT: Direction.RIGHT,
+    };
+    player.facing = dirMap[dbPlayer.facing.toUpperCase()] ?? Direction.DOWN;
 
     player.hp = dbPlayer.hp;
     player.maxHp = dbPlayer.maxHp;
@@ -704,21 +705,13 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       player.gold = 0;
     }
 
-    if (killerSessionId) {
-      const killer = this.state.players.get(killerSessionId);
-      if (killer) {
-        killer.gold += KILL_GOLD_BONUS;
-      }
-    }
-
     let killerName = "";
     if (killerSessionId) {
       const killer = this.spatial.findEntityBySessionId(killerSessionId);
       if (killer) {
+        killerName = isPlayer(killer) ? killer.name : killer.type;
         if (isPlayer(killer)) {
-          killerName = killer.name;
-        } else if (isNpc(killer)) {
-          killerName = killer.type;
+          killer.gold += KILL_GOLD_BONUS;
         }
       }
     }

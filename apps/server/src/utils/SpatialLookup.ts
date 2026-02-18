@@ -74,18 +74,6 @@ export class SpatialLookup {
       const entity = this.findEntityBySessionId(sessionId);
       if (entity && entity.alive && entity.tileX === x && entity.tileY === y) {
         return entity;
-      } else {
-        // Cleanup stale entry if found?
-        // Should be handled by updatePosition/removeFromGrid, but safety check:
-        if (
-          !entity ||
-          !entity.alive ||
-          entity.tileX !== x ||
-          entity.tileY !== y
-        ) {
-          // Lazy cleanup or just ignore? Best to trust the system updates for now
-          // to avoid side effects during read.
-        }
       }
     }
     return undefined;

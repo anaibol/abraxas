@@ -496,15 +496,7 @@ export class CombatSystem {
       fxId: spell.fxId,
     });
 
-    const casterInt = this.boosted(attacker, "int", now);
-    const casterStr = this.boosted(attacker, "str", now);
-    const casterAgi = this.boosted(attacker, "agi", now);
-    const scalingValue =
-      spell.scalingStat === "str"
-        ? casterStr
-        : spell.scalingStat === "agi"
-          ? casterAgi
-          : casterInt;
+    const scalingValue = this.boosted(attacker, spell.scalingStat, now);
 
     // Self-target effects
     if (spell.effect === "buff") {
@@ -541,7 +533,7 @@ export class CombatSystem {
     if (spell.effect === "heal") {
       const healAmount = calcHealAmount(
         spell.baseDamage,
-        casterInt,
+        scalingValue,
         spell.scalingRatio,
       );
       attacker.hp = Math.min(attacker.maxHp, attacker.hp + healAmount);
