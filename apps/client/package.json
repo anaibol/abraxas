@@ -11,7 +11,7 @@
   "dependencies": {
     "@abraxas/shared": "workspace:*",
     "@chakra-ui/react": "^3.33.0",
-    "@colyseus/sdk": "^0.17.26",
+    "@colyseus/sdk": "^0.17.33",
     "@emotion/react": "^11.14.0",
     "phaser": "beta",
     "react": "^19.2.4",

@@ -10,5 +10,8 @@
     "dev:client": "bun run --cwd apps/client dev",
     "build": "bun run --cwd apps/client build",
     "test": "bun test --cwd apps/server"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6"
   }
 }

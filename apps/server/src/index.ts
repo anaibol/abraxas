@@ -6,7 +6,7 @@ const mapName = process.env.MAP || "arena";
 const mapPath = resolve(
   import.meta.dir,
   "../../../packages/shared/src/maps",
-  `${mapName}.json`
+  `${mapName}.json`,
 );
 const map: TileMap = await Bun.file(mapPath).json();
 

@@ -15,6 +15,7 @@ import { logger } from "./logger";
 import { AuthService } from "./database/auth";
 import { prisma } from "./database/db";
 import { MapService } from "./services/MapService";
+import type { Request, Response, NextFunction } from "express";
 
 // Minimal MIME-type map for the built client assets
 const MIME: Record<string, string> = {
@@ -145,47 +146,50 @@ export async function createGameServer(options: {
       arena: defineRoom(ArenaRoom),
     },
     routes: createRouter({ registerEndpoint, loginEndpoint }),
+    express: (app) => {
+      // Serve the built client via Bun.file() — no Express needed
+      if (options.staticDir) {
+        const staticDir = options.staticDir;
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        app.use(async (req: Request, res: Response, next: NextFunction) => {
+          const pathname: string = req.path || "/";
+
+          // Let Colyseus handle its own routes
+          if (
+            pathname.startsWith("/api") ||
+            pathname.startsWith("/matchmake") ||
+            pathname.startsWith("/.colyseus")
+          ) {
+            return next();
+          }
+
+          const filePath = join(
+            staticDir,
+            pathname === "/" ? "index.html" : pathname,
+          );
+          const file = Bun.file(filePath);
+
+          if (await file.exists()) {
+            const ext = extname(filePath);
+            const bytes = await file.arrayBuffer();
+            res.setHeader(
+              "Content-Type",
+              MIME[ext] ?? "application/octet-stream",
+            );
+            res.end(Buffer.from(bytes));
+            return;
+          }
+
+          // SPA fallback — all unmatched paths get index.html
+          const index = Bun.file(join(staticDir, "index.html"));
+          const bytes = await index.arrayBuffer();
+          res.setHeader("Content-Type", "text/html; charset=utf-8");
+          res.end(Buffer.from(bytes));
+        });
+      }
+    },
   });
-
-  // Serve the built client via Bun.file() — no Express needed
-  if (options.staticDir) {
-    const staticDir = options.staticDir;
-    const app = (server.transport as BunWebSockets).getExpressApp();
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    app.use(async (req: any, res: any, next: any) => {
-      const pathname: string = req.path || "/";
-
-      // Let Colyseus handle its own routes
-      if (
-        pathname.startsWith("/api") ||
-        pathname.startsWith("/matchmake") ||
-        pathname.startsWith("/.colyseus")
-      ) {
-        return next();
-      }
-
-      const filePath = join(
-        staticDir,
-        pathname === "/" ? "index.html" : pathname,
-      );
-      const file = Bun.file(filePath);
-
-      if (await file.exists()) {
-        const ext = extname(filePath);
-        const bytes = await file.arrayBuffer();
-        res.setHeader("Content-Type", MIME[ext] ?? "application/octet-stream");
-        res.end(Buffer.from(bytes));
-        return;
-      }
-
-      // SPA fallback — all unmatched paths get index.html
-      const index = Bun.file(join(staticDir, "index.html"));
-      const bytes = await index.arrayBuffer();
-      res.setHeader("Content-Type", "text/html; charset=utf-8");
-      res.end(Buffer.from(bytes));
-    });
-  }
 
   await server.listen(options.port, "0.0.0.0");
 
