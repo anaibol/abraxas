@@ -8,13 +8,12 @@ import { InventorySystem } from "../systems/InventorySystem";
 import { DropSystem } from "../systems/DropSystem";
 import { SocialSystem } from "../systems/SocialSystem";
 import { FriendsSystem } from "../systems/FriendsSystem";
-import { TileMap, Direction, EquipmentSlot, ITEMS, MERCHANT_INVENTORY, QUESTS } from "@abraxas/shared";
-import { ServerMessages, QuestDef } from "@abraxas/shared";
+import { TileMap, Direction, EquipmentSlot, ITEMS, MERCHANT_INVENTORY, QUESTS, ServerMessages, QuestDef, ServerMessageType, ClientMessageType, ClientMessages } from "@abraxas/shared";
 import { QuestSystem } from "../systems/QuestSystem";
 
 type Entity = Player | Npc;
 
-type BroadcastCallback = <T extends keyof ServerMessages>(
+type BroadcastCallback = <T extends ServerMessageType>(
   type: T, 
   message?: ServerMessages[T], 
   options?: { except?: Client }
@@ -55,7 +54,7 @@ export class MessageHandler {
             // Check for warps
             const warp = this.map.warps?.find(w => w.x === player.tileX && w.y === player.tileY);
             if (warp) {
-                client.send("warp", {
+                client.send(ServerMessageType.Warp, {
                     targetMap: warp.targetMap,
                     targetX: warp.targetX,
                     targetY: warp.targetY
@@ -76,11 +75,31 @@ export class MessageHandler {
             this.roomId,
             targetTileX,
             targetTileY,
-            (type, data) => client.send(type, data ?? {}),
+            (type, data) => {
+                if (type === "error") {
+                    client.send(ServerMessageType.Error, data ?? {});
+                } else if (type === "attack_hit") {
+                    const { target, dodged } = data;
+                    this.broadcast(ServerMessageType.AttackHit, {
+                        sessionId: player.sessionId,
+                        targetSessionId: target?.sessionId,
+                        dodged
+                    });
+    
+                    if (target && !dodged && data.damage) {
+                        this.broadcast(ServerMessageType.Damage, {
+                            targetSessionId: target.sessionId,
+                            amount: data.damage,
+                            hpAfter: target.hp,
+                            type: "physical"
+                        });
+                    }
+                }
+            },
         );
     }
 
-    handleCast(client: Client, data: { spellId: string; targetTileX: number; targetTileY: number }): void {
+    handleCast(client: Client, data: ClientMessages[ClientMessageType.Cast]): void {
         const player = this.state.players.get(client.sessionId);
         if (!player || !player.alive) return;
     
@@ -93,7 +112,30 @@ export class MessageHandler {
             this.broadcast,
             this.state.tick,
             this.roomId,
-            (type, data) => client.send(type, data ?? {}),
+            (type, payload) => {
+                if (type === "error") {
+                    client.send(ServerMessageType.Error, payload ?? {});
+                } else if (type === "cast_start") {
+                    this.broadcast(ServerMessageType.CastStart, payload);
+                } else if (type === "cast_hit") {
+                    this.broadcast(ServerMessageType.CastHit, payload);
+                    if (payload.damage) {
+                        this.broadcast(ServerMessageType.Damage, {
+                            targetSessionId: payload.targetSessionId,
+                            amount: payload.damage,
+                            hpAfter: payload.hpAfter,
+                            type: "magic"
+                        });
+                    }
+                    if (payload.heal) {
+                        this.broadcast(ServerMessageType.Heal, {
+                            sessionId: payload.targetSessionId, // or healer?
+                            amount: payload.heal,
+                            hpAfter: payload.hpAfter
+                        });
+                    }
+                }
+            },
         );
     }
 
@@ -101,33 +143,43 @@ export class MessageHandler {
         const player = this.state.players.get(client.sessionId);
         if (!player || !player.alive) return;
     
-        this.drops.tryPickup(
-            player,
-            dropId,
-            this.state.drops,
-            this.roomId,
-            this.state.tick,
-            (msg) => client.send("error", { message: msg })
-        );
+        const drop = this.state.drops.get(dropId);
+        if (drop && this.drops.pickup(player, dropId, (msg) => client.send(ServerMessageType.Error, { message: msg }))) {
+            if (drop.type === "gold") {
+                this.broadcast(ServerMessageType.Notification, { message: `${player.name} picked up ${drop.amount} gold` });
+            } else {
+                this.broadcast(ServerMessageType.Notification, { message: `${player.name} picked up ${drop.itemId}` });
+                
+                // Quest Progress: Collect
+                this.quests.updateProgress(player.userId, player.dbId, "collect", drop.itemId, drop.amount).then(updatedQuests => {
+                    for (const quest of updatedQuests) {
+                        client.send(ServerMessageType.QuestUpdate, { quest });
+                        if (quest.status === "completed") {
+                            client.send(ServerMessageType.Notification, { message: `Quest Completed: ${QUESTS[quest.questId].title}` });
+                        }
+                    }
+                });
+            }
+        }
     }
 
     handleEquip(client: Client, itemId: string): void {
         const player = this.state.players.get(client.sessionId);
         if (!player || !player.alive) return;
-        this.inventorySystem.equipItem(player, itemId, (msg) => client.send("error", { message: msg }));
+        this.inventorySystem.equipItem(player, itemId, (msg) => client.send(ServerMessageType.Error, { message: msg }));
     }
     
     handleUnequip(client: Client, slot: EquipmentSlot): void {
         const player = this.state.players.get(client.sessionId);
         if (!player || !player.alive) return;
-        this.inventorySystem.unequipItem(player, slot, (msg) => client.send("error", { message: msg }));
+        this.inventorySystem.unequipItem(player, slot, (msg) => client.send(ServerMessageType.Error, { message: msg }));
     }
     
     handleUseItem(client: Client, itemId: string): void {
         const player = this.state.players.get(client.sessionId);
         if (!player || !player.alive) return;
-        if (this.inventorySystem.useItem(player, itemId, (msg) => client.send("error", { message: msg }))) {
-            this.broadcast("item_used", {
+        if (this.inventorySystem.useItem(player, itemId, (msg) => client.send(ServerMessageType.Error, { message: msg }))) {
+            this.broadcast(ServerMessageType.ItemUsed, {
                 sessionId: client.sessionId,
                 itemId,
             });
@@ -138,15 +190,7 @@ export class MessageHandler {
         const player = this.state.players.get(client.sessionId);
         if (!player || !player.alive) return;
         if (this.inventorySystem.removeItem(player, itemId)) {
-            this.drops.spawnItemDrop(
-                this.state.drops,
-                player.tileX,
-                player.tileY,
-                itemId,
-                1,
-                this.roomId,
-                this.state.tick
-            );
+            this.drops.spawnDrop(player.tileX, player.tileY, "item", { itemId, amount: 1 });
         }
     }
 
@@ -160,23 +204,23 @@ export class MessageHandler {
         // Proximity check
         const dist = Math.abs(player.tileX - npc.tileX) + Math.abs(player.tileY - npc.tileY);
         if (dist > 3) {
-            client.send("error", { message: "Too far to interact" });
+            client.send(ServerMessageType.Error, { message: "Too far to interact" });
             return;
         }
         
         // Quest Progress: Talk
         this.quests.updateProgress(player.userId, player.dbId, "talk", npc.type, 1).then(updatedQuests => {
             for (const quest of updatedQuests) {
-                client.send("quest_update", { quest });
+                client.send(ServerMessageType.QuestUpdate, { quest });
                 if (quest.status === "completed") {
-                    client.send("notification", { message: `Quest Completed: ${QUESTS[quest.questId].title}` });
+                    client.send(ServerMessageType.Notification, { message: `Quest Completed: ${QUESTS[quest.questId].title}` });
                 }
             }
         });
 
         if (npc.type === "merchant") {
             const inventory = MERCHANT_INVENTORY.general_store || [];
-            client.send("open_shop", { npcId, inventory });
+            client.send(ServerMessageType.OpenShop, { npcId, inventory });
             return;
         }
 
@@ -185,7 +229,7 @@ export class MessageHandler {
         if (availableQuests.length > 0) {
             const questId = availableQuests[0];
             const questDef = QUESTS[questId];
-            client.send("open_dialogue", {
+            client.send(ServerMessageType.OpenDialogue, {
                 npcId,
                 text: `${questDef.description}\n\nDo you accept this quest?`,
                 options: [
@@ -202,7 +246,7 @@ export class MessageHandler {
             if (state && state.status === "completed") {
                 const questDef = QUESTS[questId];
                 if (questDef.npcId === npc.type) {
-                    client.send("open_dialogue", {
+                    client.send(ServerMessageType.OpenDialogue, {
                         npcId,
                         text: `Great job on ${questDef.title}! Here is your reward.`,
                         options: [
@@ -215,7 +259,7 @@ export class MessageHandler {
         }
 
         // Default talk
-        client.send("open_dialogue", {
+        client.send(ServerMessageType.OpenDialogue, {
             npcId,
             text: "Hello there, traveler!",
             options: [{ text: "Goodbye", action: "close" }]
@@ -228,8 +272,8 @@ export class MessageHandler {
 
         this.quests.acceptQuest(player.userId, player.dbId, questId).then(state => {
             if (state) {
-                client.send("quest_update", { quest: state });
-                client.send("notification", { message: `Quest Accepted: ${QUESTS[questId].title}` });
+                client.send(ServerMessageType.QuestUpdate, { quest: state });
+                client.send(ServerMessageType.Notification, { message: `Quest Accepted: ${QUESTS[questId].title}` });
             }
         });
     }
@@ -250,10 +294,10 @@ export class MessageHandler {
                     }
                 }
 
-                client.send("quest_update", { 
+                client.send(ServerMessageType.QuestUpdate, { 
                     quest: this.quests.getQuestState(player.userId, questId)! 
                 });
-                client.send("notification", { message: `Quest Completed: ${questDef.title} (+${questDef.rewards.exp} XP, +${questDef.rewards.gold} Gold)` });
+                client.send(ServerMessageType.Notification, { message: `Quest Completed: ${questDef.title} (+${questDef.rewards.exp} XP, +${questDef.rewards.gold} Gold)` });
                 
                 // Trigger any level up logic if needed (usually handled in tick/reward handlers, 
                 // but xp was added directly here. handleNpcKillRewards does it better, maybe refactor later)
@@ -271,7 +315,7 @@ export class MessageHandler {
             if (npc) {
                 const dist = Math.abs(player.tileX - npc.tileX) + Math.abs(player.tileY - npc.tileY);
                 if (dist > 5) {
-                    client.send("error", { message: "Too far from merchant" });
+                    client.send(ServerMessageType.Error, { message: "Too far from merchant" });
                     return;
                 }
             }
@@ -282,13 +326,13 @@ export class MessageHandler {
 
         const totalCost = itemDef.goldValue * (data.quantity || 1);
         if (player.gold < totalCost) {
-            client.send("error", { message: "Not enough gold" });
+            client.send(ServerMessageType.Error, { message: "Not enough gold" });
             return;
         }
 
-        if (this.inventorySystem.addItem(player, data.itemId, data.quantity || 1, (msg) => client.send("error", { message: msg }))) {
+        if (this.inventorySystem.addItem(player, data.itemId, data.quantity || 1, (msg) => client.send(ServerMessageType.Error, { message: msg }))) {
             player.gold -= totalCost;
-            client.send("notification", { message: `Bought ${data.quantity || 1}x ${itemDef.name}` });
+            client.send(ServerMessageType.Notification, { message: `Bought ${data.quantity || 1}x ${itemDef.name}` });
         }
     }
 
@@ -302,7 +346,7 @@ export class MessageHandler {
             if (npc) {
                 const dist = Math.abs(player.tileX - npc.tileX) + Math.abs(player.tileY - npc.tileY);
                 if (dist > 5) {
-                    client.send("error", { message: "Too far from merchant" });
+                    client.send(ServerMessageType.Error, { message: "Too far from merchant" });
                     return;
                 }
             }
@@ -316,13 +360,32 @@ export class MessageHandler {
         
         if (this.inventorySystem.removeItem(player, data.itemId, data.quantity || 1)) {
             player.gold += sellValue;
-            client.send("notification", { message: `Sold ${data.quantity || 1}x ${itemDef.name} for ${sellValue} gold` });
+            client.send(ServerMessageType.Notification, { message: `Sold ${data.quantity || 1}x ${itemDef.name} for ${sellValue} gold` });
         } else {
-            client.send("error", { message: "Item not found in inventory" });
+            client.send(ServerMessageType.Error, { message: "Item not found in inventory" });
         }
     }
 
     handleChat(client: Client, message: string): void {
+        if (message.startsWith("/party ") || message.startsWith("/p ")) {
+            const prefix = message.startsWith("/p ") ? "/p " : "/party ";
+            const partyMsg = message.replace(prefix, "");
+            const player = this.state.players.get(client.sessionId);
+            if (player && partyMsg) {
+                if (!player.partyId) {
+                    client.send(ServerMessageType.Error, { message: "You are not in a party" });
+                    return;
+                }
+                this.social.broadcastToParty(player.partyId, ServerMessageType.Chat, {
+                    senderId: player.sessionId,
+                    senderName: player.name,
+                    message: partyMsg,
+                    channel: "party" as const
+                });
+            }
+            return;
+        }
+
         const player = this.state.players.get(client.sessionId);
         if (player && message) {
             const text = message.trim().slice(0, 100);
@@ -331,7 +394,7 @@ export class MessageHandler {
                 if (text.startsWith("/w ") || text.startsWith("/whisper ")) {
                     const parts = text.split(" ");
                     if (parts.length < 3) {
-                        client.send("error", { message: "Usage: /w <name> <message>" });
+                        client.send(ServerMessageType.Error, { message: "Usage: /w <name> <message>" });
                         return;
                     }
                     const targetName = parts[1];
@@ -339,39 +402,24 @@ export class MessageHandler {
                     const targetClient = this.findClientByName(targetName);
                     
                     if (!targetClient) {
-                        client.send("error", { message: `Player '${targetName}' not found or offline.` });
+                        client.send(ServerMessageType.Error, { message: `Player '${targetName}' not found or offline.` });
                         return;
                     }
 
-                    const whisperData = {
+                    const whisperData: ServerMessages[ServerMessageType.Chat] = {
                         senderId: player.sessionId,
                         senderName: `[To: ${targetName}]`,
                         message: msg,
                         channel: "whisper" as const
                     };
 
-                    client.send("chat", whisperData);
-                    targetClient.send("chat", {
+                    client.send(ServerMessageType.Chat, whisperData);
+                    targetClient.send(ServerMessageType.Chat, {
                         ...whisperData,
                         senderName: `[From: ${player.name}]`
                     });
                     return;
                 }
-
-                // Party chat support
-                if (text.startsWith("/p ") || text.startsWith("/party ")) {
-                    if (!player.partyId) {
-                        client.send("error", { message: "You are not in a party" });
-                        return;
-                    }
-                    const msg = text.startsWith("/p ") ? text.slice(3) : text.slice(7);
-                    this.social.broadcastToParty(player.partyId, "chat", {
-                        senderId: player.sessionId,
-                        senderName: player.name,
-                        message: msg,
-                        channel: "party" as const
-                    });
-                    return;
                 }
 
                 // Global chat
@@ -393,18 +441,6 @@ export class MessageHandler {
         this.friends.handleFriendAccept(client, requesterId);
     }
 
-
-    handlePartyInvite(client: Client, targetSessionId: string): void {
-        this.social.handleInvite(client, targetSessionId);
-    }
-
-    handlePartyAccept(client: Client, partyId: string): void {
-        this.social.handleAcceptInvite(client, partyId);
-    }
-
-    handlePartyLeave(client: Client): void {
-        this.social.handleLeaveParty(client);
-    }
 
     handlePartyKick(client: Client, targetSessionId: string): void {
         this.social.handleKickPlayer(client, targetSessionId);
