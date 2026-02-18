@@ -8,7 +8,8 @@ import {
   BroadcastFn,
   NPC_RESPAWN_TIME_MS,
   AGGRO_RANGE,
-  MathUtils
+  MathUtils,
+  NpcState
 } from "@abraxas/shared";
 import { Npc } from "../schema/Npc";
 import { Player } from "../schema/Player";
@@ -67,6 +68,8 @@ export class NpcSystem {
     npc.agi = stats.agi;
     npc.intStat = stats.int;
     npc.alive = true;
+    npc.state = NpcState.IDLE;
+    npc.targetId = "";
 
     this.state.npcs.set(npc.sessionId, npc);
     this.spatial.addToGrid(npc);
@@ -101,83 +104,149 @@ export class NpcSystem {
     this.state.npcs.forEach((npc) => {
         if (!EntityUtils.isAlive(npc)) return;
 
-        // Simple State Machine:
-        // 1. Find nearest player
-        // 2. If in aggro range -> Chase
-        // 3. If in attack range -> Attack
-
-        let nearestPlayerId: string | null = null;
-        let minDist = Infinity;
-
-        this.state.players.forEach((player) => {
-            if (!EntityUtils.isAlive(player) || player.stealthed) return; // Don't aggro dead or stealthed
-
-            // Check if player is on same map (implicit)
-            const dist = MathUtils.dist(EntityUtils.getPosition(player), EntityUtils.getPosition(npc));
-            if (dist < minDist) {
-                minDist = dist;
-                nearestPlayerId = player.sessionId;
-            }
-        });
-
-        if (nearestPlayerId && minDist <= AGGRO_RANGE) {
-            const target = this.state.players.get(nearestPlayerId)!;
-            const dist = MathUtils.manhattanDist(EntityUtils.getPosition(target), EntityUtils.getPosition(npc)); // Manhattan for grid range check
-            const stats = NPC_STATS[npc.type];
-
-            if (dist <= stats.meleeRange) {
-                // Face target
-                const npcPos = EntityUtils.getPosition(npc);
-                const targetPos = EntityUtils.getPosition(target);
-                npc.facing = MathUtils.getDirection(npcPos, targetPos);
-
-                // Attack
-                this.combatSystem.tryAttack(
-                    npc,
-                    now,
-                    broadcast,
-                    tickCount,
-                    roomId,
-                    undefined,
-                    undefined,
-                    findEntityAtTile
-                );
-            } else {
-                // Move towards
-                const npcPos = EntityUtils.getPosition(npc);
-                const targetPos = EntityUtils.getPosition(target);
-
-                const dx = target.tileX - npc.tileX;
-                const dy = target.tileY - npc.tileY;
-
-                // Prefer axis with larger distance
-                let moveDir: Direction | null = null;
-
-                if (Math.abs(dx) > Math.abs(dy)) {
-                     // Try X first
-                     if (dx > 0) moveDir = Direction.RIGHT;
-                     else if (dx < 0) moveDir = Direction.LEFT;
-                } else {
-                     if (dy > 0) moveDir = Direction.DOWN;
-                     else if (dy < 0) moveDir = Direction.UP;
-                }
-
-                if (moveDir) {
-                    this.movementSystem.tryMove(npc, moveDir, map, now, occupiedCheck, tickCount, roomId);
-                }
-            }
+        switch (npc.state) {
+            case NpcState.IDLE:
+                this.updateIdle(npc, now);
+                break;
+            case NpcState.CHASE:
+                this.updateChase(npc, map, now, occupiedCheck, tickCount, roomId);
+                break;
+            case NpcState.ATTACK:
+                this.updateAttack(npc, dt, now, broadcast, tickCount, roomId, findEntityAtTile);
+                break;
+            default:
+                npc.state = NpcState.IDLE;
+                break;
         }
     });
 
     // Handle dead NPCs removal
     this.state.npcs.forEach((npc) => {
         if (!EntityUtils.isAlive(npc) && !this.respawns.some(r => r.type === npc.type && Date.now() - r.deadAt < 100)) {
-             // preventing double add, though logic below ensures single removal
-             // Actually, we should check if they are already in respawn list?
-             // Or rely on ArenaRoom calling handleDeath?
-             // ArenaRoom calls onDeath callback. We should likely handle NPC death there or expose a method.
+             // Logic handled via handleDeath now
         }
     });
+  }
+
+
+  private updateIdle(npc: Npc, now: number) {
+      // Look for targets
+      const players = this.spatial.findEntitiesInRadius(npc.tileX, npc.tileY, AGGRO_RANGE);
+      let nearest: Entity | null = null;
+      let minDist = Infinity;
+      const npcPos = EntityUtils.getPosition(npc);
+
+      for (const entity of players) {
+          if (EntityUtils.isPlayer(entity) && EntityUtils.isAlive(entity) && !entity.stealthed) {
+               const dist = MathUtils.dist(npcPos, EntityUtils.getPosition(entity));
+               if (dist < minDist) {
+                   minDist = dist;
+                   nearest = entity;
+               }
+          }
+      }
+
+      if (nearest) {
+          npc.targetId = nearest.sessionId;
+          npc.state = NpcState.CHASE;
+      }
+      // TODO: Random wander?
+  }
+
+  private updateChase(
+      npc: Npc, 
+      map: TileMap, 
+      now: number, 
+      occupiedCheck: (x: number, y: number, excludeId: string) => boolean, 
+      tickCount: number, 
+      roomId: string
+  ) {
+      const target = this.spatial.findEntityBySessionId(npc.targetId);
+      
+      // Target lost or dead
+      if (!target || !EntityUtils.isAlive(target) || (EntityUtils.isPlayer(target) && target.stealthed)) {
+          npc.targetId = "";
+          npc.state = NpcState.IDLE;
+          return;
+      }
+
+      const npcPos = EntityUtils.getPosition(npc);
+      const targetPos = EntityUtils.getPosition(target);
+      const dist = MathUtils.manhattanDist(npcPos, targetPos);
+      const stats = NPC_STATS[npc.type];
+
+      // If in attack range, switch to attack
+      if (dist <= stats.meleeRange) {
+          npc.state = NpcState.ATTACK;
+          return;
+      }
+
+      // Assume loose aggro radius if too far
+      if (dist > AGGRO_RANGE * 1.5) {
+          npc.targetId = "";
+          npc.state = NpcState.IDLE;
+          return;
+      }
+
+      // Move towards target
+      const dx = target.tileX - npc.tileX;
+      const dy = target.tileY - npc.tileY;
+
+      // Prefer axis with larger distance
+      let moveDir: Direction | null = null;
+      if (Math.abs(dx) > Math.abs(dy)) {
+            // Try X first
+            if (dx > 0) moveDir = Direction.RIGHT;
+            else if (dx < 0) moveDir = Direction.LEFT;
+      } else {
+            if (dy > 0) moveDir = Direction.DOWN;
+            else if (dy < 0) moveDir = Direction.UP;
+      }
+
+      if (moveDir) {
+          this.movementSystem.tryMove(npc, moveDir, map, now, occupiedCheck, tickCount, roomId);
+      }
+  }
+
+  private updateAttack(
+      npc: Npc, 
+      dt: number,
+      now: number,
+      broadcast: BroadcastFn,
+      tickCount: number, 
+      roomId: string,
+      findEntityAtTile: (x: number, y: number) => Entity | undefined
+  ) {
+      const target = this.spatial.findEntityBySessionId(npc.targetId);
+      if (!target || !EntityUtils.isAlive(target)) {
+          npc.state = NpcState.IDLE;
+          return;
+      }
+
+      const npcPos = EntityUtils.getPosition(npc);
+      const targetPos = EntityUtils.getPosition(target);
+      const dist = MathUtils.manhattanDist(npcPos, targetPos);
+      const stats = NPC_STATS[npc.type];
+
+      if (dist > stats.meleeRange) {
+          npc.state = NpcState.CHASE;
+          return;
+      }
+
+      // Face target
+      npc.facing = MathUtils.getDirection(npcPos, targetPos);
+
+      // Attack
+      this.combatSystem.tryAttack(
+            npc,
+            now,
+            broadcast,
+            tickCount,
+            roomId,
+            undefined, // targetId not needed for melee logic usually, uses tile
+            undefined,
+            findEntityAtTile
+      );
   }
 
   handleDeath(npc: Npc) {

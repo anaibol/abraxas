@@ -4,6 +4,11 @@ import type { NpcType } from "@abraxas/shared";
 
 export class Npc extends Schema {
   @type("string") sessionId: string = "";
+  @type("string") equipment: string = "{}";
+
+  // AI State
+  @type("string") state: string = "idle";
+  @type("string") targetId: string = "";
   @type("string") name: string = "";
   @type("string") type: NpcType = "orc"; 
   @type("uint16") tileX: number = 0;

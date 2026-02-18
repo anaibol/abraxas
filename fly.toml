@@ -19,3 +19,7 @@ memory_mb = 512
 
 [deploy]
 release_command = "bunx prisma migrate deploy --schema apps/server/prisma/schema.prisma"
+
+[mounts]
+destination = "/data"
+source = "abraxas_data"
