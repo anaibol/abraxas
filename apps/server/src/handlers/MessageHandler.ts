@@ -51,9 +51,39 @@ export class MessageHandler {
     private gainXp: (player: Player, amount: number) => void,
   ) {}
 
-  handleMove(client: Client, direction: Direction): void {
+  // ── Helpers ─────────────────────────────────────────────────────────────
+
+  /** Returns the player if they exist and are alive, otherwise `null`. */
+  private getActivePlayer(client: Client): Player | null {
     const player = this.state.players.get(client.sessionId);
-    if (!player || !player.alive) return;
+    return player?.alive ? player : null;
+  }
+
+  /** Sends a typed error message to the client. */
+  private sendError(client: Client, message: string): void {
+    client.send(ServerMessageType.Error, { message });
+  }
+
+  /** Sends quest update notifications for a set of updated quest states. */
+  sendQuestUpdates(
+    client: Client,
+    updatedQuests: Awaited<ReturnType<QuestSystem["updateProgress"]>>,
+  ): void {
+    for (const quest of updatedQuests) {
+      client.send(ServerMessageType.QuestUpdate, { quest });
+      if (quest.status === "completed") {
+        client.send(ServerMessageType.Notification, {
+          message: `Quest Completed: ${QUESTS[quest.questId].title}`,
+        });
+      }
+    }
+  }
+
+  // ── Message Handlers ─────────────────────────────────────────────────────
+
+  handleMove(client: Client, direction: Direction): void {
+    const player = this.getActivePlayer(client);
+    if (!player) return;
     if (player.stunned) return;
 
     if (
@@ -84,8 +114,8 @@ export class MessageHandler {
     client: Client,
     data: ClientMessages[ClientMessageType.Attack],
   ): void {
-    const player = this.state.players.get(client.sessionId);
-    if (!player || !player.alive) return;
+    const player = this.getActivePlayer(client);
+    if (!player) return;
 
     this.combat.tryAttack(
       player,
@@ -101,8 +131,8 @@ export class MessageHandler {
     client: Client,
     data: ClientMessages[ClientMessageType.Cast],
   ): void {
-    const player = this.state.players.get(client.sessionId);
-    if (!player || !player.alive) return;
+    const player = this.getActivePlayer(client);
+    if (!player) return;
 
     this.combat.tryCast(
       player,
@@ -115,26 +145,12 @@ export class MessageHandler {
     );
   }
 
-  private sendQuestUpdates(
-    client: Client,
-    updatedQuests: Awaited<ReturnType<QuestSystem["updateProgress"]>>,
-  ): void {
-    for (const quest of updatedQuests) {
-      client.send(ServerMessageType.QuestUpdate, { quest });
-      if (quest.status === "completed") {
-        client.send(ServerMessageType.Notification, {
-          message: `Quest Completed: ${QUESTS[quest.questId].title}`,
-        });
-      }
-    }
-  }
-
   handlePickup(
     client: Client,
     data: ClientMessages[ClientMessageType.Pickup],
   ): void {
-    const player = this.state.players.get(client.sessionId);
-    if (!player || !player.alive) return;
+    const player = this.getActivePlayer(client);
+    if (!player) return;
 
     const drop = this.state.drops.get(data.dropId);
     if (
@@ -145,7 +161,7 @@ export class MessageHandler {
         this.state.drops,
         this.roomId,
         this.state.tick,
-        (msg) => client.send(ServerMessageType.Error, { message: msg }),
+        (msg) => this.sendError(client, msg),
       )
     ) {
       if (drop.itemType === "gold") {
@@ -175,10 +191,10 @@ export class MessageHandler {
     client: Client,
     data: ClientMessages[ClientMessageType.Equip],
   ): void {
-    const player = this.state.players.get(client.sessionId);
-    if (!player || !player.alive) return;
+    const player = this.getActivePlayer(client);
+    if (!player) return;
     this.inventorySystem.equipItem(player, data.itemId, (msg) =>
-      client.send(ServerMessageType.Error, { message: msg }),
+      this.sendError(client, msg),
     );
   }
 
@@ -186,10 +202,10 @@ export class MessageHandler {
     client: Client,
     data: ClientMessages[ClientMessageType.Unequip],
   ): void {
-    const player = this.state.players.get(client.sessionId);
-    if (!player || !player.alive) return;
+    const player = this.getActivePlayer(client);
+    if (!player) return;
     this.inventorySystem.unequipItem(player, data.slot, (msg) =>
-      client.send(ServerMessageType.Error, { message: msg }),
+      this.sendError(client, msg),
     );
   }
 
@@ -197,11 +213,11 @@ export class MessageHandler {
     client: Client,
     data: ClientMessages[ClientMessageType.UseItem],
   ): void {
-    const player = this.state.players.get(client.sessionId);
-    if (!player || !player.alive) return;
+    const player = this.getActivePlayer(client);
+    if (!player) return;
     if (
       this.inventorySystem.useItem(player, data.itemId, (msg) =>
-        client.send(ServerMessageType.Error, { message: msg }),
+        this.sendError(client, msg),
       )
     ) {
       this.broadcast(ServerMessageType.ItemUsed, {
@@ -215,8 +231,8 @@ export class MessageHandler {
     client: Client,
     data: ClientMessages[ClientMessageType.DropItem],
   ): void {
-    const player = this.state.players.get(client.sessionId);
-    if (!player || !player.alive) return;
+    const player = this.getActivePlayer(client);
+    if (!player) return;
     if (this.inventorySystem.removeItem(player, data.itemId)) {
       this.drops.spawnItemDrop(
         this.state.drops,
@@ -232,8 +248,8 @@ export class MessageHandler {
     client: Client,
     data: ClientMessages[ClientMessageType.Interact],
   ): void {
-    const player = this.state.players.get(client.sessionId);
-    if (!player || !player.alive) return;
+    const player = this.getActivePlayer(client);
+    if (!player) return;
 
     const npc = this.state.npcs.get(data.npcId);
     if (!npc) return;
@@ -354,29 +370,27 @@ export class MessageHandler {
     client: Client,
     data: ClientMessages[ClientMessageType.BuyItem],
   ): void {
-    const player = this.state.players.get(client.sessionId);
-    if (!player || !player.alive) return;
+    const player = this.getActivePlayer(client);
+    if (!player) return;
 
     const itemDef = ITEMS[data.itemId];
     if (!itemDef) return;
 
-    const totalCost = itemDef.goldValue * (data.quantity || 1);
+    const quantity = data.quantity ?? 1;
+    const totalCost = itemDef.goldValue * quantity;
     if (player.gold < totalCost) {
-      client.send(ServerMessageType.Error, { message: "Not enough gold" });
+      this.sendError(client, "Not enough gold");
       return;
     }
 
     if (
-      this.inventorySystem.addItem(
-        player,
-        data.itemId,
-        data.quantity || 1,
-        (msg) => client.send(ServerMessageType.Error, { message: msg }),
+      this.inventorySystem.addItem(player, data.itemId, quantity, (msg) =>
+        this.sendError(client, msg),
       )
     ) {
       player.gold -= totalCost;
       client.send(ServerMessageType.Notification, {
-        message: `Bought ${data.quantity || 1}x ${itemDef.name}`,
+        message: `Bought ${quantity}x ${itemDef.name}`,
       });
     }
   }
@@ -385,26 +399,22 @@ export class MessageHandler {
     client: Client,
     data: ClientMessages[ClientMessageType.SellItem],
   ): void {
-    const player = this.state.players.get(client.sessionId);
-    if (!player || !player.alive) return;
+    const player = this.getActivePlayer(client);
+    if (!player) return;
 
     const itemDef = ITEMS[data.itemId];
     if (!itemDef) return;
 
-    const sellValue =
-      Math.floor(itemDef.goldValue * 0.5) * (data.quantity || 1);
+    const quantity = data.quantity ?? 1;
+    const sellValue = Math.floor(itemDef.goldValue * 0.5) * quantity;
 
-    if (
-      this.inventorySystem.removeItem(player, data.itemId, data.quantity || 1)
-    ) {
+    if (this.inventorySystem.removeItem(player, data.itemId, quantity)) {
       player.gold += sellValue;
       client.send(ServerMessageType.Notification, {
-        message: `Sold ${data.quantity || 1}x ${itemDef.name} for ${sellValue} gold`,
+        message: `Sold ${quantity}x ${itemDef.name} for ${sellValue} gold`,
       });
     } else {
-      client.send(ServerMessageType.Error, {
-        message: "Item not found in inventory",
-      });
+      this.sendError(client, "Item not found in inventory");
     }
   }
 
@@ -521,8 +531,8 @@ export class MessageHandler {
   }
 
   handleAudio(client: Client, data: ArrayBuffer): void {
-    const player = this.state.players.get(client.sessionId);
-    if (player && player.alive) {
+    const player = this.getActivePlayer(client);
+    if (player) {
       this.broadcast(
         ServerMessageType.Audio,
         {

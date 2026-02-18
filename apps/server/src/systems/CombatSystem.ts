@@ -58,6 +58,21 @@ export class CombatSystem {
     return cs;
   }
 
+  /** Returns the entity's base stat value plus any active buff bonus. */
+  private boosted(
+    entity: Entity,
+    stat: "str" | "agi" | "int",
+    now: number,
+  ): number {
+    const base =
+      stat === "str"
+        ? entity.str
+        : stat === "agi"
+          ? entity.agi
+          : entity.intStat;
+    return base + this.buffSystem.getBuffBonus(entity.sessionId, stat, now);
+  }
+
   removeEntity(sessionId: string): void {
     this.state.delete(sessionId);
     this.activeWindups = this.activeWindups.filter(
@@ -418,16 +433,10 @@ export class CombatSystem {
       }
 
       // Use ranged formula for archer, melee for others
-      const attackerStr =
-        attacker.str +
-        this.buffSystem.getBuffBonus(attacker.sessionId, "str", now);
-      const attackerAgi =
-        attacker.agi +
-        this.buffSystem.getBuffBonus(attacker.sessionId, "agi", now);
-      const defenderStr =
-        target.str + this.buffSystem.getBuffBonus(target.sessionId, "str", now);
-      const defenderAgi =
-        target.agi + this.buffSystem.getBuffBonus(target.sessionId, "agi", now);
+      const attackerStr = this.boosted(attacker, "str", now);
+      const attackerAgi = this.boosted(attacker, "agi", now);
+      const defenderStr = this.boosted(target, "str", now);
+      const defenderAgi = this.boosted(target, "agi", now);
 
       const result =
         stats.meleeRange > 1
@@ -487,15 +496,9 @@ export class CombatSystem {
       fxId: spell.fxId,
     });
 
-    const casterInt =
-      attacker.intStat +
-      this.buffSystem.getBuffBonus(attacker.sessionId, "int", now);
-    const casterStr =
-      attacker.str +
-      this.buffSystem.getBuffBonus(attacker.sessionId, "str", now);
-    const casterAgi =
-      attacker.agi +
-      this.buffSystem.getBuffBonus(attacker.sessionId, "agi", now);
+    const casterInt = this.boosted(attacker, "int", now);
+    const casterStr = this.boosted(attacker, "str", now);
+    const casterAgi = this.boosted(attacker, "agi", now);
     const scalingValue =
       spell.scalingStat === "str"
         ? casterStr
@@ -607,9 +610,7 @@ export class CombatSystem {
     // Check invulnerability
     if (this.buffSystem.isInvulnerable(target.sessionId, now)) return;
 
-    const defenderInt =
-      target.intStat +
-      this.buffSystem.getBuffBonus(target.sessionId, "int", now);
+    const defenderInt = this.boosted(target, "int", now);
     const damage = calcSpellDamage(
       spell.baseDamage,
       scalingValue,

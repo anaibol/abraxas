@@ -267,23 +267,24 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     }
   }
 
-  async onAuth(client: Client, options: JoinOptions) {
-    logger.info({
-      message: `[ArenaRoom] onAuth entering for client ${client.sessionId}`,
-    });
-    if (!options.token) {
+  /**
+   * Static onAuth runs before the room instance is created — invalid tokens
+   * are rejected without spinning up a room.
+   */
+  static async onAuth(
+    token: string,
+    _options: JoinOptions & { mapName?: string },
+    context: { ip?: string },
+  ) {
+    if (!token) {
       logger.error({ message: "[ArenaRoom] onAuth: No token provided" });
       throw new Error("Token required");
     }
-    const payload = AuthService.verifyToken(options.token);
+    const payload = AuthService.verifyToken(token);
     if (!payload) {
       logger.error({ message: "[ArenaRoom] onAuth: Invalid token" });
       throw new Error("Invalid token");
     }
-
-    logger.info({
-      message: `[ArenaRoom] onAuth: Fetching user ${payload.userId}`,
-    });
     const user = await prisma.user.findUnique({
       where: { id: payload.userId },
     });
@@ -293,9 +294,8 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       });
       throw new Error("User not found");
     }
-
     logger.info({
-      message: `[ArenaRoom] onAuth: Success for user ${user.username}`,
+      message: `[ArenaRoom] onAuth ok — user=${user.username} ip=${context.ip ?? "?"}`,
     });
     return { user };
   }
@@ -629,14 +629,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
             (c) => c.sessionId === player.sessionId,
           );
           if (client) {
-            for (const quest of updatedQuests) {
-              client.send(ServerMessageType.QuestUpdate, { quest });
-              if (quest.status === "completed") {
-                client.send(ServerMessageType.Notification, {
-                  message: `Quest Completed: ${QUESTS[quest.questId].title}`,
-                });
-              }
-            }
+            this.messageHandler.sendQuestUpdates(client, updatedQuests);
           }
         }
       });
