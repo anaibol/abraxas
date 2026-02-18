@@ -24,7 +24,7 @@ export class MovementSystem {
     return t;
   }
 
-  removePlayer(sessionId: string) {
+  removePlayer(sessionId: string): void {
     this.timers.delete(sessionId);
   }
 

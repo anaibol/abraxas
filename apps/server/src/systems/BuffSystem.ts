@@ -18,11 +18,11 @@ export class BuffSystem {
     return s;
   }
 
-  removePlayer(sessionId: string) {
+  removePlayer(sessionId: string): void {
     this.state.delete(sessionId);
   }
 
-  addBuff(sessionId: string, id: string, stat: string, amount: number, durationMs: number, now: number) {
+  addBuff(sessionId: string, id: string, stat: string, amount: number, durationMs: number, now: number): void {
     const s = this.getState(sessionId);
     // Replace existing buff of same id
     s.buffs = s.buffs.filter((b) => b.id !== id);
@@ -37,7 +37,7 @@ export class BuffSystem {
     intervalMs: number,
     durationMs: number,
     now: number
-  ) {
+  ): void {
     const s = this.getState(targetSessionId);
     // Replace existing DoT of same id from same source
     s.dots = s.dots.filter((d) => !(d.id === id && d.sourceSessionId === sourceSessionId));
@@ -51,17 +51,17 @@ export class BuffSystem {
     });
   }
 
-  applyStun(sessionId: string, durationMs: number, now: number) {
+  applyStun(sessionId: string, durationMs: number, now: number): void {
     const s = this.getState(sessionId);
     s.stunnedUntil = Math.max(s.stunnedUntil, now + durationMs);
   }
 
-  applyStealth(sessionId: string, durationMs: number, now: number) {
+  applyStealth(sessionId: string, durationMs: number, now: number): void {
     const s = this.getState(sessionId);
     s.stealthedUntil = now + durationMs;
   }
 
-  breakStealth(sessionId: string) {
+  breakStealth(sessionId: string): void {
     const s = this.state.get(sessionId);
     if (s) s.stealthedUntil = 0;
   }
@@ -102,7 +102,7 @@ export class BuffSystem {
     onDeath: (player: Player) => void,
     roomId: string,
     tick: number
-  ) {
+  ): void {
     for (const [sessionId, s] of this.state.entries()) {
       const player = getPlayer(sessionId);
       if (!player || !player.alive) continue;

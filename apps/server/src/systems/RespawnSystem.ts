@@ -20,7 +20,7 @@ export class RespawnSystem {
     this.inventorySystem = inventorySystem;
   }
 
-  queueRespawn(sessionId: string, now: number) {
+  queueRespawn(sessionId: string, now: number): void {
     // Don't queue twice
     if (this.pending.some((p) => p.sessionId === sessionId)) return;
     this.pending.push({
@@ -29,7 +29,7 @@ export class RespawnSystem {
     });
   }
 
-  removePlayer(sessionId: string) {
+  removePlayer(sessionId: string): void {
     this.pending = this.pending.filter((p) => p.sessionId !== sessionId);
   }
 
@@ -38,7 +38,7 @@ export class RespawnSystem {
     getPlayer: (sessionId: string) => Player | undefined,
     map: TileMap,
     broadcast: BroadcastFn
-  ) {
+  ): void {
     const remaining: PendingRespawn[] = [];
 
     for (const entry of this.pending) {
@@ -80,7 +80,7 @@ export class RespawnSystem {
     this.pending = remaining;
   }
 
-  private giveStartingEquipment(player: Player) {
+  private giveStartingEquipment(player: Player): void {
     const startingGear = STARTING_EQUIPMENT[player.classType];
     if (!startingGear) return;
 
