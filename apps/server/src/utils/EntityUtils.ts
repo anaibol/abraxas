@@ -24,4 +24,8 @@ export const EntityUtils = {
   getPosition(entity: Entity) {
       return { x: entity.tileX, y: entity.tileY };
   }
+  ,
+  isAttackable(entity: Entity): boolean {
+    return !!entity && !!(entity as any).alive && !(entity as any).stealthed;
+  }
 };
