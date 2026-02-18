@@ -37,8 +37,6 @@ import {
   EquipmentData,
   ClientMessageType,
   ServerMessageType,
-  WelcomeData,
-  QUESTS,
   EQUIPMENT_SLOTS,
 } from "@abraxas/shared";
 import { logger } from "../logger";

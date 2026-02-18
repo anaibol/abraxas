@@ -1,6 +1,4 @@
 import { GameState } from "../schema/GameState";
-import { Player } from "../schema/Player";
-import { Npc } from "../schema/Npc";
 import { Entity } from "./EntityUtils";
 import { MathUtils } from "@abraxas/shared";
 
