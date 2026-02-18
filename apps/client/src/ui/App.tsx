@@ -275,7 +275,7 @@ export function App() {
                         ? "#ff88ff"
                         : "#ffffff",
                   timestamp: Date.now(),
-                  channel: data.channel as any,
+                  channel: data.channel,
                 };
                 const next = [...prev, newMsg];
                 if (next.length > 50) return next.slice(next.length - 50);

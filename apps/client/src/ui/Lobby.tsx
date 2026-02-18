@@ -68,13 +68,13 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
   );
   const [username, setUsername] = useState(getRandomName());
   const [password, setPassword] = useState("");
-  const [playerName, setPlayerName] = useState("");
+  const [charName, setCharName] = useState("");
   const [classType, setClassType] = useState<ClassType>("warrior");
   const [error, setError] = useState("");
 
   // After a successful login, the server returns the character name + class.
   // We store them so the class_select screen can pre-fill and join correctly.
-  const [resolvedPlayerName, setResolvedPlayerName] = useState("");
+  const [resolvedCharName, setResolvedCharName] = useState("");
   const [resolvedClass, setResolvedClass] = useState<ClassType>("warrior");
   const [token, setToken] = useState("");
 
@@ -88,7 +88,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
         : {
             username,
             password,
-            playerName: playerName.trim() || username,
+            charName: charName.trim() || username,
             classType,
           };
 
@@ -108,18 +108,18 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
       setToken(data.token);
 
       if (mode === "login") {
-        // Server tells us the character's name and class from the DB.
-        const name: string = data.playerName ?? username;
-        const cls: ClassType = (data.classType as ClassType) ?? "warrior";
-        setResolvedPlayerName(name);
+        // Server tells us the char's name and class from the DB.
+        const name: string = data.charName ?? username;
+        const cls: ClassType = data.classType ?? "warrior";
+        setResolvedCharName(name);
         setResolvedClass(cls);
         setClassType(cls);
         // Login: jump straight to game — no need to re-select class.
         onJoin(name, cls, data.token);
       } else {
-        // Registration: character was created; go to class_select to confirm
+        // Registration: char was created; go to class_select to confirm
         // the chosen class before entering the arena.
-        setResolvedPlayerName(playerName.trim() || username);
+        setResolvedCharName(charName.trim() || username);
         setResolvedClass(classType);
         setMode("class_select");
       }
@@ -208,8 +208,8 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
               <>
                 <Text {...labelStyle}>Character Name</Text>
                 <Input
-                  value={playerName}
-                  onChange={(e) => setPlayerName(e.target.value)}
+                  value={charName}
+                  onChange={(e) => setCharName(e.target.value)}
                   placeholder={username}
                   maxLength={20}
                   borderColor={P.border}
@@ -268,7 +268,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
             >
               Playing as{" "}
               <Text as="span" color={P.goldText} fontWeight="700">
-                {resolvedPlayerName}
+                {resolvedCharName}
               </Text>
             </Text>
             <Text
@@ -321,7 +321,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
               bg={connecting ? P.goldDark : P.goldDim}
               color="#08080c"
               disabled={connecting}
-              onClick={() => onJoin(resolvedPlayerName, classType, token)}
+              onClick={() => onJoin(resolvedCharName, classType, token)}
               fontFamily={P.font}
               fontWeight="700"
               fontSize="13px"

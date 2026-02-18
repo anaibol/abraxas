@@ -289,7 +289,7 @@ export class MessageHandler {
       return;
     }
 
-    for (const state of this.quests.getCharacterQuestStates(player.userId)) {
+    for (const state of this.quests.getCharQuestStates(player.userId)) {
       if (state.status !== "COMPLETED") continue;
       const questDef = QUESTS[state.questId];
       if (questDef?.npcId === npc.type) {

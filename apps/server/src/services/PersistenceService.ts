@@ -13,8 +13,8 @@ const EQUIPMENT_SLOT_MAP: Partial<Record<keyof EquipmentData, EquipSlot>> = {
   ring: EquipSlot.RING1,
 };
 
-/** Common include shape used by loadCharacter and createCharacter. */
-const CHARACTER_INCLUDE = {
+/** Common include shape used by loadChar and createChar. */
+const CHAR_INCLUDE = {
   inventory: {
     include: {
       slots: {
@@ -37,16 +37,16 @@ const CHARACTER_INCLUDE = {
 } as const;
 
 export class PersistenceService {
-  static async loadCharacter(userId: string, characterName: string) {
+  static async loadChar(userId: string, charName: string) {
     return prisma.character.findFirst({
-      where: { accountId: userId, name: characterName },
-      include: CHARACTER_INCLUDE,
+      where: { accountId: userId, name: charName },
+      include: CHAR_INCLUDE,
     });
   }
 
-  static async createCharacter(
+  static async createChar(
     userId: string,
-    characterName: string,
+    charName: string,
     classType: ClassType,
     x: number,
     y: number,
@@ -59,7 +59,7 @@ export class PersistenceService {
       return await prisma.character.create({
         data: {
           account: { connect: { id: userId } },
-          name: characterName,
+          name: charName,
           class: classType,
           mapId: mapName,
           x,
@@ -77,7 +77,7 @@ export class PersistenceService {
           },
           inventory: { create: { size: 40 } },
         },
-        include: CHARACTER_INCLUDE,
+        include: CHAR_INCLUDE,
       });
     } catch (e: unknown) {
       if (typeof e === "object" && e !== null && "code" in e && e.code === "P2002") {
@@ -87,8 +87,8 @@ export class PersistenceService {
     }
   }
 
-  static async saveCharacter(
-    characterId: string,
+  static async saveChar(
+    charId: string,
     data: {
       x: number;
       y: number;
@@ -113,8 +113,8 @@ export class PersistenceService {
     try {
       const facingStr = (Direction[data.facing] ?? "DOWN").toLowerCase();
 
-      const character = await prisma.character.update({
-        where: { id: characterId },
+      const char = await prisma.character.update({
+        where: { id: charId },
         data: {
           x: data.x,
           y: data.y,
@@ -138,8 +138,8 @@ export class PersistenceService {
         include: { inventory: true },
       });
 
-      if (!character.inventory) return;
-      const inventoryId = character.inventory.id;
+      if (!char.inventory) return;
+      const inventoryId = char.inventory.id;
 
       await prisma.$transaction(async (tx) => {
         const currentSlots = await tx.inventorySlot.findMany({
@@ -177,7 +177,7 @@ export class PersistenceService {
               const instance = await tx.itemInstance.create({
                 data: {
                   itemDefId: itemDef.id,
-                  boundToCharacterId: character.id,
+                  boundToCharacterId: char.id,
                 },
               });
 
@@ -202,10 +202,7 @@ export class PersistenceService {
           }
         }
 
-        // Update equipment slots
-        for (const key of Object.keys(
-          data.equipment,
-        ) as (keyof EquipmentData)[]) {
+        for (const key of Object.keys(data.equipment) as (keyof EquipmentData)[]) {
           const schemaSlot = EQUIPMENT_SLOT_MAP[key];
           if (!schemaSlot) continue;
 
@@ -213,12 +210,12 @@ export class PersistenceService {
 
           if (!itemCode) {
             await tx.equipment.deleteMany({
-              where: { characterId: character.id, slot: schemaSlot },
+              where: { characterId: char.id, slot: schemaSlot },
             });
           } else {
             const instance = await tx.itemInstance.findFirst({
               where: {
-                boundToCharacterId: character.id,
+                boundToCharacterId: char.id,
                 itemDef: { code: itemCode },
               },
             });
@@ -226,14 +223,11 @@ export class PersistenceService {
             if (instance) {
               await tx.equipment.upsert({
                 where: {
-                  characterId_slot: {
-                    characterId: character.id,
-                    slot: schemaSlot,
-                  },
+                  characterId_slot: { characterId: char.id, slot: schemaSlot },
                 },
                 update: { itemId: instance.id },
                 create: {
-                  characterId: character.id,
+                  characterId: char.id,
                   slot: schemaSlot,
                   itemId: instance.id,
                 },
@@ -243,7 +237,7 @@ export class PersistenceService {
         }
       });
     } catch (e) {
-      logger.error({ message: "Failed to save character", error: String(e) });
+      logger.error({ message: "Failed to save char", error: String(e) });
     }
   }
 }

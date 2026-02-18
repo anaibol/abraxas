@@ -59,12 +59,12 @@ const registerEndpoint = createEndpoint(
     body: z.object({
       username: z.string().min(3).max(20),
       password: z.string().min(6),
-      characterName: z.string().min(2).max(20),
+      charName: z.string().min(2).max(20),
       classType: z.nativeEnum(CharacterClass),
     }),
   },
   async (ctx) => {
-    const { username, password, characterName, classType } = ctx.body;
+    const { username, password, charName, classType } = ctx.body;
     const stats = CLASS_STATS[classType];
 
     try {
@@ -80,7 +80,7 @@ const registerEndpoint = createEndpoint(
           password: hashedPassword,
           characters: {
             create: {
-              name: characterName,
+              name: charName,
               class: classType,
               stats: {
                 create: {
@@ -144,8 +144,8 @@ const loginEndpoint = createEndpoint(
         return ctx.json({ error: "Invalid credentials" }, { status: 401 });
       }
 
-      // Return the first character name so the client knows which name to join with
-      const character = await prisma.character.findFirst({
+      // Return the first char name so the client knows which name to join with
+      const char = await prisma.character.findFirst({
         where: { accountId: user.id },
         select: { name: true, class: true },
       });
@@ -156,8 +156,8 @@ const loginEndpoint = createEndpoint(
       });
       return ctx.json({
         token,
-        characterName: character?.name ?? user.username,
-        classType: character?.class ?? "WARRIOR",
+        charName: char?.name ?? user.username,
+        classType: char?.class ?? "WARRIOR",
       });
     } catch (e) {
       logger.error({ message: "Login error", error: String(e) });
