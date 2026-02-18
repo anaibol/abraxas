@@ -1,144 +1,195 @@
-import { Server } from "@colyseus/core";
+import {
+  defineServer,
+  defineRoom,
+  createEndpoint,
+  createRouter,
+  type Server,
+} from "@colyseus/core";
 import { BunWebSockets } from "@colyseus/bun-websockets";
+import { z } from "zod";
+import { join, extname } from "path";
 import { ArenaRoom } from "./rooms/ArenaRoom";
 import type { TileMap } from "@abraxas/shared";
+import { CLASS_STATS } from "@abraxas/shared";
 import { logger } from "./logger";
 import { AuthService } from "./database/auth";
 import { prisma } from "./database/db";
-
 import { MapService } from "./services/MapService";
+
+// Minimal MIME-type map for the built client assets
+const MIME: Record<string, string> = {
+  ".html": "text/html; charset=utf-8",
+  ".js": "application/javascript",
+  ".mjs": "application/javascript",
+  ".css": "text/css",
+  ".json": "application/json",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".webp": "image/webp",
+  ".svg": "image/svg+xml",
+  ".ico": "image/x-icon",
+  ".woff": "font/woff",
+  ".woff2": "font/woff2",
+  ".mp3": "audio/mpeg",
+  ".ogg": "audio/ogg",
+  ".wav": "audio/wav",
+};
+
+// --- Colyseus 0.17 typed HTTP endpoints ---
+
+const registerEndpoint = createEndpoint(
+  "/api/register",
+  {
+    method: "POST",
+    body: z.object({
+      username: z.string().min(3).max(20),
+      password: z.string().min(6),
+      playerName: z.string().min(2).max(20),
+      classType: z.string(),
+    }),
+  },
+  async (ctx) => {
+    const { username, password, playerName, classType } = ctx.body;
+
+    const stats = CLASS_STATS[classType];
+    if (!stats) {
+      return ctx.json({ error: "Invalid class type" }, { status: 400 });
+    }
+
+    try {
+      const existing = await prisma.user.findUnique({ where: { username } });
+      if (existing) {
+        return ctx.json({ error: "Username already taken" }, { status: 409 });
+      }
+
+      const hashedPassword = await AuthService.hashPassword(password);
+      const user = await prisma.user.create({
+        data: {
+          username,
+          password: hashedPassword,
+          players: {
+            create: {
+              name: playerName,
+              classType,
+              hp: stats.hp,
+              maxHp: stats.hp,
+              mana: stats.mana ?? 0,
+              maxMana: stats.mana ?? 0,
+              str: stats.str,
+              agi: stats.agi,
+              intStat: stats.int,
+            },
+          },
+        },
+      });
+
+      const token = AuthService.generateToken({
+        userId: user.id,
+        username: user.username,
+      });
+      return ctx.json({ token });
+    } catch (e) {
+      logger.error({ message: "Registration error", error: String(e) });
+      return ctx.json({ error: "Registration failed" }, { status: 500 });
+    }
+  },
+);
+
+const loginEndpoint = createEndpoint(
+  "/api/login",
+  {
+    method: "POST",
+    body: z.object({
+      username: z.string(),
+      password: z.string(),
+    }),
+  },
+  async (ctx) => {
+    const { username, password } = ctx.body;
+
+    try {
+      const user = await prisma.user.findUnique({ where: { username } });
+      if (!user) {
+        return ctx.json({ error: "Invalid credentials" }, { status: 401 });
+      }
+
+      const valid = await AuthService.verifyPassword(password, user.password);
+      if (!valid) {
+        return ctx.json({ error: "Invalid credentials" }, { status: 401 });
+      }
+
+      const token = AuthService.generateToken({
+        userId: user.id,
+        username: user.username,
+      });
+      return ctx.json({ token });
+    } catch (e) {
+      logger.error({ message: "Login error", error: String(e) });
+      return ctx.json({ error: "Login failed" }, { status: 500 });
+    }
+  },
+);
 
 export async function createGameServer(options: {
   port: number;
   map: TileMap;
   staticDir?: string;
 }): Promise<Server> {
-  // Inject map into MapService so rooms can find it without passing huge objects in options
   MapService.setMap("arena.test", options.map);
   MapService.setMap("arena", options.map);
 
-  const transport = new BunWebSockets();
-  const server = new Server({
-    transport,
+  const server = defineServer({
+    transport: new BunWebSockets(),
+    rooms: {
+      arena: defineRoom(ArenaRoom),
+    },
+    routes: createRouter({ registerEndpoint, loginEndpoint }),
   });
 
-  console.error(`[server.ts] Type of ArenaRoom: ${typeof ArenaRoom}`);
-  console.error(`[server.ts] ArenaRoom string: ${ArenaRoom.toString().substring(0, 50)}`);
-  const handler = server.define("arena", ArenaRoom);
-  console.error(`[server.ts] Registered 'arena' room handler: ${!!handler}`);
-
-  const app = transport.getExpressApp();
-
-  app.use((req: any, res: any, next: any) => {
-    console.error(`[DEBUG server.ts] Request: ${req.method} ${req.url}`);
-    if (req.url.startsWith("/api/") && req.method === "POST" && req.headers["content-type"]?.includes("application/json")) {
-      let body = "";
-      req.on("data", (chunk: any) => body += chunk);
-      req.on("end", () => {
-        try {
-          req.body = JSON.parse(body);
-        } catch (e) {}
-        next();
-      });
-    } else {
-      next();
-    }
-  });
-
-  // API Routes for Authentication
-  app.post("/api/register", async (req: any, res: any) => {
-    try {
-      const { username, password } = req.body;
-      if (!username || !password || username.length < 3 || password.length < 6) {
-        return res.status(400).json({ error: "Invalid username or password" });
-      }
-
-      const existing = await prisma.user.findUnique({ where: { username } });
-      if (existing) {
-        return res.status(409).json({ error: "Username already taken" });
-      }
-
-      const passwordHash = await AuthService.hashPassword(password);
-      const user = await prisma.user.create({
-        data: { username, password: passwordHash }
-      });
-
-      const token = AuthService.generateToken({ userId: user.id, username: user.username });
-      res.status(200).json({ token, username: user.username });
-    } catch (e) {
-      console.error(e);
-      res.status(400).json({ error: "Invalid request" });
-    }
-  });
-
-  app.post("/api/login", async (req: any, res: any) => {
-    try {
-      const { username, password } = req.body;
-      const user = await prisma.user.findUnique({ where: { username } });
-
-      if (!user || !user.password || !(await AuthService.verifyPassword(password, user.password))) {
-        return res.status(401).json({ error: "Invalid credentials" });
-      }
-
-      const token = AuthService.generateToken({ userId: user.id, username: user.username });
-      res.status(200).json({ token, username: user.username });
-    } catch (e) {
-      console.error(e);
-      res.status(500).json({ error: "Server error" });
-    }
-  });
-
+  // Serve the built client via Bun.file() — no Express needed
   if (options.staticDir) {
-    const { resolve, join, extname } = await import("path");
-    const { existsSync, readFileSync, statSync } = await import("fs");
+    const staticDir = options.staticDir;
+    const app = (server.transport as BunWebSockets).getExpressApp();
 
-    const MIME_TYPES: Record<string, string> = {
-      ".html": "text/html",
-      ".js": "application/javascript",
-      ".css": "text/css",
-      ".json": "application/json",
-      ".png": "image/png",
-      ".webp": "image/webp",
-      ".jpg": "image/jpeg",
-      ".svg": "image/svg+xml",
-      ".woff": "font/woff",
-      ".woff2": "font/woff2",
-      ".ttf": "font/ttf",
-      ".ico": "image/x-icon",
-      ".map": "application/json",
-    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    app.use(async (req: any, res: any, next: any) => {
+      const pathname: string = req.path || "/";
 
-    app.use((req: any, res: any, next: any) => {
-      const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-      let urlPath = url.pathname;
-      if (urlPath === "/") urlPath = "/index.html";
-      
-      const filePath = join(options.staticDir!, urlPath);
-      
-      if (filePath.startsWith(options.staticDir!) && existsSync(filePath) && statSync(filePath).isFile()) {
-          const ext = extname(filePath);
-          const mime = MIME_TYPES[ext] || "application/octet-stream";
-          res.status(200).header("Content-Type", mime).send(readFileSync(filePath));
-      } else {
-          next();
+      // Let Colyseus handle its own routes
+      if (
+        pathname.startsWith("/api") ||
+        pathname.startsWith("/matchmake") ||
+        pathname.startsWith("/.colyseus")
+      ) {
+        return next();
       }
-    });
 
-    // SPA fallback
-    app.use((req: any, res: any) => {
-        const indexPath = join(options.staticDir!, "index.html");
-        if (existsSync(indexPath)) {
-            res.status(200).header("Content-Type", "text/html").send(readFileSync(indexPath));
-        } else {
-            res.status(404).send("Not Found");
-        }
+      const filePath = join(
+        staticDir,
+        pathname === "/" ? "index.html" : pathname,
+      );
+      const file = Bun.file(filePath);
+
+      if (await file.exists()) {
+        const ext = extname(filePath);
+        const bytes = await file.arrayBuffer();
+        res.setHeader("Content-Type", MIME[ext] ?? "application/octet-stream");
+        res.end(Buffer.from(bytes));
+        return;
+      }
+
+      // SPA fallback — all unmatched paths get index.html
+      const index = Bun.file(join(staticDir, "index.html"));
+      const bytes = await index.arrayBuffer();
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      res.end(Buffer.from(bytes));
     });
   }
 
-  console.error(`[server.ts] Starting listen on port ${options.port}...`);
-  await server.listen(options.port);
+  await server.listen(options.port, "0.0.0.0");
 
-  console.error({ intent: "server_start", result: "ok", port: options.port });
+  logger.info({ intent: "server_start", result: "ok", port: options.port });
 
   return server;
 }
