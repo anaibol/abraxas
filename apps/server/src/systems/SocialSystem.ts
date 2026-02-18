@@ -101,6 +101,15 @@ export class SocialSystem {
     });
   }
 
+  /** Sends an empty PartyUpdate to signal the client they are no longer in a party. */
+  private sendPartyLeft(client: Client): void {
+    client.send(ServerMessageType.PartyUpdate, {
+      partyId: "",
+      leaderId: "",
+      members: [],
+    });
+  }
+
   handleLeaveParty(client: Client): void {
     const player = this.state.players.get(client.sessionId);
     if (!player || !player.partyId) return;
@@ -116,11 +125,7 @@ export class SocialSystem {
       message: `${player.name} left the party`,
     });
     this.broadcastPartyUpdate(partyId);
-    client.send(ServerMessageType.PartyUpdate, {
-      partyId: "",
-      leaderId: "",
-      members: [],
-    });
+    this.sendPartyLeft(client);
   }
 
   handleKickPlayer(client: Client, targetSessionId: string): void {
@@ -147,11 +152,7 @@ export class SocialSystem {
         targetClient.send(ServerMessageType.Notification, {
           message: "You were kicked from the party",
         });
-        targetClient.send(ServerMessageType.PartyUpdate, {
-          partyId: "",
-          leaderId: "",
-          members: [],
-        });
+        this.sendPartyLeft(targetClient);
       }
       this.broadcastPartyUpdate(party.id);
     }

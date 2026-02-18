@@ -2,8 +2,7 @@ import type { MapSchema } from "@colyseus/schema";
 import type { Player } from "../schema/Player";
 import { Drop } from "../schema/Drop";
 import { InventorySystem } from "./InventorySystem";
-import { ITEMS, DROP_EXPIRY_MS } from "@abraxas/shared";
-import { logger } from "../logger";
+import { DROP_EXPIRY_MS } from "@abraxas/shared";
 
 let dropCounter = 0;
 
@@ -29,15 +28,6 @@ export class DropSystem {
     drop.spawnedAt = Date.now();
     drops.set(id, drop);
     return drop;
-  }
-
-  spawnDrop(
-    drops: MapSchema<Drop>,
-    tileX: number,
-    tileY: number,
-    itemType: string,
-  ): Drop {
-    return this.createDrop(drops, tileX, tileY, itemType);
   }
 
   spawnItemDrop(
@@ -96,9 +86,7 @@ export class DropSystem {
       return true;
     }
 
-    // Legacy loot_bag — just remove
-    drops.delete(dropId);
-    return true;
+    return false;
   }
 
   /** Remove expired drops (older than 60s) */

@@ -138,7 +138,7 @@ export class FriendsSystem {
     const client = this.findClient(sessionId);
     if (!client) return;
 
-    // Fetch accepted friendships from both tables
+    // Fetch both sides of accepted friendships in two queries
     const [outgoing, incoming] = await Promise.all([
       prisma.requesterFriend.findMany({
         where: { requesterId: userId, status: "ACCEPTED" },
@@ -148,37 +148,27 @@ export class FriendsSystem {
       }),
     ]);
 
-    const friends: { id: string; name: string; online: boolean }[] = [];
+    // Collect all friend user IDs, then fetch in one batch
+    const friendIds = [
+      ...outgoing.map((f) => f.recipientId),
+      ...incoming.map((f) => f.requesterId),
+    ];
 
-    // For each outgoing request, the 'target' is the recipient
-    for (const f of outgoing) {
-      const user = await prisma.user.findUnique({
-        where: { id: f.recipientId },
-        include: { players: true },
-      });
-      if (user) {
-        friends.push({
-          id: user.id,
-          name: user.players[0]?.name || "Unknown",
-          online: this.onlineUsers.has(user.id),
-        });
-      }
+    if (friendIds.length === 0) {
+      client.send(ServerMessageType.FriendUpdate, { friends: [] });
+      return;
     }
 
-    // For each incoming request, the 'target' is the requester
-    for (const f of incoming) {
-      const user = await prisma.user.findUnique({
-        where: { id: f.requesterId },
-        include: { players: true },
-      });
-      if (user) {
-        friends.push({
-          id: user.id,
-          name: user.players[0]?.name || "Unknown",
-          online: this.onlineUsers.has(user.id),
-        });
-      }
-    }
+    const users = await prisma.user.findMany({
+      where: { id: { in: friendIds } },
+      include: { players: { take: 1 } },
+    });
+
+    const friends = users.map((user) => ({
+      id: user.id,
+      name: user.players[0]?.name ?? "Unknown",
+      online: this.onlineUsers.has(user.id),
+    }));
 
     client.send(ServerMessageType.FriendUpdate, { friends });
   }

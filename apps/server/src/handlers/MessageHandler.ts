@@ -1,7 +1,6 @@
 import { Client } from "@colyseus/core";
 import { GameState } from "../schema/GameState";
 import { Player } from "../schema/Player";
-import { Npc } from "../schema/Npc";
 import { MovementSystem } from "../systems/MovementSystem";
 import { CombatSystem } from "../systems/CombatSystem";
 import { InventorySystem } from "../systems/InventorySystem";
@@ -257,7 +256,7 @@ export class MessageHandler {
     const dist =
       Math.abs(player.tileX - npc.tileX) + Math.abs(player.tileY - npc.tileY);
     if (dist > 3) {
-      client.send(ServerMessageType.Error, { message: "Too far to interact" });
+      this.sendError(client, "Too far to interact");
       return;
     }
 
@@ -431,9 +430,7 @@ export class MessageHandler {
       const partyMsg = message.replace(prefix, "");
       if (partyMsg) {
         if (!player.partyId) {
-          client.send(ServerMessageType.Error, {
-            message: "You are not in a party",
-          });
+          this.sendError(client, "You are not in a party");
           return;
         }
         this.social.broadcastToParty(player.partyId, ServerMessageType.Chat, {
@@ -451,9 +448,7 @@ export class MessageHandler {
       if (text.startsWith("/w ") || text.startsWith("/whisper ")) {
         const parts = text.split(" ");
         if (parts.length < 3) {
-          client.send(ServerMessageType.Error, {
-            message: "Usage: /w <name> <message>",
-          });
+          this.sendError(client, "Usage: /w <name> <message>");
           return;
         }
         const targetName = parts[1];
@@ -461,9 +456,10 @@ export class MessageHandler {
         const targetClient = this.findClientByName(targetName);
 
         if (!targetClient) {
-          client.send(ServerMessageType.Error, {
-            message: `Player '${targetName}' not found or offline.`,
-          });
+          this.sendError(
+            client,
+            `Player '${targetName}' not found or offline.`,
+          );
           return;
         }
 

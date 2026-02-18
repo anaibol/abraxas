@@ -21,11 +21,8 @@ interface PendingRespawn {
 
 export class RespawnSystem {
   private pending: PendingRespawn[] = [];
-  private inventorySystem: InventorySystem;
 
-  constructor(inventorySystem: InventorySystem) {
-    this.inventorySystem = inventorySystem;
-  }
+  constructor(private inventorySystem: InventorySystem) {}
 
   queueRespawn(sessionId: string, now: number): void {
     // Don't queue twice
@@ -65,8 +62,8 @@ export class RespawnSystem {
       player.tileY = spawn.y;
       player.hp = stats.hp;
       player.maxHp = stats.hp;
-      player.mana = stats.mana || 0;
-      player.maxMana = stats.mana || 0;
+      player.mana = stats.mana ?? 0;
+      player.maxMana = stats.mana ?? 0;
       player.alive = true;
       player.stealthed = false;
       player.stunned = false;
@@ -77,7 +74,11 @@ export class RespawnSystem {
       // Give starting equipment
       this.giveStartingEquipment(player);
 
-      broadcast(ServerMessageType.Respawn, { sessionId: player.sessionId, tileX: spawn.x, tileY: spawn.y });
+      broadcast(ServerMessageType.Respawn, {
+        sessionId: player.sessionId,
+        tileX: spawn.x,
+        tileY: spawn.y,
+      });
     }
 
     this.pending = remaining;
