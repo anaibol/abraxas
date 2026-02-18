@@ -10,7 +10,7 @@ let dropCounter = 0;
 export class DropSystem {
   private inventorySystem?: InventorySystem;
 
-  setInventorySystem(inv: InventorySystem) {
+  setInventorySystem(inv: InventorySystem): void {
     this.inventorySystem = inv;
   }
 
@@ -111,7 +111,7 @@ export class DropSystem {
   }
 
   /** Remove expired drops (older than 60s) */
-  expireDrops(drops: MapSchema<Drop>, now: number) {
+  expireDrops(drops: MapSchema<Drop>, now: number): void {
     const toDelete: string[] = [];
     for (const [id, drop] of drops) {
       if (drop.spawnedAt > 0 && now - drop.spawnedAt > DROP_EXPIRY_MS) {
