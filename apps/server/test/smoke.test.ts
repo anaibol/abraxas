@@ -85,12 +85,12 @@ describe("Arena multiplayer smoke test", () => {
 
     // Seed users
     const password = await AuthService.hashPassword("password");
-    const userA = await prisma.user.upsert({
+    const userA = await prisma.account.upsert({
       where: { username: nameA },
       update: { password },
       create: { username: nameA, password }
     });
-    const userB = await prisma.user.upsert({
+    const userB = await prisma.account.upsert({
       where: { username: nameB },
       update: { password },
       create: { username: nameB, password }

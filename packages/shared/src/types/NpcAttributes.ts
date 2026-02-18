@@ -3,5 +3,6 @@ export enum NpcState {
   PATROL = "patrol",
   CHASE = "chase",
   ATTACK = "attack",
-  FLEE = "flee"
+  FLEE = "flee",
+  RETURN = "return",
 }

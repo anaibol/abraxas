@@ -96,6 +96,10 @@ export interface NpcStats {
   meleeWindupMs: number;
   spells: string[];
   expReward?: number;
+  /** NPC will not aggro players and does not move (e.g. merchants). */
+  passive?: boolean;
+  /** NPC flees when HP drops below 25%. */
+  fleesWhenLow?: boolean;
 }
 
 /** Stats for player classes — extends NpcStats with a required mana pool. */

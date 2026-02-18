@@ -59,27 +59,36 @@ const registerEndpoint = createEndpoint(
     }
 
     try {
-      const existing = await prisma.user.findUnique({ where: { username } });
+      const existing = await prisma.account.findUnique({ where: { username } });
       if (existing) {
         return ctx.json({ error: "Username already taken" }, { status: 409 });
       }
 
       const hashedPassword = await AuthService.hashPassword(password);
-      const user = await prisma.user.create({
+      const user = await prisma.account.create({
         data: {
           username,
           password: hashedPassword,
-          players: {
+          characters: {
             create: {
               name: playerName,
-              classType,
-              hp: stats.hp,
-              maxHp: stats.hp,
-              mana: stats.mana,
-              maxMana: stats.mana,
-              str: stats.str,
-              agi: stats.agi,
-              intStat: stats.int,
+              class: (classType.toUpperCase() as any), // Warrior -> WARRIOR
+              stats: {
+                create: {
+                  hp: stats.hp,
+                  maxHp: stats.hp,
+                  mp: stats.mana,
+                  maxMp: stats.mana,
+                  str: stats.str,
+                  agi: stats.agi,
+                  int: stats.int,
+                },
+              },
+              inventory: {
+                create: {
+                  size: 40,
+                },
+              },
             },
           },
         },
@@ -116,7 +125,7 @@ const loginEndpoint = createEndpoint(
     const { username, password } = ctx.body;
 
     try {
-      const user = await prisma.user.findUnique({ where: { username } });
+      const user = await prisma.account.findUnique({ where: { username } });
       if (!user) {
         return ctx.json({ error: "Invalid credentials" }, { status: 401 });
       }

@@ -19,6 +19,7 @@ import {
   ServerMessageType,
   ClientMessageType,
   ClientMessages,
+  MathUtils,
 } from "@abraxas/shared";
 import { QuestSystem } from "../systems/QuestSystem";
 
@@ -118,10 +119,10 @@ export class MessageHandler {
 
     this.combat.tryAttack(
       player,
-      Date.now(),
+      data.targetTileX ?? player.tileX,
+      data.targetTileY ?? player.tileY,
       this.broadcast,
-      data.targetTileX,
-      data.targetTileY,
+      Date.now(),
       (type, payload) => client.send(type, payload),
     );
   }
@@ -136,10 +137,10 @@ export class MessageHandler {
     this.combat.tryCast(
       player,
       data.spellId,
-      data.targetTileX,
-      data.targetTileY,
-      Date.now(),
+      data.targetTileX ?? player.tileX,
+      data.targetTileY ?? player.tileY,
       this.broadcast,
+      Date.now(),
       (type, payload) => client.send(type, payload),
     );
   }
@@ -266,6 +267,7 @@ export class MessageHandler {
 
     if (npc.type === "merchant") {
       const inventory = MERCHANT_INVENTORY.general_store || [];
+      // Bug Fix: Send inventory only if near. (Distance check already done above for all interactions)
       client.send(ServerMessageType.OpenShop, { npcId: data.npcId, inventory });
       return;
     }
@@ -332,6 +334,10 @@ export class MessageHandler {
             message: `Quest Accepted: ${QUESTS[data.questId].title}`,
           });
         }
+      })
+      .catch((err) => {
+        console.error(`Failed to accept quest ${data.questId} for player ${player.name}:`, err);
+        this.sendError(client, "Failed to accept quest");
       });
   }
 
@@ -362,6 +368,10 @@ export class MessageHandler {
             message: `Quest Completed: ${questDef.title} (+${questDef.rewards.exp} XP, +${questDef.rewards.gold} Gold)`,
           });
         }
+      })
+      .catch((err) => {
+        console.error(`Failed to complete quest ${data.questId} for player ${player.name}:`, err);
+        this.sendError(client, "Failed to complete quest");
       });
   }
 
@@ -371,6 +381,14 @@ export class MessageHandler {
   ): void {
     const player = this.getActivePlayer(client);
     if (!player) return;
+
+    // Bug Fix: Remote merchant exploit. Ensure proximity to any merchant NPC.
+    const merchants = Array.from(this.state.npcs.values()).filter(n => n.type === 'merchant' && n.alive);
+    const nearMerchant = merchants.some(m => MathUtils.manhattanDist({ x: player.tileX, y: player.tileY }, { x: m.tileX, y: m.tileY }) <= 3);
+    if (!nearMerchant) {
+      this.sendError(client, "You are too far from a merchant");
+      return;
+    }
 
     const itemDef = ITEMS[data.itemId];
     if (!itemDef) return;
@@ -400,6 +418,14 @@ export class MessageHandler {
   ): void {
     const player = this.getActivePlayer(client);
     if (!player) return;
+
+    // Bug Fix: Remote merchant exploit. Ensure proximity to any merchant NPC.
+    const merchants = Array.from(this.state.npcs.values()).filter(n => n.type === 'merchant' && n.alive);
+    const nearMerchant = merchants.some(m => MathUtils.manhattanDist({ x: player.tileX, y: player.tileY }, { x: m.tileX, y: m.tileY }) <= 3);
+    if (!nearMerchant) {
+      this.sendError(client, "You are too far from a merchant");
+      return;
+    }
 
     const itemDef = ITEMS[data.itemId];
     if (!itemDef) return;
@@ -444,6 +470,9 @@ export class MessageHandler {
     }
 
     const text = message.trim().slice(0, 100);
+    // Bug Fix: Prevent chat spoofing by sanitizing special brackets in names
+    const safePlayerName = player.name.replace(/[\[\]]/g, "");
+    
     if (text.length > 0) {
       if (text.startsWith("/w ") || text.startsWith("/whisper ")) {
         const parts = text.split(" ");
@@ -473,14 +502,14 @@ export class MessageHandler {
         client.send(ServerMessageType.Chat, whisperData);
         targetClient.send(ServerMessageType.Chat, {
           ...whisperData,
-          senderName: `[From: ${player.name}]`,
+          senderName: `[From: ${safePlayerName}]`,
         });
         return;
       }
 
       this.broadcast(ServerMessageType.Chat, {
         senderId: player.sessionId,
-        senderName: player.name,
+        senderName: safePlayerName,
         message: text,
         channel: "global",
       });

@@ -30,7 +30,10 @@ export class SpatialLookup {
   }
 
   addToGrid(entity: Entity) {
-    if (!entity.alive) return;
+    if (!entity.alive) {
+      this.removeFromGrid(entity); // Bug Fix: Ensure dead entities are removed
+      return;
+    }
     const key = this.getKey(entity.tileX, entity.tileY);
     if (!this.grid.has(key)) {
       this.grid.set(key, new Set());

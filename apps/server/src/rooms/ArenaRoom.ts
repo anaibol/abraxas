@@ -10,6 +10,7 @@ import { z } from "zod";
 import { StateView } from "@colyseus/schema";
 import { GameState } from "../schema/GameState";
 import { Player } from "../schema/Player";
+import { InventoryItem } from "../schema/InventoryItem";
 import { Npc } from "../schema/Npc";
 import { MovementSystem } from "../systems/MovementSystem";
 import { CombatSystem } from "../systems/CombatSystem";
@@ -44,7 +45,7 @@ import { MapService } from "../services/MapService";
 import { PersistenceService } from "../services/PersistenceService";
 import { AuthService } from "../database/auth";
 import { prisma } from "../database/db";
-import { User } from "@prisma/client";
+// import { User } from "@prisma/client"; // Removed due to lint error
 import { MessageHandler } from "../handlers/MessageHandler";
 import { SocialSystem } from "../systems/SocialSystem";
 import { FriendsSystem } from "../systems/FriendsSystem";
@@ -200,7 +201,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 
       this.spatial = new SpatialLookup(this.state);
       this.movement = new MovementSystem(this.spatial);
-      this.combat = new CombatSystem(this.buffSystem, this.spatial);
+      this.combat = new CombatSystem(this.spatial, this.buffSystem);
       this.npcSystem = new NpcSystem(
         this.state,
         this.movement,
@@ -280,25 +281,25 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       logger.error({ message: "[ArenaRoom] onAuth: Invalid token" });
       throw new Error("Invalid token");
     }
-    const user = await prisma.user.findUnique({
+    const dbUser = await prisma.account.findUnique({
       where: { id: payload.userId },
     });
-    if (!user) {
+    if (!dbUser) {
       logger.error({
         message: `[ArenaRoom] onAuth: User ${payload.userId} not found`,
       });
       throw new Error("User not found");
     }
     logger.info({
-      message: `[ArenaRoom] onAuth ok — user=${user.username} ip=${context.ip ?? "?"}`,
+      message: `[ArenaRoom] onAuth ok — user=${dbUser.username} ip=${context.ip ?? "?"}`,
     });
-    return { user };
+    return { user: dbUser };
   }
 
   async onJoin(
     client: Client,
     options: JoinOptions & { mapName?: string },
-    auth: { user: User },
+    auth: { user: any },
   ) {
     const classType = options?.classType || "warrior";
     if (!classType || !CLASS_STATS[classType]) {
@@ -330,24 +331,58 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         this.roomMapName,
       );
     } else {
-      if (dbPlayer.mapName !== this.roomMapName) {
+      if (dbPlayer.mapId !== this.roomMapName) {
         logger.info({
           room: this.roomId,
           clientId: client.sessionId,
-          message: `Player ${playerName} joined ${this.roomMapName} but was last in ${dbPlayer.mapName}. Teleporting.`,
+          message: `Player ${playerName} joined ${this.roomMapName} but was last in ${dbPlayer.mapId}. Teleporting.`,
         });
       }
     }
 
+    if (!dbPlayer) {
+      logger.error({ message: "Failed to load or create player" });
+      client.leave();
+      return;
+    }
+
     const player = new Player();
     player.sessionId = client.sessionId;
-    player.userId = user.id;
-    player.name = dbPlayer.name;
-    player.classType = dbPlayer.classType as ClassType;
-
     player.dbId = dbPlayer.id;
+    player.userId = user.id;
+    player.name = playerName;
+    player.classType = (dbPlayer.class as string).toLowerCase() as ClassType;
     player.tileX = dbPlayer.x;
     player.tileY = dbPlayer.y;
+
+    const stats = dbPlayer.stats;
+    if (stats) {
+      player.hp = stats.hp;
+      player.maxHp = stats.maxHp;
+      player.mana = stats.mp;
+      player.maxMana = stats.maxMp;
+      player.str = stats.str;
+      player.agi = stats.agi;
+      player.intStat = stats.int;
+    }
+
+    player.gold = Number(dbPlayer.gold);
+    player.level = dbPlayer.level;
+    player.xp = Number(dbPlayer.exp);
+    player.maxXp = 100;
+
+    // Map Inventory
+    if (dbPlayer.inventory && dbPlayer.inventory.slots) {
+      for (const slot of dbPlayer.inventory.slots) {
+        if (slot.item && slot.item.itemDef) {
+          const invItem = new InventoryItem();
+          invItem.itemId = slot.item.itemDef.code;
+          invItem.quantity = slot.qty;
+          invItem.slotIndex = slot.idx;
+          player.inventory.push(invItem);
+        }
+      }
+    }
 
     const dirMap: Record<string, Direction> = {
       UP: Direction.UP,
@@ -356,36 +391,16 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       RIGHT: Direction.RIGHT,
     };
     player.facing = dirMap[dbPlayer.facing.toUpperCase()] ?? Direction.DOWN;
+    player.alive = player.hp > 0;
 
-    player.hp = dbPlayer.hp;
-    player.maxHp = dbPlayer.maxHp;
-    player.mana = dbPlayer.mana;
-    player.maxMana = dbPlayer.maxMana;
-    player.alive = dbPlayer.hp > 0;
-    player.str = dbPlayer.str;
-    player.agi = dbPlayer.agi;
-    player.intStat = dbPlayer.intStat;
-    player.gold = dbPlayer.gold;
-    player.level = dbPlayer.level;
-    player.xp = dbPlayer.xp;
-    player.maxXp = dbPlayer.maxXp;
-
-    for (const item of dbPlayer.inventory) {
-      this.inventorySystem.addItem(player, item.itemId, item.quantity);
-    }
-
-    player.equipWeapon = dbPlayer.equipWeapon || "";
-    player.equipShield = dbPlayer.equipShield || "";
-    player.equipHelmet = dbPlayer.equipHelmet || "";
-    player.equipArmor = dbPlayer.equipArmor || "";
-    player.equipRing = dbPlayer.equipRing || "";
-
+    // Give starting gear if totally empty
     if (
-      dbPlayer.inventory.length === 0 &&
+      player.inventory.length === 0 &&
       !player.equipWeapon &&
       !player.equipArmor &&
       !player.equipShield &&
-      !player.equipHelmet
+      !player.equipHelmet &&
+      player.gold === 0
     ) {
       const startingGear = STARTING_EQUIPMENT[classType];
       if (startingGear) {
@@ -622,6 +637,10 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 
   private onSummon(_caster: Entity, spellId: string, x: number, y: number) {
     if (spellId === "summon_skeleton") {
+      // Bug Fix: Infinite summon DOS. Cap number of skeletons in room.
+      const currentSkeletons = Array.from(this.state.npcs.values()).filter(n => n.type === 'skeleton').length;
+      if (currentSkeletons > 50) return;
+
       const count = 2 + Math.floor(Math.random() * 2);
       for (let i = 0; i < count; i++) {
         const rx = x + Math.floor(Math.random() * 3) - 1;

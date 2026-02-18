@@ -1,23 +1,63 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["driverAdapters"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "sqlite"
 }
 
-model User {
-  id        String   @id @default(uuid())
+enum CharacterClass {
+  WARRIOR
+  MAGE
+  ROGUE
+  CLERIC
+  RANGER
+}
+
+enum ItemRarity {
+  COMMON
+  UNCOMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
+
+enum ItemBind {
+  NONE
+  ON_PICKUP
+  ON_EQUIP
+}
+
+enum EquipSlot {
+  HEAD
+  CHEST
+  LEGS
+  FEET
+  HANDS
+  WEAPON_MAIN
+  WEAPON_OFF
+  RING1
+  RING2
+  AMULET
+}
+
+enum QuestStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  TURNED_IN
+}
+
+model Account {
+  id        String   @id @default(cuid())
+  email     String?  @unique
   username  String   @unique
-  password  String // Hashed password
+  password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  players  Player[]
+  characters Character[]
+
   friends  RequesterFriend[] @relation("Requester")
   friendOf RecipientFriend[] @relation("Recipient")
 }
@@ -25,9 +65,9 @@ model User {
 model RequesterFriend {
   id          String   @id @default(uuid())
   requesterId String
-  requester   User     @relation("Requester", fields: [requesterId], references: [id])
+  requester   Account  @relation("Requester", fields: [requesterId], references: [id])
   recipientId String
-  status      String   @default("PENDING") // PENDING, ACCEPTED
+  status      String   @default("PENDING")
   createdAt   DateTime @default(now())
 
   @@unique([requesterId, recipientId])
@@ -36,7 +76,7 @@ model RequesterFriend {
 model RecipientFriend {
   id          String   @id @default(uuid())
   recipientId String
-  recipient   User     @relation("Recipient", fields: [recipientId], references: [id])
+  recipient   Account  @relation("Recipient", fields: [recipientId], references: [id])
   requesterId String
   status      String   @default("PENDING")
   createdAt   DateTime @default(now())
@@ -44,77 +84,181 @@ model RecipientFriend {
   @@unique([recipientId, requesterId])
 }
 
-model Player {
-  id     String @id @default(uuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
+model Character {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
-  name      String
-  classType String
-  mapName   String @default("arena")
+  name        String         @unique
+  class       CharacterClass
+  level       Int            @default(1)
+  exp         BigInt         @default(0)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  lastLoginAt DateTime?
 
-  // Position
-  x      Int    @default(0)
-  y      Int    @default(0)
-  facing String @default("down")
+  gold BigInt @default(0)
+  gems Int    @default(0)
 
-  // Stats
-  hp      Int
-  maxHp   Int
-  mana    Int
-  maxMana Int
-  str     Int @default(10)
-  agi     Int @default(10)
-  intStat Int @default(10)
+  mapId  String?
+  x      Float   @default(0)
+  y      Float   @default(0)
+  z      Float   @default(0)
+  facing String  @default("down")
 
-  // Leveling
-  level Int @default(1)
-  xp    Int @default(0)
-  maxXp Int @default(100)
+  stats         CharacterStats?
+  inventory     Inventory?
+  equipments    Equipment[]
+  skills        CharacterSkill[]
+  questLog      CharacterQuest[]
+  itemInstances ItemInstance[]
 
-  gold Int @default(0)
+  @@index([accountId])
+  @@index([mapId])
+}
 
-  // Relations
-  inventory InventoryItem[]
-  quests    PlayerQuest[]
+model CharacterStats {
+  id          String    @id @default(cuid())
+  characterId String    @unique
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
 
-  // Equipment (stored as Item IDs)
-  equipWeapon String?
-  equipArmor  String?
-  equipShield String?
-  equipHelmet String?
-  equipRing   String?
+  str Int @default(5)
+  agi Int @default(5)
+  int Int @default(5)
+  vit Int @default(5)
+
+  maxHp Int @default(100)
+  maxMp Int @default(50)
+  hp    Int @default(100)
+  mp    Int @default(50)
+
+  armor  Int @default(0)
+  minDmg Int @default(1)
+  maxDmg Int @default(3)
+}
+
+model ItemDef {
+  id           String     @id @default(cuid())
+  code         String     @unique
+  name         String
+  description  String?
+  rarity       ItemRarity @default(COMMON)
+  bind         ItemBind   @default(NONE)
+  stackSize    Int        @default(1)
+  equipSlot    EquipSlot?
+  isConsumable Boolean    @default(false)
+
+  statsJson Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([name]) // Player names must be unique globally
+  instances ItemInstance[]
 }
 
-model InventoryItem {
-  id       String @id @default(uuid())
-  playerId String
-  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+model ItemInstance {
+  id        String  @id @default(cuid())
+  itemDefId String
+  itemDef   ItemDef @relation(fields: [itemDefId], references: [id], onDelete: Restrict)
 
-  itemId    String
-  quantity  Int    @default(1)
-  slotIndex Int
+  seed     Int?
+  metaJson Json?
 
-  @@index([playerId])
-}
-
-model PlayerQuest {
-  id       String @id @default(uuid())
-  playerId String
-  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
-
-  questId  String
-  status   String // available, active, completed, rewarded
-  progress String // JSON string to store Record<string, number>
+  boundToCharacterId String?
+  boundToCharacter   Character? @relation(fields: [boundToCharacterId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
-  @@unique([playerId, questId])
-  @@index([playerId])
+  inventorySlot InventorySlot?
+  equipment     Equipment?
+}
+
+model Inventory {
+  id          String    @id @default(cuid())
+  characterId String    @unique
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  size  Int             @default(40)
+  slots InventorySlot[]
+}
+
+model InventorySlot {
+  id          String    @id @default(cuid())
+  inventoryId String
+  inventory   Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+
+  idx    Int
+  itemId String?       @unique
+  item   ItemInstance? @relation(fields: [itemId], references: [id], onDelete: SetNull)
+
+  qty Int @default(0)
+
+  @@unique([inventoryId, idx])
+  @@index([inventoryId])
+  @@index([itemId])
+}
+
+model Equipment {
+  id          String    @id @default(cuid())
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  slot   EquipSlot
+  itemId String?       @unique
+  item   ItemInstance? @relation(fields: [itemId], references: [id], onDelete: SetNull)
+
+  @@unique([characterId, slot])
+}
+
+model SkillDef {
+  id          String  @id @default(cuid())
+  code        String  @unique
+  name        String
+  description String?
+  maxLevel    Int     @default(10)
+  metaJson    Json?
+
+  CharacterSkill CharacterSkill[]
+}
+
+model CharacterSkill {
+  id          String    @id @default(cuid())
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  skillDefId String
+  skillDef   SkillDef @relation(fields: [skillDefId], references: [id], onDelete: Restrict)
+
+  level Int    @default(1)
+  exp   BigInt @default(0)
+
+  @@unique([characterId, skillDefId])
+  @@index([characterId])
+}
+
+model QuestDef {
+  id          String  @id @default(cuid())
+  code        String  @unique
+  name        String
+  description String?
+  metaJson    Json?
+
+  CharacterQuest CharacterQuest[]
+}
+
+model CharacterQuest {
+  id          String    @id @default(cuid())
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  questDefId String
+  questDef   QuestDef @relation(fields: [questDefId], references: [id], onDelete: Restrict)
+
+  status       QuestStatus @default(NOT_STARTED)
+  progressJson Json?
+  startedAt    DateTime?
+  completedAt  DateTime?
+
+  @@unique([characterId, questDefId])
+  @@index([characterId, status])
 }

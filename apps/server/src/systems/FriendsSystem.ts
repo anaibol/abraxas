@@ -49,8 +49,8 @@ export class FriendsSystem {
     const player = this.state.players.get(client.sessionId);
     if (!player) return;
 
-    const targetUser = await prisma.user.findFirst({
-      where: { players: { some: { name: targetName } } },
+    const targetUser = await prisma.account.findFirst({
+      where: { characters: { some: { name: targetName } } },
     });
 
     if (!targetUser) {
@@ -159,14 +159,14 @@ export class FriendsSystem {
       return;
     }
 
-    const users = await prisma.user.findMany({
+    const users = await prisma.account.findMany({
       where: { id: { in: friendIds } },
-      include: { players: { take: 1 } },
+      include: { characters: { take: 1 } },
     });
 
-    const friends = users.map((user) => ({
+    const friends = users.map((user: any) => ({
       id: user.id,
-      name: user.players[0]?.name ?? "Unknown",
+      name: user.characters[0]?.name ?? "Unknown",
       online: this.onlineUsers.has(user.id),
     }));
 

@@ -142,6 +142,7 @@ export const NPC_STATS: Record<string, NpcStats> = {
     meleeCooldownMs: 800,
     meleeWindupMs: 200,
     spells: [],
+    expReward: 80,
   },
   skeleton: {
     hp: 60,
@@ -153,6 +154,7 @@ export const NPC_STATS: Record<string, NpcStats> = {
     meleeCooldownMs: 600,
     meleeWindupMs: 150,
     spells: [],
+    expReward: 40,
   },
   goblin: {
     hp: 40,
@@ -164,6 +166,8 @@ export const NPC_STATS: Record<string, NpcStats> = {
     meleeCooldownMs: 500,
     meleeWindupMs: 100,
     spells: [],
+    expReward: 20,
+    fleesWhenLow: true,
   },
   wolf: {
     hp: 80,
@@ -176,6 +180,7 @@ export const NPC_STATS: Record<string, NpcStats> = {
     meleeWindupMs: 120,
     spells: [],
     expReward: 60,
+    fleesWhenLow: true,
   },
   merchant: {
     hp: 1000,
@@ -187,6 +192,7 @@ export const NPC_STATS: Record<string, NpcStats> = {
     meleeCooldownMs: 0,
     meleeWindupMs: 0,
     spells: [],
+    passive: true,
   },
   spider: {
     hp: 50,
@@ -198,6 +204,8 @@ export const NPC_STATS: Record<string, NpcStats> = {
     meleeCooldownMs: 400,
     meleeWindupMs: 80,
     spells: ["poison_bite"],
+    expReward: 35,
+    fleesWhenLow: true,
   },
   ghost: {
     hp: 70,
@@ -209,6 +217,7 @@ export const NPC_STATS: Record<string, NpcStats> = {
     meleeCooldownMs: 1000,
     meleeWindupMs: 200,
     spells: ["soul_drain"],
+    expReward: 55,
   },
   lich: {
     hp: 1500,
@@ -220,6 +229,7 @@ export const NPC_STATS: Record<string, NpcStats> = {
     meleeCooldownMs: 1500,
     meleeWindupMs: 500,
     spells: ["shadow_bolt", "summon_skeleton"],
+    expReward: 500,
   },
 };
 
