@@ -50,8 +50,18 @@ export class NetworkManager<SC = unknown> {
         if (this.onWarp) this.onWarp(data);
     });
 
+    this.room.onMessage("audio", (data: { sessionId: string; data: ArrayBuffer }) => {
+        if (this.onAudioData) this.onAudioData(data.sessionId, data.data);
+    });
+
     await welcomePromise;
     return this.room;
+  }
+
+  public onAudioData: ((sessionId: string, data: ArrayBuffer) => void) | null = null;
+
+  sendAudio(data: ArrayBuffer) {
+    this.room?.send("audio", data);
   }
 
   getRoom(): Room<SC> {

@@ -6,11 +6,17 @@ import { logger } from "./logger";
 import { AuthService } from "./database/auth";
 import { prisma } from "./database/db";
 
+import { MapService } from "./services/MapService";
+
 export async function createGameServer(options: {
   port: number;
   map: TileMap;
   staticDir?: string;
 }): Promise<Server> {
+  // Inject map into MapService so rooms can find it without passing huge objects in options
+  MapService.setMap("arena.test", options.map);
+  MapService.setMap("arena", options.map);
+
   const transport = new BunWebSockets();
   const server = new Server({
     transport,
@@ -20,9 +26,9 @@ export async function createGameServer(options: {
 
   const app = transport.getExpressApp();
 
-  // Basic middleware to parse JSON bodies
+  // Basic middleware to parse JSON bodies for our API routes
   app.use((req: any, res: any, next: any) => {
-    if (req.method === "POST" && req.headers["content-type"]?.includes("application/json")) {
+    if (req.url.startsWith("/api/") && req.method === "POST" && req.headers["content-type"]?.includes("application/json")) {
       let body = "";
       req.on("data", (chunk: any) => body += chunk);
       req.on("end", () => {
@@ -79,7 +85,6 @@ export async function createGameServer(options: {
     }
   });
 
-  // Static files serving
   if (options.staticDir) {
     const { resolve, join, extname } = await import("path");
     const { existsSync, readFileSync, statSync } = await import("fs");
@@ -100,7 +105,6 @@ export async function createGameServer(options: {
       ".map": "application/json",
     };
 
-    // Very simple static middleware for the shimmed Express app
     app.use((req: any, res: any, next?: any) => {
         const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
         let urlPath = url.pathname;
@@ -117,7 +121,6 @@ export async function createGameServer(options: {
         }
     });
 
-    // SPA fallback
     app.use((req: any, res: any) => {
         const indexPath = join(options.staticDir!, "index.html");
         if (existsSync(indexPath)) {
@@ -128,9 +131,10 @@ export async function createGameServer(options: {
     });
   }
 
+  console.error(`[server.ts] Starting listen on port ${options.port}...`);
   await server.listen(options.port);
 
-  logger.info({ intent: "server_start", result: "ok", port: options.port });
+  console.error({ intent: "server_start", result: "ok", port: options.port });
 
   return server;
 }

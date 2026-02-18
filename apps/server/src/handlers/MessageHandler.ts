@@ -8,8 +8,9 @@ import { InventorySystem } from "../systems/InventorySystem";
 import { DropSystem } from "../systems/DropSystem";
 import { SocialSystem } from "../systems/SocialSystem";
 import { FriendsSystem } from "../systems/FriendsSystem";
-import { TileMap, Direction, EquipmentSlot, ITEMS, MERCHANT_INVENTORY } from "@abraxas/shared";
-import { ServerMessages } from "@abraxas/shared";
+import { TileMap, Direction, EquipmentSlot, ITEMS, MERCHANT_INVENTORY, QUESTS } from "@abraxas/shared";
+import { ServerMessages, QuestDef } from "@abraxas/shared";
+import { QuestSystem } from "../systems/QuestSystem";
 
 type Entity = Player | Npc;
 
@@ -32,7 +33,8 @@ export class MessageHandler {
         private friends: FriendsSystem,
         private broadcast: BroadcastCallback,
         private isTileOccupied: (x: number, y: number, excludeId: string) => boolean,
-        private findClientByName: (name: string) => Client | undefined
+        private findClientByName: (name: string) => Client | undefined,
+        private quests: QuestSystem
     ) {}
 
     handleMove(client: Client, direction: Direction): void {
@@ -152,18 +154,100 @@ export class MessageHandler {
         if (!player || !player.alive) return;
 
         const npc = this.state.npcs.get(npcId);
-        if (!npc || npc.type !== "merchant") return;
+        if (!npc) return;
 
-        // Check proximity
+        // Proximity check
         const dist = Math.abs(player.tileX - npc.tileX) + Math.abs(player.tileY - npc.tileY);
         if (dist > 3) {
-            client.send("error", { message: "Too far from merchant" });
+            client.send("error", { message: "Too far to interact" });
             return;
         }
 
-        // Logic for which inventory to open (for now just use general_store)
-        const inventory = MERCHANT_INVENTORY.general_store || [];
-        client.send("open_shop", { npcId, inventory });
+        if (npc.type === "merchant") {
+            const inventory = MERCHANT_INVENTORY.general_store || [];
+            client.send("open_shop", { npcId, inventory });
+            return;
+        }
+
+        // Check for quests
+        const availableQuests = this.quests.getAvailableQuests(player.userId, npc.type);
+        if (availableQuests.length > 0) {
+            const questId = availableQuests[0];
+            const questDef = QUESTS[questId];
+            client.send("open_dialogue", {
+                npcId,
+                text: `${questDef.description}\n\nDo you accept this quest?`,
+                options: [
+                    { text: "Accept Quest", action: "quest_accept", data: { questId } },
+                    { text: "Maybe later", action: "close" }
+                ]
+            });
+            return;
+        }
+
+        // Check for completed quests to turn in
+        for (const questId of Object.keys(QUESTS)) {
+            const state = this.quests.getQuestState(player.userId, questId);
+            if (state && state.status === "completed") {
+                const questDef = QUESTS[questId];
+                if (questDef.npcId === npc.type) {
+                    client.send("open_dialogue", {
+                        npcId,
+                        text: `Great job on ${questDef.title}! Here is your reward.`,
+                        options: [
+                            { text: "Complete Quest", action: "quest_complete", data: { questId } }
+                        ]
+                    });
+                    return;
+                }
+            }
+        }
+
+        // Default talk
+        client.send("open_dialogue", {
+            npcId,
+            text: "Hello there, traveler!",
+            options: [{ text: "Goodbye", action: "close" }]
+        });
+    }
+
+    handleQuestAccept(client: Client, questId: string): void {
+        const player = this.state.players.get(client.sessionId);
+        if (!player) return;
+
+        this.quests.acceptQuest(player.userId, player.dbId, questId).then(state => {
+            if (state) {
+                client.send("quest_update", { quest: state });
+                client.send("notification", { message: `Quest Accepted: ${QUESTS[questId].title}` });
+            }
+        });
+    }
+
+    handleQuestComplete(client: Client, questId: string): void {
+        const player = this.state.players.get(client.sessionId);
+        if (!player) return;
+
+        this.quests.completeQuest(player.userId, player.dbId, questId).then(questDef => {
+            if (questDef) {
+                // Grant rewards
+                player.xp += questDef.rewards.exp;
+                player.gold += questDef.rewards.gold;
+                
+                if (questDef.rewards.items) {
+                    for (const item of questDef.rewards.items) {
+                        this.inventorySystem.addItem(player, item.itemId, item.quantity);
+                    }
+                }
+
+                client.send("quest_update", { 
+                    quest: this.quests.getQuestState(player.userId, questId)! 
+                });
+                client.send("notification", { message: `Quest Completed: ${questDef.title} (+${questDef.rewards.exp} XP, +${questDef.rewards.gold} Gold)` });
+                
+                // Trigger any level up logic if needed (usually handled in tick/reward handlers, 
+                // but xp was added directly here. handleNpcKillRewards does it better, maybe refactor later)
+            }
+        });
     }
 
     handleBuyItem(client: Client, data: { itemId: string; quantity: number; npcId?: string }): void {

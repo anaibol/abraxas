@@ -6,6 +6,10 @@ export class MapService {
     private static maps = new Map<string, TileMap>();
     private static mapsDir = resolve(import.meta.dir, "../../../packages/shared/src/maps");
 
+    public static setMap(mapName: string, mapData: TileMap) {
+        this.maps.set(mapName, mapData);
+    }
+
     public static async getMap(mapName: string): Promise<TileMap | undefined> {
         if (this.maps.has(mapName)) {
             return this.maps.get(mapName);

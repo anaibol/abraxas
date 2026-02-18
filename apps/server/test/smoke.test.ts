@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeAll, afterAll } from "bun:test";
-import { Client, Room } from "colyseus.js";
+import { Client, Room } from "@colyseus/sdk";
 import { resolve } from "path";
 import { createGameServer } from "../src/server";
 import { TileMap, Direction } from "@abraxas/shared";
@@ -101,16 +101,14 @@ describe("Arena multiplayer smoke test", () => {
       name: nameA,
       classType: "warrior",
       token: tokenA,
-      mapName: "arena.test",
-      map: testMap
+      mapName: "arena.test"
     });
 
     const roomB: Room<GameState> = await clientB.joinOrCreate("arena", {
       name: nameB,
       classType: "wizard",
       token: tokenB,
-      mapName: "arena.test",
-      map: testMap
+      mapName: "arena.test"
     });
     // Wait until both rooms see 2 players
     await waitForState(roomA, (state) => state.players.size >= 2);

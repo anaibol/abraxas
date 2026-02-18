@@ -11,8 +11,10 @@ import { Console, type ConsoleMessage } from "./Console";
 import { Minimap } from "./Minimap";
 import { MerchantShop } from "./MerchantShop";
 import { SocialPanel } from "./SocialPanel";
-import type { ClassType, TileMap, EquipmentSlot } from "@abraxas/shared";
+import type { ClassType, TileMap, EquipmentSlot, PlayerQuestState } from "@abraxas/shared";
+import { QuestDialogue } from "./QuestDialogue";
 import { NetworkManager } from "../network/NetworkManager";
+import { AudioManager } from "../managers/AudioManager";
 import Phaser from "phaser";
 import { PreloaderScene } from "../scenes/PreloaderScene";
 import { GameScene } from "../scenes/GameScene";
@@ -49,10 +51,14 @@ export function App() {
   const [shopData, setShopData] = useState<{ npcId: string; inventory: string[] } | null>(null);
   const [partyData, setPartyData] = useState<{ partyId: string; leaderId: string; members: { sessionId: string; name: string }[] } | null>(null);
   const [friendsData, setFriendsData] = useState<{ id: string; name: string; online: boolean }[]>([]);
+  const [quests, setQuests] = useState<PlayerQuestState[]>([]);
+  const [dialogueData, setDialogueData] = useState<{ npcId: string; text: string; options: any[] } | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
 
   const gameContainerRef = useRef<HTMLDivElement>(null);
   const phaserGameRef = useRef<Phaser.Game | null>(null);
   const networkRef = useRef<NetworkManager<GameState> | null>(null);
+  const audioManagerRef = useRef<AudioManager | null>(null);
   const wasAliveRef = useRef(true);
   
   // Ref to room state for minimap to access latest data without re-rendering App constantly
@@ -119,6 +125,41 @@ export function App() {
           }
       }
   }, [isChatOpen]);
+  
+  // Audio Hotkey Logic
+  useEffect(() => {
+      if (phase !== "game" || isChatOpen) return;
+
+      const handleKey = (e: KeyboardEvent) => {
+          if (e.key.toLowerCase() === "v") {
+              if (e.type === "keydown" && !isRecording) {
+                  setIsRecording(true);
+                  if (audioManagerRef.current) {
+                      audioManagerRef.current.startRecording((buffer) => {
+                          networkRef.current?.sendAudio(buffer);
+                      });
+                  }
+              } else if (e.type === "keyup" && isRecording) {
+                  setIsRecording(false);
+                  audioManagerRef.current?.stopRecording();
+              }
+          }
+      };
+
+      window.addEventListener("keydown", handleKey);
+      window.addEventListener("keyup", handleKey);
+      return () => {
+          window.removeEventListener("keydown", handleKey);
+          window.removeEventListener("keyup", handleKey);
+      };
+  }, [phase, isChatOpen, isRecording]);
+
+  // Cleanup audio manager on unmount
+  useEffect(() => {
+      return () => {
+          audioManagerRef.current?.cleanup();
+      };
+  }, []);
 
 
   const handleJoin = useCallback(async (name: string, classType: ClassType, token: string, mapName?: string) => {
@@ -142,6 +183,18 @@ export function App() {
       roomRef.current = network.getRoom();
       
       const welcome = network.getWelcomeData();
+      
+      // Initialize Audio Manager
+      if (!audioManagerRef.current) {
+          const am = new AudioManager();
+          try {
+              await am.init();
+              audioManagerRef.current = am;
+          } catch (err) {
+              console.error("AudioManager init failed:", err);
+          }
+      }
+
       setMapData({
           width: welcome.mapWidth,
           height: welcome.mapHeight,
@@ -202,6 +255,28 @@ export function App() {
           setShopData(data);
       });
 
+      // Listen for Dialogue
+      network.getRoom().onMessage("open_dialogue", (data: { npcId: string; text: string; options: any[] }) => {
+          setDialogueData(data);
+      });
+
+      // Listen for Quests
+      network.getRoom().onMessage("quest_list", (data: { quests: PlayerQuestState[] }) => {
+          setQuests(data.quests);
+      });
+
+      network.getRoom().onMessage("quest_update", (data: { quest: PlayerQuestState }) => {
+          setQuests(prev => {
+              const idx = prev.findIndex(q => q.questId === data.quest.questId);
+              if (idx >= 0) {
+                  const next = [...prev];
+                  next[idx] = data.quest;
+                  return next;
+              }
+              return [...prev, data.quest];
+          });
+      });
+
       // Listen for Party
       network.getRoom().onMessage("party_invited", (data: { partyId: string; inviterName: string }) => {
           toaster.create({
@@ -233,6 +308,11 @@ export function App() {
 
       network.getRoom().onMessage("friend_update", (data: { friends: any[] }) => {
         setFriendsData(data.friends);
+      });
+
+      // Listen for audio
+      network.getRoom().onMessage("audio", (buffer: ArrayBuffer) => {
+          audioManagerRef.current?.playAudioChunk(buffer);
       });
 
       requestAnimationFrame(() => {
@@ -352,6 +432,8 @@ export function App() {
             </Box>
             <Sidebar
               state={playerState}
+              isRecording={isRecording}
+              quests={quests}
               onEquip={(itemId) => networkRef.current?.sendEquip(itemId)}
               onUnequip={(slot) => networkRef.current?.sendUnequip(slot)}
               onUseItem={(itemId) => networkRef.current?.sendUseItem(itemId)}
@@ -383,6 +465,15 @@ export function App() {
                     onBuy={(itemId, qty) => networkRef.current?.getRoom().send("buy_item", { itemId, quantity: qty })}
                     onSell={(itemId, qty) => networkRef.current?.getRoom().send("sell_item", { itemId, quantity: qty })}
                     onClose={() => setShopData(null)}
+                />
+            )}
+            {dialogueData && (
+                <QuestDialogue
+                    npcId={dialogueData.npcId}
+                    text={dialogueData.text}
+                    options={dialogueData.options}
+                    onAction={(action, data) => networkRef.current?.getRoom().send(action, data)}
+                    onClose={() => setDialogueData(null)}
                 />
             )}
           </Flex>

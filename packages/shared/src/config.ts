@@ -1,4 +1,4 @@
-import type { ClassStats, SpellDef } from "./types";
+import type { ClassStats, SpellDef, QuestDef } from "./types";
 
 export const CLASS_APPEARANCE: Record<string, { bodyId: number; headId: number }> = {
   warrior:  { bodyId: 40, headId: 1 },
@@ -627,4 +627,34 @@ export const SPELLS: Record<string, SpellDef> = {
     key: "",
     fxId: 16, // Warp fx
   },
+};
+
+export const QUESTS: Record<string, QuestDef> = {
+  slime_slayer: {
+    id: "slime_slayer",
+    title: "Slime Slayer",
+    description: "The village is being overrun by slimes! Kill 5 slimes to help us out.",
+    npcId: "village_elder",
+    requirements: [
+      { type: "kill", target: "goblin", count: 5 } // Using goblin as a placeholder for slime
+    ],
+    rewards: {
+      exp: 200,
+      gold: 50,
+      items: [{ itemId: "health_potion", quantity: 2 }]
+    }
+  },
+  tutorial_talk: {
+    id: "tutorial_talk",
+    title: "A New Arrival",
+    description: "Welcome to Abraxas! Go talk to the Merchant to learn about trading.",
+    npcId: "village_elder",
+    requirements: [
+      { type: "talk", target: "merchant", count: 1 }
+    ],
+    rewards: {
+      exp: 100,
+      gold: 10
+    }
+  }
 };

@@ -76,6 +76,7 @@ model Player {
 
   // Relations
   inventory InventoryItem[]
+  quests    PlayerQuest[]
 
   // Equipment (stored as Item IDs)
   equipWeapon String?
@@ -99,5 +100,21 @@ model InventoryItem {
   quantity  Int    @default(1)
   slotIndex Int
 
+  @@index([playerId])
+}
+
+model PlayerQuest {
+  id       String @id @default(uuid())
+  playerId String
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  questId  String
+  status   String // available, active, completed, rewarded
+  progress String // JSON string to store Record<string, number>
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([playerId, questId])
   @@index([playerId])
 }

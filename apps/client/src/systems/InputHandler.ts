@@ -39,6 +39,9 @@ export class InputHandler {
   private onEnterTargeting?: (rangeTiles: number) => void;
   private onExitTargeting?: () => void;
   private onInteract?: (tileX: number, tileY: number) => void;
+  private onPttStart?: () => void;
+  private onPttEnd?: () => void;
+  private pttKey!: Phaser.Input.Keyboard.Key;
 
   targeting: TargetingState | null = null;
 
@@ -55,6 +58,8 @@ export class InputHandler {
     onEnterTargeting?: (rangeTiles: number) => void,
     onExitTargeting?: () => void,
     onInteract?: (tileX: number, tileY: number) => void,
+    onPttStart?: () => void,
+    onPttEnd?: () => void,
   ) {
     this.scene = scene;
     this.network = network;
@@ -64,6 +69,8 @@ export class InputHandler {
     this.onEnterTargeting = onEnterTargeting;
     this.onExitTargeting = onExitTargeting;
     this.onInteract = onInteract;
+    this.onPttStart = onPttStart;
+    this.onPttEnd = onPttEnd;
 
     const stats = CLASS_STATS[classType];
     this.moveIntervalMs = 1000 / stats.speedTilesPerSecond;
@@ -96,6 +103,10 @@ export class InputHandler {
 
       this.escKey = scene.input.keyboard.addKey(
         Phaser.Input.Keyboard.KeyCodes.ESC
+      );
+
+      this.pttKey = scene.input.keyboard.addKey(
+        Phaser.Input.Keyboard.KeyCodes.V
       );
 
       // Dynamic spell keybinds from class config
@@ -134,6 +145,15 @@ export class InputHandler {
     const rightClicked = this.pendingRightClick;
     this.pendingLeftClick = false;
     this.pendingRightClick = false;
+
+    // Push-to-Talk
+    if (this.pttKey) {
+        if (Phaser.Input.Keyboard.JustDown(this.pttKey)) {
+            this.onPttStart?.();
+        } else if (Phaser.Input.Keyboard.JustUp(this.pttKey)) {
+            this.onPttEnd?.();
+        }
+    }
 
     // Movement: check held keys and repeat at interval (works in both idle and targeting)
     for (const [keyCode, key] of Object.entries(this.moveKeys)) {

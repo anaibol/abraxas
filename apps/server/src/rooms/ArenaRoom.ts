@@ -9,7 +9,7 @@ import { BuffSystem } from "../systems/BuffSystem";
 import { InventorySystem } from "../systems/InventorySystem";
 import { RespawnSystem } from "../systems/RespawnSystem";
 import { NpcSystem } from "../systems/NpcSystem";
-import { CLASS_STATS, TICK_MS, STARTING_EQUIPMENT, ITEMS, KILL_GOLD_BONUS, NPC_STATS, EXP_TABLE, NPC_DROPS } from "@abraxas/shared";
+import { CLASS_STATS, TICK_MS, STARTING_EQUIPMENT, ITEMS, KILL_GOLD_BONUS, NPC_STATS, EXP_TABLE, NPC_DROPS, QUESTS } from "@abraxas/shared";
 import { TileMap, Direction, ServerMessages, ClassType, JoinOptions, EquipmentSlot, InventoryEntry, EquipmentData } from "@abraxas/shared";
 import { logger } from "../logger";
 
@@ -22,6 +22,7 @@ import { SocialSystem } from "../systems/SocialSystem";
 import { FriendsSystem } from "../systems/FriendsSystem";
 import { SpatialLookup } from "../utils/SpatialLookup";
 import { EntityUtils, Entity } from "../utils/EntityUtils";
+import { QuestSystem } from "../systems/QuestSystem";
 
 export class ArenaRoom extends Room<any> {
   private map!: TileMap;
@@ -37,66 +38,165 @@ export class ArenaRoom extends Room<any> {
   private friends!: FriendsSystem;
   private messageHandler!: MessageHandler;
   private spatial!: SpatialLookup;
+  private quests = new QuestSystem();
   private spawnIndex = 0;
 
   async onCreate(options: JoinOptions & { mapName?: string }) {
-    console.log(`[ArenaRoom] onCreate called with options: ${JSON.stringify(options)}`);
-    this.setState(new GameState());
-    
-    this.roomMapName = options.mapName || "arena";
-    
-    // Check if map was provided in options (from client) or define options (from server.define)
-    const defineOptions = (this as any).options || {};
-    this.map = (options as any).map || defineOptions.map || (await MapService.getMap(this.roomMapName));
-    
-    if (!this.map) {
-        throw new Error(`Failed to load map: ${this.roomMapName}`);
-    }
-
-    this.drops.setInventorySystem(this.inventorySystem);
-    
-    // Initialize utilities and systems in dependency order
-    this.spatial = new SpatialLookup(this.state);
-    this.movement = new MovementSystem(this.spatial);
-    this.combat = new CombatSystem(this.buffSystem, this.spatial);
-    this.npcSystem = new NpcSystem(this.state, this.movement, this.combat, this.spatial);
-
-    this.social = new SocialSystem(this.state, (sid: string) => this.clients.find(c => c.sessionId === sid));
-    this.friends = new FriendsSystem(this.state, (sid: string) => this.clients.find(c => c.sessionId === sid));
-
-    this.messageHandler = new MessageHandler(
-        this.state,
-        this.map,
-        this.roomId,
-        this.movement,
-        this.combat,
-        this.inventorySystem,
-        this.drops,
-        this.social,
-        this.friends,
-        this.broadcast.bind(this),
-        this.spatial.isTileOccupied.bind(this.spatial),
-        (name: string) => {
-            const player = Array.from(this.state.players.values()).find((p: any) => p.name === name);
-            if (!player) return undefined;
-            return this.clients.find(c => c.sessionId === (player as any).sessionId);
+    try {
+        process.stderr.write("[ArenaRoom] Entering onCreate\n");
+        this.setState(new GameState());
+        process.stderr.write("[ArenaRoom] State initialized\n");
+        
+        this.roomMapName = options.mapName || "arena.test";
+        process.stderr.write(`[ArenaRoom] Map name: ${this.roomMapName}\n`);
+        
+        // Use MapService injected map
+        this.map = await MapService.getMap(this.roomMapName);
+        
+        if (!this.map) {
+            process.stderr.write(`[ArenaRoom] Failed to load map: ${this.roomMapName}\n`);
+            throw new Error(`Failed to load map: ${this.roomMapName}`);
         }
-    );
+        process.stderr.write("[ArenaRoom] Map loaded\n");
 
-    // Spawn predefined NPCs
-    if (this.map.npcs) {
-        for (const npcDef of this.map.npcs) {
-            this.npcSystem.spawnNpcAt(npcDef.type, this.map, npcDef.x, npcDef.y);
+        this.drops.setInventorySystem(this.inventorySystem);
+        
+        // Initialize utilities and systems in dependency order
+        this.spatial = new SpatialLookup(this.state);
+        this.movement = new MovementSystem(this.spatial);
+        this.combat = new CombatSystem(this.buffSystem, this.spatial);
+        this.npcSystem = new NpcSystem(this.state, this.movement, this.combat, this.spatial);
+
+        this.social = new SocialSystem(this.state, (sid: string) => this.clients.find(c => c.sessionId === sid));
+        this.friends = new FriendsSystem(this.state, (sid: string) => this.clients.find(c => c.sessionId === sid));
+
+        this.messageHandler = new MessageHandler(
+            this.state,
+            this.map,
+            this.roomId,
+            this.movement,
+            this.combat,
+            this.inventorySystem,
+            this.drops,
+            this.social,
+            this.friends,
+            this.broadcast.bind(this),
+            this.spatial.isTileOccupied.bind(this.spatial),
+            (name: string) => {
+                const player = Array.from(this.state.players.values()).find((p: any) => p.name === name);
+                if (!player) return undefined;
+                return this.clients.find(c => c.sessionId === (player as any).sessionId);
+            },
+            this.quests
+        );
+
+        // Spawn predefined NPCs
+        if (this.map.npcs) {
+            for (const npcDef of this.map.npcs) {
+                this.npcSystem.spawnNpcAt(npcDef.type, this.map, npcDef.x, npcDef.y);
+            }
         }
-    }
 
-    // Spawn random NPCs
-    const npcCount = this.map.npcCount !== undefined ? this.map.npcCount : 20;
-    if (npcCount > 0) {
-        this.npcSystem.spawnNpcs(npcCount, this.map);
-    }
+        // Spawn random NPCs
+        const npcCount = this.map.npcCount !== undefined ? this.map.npcCount : 20;
+        if (npcCount > 0) {
+            this.npcSystem.spawnNpcs(npcCount, this.map);
+        }
 
-    this.onMessage("friend_request", (client, data: { targetName: string }) => {
+        this.onMessage("friend_request", (client, data: { targetName: string }) => {
+            this.messageHandler.handleFriendRequest(client, data.targetName);
+        });
+
+        this.onMessage("friend_accept", (client, data: { requesterId: string }) => {
+            this.messageHandler.handleFriendAccept(client, data.requesterId);
+        });
+
+        this.setSimulationInterval((dt) => this.tick(dt), TICK_MS);
+        this.setPatchRate(TICK_MS);
+
+        this.onMessage("move", (client, data: { direction: Direction }) => {
+          this.messageHandler.handleMove(client, data.direction);
+        });
+
+        this.onMessage("attack", (client, data?: { targetTileX?: number; targetTileY?: number }) => {
+          this.messageHandler.handleAttack(client, data?.targetTileX, data?.targetTileY);
+        });
+
+        this.onMessage(
+          "cast",
+          (
+            client,
+            data: { spellId: string; targetTileX: number; targetTileY: number }
+          ) => {
+            this.messageHandler.handleCast(client, data);
+          }
+        );
+
+        this.onMessage("pickup", (client, data: { dropId: string }) => {
+          this.messageHandler.handlePickup(client, data.dropId);
+        });
+
+        this.onMessage("equip", (client, data: { itemId: string }) => {
+          this.messageHandler.handleEquip(client, data.itemId);
+        });
+
+        this.onMessage("unequip", (client, data: { slot: EquipmentSlot }) => {
+          this.messageHandler.handleUnequip(client, data.slot);
+        });
+
+        this.onMessage("use_item", (client, data: { itemId: string }) => {
+          this.messageHandler.handleUseItem(client, data.itemId);
+        });
+
+        this.onMessage("drop_item", (client, data: { itemId: string }) => {
+          this.messageHandler.handleDropItem(client, data.itemId);
+        });
+
+        this.onMessage("chat", (client, data: { message: string }) => {
+            this.messageHandler.handleChat(client, data.message);
+        });
+
+        this.onMessage("audio", (client, data: ArrayBuffer) => {
+            this.broadcast("audio", { sessionId: client.sessionId, data }, { except: client });
+        });
+
+        this.onMessage("interact", (client, data: { npcId: string }) => {
+            this.messageHandler.handleInteract(client, data.npcId);
+        });
+
+        this.onMessage("buy_item", (client, data: { itemId: string; quantity: number }) => {
+            this.messageHandler.handleBuyItem(client, data);
+        });
+
+        this.onMessage("sell_item", (client, data: { itemId: string; quantity: number }) => {
+            this.messageHandler.handleSellItem(client, data);
+        });
+
+        this.onMessage("quest_accept", (client, data: { questId: string }) => {
+            this.messageHandler.handleQuestAccept(client, data.questId);
+        });
+
+        this.onMessage("quest_complete", (client, data: { questId: string }) => {
+            this.messageHandler.handleQuestComplete(client, data.questId);
+        });
+
+        this.onMessage("ping", (client) => {
+          client.send("pong", { serverTime: Date.now() });
+        });
+        
+        this.onMessage("audio", (client, message: ArrayBuffer) => {
+            this.broadcast("audio", message, { except: client });
+        });
+
+        logger.info({ room: this.roomId, intent: "room_created", result: "ok" });
+        process.stderr.write("[ArenaRoom] onCreate completed successfully\n");
+    } catch (e) {
+        process.stderr.write(`[ArenaRoom] CRITICAL ERROR IN ONCREATE: ${e}\n`);
+        if (e instanceof Error) {
+            process.stderr.write(e.stack || "No stack trace available\n");
+        }
+        throw e;
+    }
         this.messageHandler.handleFriendRequest(client, data.targetName);
     });
 
@@ -149,6 +249,10 @@ export class ArenaRoom extends Room<any> {
         this.messageHandler.handleChat(client, data.message);
     });
 
+    this.onMessage("audio", (client, data: ArrayBuffer) => {
+        this.broadcast("audio", { sessionId: client.sessionId, data }, { except: client });
+    });
+
     this.onMessage("interact", (client, data: { npcId: string }) => {
         this.messageHandler.handleInteract(client, data.npcId);
     });
@@ -161,8 +265,20 @@ export class ArenaRoom extends Room<any> {
         this.messageHandler.handleSellItem(client, data);
     });
 
+    this.onMessage("quest_accept", (client, data: { questId: string }) => {
+        this.messageHandler.handleQuestAccept(client, data.questId);
+    });
+
+    this.onMessage("quest_complete", (client, data: { questId: string }) => {
+        this.messageHandler.handleQuestComplete(client, data.questId);
+    });
+
     this.onMessage("ping", (client) => {
       client.send("pong", { serverTime: Date.now() });
+    });
+    
+    this.onMessage("audio", (client, message: ArrayBuffer) => {
+        this.broadcast("audio", message, { except: client });
     });
 
     logger.info({ room: this.roomId, intent: "room_created", result: "ok" });
@@ -222,6 +338,7 @@ export class ArenaRoom extends Room<any> {
     player.name = dbPlayer.name;
     player.classType = dbPlayer.classType as ClassType; 
     
+    player.dbId = dbPlayer.id; // Store prisma ID
     player.tileX = dbPlayer.x;
     player.tileY = dbPlayer.y;
 
@@ -282,6 +399,10 @@ export class ArenaRoom extends Room<any> {
 
     this.friends.setUserOnline(user.id, client.sessionId);
     await this.friends.sendUpdateToUser(user.id, client.sessionId);
+
+    // Load Quests
+    const quests = await this.quests.loadPlayerQuests(user.id, dbPlayer.id);
+    client.send("quest_list", { quests });
 
     client.send("welcome", {
       sessionId: client.sessionId,
@@ -499,6 +620,20 @@ export class ArenaRoom extends Room<any> {
           }
       }
 
+      // 3. Quest Progress
+      this.quests.updateProgress(player.userId, player.dbId, "kill", npc.type, 1).then(updatedQuests => {
+          if (updatedQuests.length > 0) {
+              const client = this.clients.find(c => c.sessionId === player.sessionId);
+              if (client) {
+                  for (const quest of updatedQuests) {
+                      client.send("quest_update", { quest });
+                      if (quest.status === "completed") {
+                        client.send("notification", { message: `Quest Completed: ${QUESTS[quest.questId].title}` });
+                      }
+                  }
+              }
+          }
+      });
       // 2. Drops (Diablo Style)
       const dropTable = NPC_DROPS[npc.type];
       if (dropTable) {

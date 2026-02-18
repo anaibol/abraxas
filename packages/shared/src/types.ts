@@ -13,6 +13,36 @@ export interface JoinOptions {
   token?: string;
 }
 
+export type QuestType = "kill" | "collect" | "talk";
+export type QuestStatus = "available" | "active" | "completed" | "rewarded";
+
+export interface QuestRequirement {
+  type: QuestType;
+  target: string; // Enemy type or Item ID or NPC ID
+  count: number;
+}
+
+export interface QuestReward {
+  exp: number;
+  gold: number;
+  items?: { itemId: string; quantity: number }[];
+}
+
+export interface QuestDef {
+  id: string;
+  title: string;
+  description: string;
+  npcId: string; // NPC who gives/takes the quest
+  requirements: QuestRequirement[];
+  rewards: QuestReward;
+}
+
+export interface PlayerQuestState {
+  questId: string;
+  status: QuestStatus;
+  progress: Record<string, number>; // Maps requirement target to current count
+}
+
 export interface Warp {
   x: number;
   y: number;
@@ -167,6 +197,13 @@ export type ServerMessages = {
   party_update: { partyId: string; leaderId: string; members: { sessionId: string; name: string }[] };
   // Multi-map Support
   warp: { targetMap: string; targetX: number; targetY: number };
+  // Audio Chat
+  audio: ArrayBuffer;
+  // Quest System
+  quest_list: { quests: PlayerQuestState[] };
+  quest_update: { quest: PlayerQuestState };
+  quest_available: { npcId: string; questIds: string[] };
+  open_dialogue: { npcId: string; text: string; options: { text: string; action: string; data?: any }[] };
 };
 
 export interface BroadcastFn {

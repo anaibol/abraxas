@@ -20,6 +20,7 @@ export class PlayerSprite {
   private hpBarBg: Phaser.GameObjects.Rectangle;
   private hpBar: Phaser.GameObjects.Rectangle;
   private manaBar: Phaser.GameObjects.Rectangle;
+  private speakingIcon: Phaser.GameObjects.Text;
 
   public targetX: number;
   public targetY: number;
@@ -131,6 +132,12 @@ export class PlayerSprite {
     this.hpBar = scene.add.rectangle(0, TILE_SIZE / 2 + 2, barWidth, 3, 0x33cc33);
     this.manaBar = scene.add.rectangle(0, TILE_SIZE / 2 + 6, barWidth, 2, 0x3388ff);
 
+    this.speakingIcon = scene.add.text(0, -45, "🎤", {
+      fontSize: "16px",
+    });
+    this.speakingIcon.setOrigin(0.5, 1);
+    this.speakingIcon.setVisible(false);
+
     this.container = scene.add.container(px, py, [
       this.bodySprite,
       this.headSprite,
@@ -138,6 +145,7 @@ export class PlayerSprite {
       this.hpBarBg,
       this.hpBar,
       this.manaBar,
+      this.speakingIcon,
     ]);
     this.container.setDepth(10);
 
@@ -531,6 +539,12 @@ export class PlayerSprite {
     }
 
     this.container.setPosition(this.renderX, this.renderY);
+  }
+
+  showSpeakingIndicator(visible: boolean) {
+      if (this.speakingIcon) {
+          this.speakingIcon.setVisible(visible);
+      }
   }
 
   destroy() {

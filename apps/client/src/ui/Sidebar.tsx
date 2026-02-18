@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Box, Flex, Text, Grid } from "@chakra-ui/react";
-import { CLASS_STATS, SPELLS, ITEMS, EQUIPMENT_SLOTS, type EquipmentSlot } from "@abraxas/shared";
+import { CLASS_STATS, SPELLS, ITEMS, EQUIPMENT_SLOTS, type EquipmentSlot, type PlayerQuestState } from "@abraxas/shared";
+import { QuestLog } from "./QuestLog";
 
 export interface InventorySlot {
   itemId: string;
@@ -77,10 +78,12 @@ const SPELL_ICONS: Record<string, string> = {
 
 interface SidebarProps {
   state: PlayerState;
+  isRecording?: boolean;
   onEquip?: (itemId: string) => void;
   onUnequip?: (slot: EquipmentSlot) => void;
   onUseItem?: (itemId: string) => void;
   onDropItem?: (itemId: string) => void;
+  quests: PlayerQuestState[];
 }
 
 const RARITY_COLORS: Record<string, string> = {
@@ -98,13 +101,14 @@ const ITEM_ICONS: Record<string, string> = {
   consumable: "\uD83E\uDDEA",
 };
 
-const SIDEBAR_TABS: readonly { key: "inv" | "spells"; label: string }[] = [
+const SIDEBAR_TABS: readonly { key: "inv" | "spells" | "quests"; label: string }[] = [
   { key: "inv", label: "\u2694 Inventory" },
   { key: "spells", label: "\uD83D\uDCD6 Spells" },
+  { key: "quests", label: "\uD83D\uDCDC Quests" },
 ];
 
-export function Sidebar({ state, onEquip, onUnequip, onUseItem, onDropItem }: SidebarProps) {
-  const [tab, setTab] = useState<"inv" | "spells">("inv");
+export function Sidebar({ state, isRecording, onEquip, onUnequip, onUseItem, onDropItem, quests }: SidebarProps) {
+  const [tab, setTab] = useState<"inv" | "spells" | "quests">("inv");
   const stats = CLASS_STATS[state.classType];
   const hpPct = state.maxHp > 0 ? Math.max(0, (state.hp / state.maxHp) * 100) : 0;
   const manaPct = state.maxMana > 0 ? Math.max(0, (state.mana / state.maxMana) * 100) : 0;
@@ -124,6 +128,12 @@ export function Sidebar({ state, onEquip, onUnequip, onUseItem, onDropItem }: Si
         {!state.alive && <Text fontSize="12px" color={P.bloodBright} fontWeight="700" mt="1" letterSpacing="3px">DEAD</Text>}
         {state.stunned && <Text fontSize="10px" color="#cccc33" fontWeight="700" mt="0.5" letterSpacing="2px">STUNNED</Text>}
         {state.stealthed && <Text fontSize="10px" color="#9944cc" fontWeight="700" mt="0.5" letterSpacing="2px">STEALTHED</Text>}
+        {isRecording && (
+            <Flex align="center" justify="center" gap="2" mt="1.5">
+                <Box w="8px" h="8px" bg="#ff0000" borderRadius="full" animation="pulse 1s infinite" />
+                <Text fontSize="10px" color="#ff4444" fontWeight="700" letterSpacing="2px">TRANSMITTING</Text>
+            </Flex>
+        )}
       </Box>
       <Box h="1px" bg={`linear-gradient(90deg, transparent, ${P.gold}, transparent)`} />
 
@@ -271,6 +281,8 @@ export function Sidebar({ state, onEquip, onUnequip, onUseItem, onDropItem }: Si
           )}
         </Box>
       )}
+      {/* Quests */}
+      {tab === "quests" && <QuestLog quests={quests} />}
 
       {/* Stats — pinned to bottom */}
       <Box mt="auto" flexShrink={0} borderTop="2px solid" borderTopColor={P.border} bg={P.darkest}>

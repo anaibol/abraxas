@@ -11,6 +11,8 @@ import type { PlayerState } from "../ui/Sidebar";
 import { SpriteManager } from "../managers/SpriteManager";
 import { EffectManager } from "../managers/EffectManager";
 import { GameEventHandler } from "../handlers/GameEventHandler";
+import { AudioManager } from "../managers/AudioManager";
+
 
 import { GameState } from "../../../server/src/schema/GameState";
 import { Player } from "../../../server/src/schema/Player";
@@ -37,6 +39,8 @@ export class GameScene extends Phaser.Scene {
   private inputHandler!: InputHandler;
   private cameraController!: CameraController;
   private soundManager!: SoundManager;
+  private audioManager!: AudioManager;
+
 
   private collisionGrid: number[][] = [];
   private lastSidebarUpdate = 0;
@@ -88,6 +92,21 @@ export class GameScene extends Phaser.Scene {
     this.soundManager = new SoundManager(this);
     this.soundManager.startMusic();
 
+    // Audio Chat
+    this.audioManager = new AudioManager();
+    this.audioManager.init().catch(err => console.warn("Audio Context init failed:", err));
+
+    this.network.onAudioData = (sessionId, data) => {
+        this.audioManager.playAudioChunk(data);
+        // Show speaking indicator on the sprite
+        const sprite = this.spriteManager.getSprite(sessionId);
+        if (sprite) {
+            sprite.showSpeakingIndicator(true);
+            this.time.delayedCall(300, () => sprite.showSpeakingIndicator(false));
+        }
+    };
+
+
     // Disable right-click context menu
     this.input.mouse?.disableContextMenu();
 
@@ -130,15 +149,18 @@ export class GameScene extends Phaser.Scene {
           if (targetNpcId) {
               this.room.send("interact", { npcId: targetNpcId });
           }
-      }
+      },
+      () => this.audioManager.startRecording((data) => this.network.sendAudio(data)),
+      () => this.audioManager.stopRecording()
     );
 
+
     // Listen for player add/remove/change
-    this.room.state.players.onAdd((player: Player, sessionId: string) => {
+    (this.room.state.players as any).onAdd((player: Player, sessionId: string) => {
       this.spriteManager.addPlayer(player, sessionId);
     });
 
-    this.room.state.players.onRemove((_player: Player, sessionId: string) => {
+    (this.room.state.players as any).onRemove((_player: Player, sessionId: string) => {
       this.spriteManager.removePlayer(sessionId);
     });
 
@@ -156,20 +178,20 @@ export class GameScene extends Phaser.Scene {
     gameEventHandler.setupListeners();
 
     // Drops
-    this.room.state.drops.onAdd((drop: Drop, id: string) => {
+    (this.room.state.drops as any).onAdd((drop: Drop, id: string) => {
       this.addDrop(drop, id);
     });
 
-    this.room.state.drops.onRemove((_drop: Drop, id: string) => {
+    (this.room.state.drops as any).onRemove((_drop: Drop, id: string) => {
       this.removeDrop(id);
     });
 
     // NPCs
-    this.room.state.npcs.onAdd((npc: Npc, id: string) => {
+    (this.room.state.npcs as any).onAdd((npc: Npc, id: string) => {
         this.spriteManager.addNpc(npc, id);
     });
 
-    this.room.state.npcs.onRemove((_npc: Npc, id: string) => {
+    (this.room.state.npcs as any).onRemove((_npc: Npc, id: string) => {
         this.spriteManager.removeNpc(id);
     });
 
