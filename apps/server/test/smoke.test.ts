@@ -8,7 +8,7 @@ import { Player } from "../src/schema/Player";
 import { AuthService } from "../src/database/auth";
 import { prisma } from "../src/database/db";
 
-const TEST_PORT = 2568;
+const TEST_PORT = 2500 + Math.floor(Math.random() * 1000);
 let server: any;
 let testMap: TileMap;
 let clientA: Client;

@@ -195,6 +195,8 @@ export enum ServerMessageType {
   OpenDialogue = "open_dialogue",
 }
 
+export type WelcomeData = ServerMessages[ServerMessageType.Welcome];
+
 export type ServerMessages = {
   [ServerMessageType.Welcome]: {
     sessionId: string;

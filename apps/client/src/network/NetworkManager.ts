@@ -1,15 +1,8 @@
 import { Client, Room } from "colyseus.js";
-import type { ClassType, Direction, EquipmentSlot } from "@abraxas/shared";
+import type { ClassType, Direction, EquipmentSlot, WelcomeData, ServerMessages } from "@abraxas/shared";
+import { ClientMessageType, ServerMessageType } from "@abraxas/shared";
 
-export interface WelcomeData {
-  sessionId: string;
-  tileX: number;
-  tileY: number;
-  mapWidth: number;
-  mapHeight: number;
-  tileSize: number;
-  collision: number[][];
-}
+
 
 function getServerUrl(): string {
   if (typeof window !== "undefined" && window.location.hostname !== "localhost") {
@@ -38,7 +31,7 @@ export class NetworkManager<SC = unknown> {
       this.welcomeResolve = resolve;
     });
 
-    this.room.onMessage("welcome", (data: WelcomeData) => {
+    this.room.onMessage(ServerMessageType.Welcome, (data: WelcomeData) => {
       this.welcomeData = data;
       if (this.welcomeResolve) {
         this.welcomeResolve(data);
@@ -46,11 +39,11 @@ export class NetworkManager<SC = unknown> {
       }
     });
 
-    this.room.onMessage("warp", (data: { targetMap: string; targetX: number; targetY: number }) => {
+    this.room.onMessage(ServerMessageType.Warp, (data: ServerMessages[ServerMessageType.Warp]) => {
         if (this.onWarp) this.onWarp(data);
     });
 
-    this.room.onMessage("audio", (data: { sessionId: string; data: ArrayBuffer }) => {
+    this.room.onMessage(ServerMessageType.Audio, (data: ServerMessages[ServerMessageType.Audio]) => {
         if (this.onAudioData) this.onAudioData(data.sessionId, data.data);
     });
 
@@ -61,7 +54,7 @@ export class NetworkManager<SC = unknown> {
   public onAudioData: ((sessionId: string, data: ArrayBuffer) => void) | null = null;
 
   sendAudio(data: ArrayBuffer) {
-    this.room?.send("audio", data);
+    this.room?.send(ClientMessageType.Audio, data);
   }
 
   getRoom(): Room<SC> {
@@ -79,86 +72,82 @@ export class NetworkManager<SC = unknown> {
   }
 
   sendMove(direction: Direction) {
-    this.room?.send("move", { direction });
+    this.room?.send(ClientMessageType.Move, { direction });
   }
 
   sendAttack(targetTileX?: number, targetTileY?: number) {
-    if (targetTileX != null && targetTileY != null) {
-      this.room?.send("attack", { targetTileX, targetTileY });
-    } else {
-      this.room?.send("attack", {});
-    }
+    this.room?.send(ClientMessageType.Attack, { targetTileX, targetTileY });
   }
 
   sendCast(spellId: string, targetTileX: number, targetTileY: number) {
-    this.room?.send("cast", { spellId, targetTileX, targetTileY });
+    this.room?.send(ClientMessageType.Cast, { spellId, targetTileX, targetTileY });
   }
 
   sendPickup(dropId: string) {
-    this.room?.send("pickup", { dropId });
+    this.room?.send(ClientMessageType.Pickup, { dropId });
   }
 
   sendEquip(itemId: string) {
-    this.room?.send("equip", { itemId });
+    this.room?.send(ClientMessageType.Equip, { itemId });
   }
 
   sendUnequip(slot: EquipmentSlot) {
-    this.room?.send("unequip", { slot });
+    this.room?.send(ClientMessageType.Unequip, { slot });
   }
 
   sendUseItem(itemId: string) {
-    this.room?.send("use_item", { itemId });
+    this.room?.send(ClientMessageType.UseItem, { itemId });
   }
 
   sendDropItem(itemId: string) {
-    this.room?.send("drop_item", { itemId });
+    this.room?.send(ClientMessageType.DropItem, { itemId });
   }
 
   sendChat(message: string) {
-    this.room?.send("chat", { message });
+    this.room?.send(ClientMessageType.Chat, { message });
   }
 
   // Party System
   sendPartyInvite(targetSessionId: string) {
-    this.room?.send("party_invite", { targetSessionId });
+    this.room?.send(ClientMessageType.PartyInvite, { targetSessionId });
   }
 
   sendPartyAccept(partyId: string) {
-    this.room?.send("party_accept", { partyId });
+    this.room?.send(ClientMessageType.PartyAccept, { partyId });
   }
 
   sendPartyLeave() {
-    this.room?.send("party_leave", {});
+    this.room?.send(ClientMessageType.PartyLeave, {});
   }
 
   sendPartyKick(targetSessionId: string) {
-    this.room?.send("party_kick", { targetSessionId });
+    this.room?.send(ClientMessageType.PartyKick, { targetSessionId });
   }
 
   // Friend System
   sendFriendRequest(targetName: string) {
-    this.room?.send("friend_request", { targetName });
+    this.room?.send(ClientMessageType.FriendRequest, { targetName });
   }
 
   sendFriendAccept(requesterId: string) {
-    this.room?.send("friend_accept", { requesterId });
+    this.room?.send(ClientMessageType.FriendAccept, { requesterId });
   }
 
   // Interaction
   sendInteract(npcId: string) {
-    this.room?.send("interact", { npcId });
+    this.room?.send(ClientMessageType.Interact, { npcId });
   }
 
   sendBuyItem(itemId: string, quantity: number) {
-    this.room?.send("buy_item", { itemId, quantity });
+    this.room?.send(ClientMessageType.BuyItem, { itemId, quantity });
   }
 
   sendSellItem(itemId: string, quantity: number, npcId?: string) {
-    this.room?.send("sell_item", { itemId, quantity, npcId });
+    this.room?.send(ClientMessageType.SellItem, { itemId, quantity, npcId });
   }
 
   sendPing() {
-    this.room?.send("ping", {});
+    this.room?.send(ClientMessageType.Ping, {});
   }
 
   disconnect() {

@@ -9,8 +9,7 @@ import { BuffSystem } from "../systems/BuffSystem";
 import { InventorySystem } from "../systems/InventorySystem";
 import { RespawnSystem } from "../systems/RespawnSystem";
 import { NpcSystem } from "../systems/NpcSystem";
-import { CLASS_STATS, TICK_MS, STARTING_EQUIPMENT, ITEMS, KILL_GOLD_BONUS, NPC_STATS, EXP_TABLE, NPC_DROPS, QUESTS } from "@abraxas/shared";
-import { TileMap, Direction, ServerMessages, ClassType, JoinOptions, EquipmentSlot, InventoryEntry, EquipmentData } from "@abraxas/shared";
+import { TileMap, Direction, ServerMessages, ClassType, JoinOptions, EquipmentSlot, InventoryEntry, EquipmentData, ClientMessageType, ServerMessageType, ClientMessages } from "@abraxas/shared";
 import { logger } from "../logger";
 
 import { MapService } from "../services/MapService";
@@ -26,7 +25,7 @@ import { QuestSystem } from "../systems/QuestSystem";
 
 console.error("[ArenaRoom.ts] Module loading...");
 
-export class ArenaRoom extends Room<GameState> {
+export class ArenaRoom extends Room<any> {
   constructor() {
     super();
     console.error("[ArenaRoom] Constructor called");
@@ -111,97 +110,97 @@ export class ArenaRoom extends Room<GameState> {
         this.setPatchRate(TICK_MS);
 
         // Movement & Combat
-        this.onMessage("move", (client, data: { direction: Direction }) => {
+        this.onMessage(ClientMessageType.Move, (client, data: ClientMessages[ClientMessageType.Move]) => {
             this.messageHandler.handleMove(client, data.direction);
         });
 
-        this.onMessage("attack", (client, data?: { targetTileX?: number; targetTileY?: number }) => {
-            this.messageHandler.handleAttack(client, data?.targetTileX, data?.targetTileY);
+        this.onMessage(ClientMessageType.Attack, (client, data: ClientMessages[ClientMessageType.Attack]) => {
+            this.messageHandler.handleAttack(client, data);
         });
 
-        this.onMessage("cast", (client, data: { spellId: string; targetTileX: number; targetTileY: number }) => {
+        this.onMessage(ClientMessageType.Cast, (client, data: ClientMessages[ClientMessageType.Cast]) => {
             this.messageHandler.handleCast(client, data);
         });
 
         // Inventory
-        this.onMessage("pickup", (client, data: { dropId: string }) => {
-            this.messageHandler.handlePickup(client, data.dropId);
+        this.onMessage(ClientMessageType.Pickup, (client, data: ClientMessages[ClientMessageType.Pickup]) => {
+            this.messageHandler.handlePickup(client, data);
         });
 
-        this.onMessage("equip", (client, data: { itemId: string }) => {
-            this.messageHandler.handleEquip(client, data.itemId);
+        this.onMessage(ClientMessageType.Equip, (client, data: ClientMessages[ClientMessageType.Equip]) => {
+            this.messageHandler.handleEquip(client, data);
         });
 
-        this.onMessage("unequip", (client, data: { slot: EquipmentSlot }) => {
-            this.messageHandler.handleUnequip(client, data.slot);
+        this.onMessage(ClientMessageType.Unequip, (client, data: ClientMessages[ClientMessageType.Unequip]) => {
+            this.messageHandler.handleUnequip(client, data);
         });
 
-        this.onMessage("use_item", (client, data: { itemId: string }) => {
-            this.messageHandler.handleUseItem(client, data.itemId);
+        this.onMessage(ClientMessageType.UseItem, (client, data: ClientMessages[ClientMessageType.UseItem]) => {
+            this.messageHandler.handleUseItem(client, data);
         });
 
-        this.onMessage("drop_item", (client, data: { itemId: string }) => {
-            this.messageHandler.handleDropItem(client, data.itemId);
+        this.onMessage(ClientMessageType.DropItem, (client, data: ClientMessages[ClientMessageType.DropItem]) => {
+            this.messageHandler.handleDropItem(client, data);
         });
 
         // NPCs & Quests
-        this.onMessage("interact", (client, data: { npcId: string }) => {
-            this.messageHandler.handleInteract(client, data.npcId);
+        this.onMessage(ClientMessageType.Interact, (client, data: ClientMessages[ClientMessageType.Interact]) => {
+            this.messageHandler.handleInteract(client, data);
         });
 
-        this.onMessage("buy_item", (client, data: { itemId: string; quantity: number }) => {
+        this.onMessage(ClientMessageType.BuyItem, (client, data: ClientMessages[ClientMessageType.BuyItem]) => {
             this.messageHandler.handleBuyItem(client, data);
         });
 
-        this.onMessage("sell_item", (client, data: { itemId: string; quantity: number }) => {
+        this.onMessage(ClientMessageType.SellItem, (client, data: ClientMessages[ClientMessageType.SellItem]) => {
             this.messageHandler.handleSellItem(client, data);
         });
 
-        this.onMessage("quest_accept", (client, data: { questId: string }) => {
-            this.messageHandler.handleQuestAccept(client, data.questId);
+        this.onMessage(ClientMessageType.QuestAccept, (client, data: ClientMessages[ClientMessageType.QuestAccept]) => {
+            this.messageHandler.handleQuestAccept(client, data);
         });
 
-        this.onMessage("quest_complete", (client, data: { questId: string }) => {
-            this.messageHandler.handleQuestComplete(client, data.questId);
+        this.onMessage(ClientMessageType.QuestComplete, (client, data: ClientMessages[ClientMessageType.QuestComplete]) => {
+            this.messageHandler.handleQuestComplete(client, data);
         });
 
         // Social
-        this.onMessage("chat", (client, data: { message: string }) => {
-            this.messageHandler.handleChat(client, data.message);
+        this.onMessage(ClientMessageType.Chat, (client, data: ClientMessages[ClientMessageType.Chat]) => {
+            this.messageHandler.handleChat(client, data);
         });
 
-        this.onMessage("friend_request", (client, data: { targetName: string }) => {
-            this.messageHandler.handleFriendRequest(client, data.targetName);
+        this.onMessage(ClientMessageType.FriendRequest, (client, data: ClientMessages[ClientMessageType.FriendRequest]) => {
+            this.messageHandler.handleFriendRequest(client, data);
         });
 
-        this.onMessage("friend_accept", (client, data: { requesterId: string }) => {
-            this.messageHandler.handleFriendAccept(client, data.requesterId);
+        this.onMessage(ClientMessageType.FriendAccept, (client, data: ClientMessages[ClientMessageType.FriendAccept]) => {
+            this.messageHandler.handleFriendAccept(client, data);
         });
 
         // Party
-        this.onMessage("party_invite", (client, data: { targetSessionId: string }) => {
-            this.messageHandler.handlePartyInvite(client, data.targetSessionId);
+        this.onMessage(ClientMessageType.PartyInvite, (client, data: ClientMessages[ClientMessageType.PartyInvite]) => {
+            this.messageHandler.handlePartyInvite(client, data);
         });
 
-        this.onMessage("party_accept", (client, data: { partyId: string }) => {
-            this.messageHandler.handlePartyAccept(client, data.partyId);
+        this.onMessage(ClientMessageType.PartyAccept, (client, data: ClientMessages[ClientMessageType.PartyAccept]) => {
+            this.messageHandler.handlePartyAccept(client, data);
         });
 
-        this.onMessage("party_leave", (client) => {
+        this.onMessage(ClientMessageType.PartyLeave, (client) => {
             this.messageHandler.handlePartyLeave(client);
         });
 
-        this.onMessage("party_kick", (client, data: { targetSessionId: string }) => {
-            this.messageHandler.handlePartyKick(client, data.targetSessionId);
+        this.onMessage(ClientMessageType.PartyKick, (client, data: ClientMessages[ClientMessageType.PartyKick]) => {
+            this.messageHandler.handlePartyKick(client, data);
         });
 
         // Network
-        this.onMessage("ping", (client) => {
-            client.send("pong", { serverTime: Date.now() });
+        this.onMessage(ClientMessageType.Ping, (client) => {
+            this.messageHandler.handlePing(client);
         });
 
-        this.onMessage("audio", (client, data: ArrayBuffer) => {
-            this.broadcast("audio", { sessionId: client.sessionId, data }, { except: client });
+        this.onMessage(ClientMessageType.Audio, (client, data: ArrayBuffer) => {
+            this.messageHandler.handleAudio(client, data);
         });
 
         logger.info({ room: this.roomId, intent: "room_created", result: "ok" });
@@ -341,9 +340,9 @@ export class ArenaRoom extends Room<GameState> {
 
     // Load Quests
     const quests = await this.quests.loadPlayerQuests(user.id, dbPlayer.id);
-    client.send("quest_list", { quests });
+    client.send(ServerMessageType.QuestList, { quests });
 
-    client.send("welcome", {
+    client.send(ServerMessageType.Welcome, {
       sessionId: client.sessionId,
       tileX: player.tileX,
       tileY: player.tileY,
@@ -468,7 +467,7 @@ export class ArenaRoom extends Room<GameState> {
       this.roomId,
       (sessionId: string) => {
         const c = this.clients.find((cl: Client) => cl.sessionId === sessionId);
-        return (type: string, data?: Record<string, unknown>) => c?.send(type, data ?? {});
+        return <T extends ServerMessageType>(type: T, data?: ServerMessages[T]) => c?.send(type, data);
       },
     );
 
@@ -502,7 +501,7 @@ export class ArenaRoom extends Room<GameState> {
           }
       }
 
-      this.broadcast("death", { sessionId: npc.sessionId, killerSessionId });
+      this.broadcast(ServerMessageType.Death, { sessionId: npc.sessionId, killerSessionId });
   }
 
   private onSummon(caster: Entity, spellId: string, x: number, y: number) {
@@ -532,9 +531,9 @@ export class ArenaRoom extends Room<GameState> {
               const client = this.clients.find(c => c.sessionId === player.sessionId);
               if (client) {
                   for (const quest of updatedQuests) {
-                      client.send("quest_update", { quest });
+                      client.send(ServerMessageType.QuestUpdate, { quest });
                       if (quest.status === "completed") {
-                        client.send("notification", { message: `Quest Completed: ${QUESTS[quest.questId].title}` });
+                        client.send(ServerMessageType.Notification, { message: `Quest Completed: ${QUESTS[quest.questId].title}` });
                       }
                   }
               }
@@ -626,7 +625,7 @@ export class ArenaRoom extends Room<GameState> {
         }
     }
 
-    this.broadcast("kill_feed", {
+    this.broadcast(ServerMessageType.KillFeed, {
       killerSessionId,
       victimSessionId: player.sessionId,
       killerName,
@@ -670,14 +669,14 @@ export class ArenaRoom extends Room<GameState> {
           player.hp = player.maxHp;
           player.mana = player.maxMana;
 
-          this.broadcast("level_up", {
+          this.broadcast(ServerMessageType.LevelUp, {
               sessionId: player.sessionId,
               level: player.level,
           });
           
           const client = this.clients.find(c => c.sessionId === player.sessionId);
           if (client) {
-              client.send("notification", { message: `Level Up! You are now level ${player.level}!` });
+              client.send(ServerMessageType.Notification, { message: `Level Up! You are now level ${player.level}!` });
           }
       }
   }

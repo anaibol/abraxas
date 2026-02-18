@@ -25,9 +25,9 @@ import type { BuffSystem } from "./BuffSystem";
 import { EntityUtils, Entity } from "../utils/EntityUtils";
 import { SpatialLookup } from "../utils/SpatialLookup";
 
-import { ServerMessages, BroadcastFn } from "@abraxas/shared";
+import { ServerMessages, BroadcastFn, ServerMessageType } from "@abraxas/shared";
 
-type SendToClientFn = (type: string, data?: Record<string, unknown>) => void;
+type SendToClientFn = <T extends ServerMessageType>(type: T, data?: ServerMessages[T]) => void;
 
 export class CombatSystem {
   private state = new Map<string, EntityCombatState>();
@@ -93,7 +93,7 @@ export class CombatSystem {
     // Check melee cooldown
     if (now - cs.lastMeleeMs < stats.meleeCooldownMs) {
       this.tryBuffer(cs, { type: "attack", targetTileX, targetTileY, bufferedAt: now });
-      sendToClient?.("error", { message: "Attack on cooldown" });
+      sendToClient?.(ServerMessageType.Error, { message: "Attack on cooldown" });
       return false;
     }
 
@@ -103,12 +103,12 @@ export class CombatSystem {
     // Target validation for ranged
     if (stats.meleeRange > 1) {
         if (!target || !target.alive || target.sessionId === attacker.sessionId) {
-            sendToClient?.("invalid_target");
+            sendToClient?.(ServerMessageType.InvalidTarget);
             return false;
         }
         const dist = MathUtils.manhattanDist(EntityUtils.getPosition(attacker), { x: target.tileX, y: target.tileY });
         if (dist > stats.meleeRange) {
-            sendToClient?.("invalid_target");
+            sendToClient?.(ServerMessageType.InvalidTarget);
             return false;
         }
     } else {
@@ -206,13 +206,13 @@ export class CombatSystem {
         targetTileY,
         bufferedAt: now,
       });
-      sendToClient?.("error", { message: "Spell on cooldown" });
+      sendToClient?.(ServerMessageType.Error, { message: "Spell on cooldown" });
       return false;
     }
 
     // Check mana
     if (caster.mana < spell.manaCost) {
-        sendToClient?.("error", { message: "Not enough mana" });
+        sendToClient?.(ServerMessageType.Error, { message: "Not enough mana" });
         return false;
     }
 
@@ -226,7 +226,7 @@ export class CombatSystem {
     if (spell.rangeTiles > 0 && spell.effect !== "aoe") {
       const target = this.spatial.findEntityAtTile(targetTileX, targetTileY);
       if (!target || !target.alive || target.sessionId === caster.sessionId) {
-        sendToClient?.("invalid_target");
+        sendToClient?.(ServerMessageType.InvalidTarget);
         return false;
       }
     }
