@@ -12,6 +12,7 @@ import { Minimap } from "./Minimap";
 import { MerchantShop } from "./MerchantShop";
 import { SocialPanel } from "./SocialPanel";
 import type { ClassType, TileMap, EquipmentSlot, PlayerQuestState } from "@abraxas/shared";
+import { getRandomName } from "@abraxas/shared";
 import { QuestDialogue } from "./QuestDialogue";
 import { NetworkManager } from "../network/NetworkManager";
 import { AudioManager } from "../managers/AudioManager";
@@ -34,7 +35,7 @@ export function App() {
   const [connecting, setConnecting] = useState(false);
   const [isLoading, setIsLoading] = useState(false); // New loading state
   const [playerState, setPlayerState] = useState<PlayerState>({
-    name: "Player",
+    name: getRandomName(),
     classType: "warrior",
     hp: 100,
     maxHp: 100,
