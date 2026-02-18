@@ -233,7 +233,7 @@ export class InventorySystem {
     player.agi = base.agi + equip.agi;
     player.intStat = base.int + equip.int;
     player.maxHp = base.hp + equip.hp;
-    player.maxMana = (base.mana ?? 0) + equip.mana;
+    player.maxMana = base.mana + equip.mana;
     // Clamp current HP/mana to new max
     player.hp = Math.min(player.hp, player.maxHp);
     player.mana = Math.min(player.mana, player.maxMana);

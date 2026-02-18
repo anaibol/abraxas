@@ -1,4 +1,4 @@
-import type { ClassStats, SpellDef, QuestDef } from "./types";
+import type { ClassStats, NpcStats, SpellDef, QuestDef } from "./types";
 
 export const CLASS_APPEARANCE: Record<
   string,
@@ -131,7 +131,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
   },
 };
 
-export const NPC_STATS: Record<string, ClassStats> = {
+export const NPC_STATS: Record<string, NpcStats> = {
   orc: {
     hp: 120,
     str: 18,

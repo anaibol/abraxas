@@ -84,9 +84,9 @@ export interface TileMap {
   warps?: Warp[];
 }
 
-export interface ClassStats {
+/** Stats shared by all character types (players and NPCs). */
+export interface NpcStats {
   hp: number;
-  mana?: number;
   str: number;
   agi: number;
   int: number;
@@ -96,6 +96,11 @@ export interface ClassStats {
   meleeWindupMs: number;
   spells: string[];
   expReward?: number;
+}
+
+/** Stats for player classes — extends NpcStats with a required mana pool. */
+export interface ClassStats extends NpcStats {
+  mana: number;
 }
 
 export type SpellEffect =

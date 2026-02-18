@@ -1,5 +1,4 @@
 import {
-  ClassStats,
   NPC_STATS,
   TileMap,
   Direction,

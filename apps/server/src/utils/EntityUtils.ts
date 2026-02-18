@@ -1,6 +1,6 @@
 import { Player } from "../schema/Player";
 import { Npc } from "../schema/Npc";
-import { CLASS_STATS, NPC_STATS, ClassStats } from "@abraxas/shared";
+import { CLASS_STATS, NPC_STATS, NpcStats } from "@abraxas/shared";
 
 export type Entity = Player | Npc;
 
@@ -12,7 +12,7 @@ export function isNpc(entity: Entity): entity is Npc {
   return "type" in entity && !("classType" in entity);
 }
 
-export function getEntityStats(entity: Entity): ClassStats | undefined {
+export function getEntityStats(entity: Entity): NpcStats | undefined {
   return isPlayer(entity)
     ? CLASS_STATS[entity.classType]
     : NPC_STATS[entity.type];
