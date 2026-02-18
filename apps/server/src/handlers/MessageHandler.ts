@@ -30,7 +30,7 @@ export class MessageHandler {
         private isTileOccupied: (x: number, y: number, excludeId: string) => boolean
     ) {}
 
-    handleMove(client: Client, direction: Direction) {
+    handleMove(client: Client, direction: Direction): void {
         const player = this.state.players.get(client.sessionId);
         if (!player || !player.alive) return;
         if (player.stunned) return;
@@ -46,7 +46,7 @@ export class MessageHandler {
         );
     }
 
-    handleAttack(client: Client, targetTileX?: number, targetTileY?: number) {
+    handleAttack(client: Client, targetTileX?: number, targetTileY?: number): void {
         const player = this.state.players.get(client.sessionId);
         if (!player || !player.alive) return;
     
@@ -62,7 +62,7 @@ export class MessageHandler {
         );
     }
 
-    handleCast(client: Client, data: { spellId: string; targetTileX: number; targetTileY: number }) {
+    handleCast(client: Client, data: { spellId: string; targetTileX: number; targetTileY: number }): void {
         const player = this.state.players.get(client.sessionId);
         if (!player || !player.alive) return;
     
@@ -79,7 +79,7 @@ export class MessageHandler {
         );
     }
 
-    handlePickup(client: Client, dropId: string) {
+    handlePickup(client: Client, dropId: string): void {
         const player = this.state.players.get(client.sessionId);
         if (!player || !player.alive) return;
     
@@ -92,19 +92,19 @@ export class MessageHandler {
         );
     }
 
-    handleEquip(client: Client, itemId: string) {
+    handleEquip(client: Client, itemId: string): void {
         const player = this.state.players.get(client.sessionId);
         if (!player || !player.alive) return;
         this.inventorySystem.equipItem(player, itemId);
     }
     
-    handleUnequip(client: Client, slot: EquipmentSlot) {
+    handleUnequip(client: Client, slot: EquipmentSlot): void {
         const player = this.state.players.get(client.sessionId);
         if (!player || !player.alive) return;
         this.inventorySystem.unequipItem(player, slot);
     }
     
-    handleUseItem(client: Client, itemId: string) {
+    handleUseItem(client: Client, itemId: string): void {
         const player = this.state.players.get(client.sessionId);
         if (!player || !player.alive) return;
         if (this.inventorySystem.useItem(player, itemId)) {
@@ -115,7 +115,7 @@ export class MessageHandler {
         }
     }
     
-    handleDropItem(client: Client, itemId: string) {
+    handleDropItem(client: Client, itemId: string): void {
         const player = this.state.players.get(client.sessionId);
         if (!player || !player.alive) return;
         if (this.inventorySystem.removeItem(player, itemId)) {
@@ -131,7 +131,7 @@ export class MessageHandler {
         }
     }
 
-    handleChat(client: Client, message: string) {
+    handleChat(client: Client, message: string): void {
         const player = this.state.players.get(client.sessionId);
         if (player && message) {
             const text = message.trim().slice(0, 100);

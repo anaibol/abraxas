@@ -35,7 +35,6 @@ export interface ClassStats {
   expReward?: number;
 }
 
-export type EntityStats = ClassStats;
 
 export type SpellEffect = "damage" | "heal" | "dot" | "buff" | "stun" | "stealth" | "aoe";
 
@@ -134,7 +133,7 @@ export type ServerMessages = {
   chat: { senderId: string; senderName: string; message: string };
   notification: { message: string };
   item_used: { sessionId: string; itemId: string };
-  invalid_target: undefined;
+  invalid_target: null;
   pong: { serverTime: number };
   level_up: { sessionId: string; level: number };
 };

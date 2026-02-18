@@ -31,7 +31,7 @@ export class NpcSystem {
     private spatial: SpatialLookup
   ) {}
 
-  spawnNpcs(count: number, map: TileMap) {
+  spawnNpcs(count: number, map: TileMap): void {
     const types = Object.keys(NPC_STATS);
 
     for (let i = 0; i < count; i++) {
@@ -40,7 +40,7 @@ export class NpcSystem {
     }
   }
 
-  private spawnNpc(type: string, map: TileMap) {
+  private spawnNpc(type: string, map: TileMap): void {
     const npc = new Npc();
     npc.sessionId = crypto.randomUUID();
     if (type === "orc" || type === "skeleton" || type === "goblin" || type === "wolf") {
@@ -94,7 +94,7 @@ export class NpcSystem {
     tickCount: number,
     roomId: string,
     broadcast: BroadcastFn
-  ) {
+  ): void {
     // Handle respawns
     for (let i = this.respawns.length - 1; i >= 0; i--) {
         const respawn = this.respawns[i];
@@ -133,7 +133,7 @@ export class NpcSystem {
   }
 
 
-  private updateIdle(npc: Npc, now: number) {
+  private updateIdle(npc: Npc, now: number): void {
       // Look for targets
       const players = this.spatial.findEntitiesInRadius(npc.tileX, npc.tileY, AGGRO_RANGE);
       let nearest: Entity | null = null;
@@ -164,7 +164,7 @@ export class NpcSystem {
       occupiedCheck: (x: number, y: number, excludeId: string) => boolean, 
       tickCount: number, 
       roomId: string
-  ) {
+  ): void {
       const target = this.spatial.findEntityBySessionId(npc.targetId);
       
       // Target lost or dead
@@ -220,7 +220,7 @@ export class NpcSystem {
       tickCount: number, 
       roomId: string,
       findEntityAtTile: (x: number, y: number) => Entity | undefined
-  ) {
+  ): void {
       const target = this.spatial.findEntityBySessionId(npc.targetId);
       if (!target || !target.alive) {
           npc.state = NpcState.IDLE;
@@ -253,7 +253,7 @@ export class NpcSystem {
       );
   }
 
-  handleDeath(npc: Npc) {
+  handleDeath(npc: Npc): void {
       this.respawns.push({ type: npc.type, deadAt: Date.now() });
       this.state.npcs.delete(npc.sessionId);
       this.spatial.removeFromGrid(npc);

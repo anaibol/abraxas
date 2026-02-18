@@ -167,7 +167,7 @@ export class InventorySystem {
   }
 
   /** Recalculate player stats from base class + equipment */
-  recalcStats(player: Player) {
+  recalcStats(player: Player): void {
     const base = CLASS_STATS[player.classType];
     if (!base) return;
 

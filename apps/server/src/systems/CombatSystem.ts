@@ -53,7 +53,7 @@ export class CombatSystem {
     return cs;
   }
 
-  removeEntity(sessionId: string) {
+  removeEntity(sessionId: string): void {
     this.state.delete(sessionId);
     this.activeWindups = this.activeWindups.filter(
       (w) => w.attackerSessionId !== sessionId
@@ -272,7 +272,7 @@ export class CombatSystem {
     tick: number,
     roomId: string,
     onDeath: (entity: Entity, killerSessionId: string) => void
-  ) {
+  ): void {
     const remaining: WindupAction[] = [];
 
     for (const windup of this.activeWindups) {
@@ -323,7 +323,7 @@ export class CombatSystem {
     tick: number,
     roomId: string,
     sendToClientFor?: (sessionId: string) => SendToClientFn,
-  ) {
+  ): void {
     for (const [sessionId, cs] of this.state.entries()) {
       if (!cs.bufferedAction) continue;
 
@@ -358,7 +358,7 @@ export class CombatSystem {
     }
   }
 
-  private tryBuffer(cs: EntityCombatState, action: BufferedAction) {
+  private tryBuffer(cs: EntityCombatState, action: BufferedAction): void {
     if (!cs.bufferedAction) {
       cs.bufferedAction = action;
     }
@@ -372,7 +372,7 @@ export class CombatSystem {
     roomId: string,
     onDeath: (entity: Entity, killerSessionId: string) => void,
     now: number
-  ) {
+  ): void {
     const stats = EntityUtils.getStats(attacker)!;
     const target = this.spatial.findEntityAtTile(windup.targetTileX, windup.targetTileY);
 
@@ -442,7 +442,7 @@ export class CombatSystem {
     roomId: string,
     onDeath: (entity: Entity, killerSessionId: string) => void,
     now: number
-  ) {
+  ): void {
     const spell = SPELLS[windup.spellId!];
     if (!spell) return;
 
@@ -533,7 +533,7 @@ export class CombatSystem {
     broadcast: BroadcastFn,
     onDeath: (entity: Entity, killerSessionId: string) => void,
     now: number
-  ) {
+  ): void {
     // Check invulnerability
     if (this.buffSystem.isInvulnerable(target.sessionId, now)) return;
 
