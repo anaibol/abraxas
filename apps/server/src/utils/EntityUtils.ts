@@ -20,12 +20,11 @@ export const EntityUtils = {
     return NPC_STATS[entity.type];
   },
 
-  
   getPosition(entity: Entity) {
-      return { x: entity.tileX, y: entity.tileY };
-  }
-  ,
+    return { x: entity.tileX, y: entity.tileY };
+  },
+
   isAttackable(entity: Entity): boolean {
-    return !!entity && !!(entity as any).alive && !(entity as any).stealthed;
-  }
+    return entity.alive && !entity.stealthed;
+  },
 };

@@ -2,12 +2,32 @@ export enum Direction {
   UP = 0,
   DOWN = 1,
   LEFT = 2,
-  RIGHT = 3
+  RIGHT = 3,
 }
 export type EquipmentSlot = "weapon" | "armor" | "shield" | "helmet" | "ring";
-export const EQUIPMENT_SLOTS: readonly EquipmentSlot[] = ["weapon", "armor", "shield", "helmet", "ring"];
-export type ClassType = "warrior" | "wizard" | "archer" | "assassin" | "paladin" | "druid";
-export type NpcType = "orc" | "skeleton" | "goblin" | "wolf" | "merchant" | "spider" | "ghost" | "lich";
+export const EQUIPMENT_SLOTS: readonly EquipmentSlot[] = [
+  "weapon",
+  "armor",
+  "shield",
+  "helmet",
+  "ring",
+];
+export type ClassType =
+  | "warrior"
+  | "wizard"
+  | "archer"
+  | "assassin"
+  | "paladin"
+  | "druid";
+export type NpcType =
+  | "orc"
+  | "skeleton"
+  | "goblin"
+  | "wolf"
+  | "merchant"
+  | "spider"
+  | "ghost"
+  | "lich";
 
 export interface JoinOptions {
   name: string;
@@ -79,8 +99,15 @@ export interface ClassStats {
   expReward?: number;
 }
 
-
-export type SpellEffect = "damage" | "heal" | "dot" | "buff" | "stun" | "stealth" | "aoe" | "summon";
+export type SpellEffect =
+  | "damage"
+  | "heal"
+  | "dot"
+  | "buff"
+  | "stun"
+  | "stealth"
+  | "aoe"
+  | "summon";
 
 export interface SpellDef {
   id: string;
@@ -118,10 +145,10 @@ export interface EquipmentData {
 }
 
 export const DIRECTION_DELTA: Record<number, { dx: number; dy: number }> = {
-  [Direction.UP]:    { dx:  0, dy: -1 },
-  [Direction.DOWN]:  { dx:  0, dy:  1 },
-  [Direction.LEFT]:  { dx: -1, dy:  0 },
-  [Direction.RIGHT]: { dx:  1, dy:  0 },
+  [Direction.UP]: { dx: 0, dy: -1 },
+  [Direction.DOWN]: { dx: 0, dy: 1 },
+  [Direction.LEFT]: { dx: -1, dy: 0 },
+  [Direction.RIGHT]: { dx: 1, dy: 0 },
 };
 
 export interface BaseEntityState {
@@ -195,8 +222,6 @@ export enum ServerMessageType {
   OpenDialogue = "open_dialogue",
 }
 
-
-
 export type ServerMessages = {
   [ServerMessageType.Welcome]: {
     sessionId: string;
@@ -208,18 +233,63 @@ export type ServerMessages = {
     collision: number[][];
   };
   [ServerMessageType.AttackStart]: { sessionId: string; facing: Direction };
-  [ServerMessageType.AttackHit]: { sessionId: string; targetSessionId: string | null; dodged?: boolean };
-  [ServerMessageType.CastStart]: { sessionId: string; spellId: string; targetTileX: number; targetTileY: number };
-  [ServerMessageType.CastHit]: { sessionId: string; spellId: string; targetTileX: number; targetTileY: number; fxId: number };
-  [ServerMessageType.Damage]: { targetSessionId: string; amount: number; hpAfter: number; type: "physical" | "magic" | "dot" };
-  [ServerMessageType.Heal]: { sessionId: string; amount: number; hpAfter: number };
+  [ServerMessageType.AttackHit]: {
+    sessionId: string;
+    targetSessionId: string | null;
+    dodged?: boolean;
+  };
+  [ServerMessageType.CastStart]: {
+    sessionId: string;
+    spellId: string;
+    targetTileX: number;
+    targetTileY: number;
+  };
+  [ServerMessageType.CastHit]: {
+    sessionId: string;
+    spellId: string;
+    targetTileX: number;
+    targetTileY: number;
+    fxId: number;
+  };
+  [ServerMessageType.Damage]: {
+    targetSessionId: string;
+    amount: number;
+    hpAfter: number;
+    type: "physical" | "magic" | "dot";
+  };
+  [ServerMessageType.Heal]: {
+    sessionId: string;
+    amount: number;
+    hpAfter: number;
+  };
   [ServerMessageType.Death]: { sessionId: string; killerSessionId?: string };
-  [ServerMessageType.Respawn]: { sessionId: string; tileX: number; tileY: number };
-  [ServerMessageType.BuffApplied]: { sessionId: string; spellId: string; durationMs: number };
+  [ServerMessageType.Respawn]: {
+    sessionId: string;
+    tileX: number;
+    tileY: number;
+  };
+  [ServerMessageType.BuffApplied]: {
+    sessionId: string;
+    spellId: string;
+    durationMs: number;
+  };
   [ServerMessageType.StealthApplied]: { sessionId: string; durationMs: number };
-  [ServerMessageType.StunApplied]: { targetSessionId: string; durationMs: number };
-  [ServerMessageType.KillFeed]: { killerName: string; victimName: string; killerSessionId?: string; victimSessionId: string };
-  [ServerMessageType.Chat]: { senderId: string; senderName: string; message: string; channel?: "global" | "party" | "whisper" | "system" };
+  [ServerMessageType.StunApplied]: {
+    targetSessionId: string;
+    durationMs: number;
+  };
+  [ServerMessageType.KillFeed]: {
+    killerName: string;
+    victimName: string;
+    killerSessionId?: string;
+    victimSessionId: string;
+  };
+  [ServerMessageType.Chat]: {
+    senderId: string;
+    senderName: string;
+    message: string;
+    channel?: "global" | "party" | "whisper" | "system";
+  };
   [ServerMessageType.Notification]: { message: string };
   [ServerMessageType.ItemUsed]: { sessionId: string; itemId: string };
   [ServerMessageType.InvalidTarget]: null;
@@ -230,22 +300,39 @@ export type ServerMessages = {
   [ServerMessageType.SellItem]: { itemId: string; quantity: number };
   [ServerMessageType.Error]: { message: string };
   [ServerMessageType.FriendRequest]: { targetName: string };
-  [ServerMessageType.FriendInvited]: { requesterId: string; requesterName: string };
+  [ServerMessageType.FriendInvited]: {
+    requesterId: string;
+    requesterName: string;
+  };
   [ServerMessageType.FriendAccept]: { requesterId: string };
   [ServerMessageType.FriendRemove]: { friendId: string };
-  [ServerMessageType.FriendUpdate]: { friends: { id: string; name: string; online: boolean }[] };
+  [ServerMessageType.FriendUpdate]: {
+    friends: { id: string; name: string; online: boolean }[];
+  };
   [ServerMessageType.PartyInvite]: { targetSessionId: string };
   [ServerMessageType.PartyInvited]: { partyId: string; inviterName: string };
   [ServerMessageType.PartyAccept]: { partyId: string };
   [ServerMessageType.PartyLeave]: {};
   [ServerMessageType.PartyKick]: { targetSessionId: string };
-  [ServerMessageType.PartyUpdate]: { partyId: string; leaderId: string; members: { sessionId: string; name: string }[] };
-  [ServerMessageType.Warp]: { targetMap: string; targetX: number; targetY: number };
+  [ServerMessageType.PartyUpdate]: {
+    partyId: string;
+    leaderId: string;
+    members: { sessionId: string; name: string }[];
+  };
+  [ServerMessageType.Warp]: {
+    targetMap: string;
+    targetX: number;
+    targetY: number;
+  };
   [ServerMessageType.Audio]: { sessionId: string; data: ArrayBuffer };
   [ServerMessageType.QuestList]: { quests: PlayerQuestState[] };
   [ServerMessageType.QuestUpdate]: { quest: PlayerQuestState };
   [ServerMessageType.QuestAvailable]: { npcId: string; questIds: string[] };
-  [ServerMessageType.OpenDialogue]: { npcId: string; text: string; options: { text: string; action: string; data?: any }[] };
+  [ServerMessageType.OpenDialogue]: {
+    npcId: string;
+    text: string;
+    options: { text: string; action: string; data?: unknown }[];
+  };
 };
 
 export type WelcomeData = ServerMessages[ServerMessageType.Welcome];
@@ -278,7 +365,11 @@ export enum ClientMessageType {
 export type ClientMessages = {
   [ClientMessageType.Move]: { direction: Direction };
   [ClientMessageType.Attack]: { targetTileX?: number; targetTileY?: number };
-  [ClientMessageType.Cast]: { spellId: string; targetTileX: number; targetTileY: number };
+  [ClientMessageType.Cast]: {
+    spellId: string;
+    targetTileX: number;
+    targetTileY: number;
+  };
   [ClientMessageType.Pickup]: { dropId: string };
   [ClientMessageType.Equip]: { itemId: string };
   [ClientMessageType.Unequip]: { slot: EquipmentSlot };
@@ -294,7 +385,11 @@ export type ClientMessages = {
   [ClientMessageType.FriendAccept]: { requesterId: string };
   [ClientMessageType.Interact]: { npcId: string };
   [ClientMessageType.BuyItem]: { itemId: string; quantity: number };
-  [ClientMessageType.SellItem]: { itemId: string; quantity: number; npcId?: string };
+  [ClientMessageType.SellItem]: {
+    itemId: string;
+    quantity: number;
+    npcId?: string;
+  };
   [ClientMessageType.Ping]: {};
   [ClientMessageType.QuestAccept]: { questId: string };
   [ClientMessageType.QuestComplete]: { questId: string };

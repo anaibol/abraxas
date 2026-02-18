@@ -23,6 +23,12 @@ export type StateCallback = (state: PlayerState) => void;
 export type KillFeedCallback = (killer: string, victim: string) => void;
 export type ConsoleCallback = (text: string, color?: string) => void;
 
+/** Typed wrapper for Colyseus MapSchema onAdd/onRemove (client SDK v2 doesn't expose these in its types) */
+type ObservableMap<T> = {
+  onAdd(callback: (item: T, key: string) => void, triggerAll?: boolean): void;
+  onRemove(callback: (item: T, key: string) => void): void;
+};
+
 export class GameScene extends Phaser.Scene {
   private network: NetworkManager<GameState>;
   private onStateUpdate: StateCallback;
@@ -158,13 +164,17 @@ export class GameScene extends Phaser.Scene {
     );
 
     // Listen for player add/remove/change
-    this.room.state.players.onAdd((player, sessionId) => {
-      this.spriteManager.addPlayer(player, sessionId);
-    });
+    (this.room.state.players as unknown as ObservableMap<Player>).onAdd(
+      (player, sessionId) => {
+        this.spriteManager.addPlayer(player, sessionId);
+      },
+    );
 
-    this.room.state.players.onRemove((_player, sessionId) => {
-      this.spriteManager.removePlayer(sessionId);
-    });
+    (this.room.state.players as unknown as ObservableMap<Player>).onRemove(
+      (_player, sessionId) => {
+        this.spriteManager.removePlayer(sessionId);
+      },
+    );
 
     // Game Event Handler
     const gameEventHandler = new GameEventHandler(
@@ -180,22 +190,28 @@ export class GameScene extends Phaser.Scene {
     gameEventHandler.setupListeners();
 
     // Drops
-    this.room.state.drops.onAdd((drop, id) => {
-      this.addDrop(drop, id);
-    });
+    (this.room.state.drops as unknown as ObservableMap<Drop>).onAdd(
+      (drop, id) => {
+        this.addDrop(drop, id);
+      },
+    );
 
-    this.room.state.drops.onRemove((_drop, id) => {
-      this.removeDrop(id);
-    });
+    (this.room.state.drops as unknown as ObservableMap<Drop>).onRemove(
+      (_drop, id) => {
+        this.removeDrop(id);
+      },
+    );
 
     // NPCs
-    this.room.state.npcs.onAdd((npc, id) => {
+    (this.room.state.npcs as unknown as ObservableMap<Npc>).onAdd((npc, id) => {
       this.spriteManager.addNpc(npc, id);
     });
 
-    this.room.state.npcs.onRemove((_npc, id) => {
-      this.spriteManager.removeNpc(id);
-    });
+    (this.room.state.npcs as unknown as ObservableMap<Npc>).onRemove(
+      (_npc, id) => {
+        this.spriteManager.removeNpc(id);
+      },
+    );
 
     // Debug text
     this.debugText = this.add.text(10, 10, "", {
