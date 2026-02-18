@@ -62,7 +62,14 @@ export class ArenaRoom extends Room<GameState> {
         this.spatial.isTileOccupied.bind(this.spatial)
     );
 
-    // Spawn NPCs
+    // Spawn predefined NPCs
+    if (this.map.npcs) {
+        for (const npcDef of this.map.npcs) {
+            this.npcSystem.spawnNpcAt(npcDef.type, this.map, npcDef.x, npcDef.y);
+        }
+    }
+
+    // Spawn random NPCs
     const npcCount = this.map.npcCount !== undefined ? this.map.npcCount : 20;
     if (npcCount > 0) {
         this.npcSystem.spawnNpcs(npcCount, this.map);

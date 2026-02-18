@@ -46,7 +46,7 @@ export class NpcSystem {
     }
   }
 
-  private spawnNpcAt(type: string, map: TileMap, x: number, y: number): void {
+  public spawnNpcAt(type: string, map: TileMap, x: number, y: number): void {
       const npc = new Npc();
       npc.sessionId = crypto.randomUUID();
       npc.type = type as NpcType;

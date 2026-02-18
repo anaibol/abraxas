@@ -83,7 +83,7 @@ export class PlayerSprite {
     } else {
         throw new Error("AoGrhResolver not found in registry");
     }
-    const appearance = CLASS_APPEARANCE[classType] ?? CLASS_APPEARANCE.warrior;
+    const appearance = CLASS_APPEARANCE[classType] ?? NPC_APPEARANCE[classType] ?? CLASS_APPEARANCE.warrior;
     this.bodyEntry = this.resolver.getBodyEntry(appearance.bodyId)!;
     this.headEntry = this.resolver.getHeadEntry(appearance.headId)!;
 

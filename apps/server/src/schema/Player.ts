@@ -7,6 +7,7 @@ export class Player extends Schema {
   @type("string") sessionId: string = "";
   @type("string") userId: string = "";
   @type("string") name: string = "";
+  @type("string") partyId: string = "";
   @type("string") classType: ClassType = "warrior";
   @type("uint16") tileX: number = 0;
   @type("uint16") tileY: number = 0;

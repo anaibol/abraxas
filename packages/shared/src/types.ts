@@ -20,6 +20,8 @@ export interface TileMap {
   collision: number[][];
   spawns: { x: number; y: number }[];
   npcCount?: number;
+  merchantCount?: number;
+  npcs?: { type: string; x: number; y: number }[];
 }
 
 export interface ClassStats {
@@ -141,6 +143,13 @@ export type ServerMessages = {
   buy_item: { itemId: string; quantity: number };
   sell_item: { itemId: string; quantity: number };
   error: { message: string };
+  // Party System
+  party_invite: { targetSessionId: string };
+  party_invited: { partyId: string; inviterName: string };
+  party_accept: { partyId: string };
+  party_leave: {};
+  party_kick: { targetSessionId: string };
+  party_update: { partyId: string; leaderId: string; members: { sessionId: string; name: string }[] };
 };
 
 export interface BroadcastFn {
