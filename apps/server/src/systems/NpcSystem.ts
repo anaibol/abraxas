@@ -154,7 +154,6 @@ export class NpcSystem {
           npc.targetId = nearest.sessionId;
           npc.state = NpcState.CHASE;
       }
-      // TODO: Random wander?
   }
 
   private updateChase(

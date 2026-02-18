@@ -6,11 +6,9 @@ import "dotenv/config";
 import { resolve } from "path";
 
 // Initialize Prisma Client with Adapter
-// console.log("PersistenceService: DATABASE_URL:", process.env.DATABASE_URL); // REMOVED FOR SECURITY
 
 const DEFAULT_DB_PATH = "file:../../dev.db";
 const dbPath = process.env.DATABASE_URL || DEFAULT_DB_PATH;
-// console.log("PersistenceService: DATABASE_URL (env):", process.env.DATABASE_URL); // REMOVED FOR SECURITY
 
 let url = dbPath;
 if (dbPath === DEFAULT_DB_PATH) {
@@ -19,7 +17,6 @@ if (dbPath === DEFAULT_DB_PATH) {
    const relativePath = dbPath.replace("file:", "");
    url = `file://${resolve(import.meta.dir, relativePath)}`;
 }
-console.log("PersistenceService: Using URL:", url);
 
 const adapter = new PrismaLibSql({
   url,
