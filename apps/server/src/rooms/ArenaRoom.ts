@@ -48,7 +48,7 @@ import { User } from "@prisma/client";
 import { MessageHandler } from "../handlers/MessageHandler";
 import { SocialSystem } from "../systems/SocialSystem";
 import { FriendsSystem } from "../systems/FriendsSystem";
-import { SpatialLookup, isPlayer, isNpc, Entity } from "../utils/SpatialLookup";
+import { SpatialLookup, Entity } from "../utils/SpatialLookup";
 import { QuestSystem } from "../systems/QuestSystem";
 
 export class ArenaRoom extends Room<{ state: GameState }> {
@@ -426,7 +426,6 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       tileSize: this.map.tileSize,
       collision: this.map.collision,
     });
-
     logger.info({
       room: this.roomId,
       clientId: client.sessionId,
@@ -551,13 +550,11 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       now,
       (sid: string) => {
         const entity = this.spatial.findEntityBySessionId(sid);
-        return entity && isPlayer(entity) ? entity : undefined;
+        return entity instanceof Player ? entity : undefined;
       },
       broadcast,
-      (player: Entity) => {
-        if (isPlayer(player)) {
-          this.onEntityDeath(player, "");
-        }
+      (player: Player) => {
+        this.onEntityDeath(player, "");
       },
       this.roomId,
       this.state.tick,
@@ -600,7 +597,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
   }
 
   private onEntityDeath(entity: Entity, killerSessionId: string) {
-    if (isPlayer(entity)) {
+    if (entity instanceof Player) {
       this.onPlayerDeath(entity, killerSessionId);
     } else {
       this.onNpcDeath(entity, killerSessionId);
@@ -713,7 +710,11 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     let killerName = "";
     if (killerSessionId) {
       const killer = this.spatial.findEntityBySessionId(killerSessionId);
-      killerName = killer ? (isPlayer(killer) ? killer.name : killer.type) : "";
+      killerName = killer
+        ? killer instanceof Player
+          ? killer.name
+          : killer.type
+        : "";
     }
 
     this.broadcast(ServerMessageType.KillFeed, {

@@ -3,7 +3,6 @@ import {
   TileMap,
   Direction,
   NpcType,
-  ServerMessages,
   BroadcastFn,
   NPC_RESPAWN_TIME_MS,
   AGGRO_RANGE,
@@ -11,17 +10,11 @@ import {
   NpcState,
 } from "@abraxas/shared";
 import { Npc } from "../schema/Npc";
-import { Player } from "../schema/Player";
 import { GameState } from "../schema/GameState";
 import { MovementSystem } from "./MovementSystem";
 import { CombatSystem } from "./CombatSystem";
 import { logger } from "../logger";
-import {
-  SpatialLookup,
-  getEntityPosition,
-  isAttackable,
-  Entity,
-} from "../utils/SpatialLookup";
+import { SpatialLookup, Entity } from "../utils/SpatialLookup";
 
 export class NpcSystem {
   private respawns: { type: string; deadAt: number }[] = [];
@@ -138,18 +131,18 @@ export class NpcSystem {
     if (npc.type === "merchant") return; // Merchants don't aggro
 
     // Look for targets
-    const players = this.spatial.findEntitiesInRadius(
+    const entities = this.spatial.findEntitiesInRadius(
       npc.tileX,
       npc.tileY,
       AGGRO_RANGE,
     );
     let nearest: Entity | null = null;
     let minDist = Infinity;
-    const npcPos = getEntityPosition(npc);
+    const npcPos = npc.getPosition();
 
-    for (const entity of players) {
-      if (isAttackable(entity)) {
-        const dist = MathUtils.dist(npcPos, getEntityPosition(entity));
+    for (const entity of entities) {
+      if (entity.isAttackable()) {
+        const dist = MathUtils.dist(npcPos, entity.getPosition());
         if (dist < minDist) {
           minDist = dist;
           nearest = entity;
@@ -174,14 +167,14 @@ export class NpcSystem {
     const target = this.spatial.findEntityBySessionId(npc.targetId);
 
     // Target lost or dead
-    if (!target || !isAttackable(target)) {
+    if (!target || !target.isAttackable()) {
       npc.targetId = "";
       npc.state = NpcState.IDLE;
       return;
     }
 
-    const npcPos = getEntityPosition(npc);
-    const targetPos = getEntityPosition(target);
+    const npcPos = npc.getPosition();
+    const targetPos = target.getPosition();
     const dist = MathUtils.manhattanDist(npcPos, targetPos);
     const stats = NPC_STATS[npc.type];
 
@@ -297,13 +290,13 @@ export class NpcSystem {
 
   private updateAttack(npc: Npc, now: number, broadcast: BroadcastFn): void {
     const target = this.spatial.findEntityBySessionId(npc.targetId);
-    if (!target || !isAttackable(target)) {
+    if (!target || !target.isAttackable()) {
       npc.state = NpcState.IDLE;
       return;
     }
 
-    const npcPos = getEntityPosition(npc);
-    const targetPos = getEntityPosition(target);
+    const npcPos = npc.getPosition();
+    const targetPos = target.getPosition();
     const dist = MathUtils.manhattanDist(npcPos, targetPos);
     const stats = NPC_STATS[npc.type];
 

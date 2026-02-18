@@ -1,7 +1,8 @@
 import { type, ArraySchema, view } from "@colyseus/schema";
 import { Char } from "./Char";
 import { InventoryItem } from "./InventoryItem";
-import type { ClassType } from "@abraxas/shared";
+import { CLASS_STATS } from "@abraxas/shared";
+import type { ClassType, ClassStats } from "@abraxas/shared";
 
 export class Player extends Char {
   // ── Shared (visible to all clients) ─────────────────────────────────────
@@ -40,4 +41,8 @@ export class Player extends Char {
   @view() @type("string") equipShield: string = "";
   @view() @type("string") equipHelmet: string = "";
   @view() @type("string") equipRing: string = "";
+
+  getStats(): ClassStats {
+    return CLASS_STATS[this.classType];
+  }
 }

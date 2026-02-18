@@ -16,13 +16,8 @@ import type {
   EntityCombatState,
 } from "@abraxas/shared";
 import type { BuffSystem } from "./BuffSystem";
-import {
-  SpatialLookup,
-  getEntityStats,
-  getEntityPosition,
-  isPlayer,
-  Entity,
-} from "../utils/SpatialLookup";
+import { SpatialLookup, Entity } from "../utils/SpatialLookup";
+import { Player } from "../schema/Player";
 
 import {
   ServerMessages,
@@ -90,7 +85,7 @@ export class CombatSystem {
     sendToClient?: SendToClientFn,
   ): boolean {
     const cs = this.getCombatState(attacker.sessionId);
-    const stats = getEntityStats(attacker);
+    const stats = attacker.getStats();
     if (!stats) return false;
 
     // Can't attack while stunned
@@ -145,7 +140,7 @@ export class CombatSystem {
         sendToClient?.(ServerMessageType.InvalidTarget);
         return false;
       }
-      const dist = MathUtils.manhattanDist(getEntityPosition(attacker), {
+      const dist = MathUtils.manhattanDist(attacker.getPosition(), {
         x: target.tileX,
         y: target.tileY,
       });
@@ -198,7 +193,7 @@ export class CombatSystem {
     sendToClient?: SendToClientFn,
   ): boolean {
     const cs = this.getCombatState(caster.sessionId);
-    const stats = getEntityStats(caster);
+    const stats = caster.getStats();
     if (!stats) return false;
 
     const spell = SPELLS[spellId];
@@ -250,14 +245,14 @@ export class CombatSystem {
     }
 
     // Check mana (NPCs have no mana pool; their spells always have manaCost 0)
-    if (isPlayer(caster) && caster.mana < spell.manaCost) {
+    if (caster instanceof Player && caster.mana < spell.manaCost) {
       sendToClient?.(ServerMessageType.Error, { message: "Not enough mana" });
       return false;
     }
 
     // Self-target spells (range 0) don't need range check
     if (spell.rangeTiles > 0) {
-      const dist = MathUtils.manhattanDist(getEntityPosition(caster), {
+      const dist = MathUtils.manhattanDist(caster.getPosition(), {
         x: targetTileX,
         y: targetTileY,
       });
@@ -274,7 +269,7 @@ export class CombatSystem {
     }
 
     // Deduct mana at cast start (players only)
-    if (isPlayer(caster)) caster.mana -= spell.manaCost;
+    if (caster instanceof Player) caster.mana -= spell.manaCost;
 
     cs.lastGcdMs = now;
     cs.spellCooldowns.set(spellId, now);
@@ -416,7 +411,7 @@ export class CombatSystem {
     onDeath: (entity: Entity, killerSessionId: string) => void,
     now: number,
   ): void {
-    const stats = getEntityStats(attacker)!;
+    const stats = attacker.getStats()!;
     const target = this.spatial.findEntityAtTile(
       windup.targetTileX,
       windup.targetTileY,

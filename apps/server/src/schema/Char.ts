@@ -1,5 +1,6 @@
 import { Schema, type } from "@colyseus/schema";
 import { Direction } from "@abraxas/shared";
+import type { NpcStats } from "@abraxas/shared";
 
 /**
  * Base schema shared by both Player and Npc.
@@ -29,4 +30,17 @@ export abstract class Char extends Schema {
   @type("boolean") alive: boolean = true;
   @type("boolean") stealthed: boolean = false;
   @type("boolean") stunned: boolean = false;
+
+  /** Returns the combat stats for this entity (class or NPC stats). */
+  abstract getStats(): NpcStats | undefined;
+
+  /** Returns the tile position as a plain object. */
+  getPosition() {
+    return { x: this.tileX, y: this.tileY };
+  }
+
+  /** True when the entity can be targeted (alive and not stealthed). */
+  isAttackable() {
+    return this.alive && !this.stealthed;
+  }
 }

@@ -1,6 +1,7 @@
 import { type } from "@colyseus/schema";
 import { Char } from "./Char";
-import type { NpcType } from "@abraxas/shared";
+import { NPC_STATS } from "@abraxas/shared";
+import type { NpcType, NpcStats } from "@abraxas/shared";
 
 export class Npc extends Char {
   @type("string") type: NpcType = "orc";
@@ -13,4 +14,8 @@ export class Npc extends Char {
   @type("uint8") str: number = 0;
   @type("uint8") agi: number = 0;
   @type("uint8") intStat: number = 0;
+
+  getStats(): NpcStats | undefined {
+    return NPC_STATS[this.type];
+  }
 }
