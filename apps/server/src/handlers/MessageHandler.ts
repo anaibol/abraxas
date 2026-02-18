@@ -6,6 +6,7 @@ import { MovementSystem } from "../systems/MovementSystem";
 import { CombatSystem } from "../systems/CombatSystem";
 import { InventorySystem } from "../systems/InventorySystem";
 import { DropSystem } from "../systems/DropSystem";
+import { SocialSystem } from "../systems/SocialSystem";
 import { TileMap, Direction, EquipmentSlot, ITEMS, MERCHANT_INVENTORY } from "@abraxas/shared";
 import { ServerMessages } from "@abraxas/shared";
 
@@ -26,6 +27,7 @@ export class MessageHandler {
         private combat: CombatSystem,
         private inventorySystem: InventorySystem,
         private drops: DropSystem,
+        private social: SocialSystem,
         private broadcast: BroadcastCallback,
         private isTileOccupied: (x: number, y: number, excludeId: string) => boolean
     ) {}

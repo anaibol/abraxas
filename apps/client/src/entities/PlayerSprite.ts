@@ -70,11 +70,11 @@ export class PlayerSprite {
         const defaultStats = CLASS_STATS.warrior;
          this.pixelsPerSecond = defaultStats.speedTilesPerSecond * TILE_SIZE;
          this.maxHp = defaultStats.hp;
-         this.maxMana = defaultStats.mana;
+         this.maxMana = defaultStats.mana || 0;
     } else {
         this.pixelsPerSecond = stats.speedTilesPerSecond * TILE_SIZE;
         this.maxHp = stats.hp;
-        this.maxMana = stats.mana;
+        this.maxMana = stats.mana || 0;
     }
 
     const res = scene.registry.get("aoResolver");

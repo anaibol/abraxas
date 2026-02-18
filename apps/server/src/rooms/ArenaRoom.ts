@@ -263,6 +263,9 @@ export class ArenaRoom extends Room<GameState> {
   async onLeave(client: Client) {
     const player = this.state.players.get(client.sessionId);
     if (player) {
+        // Clean up party membership
+        this.messageHandler.handleLeaveParty(client);
+
         const inventory: InventoryEntry[] = [];
         player.inventory.forEach(item => {
             inventory.push({ itemId: item.itemId, quantity: item.quantity, slotIndex: item.slotIndex });

@@ -1,7 +1,7 @@
 import { Client } from "@colyseus/core";
 import { GameState } from "../schema/GameState";
 import { Player } from "../schema/Player";
-import { Party } from "./Party";
+import { Party } from "../schema/Party";
 import { ArraySchema } from "@colyseus/schema";
 import { logger } from "../logger";
 
