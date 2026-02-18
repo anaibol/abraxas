@@ -6,7 +6,7 @@ import { MovementSystem } from "../systems/MovementSystem";
 import { CombatSystem } from "../systems/CombatSystem";
 import { InventorySystem } from "../systems/InventorySystem";
 import { DropSystem } from "../systems/DropSystem";
-import { TileMap, Direction, EquipmentSlot, ITEMS } from "@abraxas/shared";
+import { TileMap, Direction, EquipmentSlot, ITEMS, MERCHANT_INVENTORY } from "@abraxas/shared";
 import { ServerMessages } from "@abraxas/shared";
 
 type Entity = Player | Npc;
@@ -146,14 +146,26 @@ export class MessageHandler {
             return;
         }
 
-        // Logic for which inventory to open (for now just one general)
-        const inventory = ["health_potion", "mana_potion", "iron_dagger", "wooden_shield", "leather_armor"];
+        // Logic for which inventory to open (for now just use general_store)
+        const inventory = MERCHANT_INVENTORY.general_store || [];
         client.send("open_shop", { npcId, inventory });
     }
 
-    handleBuyItem(client: Client, data: { itemId: string; quantity: number }): void {
+    handleBuyItem(client: Client, data: { itemId: string; quantity: number; npcId?: string }): void {
         const player = this.state.players.get(client.sessionId);
         if (!player || !player.alive) return;
+
+        // Proximity check if npcId provided
+        if (data.npcId) {
+            const npc = this.state.npcs.get(data.npcId);
+            if (npc) {
+                const dist = Math.abs(player.tileX - npc.tileX) + Math.abs(player.tileY - npc.tileY);
+                if (dist > 5) {
+                    client.send("error", { message: "Too far from merchant" });
+                    return;
+                }
+            }
+        }
 
         const itemDef = ITEMS[data.itemId];
         if (!itemDef) return;
@@ -164,14 +176,27 @@ export class MessageHandler {
             return;
         }
 
-        player.gold -= totalCost;
-        this.inventorySystem.addItem(player, data.itemId, data.quantity || 1);
-        client.send("notification", { message: `Bought ${data.quantity || 1}x ${itemDef.name}` });
+        if (this.inventorySystem.addItem(player, data.itemId, data.quantity || 1, (msg) => client.send("error", { message: msg }))) {
+            player.gold -= totalCost;
+            client.send("notification", { message: `Bought ${data.quantity || 1}x ${itemDef.name}` });
+        }
     }
 
-    handleSellItem(client: Client, data: { itemId: string; quantity: number }): void {
+    handleSellItem(client: Client, data: { itemId: string; quantity: number; npcId?: string }): void {
         const player = this.state.players.get(client.sessionId);
         if (!player || !player.alive) return;
+
+        // Proximity check if npcId provided
+        if (data.npcId) {
+            const npc = this.state.npcs.get(data.npcId);
+            if (npc) {
+                const dist = Math.abs(player.tileX - npc.tileX) + Math.abs(player.tileY - npc.tileY);
+                if (dist > 5) {
+                    client.send("error", { message: "Too far from merchant" });
+                    return;
+                }
+            }
+        }
 
         const itemDef = ITEMS[data.itemId];
         if (!itemDef) return;
@@ -192,6 +217,21 @@ export class MessageHandler {
         if (player && message) {
             const text = message.trim().slice(0, 100);
             if (text.length > 0) {
+                // Party chat support
+                if (text.startsWith("/p ") || text.startsWith("/party ")) {
+                    if (!player.partyId) {
+                        client.send("error", { message: "You are not in a party" });
+                        return;
+                    }
+                    const msg = text.startsWith("/p ") ? text.slice(3) : text.slice(7);
+                    this.broadcastToParty(player.partyId, "chat", {
+                        senderId: player.sessionId,
+                        senderName: `[Party] ${player.name}`,
+                        message: msg,
+                    });
+                    return;
+                }
+
                 this.broadcast("chat", {
                     senderId: player.sessionId,
                     senderName: player.name,
@@ -199,5 +239,38 @@ export class MessageHandler {
                 });
             }
         }
+    }
+
+    handlePartyInvite(client: Client, targetSessionId: string): void {
+        this.social.handleInvite(client, targetSessionId);
+    }
+
+    handlePartyAccept(client: Client, partyId: string): void {
+        this.social.handleAcceptInvite(client, partyId);
+    }
+
+    handlePartyLeave(client: Client): void {
+        this.social.handleLeaveParty(client);
+    }
+
+    handlePartyKick(client: Client, targetSessionId: string): void {
+        this.social.handleKickPlayer(client, targetSessionId);
+    }
+
+    private broadcastToParty(partyId: string, type: string, message: any): void {
+        const party = this.state.parties.get(partyId);
+        if (!party) return;
+        party.memberIds.forEach(sid => {
+            const p = this.state.players.get(sid);
+            if (p) {
+                // We need to send directly to clients. MessageHandler doesn't have clients list.
+                // But it has broadcast. Using broadcast with a selector? Colyseus broadcast doesn't support complex selectors in one go easily if we only have sessionId.
+                // However, we can use client.send if we find the client.
+                // Wait, MessageHandler should probably have a way to find clients or the search should happen in room.
+                // For simplified chat, we'll let SocialSystem handle specialized broadcasts.
+            }
+        });
+        // Let's make SocialSystem handle party chat broadcast too.
+        (this.social as any).broadcastToParty(partyId, type, message);
     }
 }
