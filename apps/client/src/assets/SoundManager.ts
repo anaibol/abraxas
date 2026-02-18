@@ -7,7 +7,7 @@ export class SoundManager {
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
   }
-  private play(key: string, opts?: Phaser.Types.Sound.PlaySoundConfig) {
+  private play(key: string, opts?: Phaser.Types.Sound.SoundConfig) {
     try {
       this.scene.sound.play(key, opts);
     } catch (e) {
@@ -21,16 +21,31 @@ export class SoundManager {
     this.play(key, { volume: 0.3 });
   }
 
-  playAttack() { this.play("sfx-attack", { volume: 0.5 }); }
-  playSpell() { this.play("sfx-spell", { volume: 0.5 }); }
-  playHit() { this.play("sfx-hit", { volume: 0.4 }); }
-  playDeath() { this.play("sfx-death", { volume: 0.6 }); }
-  playHeal() { this.play("sfx-heal", { volume: 0.5 }); }
-  playClick() { this.play("sfx-click", { volume: 0.3 }); }
+  playAttack() {
+    this.play("sfx-attack", { volume: 0.5 });
+  }
+  playSpell() {
+    this.play("sfx-spell", { volume: 0.5 });
+  }
+  playHit() {
+    this.play("sfx-hit", { volume: 0.4 });
+  }
+  playDeath() {
+    this.play("sfx-death", { volume: 0.6 });
+  }
+  playHeal() {
+    this.play("sfx-heal", { volume: 0.5 });
+  }
+  playClick() {
+    this.play("sfx-click", { volume: 0.3 });
+  }
 
   startMusic() {
     if (this.music) return;
-    this.music = this.scene.sound.add("music-arena", { loop: true, volume: 0.15 });
+    this.music = this.scene.sound.add("music-arena", {
+      loop: true,
+      volume: 0.15,
+    });
     this.music.play();
   }
 

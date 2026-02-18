@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import type { Room } from "colyseus.js";
-import type { NetworkManager, WelcomeData } from "../network/NetworkManager";
+import type { NetworkManager } from "../network/NetworkManager";
+import type { WelcomeData } from "@abraxas/shared";
 import { InputHandler } from "../systems/InputHandler";
 import { CameraController } from "../systems/CameraController";
 import { SoundManager } from "../assets/SoundManager";
@@ -12,7 +13,6 @@ import { SpriteManager } from "../managers/SpriteManager";
 import { EffectManager } from "../managers/EffectManager";
 import { GameEventHandler } from "../handlers/GameEventHandler";
 import { AudioManager } from "../managers/AudioManager";
-
 
 import { GameState } from "../../../server/src/schema/GameState";
 import { Player } from "../../../server/src/schema/Player";
@@ -41,7 +41,6 @@ export class GameScene extends Phaser.Scene {
   private soundManager!: SoundManager;
   private audioManager!: AudioManager;
 
-
   private collisionGrid: number[][] = [];
   private lastSidebarUpdate = 0;
 
@@ -63,7 +62,7 @@ export class GameScene extends Phaser.Scene {
     onKillFeed?: KillFeedCallback,
     onConsoleMessage?: ConsoleCallback,
     onReady?: () => void,
-    onError?: (message: string) => void
+    onError?: (message: string) => void,
   ) {
     super({ key: "GameScene" });
     this.network = network;
@@ -79,7 +78,7 @@ export class GameScene extends Phaser.Scene {
     this.welcome = this.network.getWelcomeData();
     const resolver = this.registry.get("aoResolver");
     if (resolver instanceof AoGrhResolver) {
-        this.resolver = resolver;
+      this.resolver = resolver;
     }
 
     const worldW = this.welcome.mapWidth * TILE_SIZE;
@@ -94,14 +93,15 @@ export class GameScene extends Phaser.Scene {
 
     // Audio Chat
     this.audioManager = new AudioManager();
-    this.audioManager.init().catch(err => console.warn("Audio Context init failed:", err));
+    this.audioManager
+      .init()
+      .catch((err) => console.warn("Audio Context init failed:", err));
 
     this.network.onAudioData = (sessionId, data) => {
       this.audioManager.playAudioChunk(data);
       // Show speaking indicator via SpriteManager helper
       this.spriteManager.setSpeaking(sessionId, true, 300);
     };
-
 
     // Disable right-click context menu
     this.input.mouse?.disableContextMenu();
@@ -110,17 +110,21 @@ export class GameScene extends Phaser.Scene {
     this.cameraController = new CameraController(
       this.cameras.main,
       worldW,
-      worldH
+      worldH,
     );
 
     // Managers
     this.spriteManager = new SpriteManager(
-        this, 
-        this.cameraController, 
-        () => this.room.state, 
-        () => this.room.sessionId
+      this,
+      this.cameraController,
+      () => this.room.state,
+      () => this.room.sessionId,
     );
-    this.effectManager = new EffectManager(this, this.resolver, this.spriteManager);
+    this.effectManager = new EffectManager(
+      this,
+      this.resolver,
+      this.spriteManager,
+    );
 
     // Input setup
     const localPlayer = this.room.state.players.get(this.room.sessionId);
@@ -134,42 +138,48 @@ export class GameScene extends Phaser.Scene {
       (rangeTiles) => this.onEnterTargeting(rangeTiles),
       () => this.onExitTargeting(),
       (tileX, tileY) => {
-          // Find if there is an NPC at this tile
-          let targetNpcId: string | null = null;
-          for (const [id, npc] of this.room.state.npcs) {
-              if (npc.tileX === tileX && npc.tileY === tileY) {
-                  targetNpcId = id;
-                  break;
-              }
+        // Find if there is an NPC at this tile
+        let targetNpcId: string | null = null;
+        for (const [id, npc] of this.room.state.npcs) {
+          if (npc.tileX === tileX && npc.tileY === tileY) {
+            targetNpcId = id;
+            break;
           }
-          if (targetNpcId) {
-              this.network.sendInteract(targetNpcId);
-          }
+        }
+        if (targetNpcId) {
+          this.network.sendInteract(targetNpcId);
+        }
       },
-      () => this.audioManager.startRecording((data) => this.network.sendAudio(data)),
-      () => this.audioManager.stopRecording()
+      () =>
+        this.audioManager.startRecording((data) =>
+          this.network.sendAudio(data),
+        ),
+      () => this.audioManager.stopRecording(),
     );
 
-
     // Listen for player add/remove/change
-    (this.room.state.players as any).onAdd((player: Player, sessionId: string) => {
-      this.spriteManager.addPlayer(player, sessionId);
-    });
+    (this.room.state.players as any).onAdd(
+      (player: Player, sessionId: string) => {
+        this.spriteManager.addPlayer(player, sessionId);
+      },
+    );
 
-    (this.room.state.players as any).onRemove((_player: Player, sessionId: string) => {
-      this.spriteManager.removePlayer(sessionId);
-    });
+    (this.room.state.players as any).onRemove(
+      (_player: Player, sessionId: string) => {
+        this.spriteManager.removePlayer(sessionId);
+      },
+    );
 
     // Game Event Handler
     const gameEventHandler = new GameEventHandler(
-        this.room,
-        this.spriteManager,
-        this.effectManager,
-        this.soundManager,
-        this.inputHandler,
-        this.onConsoleMessage,
-        this.onKillFeed,
-        this.onError
+      this.room,
+      this.spriteManager,
+      this.effectManager,
+      this.soundManager,
+      this.inputHandler,
+      this.onConsoleMessage,
+      this.onKillFeed,
+      this.onError,
     );
     gameEventHandler.setupListeners();
 
@@ -184,11 +194,11 @@ export class GameScene extends Phaser.Scene {
 
     // NPCs
     (this.room.state.npcs as any).onAdd((npc: Npc, id: string) => {
-        this.spriteManager.addNpc(npc, id);
+      this.spriteManager.addNpc(npc, id);
     });
 
     (this.room.state.npcs as any).onRemove((_npc: Npc, id: string) => {
-        this.spriteManager.removeNpc(id);
+      this.spriteManager.removeNpc(id);
     });
 
     // Debug text
@@ -231,32 +241,32 @@ export class GameScene extends Phaser.Scene {
     if (this.lastSidebarUpdate >= 100) {
       this.lastSidebarUpdate = 0;
       const localPlayer = this.room.state.players.get(this.room.sessionId);
-        if (localPlayer) {
-          const inventory = this.buildInventory(localPlayer);
-          this.onStateUpdate({
-            name: localPlayer.name,
-            classType: localPlayer.classType,
-            hp: localPlayer.hp,
-            maxHp: localPlayer.maxHp,
-            mana: localPlayer.mana,
-            maxMana: localPlayer.maxMana,
-            alive: localPlayer.alive,
-            str: localPlayer.str,
-            agi: localPlayer.agi,
-            intStat: localPlayer.intStat,
-            gold: localPlayer.gold,
-            stealthed: localPlayer.stealthed,
-            stunned: localPlayer.stunned,
-            inventory,
-            equipment: {
-              weapon: localPlayer.equipWeapon ?? "",
-              armor: localPlayer.equipArmor ?? "",
-              shield: localPlayer.equipShield ?? "",
-              helmet: localPlayer.equipHelmet ?? "",
-              ring: localPlayer.equipRing ?? "",
-            },
-          });
-        }
+      if (localPlayer) {
+        const inventory = this.buildInventory(localPlayer);
+        this.onStateUpdate({
+          name: localPlayer.name,
+          classType: localPlayer.classType,
+          hp: localPlayer.hp,
+          maxHp: localPlayer.maxHp,
+          mana: localPlayer.mana,
+          maxMana: localPlayer.maxMana,
+          alive: localPlayer.alive,
+          str: localPlayer.str,
+          agi: localPlayer.agi,
+          intStat: localPlayer.intStat,
+          gold: localPlayer.gold,
+          stealthed: localPlayer.stealthed,
+          stunned: localPlayer.stunned,
+          inventory,
+          equipment: {
+            weapon: localPlayer.equipWeapon ?? "",
+            armor: localPlayer.equipArmor ?? "",
+            shield: localPlayer.equipShield ?? "",
+            helmet: localPlayer.equipHelmet ?? "",
+            ring: localPlayer.equipRing ?? "",
+          },
+        });
+      }
     }
 
     // Camera
@@ -271,7 +281,7 @@ export class GameScene extends Phaser.Scene {
     // Update debug text
     if (this.debugText && localSprite) {
       this.debugText.setText(
-        `X: ${localSprite.predictedTileX} Y: ${localSprite.predictedTileY}`
+        `X: ${localSprite.predictedTileX} Y: ${localSprite.predictedTileY}`,
       );
     }
   }
@@ -316,7 +326,10 @@ export class GameScene extends Phaser.Scene {
     const cy = localSprite.predictedTileY;
     const range = this.targetingRangeTiles;
 
-    if (this.rangeOverlay && (cx !== this.lastOverlayCenterX || cy !== this.lastOverlayCenterY)) {
+    if (
+      this.rangeOverlay &&
+      (cx !== this.lastOverlayCenterX || cy !== this.lastOverlayCenterY)
+    ) {
       this.lastOverlayCenterX = cx;
       this.lastOverlayCenterY = cy;
       this.rangeOverlay.clear();
@@ -328,7 +341,13 @@ export class GameScene extends Phaser.Scene {
           if (Math.abs(dx) + Math.abs(dy) > range) continue;
           const tx = cx + dx;
           const ty = cy + dy;
-          if (tx < 0 || ty < 0 || tx >= this.welcome.mapWidth || ty >= this.welcome.mapHeight) continue;
+          if (
+            tx < 0 ||
+            ty < 0 ||
+            tx >= this.welcome.mapWidth ||
+            ty >= this.welcome.mapHeight
+          )
+            continue;
           if (this.collisionGrid[ty]?.[tx] === 1) continue;
           const px = tx * TILE_SIZE;
           const py = ty * TILE_SIZE;
@@ -346,7 +365,7 @@ export class GameScene extends Phaser.Scene {
         mouseTile.x * TILE_SIZE,
         mouseTile.y * TILE_SIZE,
         TILE_SIZE,
-        TILE_SIZE
+        TILE_SIZE,
       );
     }
   }
@@ -355,14 +374,23 @@ export class GameScene extends Phaser.Scene {
     const localSprite = this.spriteManager.getSprite(this.room.sessionId);
     if (!localSprite) return;
 
-    this.effectManager.showNotification(this.room.sessionId, "Invalid target", "#ff8800");
+    this.effectManager.showNotification(
+      this.room.sessionId,
+      "Invalid target",
+      "#ff8800",
+    );
   }
 
   private buildInventory(localPlayer: any) {
-    const inventory: { itemId: string; quantity: number; slotIndex: number }[] = [];
+    const inventory: { itemId: string; quantity: number; slotIndex: number }[] =
+      [];
     if (!localPlayer.inventory) return inventory;
     for (const item of localPlayer.inventory) {
-      inventory.push({ itemId: item.itemId, quantity: item.quantity, slotIndex: item.slotIndex });
+      inventory.push({
+        itemId: item.itemId,
+        quantity: item.quantity,
+        slotIndex: item.slotIndex,
+      });
     }
     return inventory;
   }
@@ -416,16 +444,17 @@ export class GameScene extends Phaser.Scene {
     const nextY = sprite.predictedTileY + delta.dy;
 
     const { mapWidth, mapHeight } = this.welcome;
-    if (nextX < 0 || nextX >= mapWidth || nextY < 0 || nextY >= mapHeight) return;
+    if (nextX < 0 || nextX >= mapWidth || nextY < 0 || nextY >= mapHeight)
+      return;
     if (this.collisionGrid[nextY]?.[nextX] === 1) return;
 
     // Check collision with other entities (using room state as source of truth)
     for (const [sid, p] of this.room.state.players) {
-        if (sid === this.room.sessionId) continue;
-        if (p.alive && p.tileX === nextX && p.tileY === nextY) return;
+      if (sid === this.room.sessionId) continue;
+      if (p.alive && p.tileX === nextX && p.tileY === nextY) return;
     }
     for (const [sid, n] of this.room.state.npcs) {
-        if (n.alive && n.tileX === nextX && n.tileY === nextY) return;
+      if (n.alive && n.tileX === nextX && n.tileY === nextY) return;
     }
 
     sprite.predictMove(direction);
