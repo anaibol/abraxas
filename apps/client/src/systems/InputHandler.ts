@@ -25,7 +25,7 @@ export interface TargetingState {
 
 export class InputHandler {
   private scene: Phaser.Scene;
-  private network: NetworkManager;
+  private network: NetworkManager<any>;
   private classType: string;
   private meleeRange: number;
   private moveKeys: Record<number, Phaser.Input.Keyboard.Key> = {};
@@ -47,7 +47,7 @@ export class InputHandler {
 
   constructor(
     scene: Phaser.Scene,
-    network: NetworkManager,
+    network: NetworkManager<any>,
     classType: string,
     tileSize: number,
     onLocalMove?: (direction: Direction) => void,
