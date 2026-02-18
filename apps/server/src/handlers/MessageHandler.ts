@@ -6,7 +6,7 @@ import { MovementSystem } from "../systems/MovementSystem";
 import { CombatSystem } from "../systems/CombatSystem";
 import { InventorySystem } from "../systems/InventorySystem";
 import { DropSystem } from "../systems/DropSystem";
-import type { TileMap, Direction, EquipmentSlot } from "@abraxas/shared";
+import { TileMap, Direction, EquipmentSlot, ITEMS } from "@abraxas/shared";
 import { ServerMessages } from "@abraxas/shared";
 
 type Entity = Player | Npc;
@@ -129,6 +129,61 @@ export class MessageHandler {
                 this.roomId,
                 this.state.tick
             );
+        }
+    }
+
+    handleInteract(client: Client, npcId: string): void {
+        const player = this.state.players.get(client.sessionId);
+        if (!player || !player.alive) return;
+
+        const npc = this.state.npcs.get(npcId);
+        if (!npc || npc.type !== "merchant") return;
+
+        // Check proximity
+        const dist = Math.abs(player.tileX - npc.tileX) + Math.abs(player.tileY - npc.tileY);
+        if (dist > 3) {
+            client.send("error", { message: "Too far from merchant" });
+            return;
+        }
+
+        // Logic for which inventory to open (for now just one general)
+        const inventory = ["health_potion", "mana_potion", "iron_dagger", "wooden_shield", "leather_armor"];
+        client.send("open_shop", { npcId, inventory });
+    }
+
+    handleBuyItem(client: Client, data: { itemId: string; quantity: number }): void {
+        const player = this.state.players.get(client.sessionId);
+        if (!player || !player.alive) return;
+
+        const itemDef = ITEMS[data.itemId];
+        if (!itemDef) return;
+
+        const totalCost = itemDef.goldValue * (data.quantity || 1);
+        if (player.gold < totalCost) {
+            client.send("error", { message: "Not enough gold" });
+            return;
+        }
+
+        player.gold -= totalCost;
+        this.inventorySystem.addItem(player, data.itemId, data.quantity || 1);
+        client.send("notification", { message: `Bought ${data.quantity || 1}x ${itemDef.name}` });
+    }
+
+    handleSellItem(client: Client, data: { itemId: string; quantity: number }): void {
+        const player = this.state.players.get(client.sessionId);
+        if (!player || !player.alive) return;
+
+        const itemDef = ITEMS[data.itemId];
+        if (!itemDef) return;
+
+        // Base sell value is 50% of buy value
+        const sellValue = Math.floor(itemDef.goldValue * 0.5) * (data.quantity || 1);
+        
+        if (this.inventorySystem.removeItem(player, data.itemId, data.quantity || 1)) {
+            player.gold += sellValue;
+            client.send("notification", { message: `Sold ${data.quantity || 1}x ${itemDef.name} for ${sellValue} gold` });
+        } else {
+            client.send("error", { message: "Item not found in inventory" });
         }
     }
 

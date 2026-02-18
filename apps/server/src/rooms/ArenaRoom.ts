@@ -113,6 +113,18 @@ export class ArenaRoom extends Room<GameState> {
         this.messageHandler.handleChat(client, data.message);
     });
 
+    this.onMessage("interact", (client, data: { npcId: string }) => {
+        this.messageHandler.handleInteract(client, data.npcId);
+    });
+
+    this.onMessage("buy_item", (client, data: { itemId: string; quantity: number }) => {
+        this.messageHandler.handleBuyItem(client, data);
+    });
+
+    this.onMessage("sell_item", (client, data: { itemId: string; quantity: number }) => {
+        this.messageHandler.handleSellItem(client, data);
+    });
+
     this.onMessage("ping", (client) => {
       client.send("pong", { serverTime: Date.now() });
     });
