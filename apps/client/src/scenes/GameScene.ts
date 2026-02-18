@@ -158,17 +158,13 @@ export class GameScene extends Phaser.Scene {
     );
 
     // Listen for player add/remove/change
-    (this.room.state.players as any).onAdd(
-      (player: Player, sessionId: string) => {
-        this.spriteManager.addPlayer(player, sessionId);
-      },
-    );
+    this.room.state.players.onAdd((player, sessionId) => {
+      this.spriteManager.addPlayer(player, sessionId);
+    });
 
-    (this.room.state.players as any).onRemove(
-      (_player: Player, sessionId: string) => {
-        this.spriteManager.removePlayer(sessionId);
-      },
-    );
+    this.room.state.players.onRemove((_player, sessionId) => {
+      this.spriteManager.removePlayer(sessionId);
+    });
 
     // Game Event Handler
     const gameEventHandler = new GameEventHandler(
@@ -184,20 +180,20 @@ export class GameScene extends Phaser.Scene {
     gameEventHandler.setupListeners();
 
     // Drops
-    (this.room.state.drops as any).onAdd((drop: Drop, id: string) => {
+    this.room.state.drops.onAdd((drop, id) => {
       this.addDrop(drop, id);
     });
 
-    (this.room.state.drops as any).onRemove((_drop: Drop, id: string) => {
+    this.room.state.drops.onRemove((_drop, id) => {
       this.removeDrop(id);
     });
 
     // NPCs
-    (this.room.state.npcs as any).onAdd((npc: Npc, id: string) => {
+    this.room.state.npcs.onAdd((npc, id) => {
       this.spriteManager.addNpc(npc, id);
     });
 
-    (this.room.state.npcs as any).onRemove((_npc: Npc, id: string) => {
+    this.room.state.npcs.onRemove((_npc, id) => {
       this.spriteManager.removeNpc(id);
     });
 
