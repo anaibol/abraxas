@@ -64,12 +64,18 @@ export class NetworkManager {
     token?: string,
     mapName?: string,
   ): Promise<ClientRoom> {
+    // Send the JWT as an Authorization header (static onAuth reads it as `token`).
+    // This avoids passing credentials in the room options payload.
+    if (token) {
+      this.client.auth.token = token;
+    }
+
     // Passing the GameState class (not just its type) tells the SDK the client
     // already knows the schema shape → server skips sending the full definition,
     // reducing join bandwidth.
     this.room = await this.client.joinOrCreate(
       "arena",
-      { name, classType, token, mapName },
+      { name, classType, mapName },
       GameState,
     );
 

@@ -4,6 +4,7 @@ import {
   validate,
   type Messages,
   CloseCode,
+  type AuthContext,
 } from "@colyseus/core";
 import { z } from "zod";
 import { StateView } from "@colyseus/schema";
@@ -274,7 +275,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
   static async onAuth(
     token: string,
     _options: JoinOptions & { mapName?: string },
-    context: { ip?: string },
+    context: AuthContext,
   ) {
     if (!token) {
       logger.error({ message: "[ArenaRoom] onAuth: No token provided" });

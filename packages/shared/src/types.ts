@@ -32,7 +32,6 @@ export type NpcType =
 export interface JoinOptions {
   name: string;
   classType: ClassType;
-  token?: string;
 }
 
 export type QuestType = "kill" | "collect" | "talk";
