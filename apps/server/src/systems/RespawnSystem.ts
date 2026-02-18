@@ -17,11 +17,7 @@ interface PendingRespawn {
   respawnAt: number;
 }
 
-import { ServerMessageType, ServerMessages } from "@abraxas/shared";
-
-interface BroadcastFn {
-  <T extends ServerMessageType>(type: T, data: ServerMessages[T]): void;
-}
+import { BroadcastFn, ServerMessageType } from "@abraxas/shared";
 
 export class RespawnSystem {
   private pending: PendingRespawn[] = [];

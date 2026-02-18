@@ -114,17 +114,33 @@ describe("Arena multiplayer smoke test", () => {
 
     // Debug: Check seat reservation manually
     try {
-        console.log("TEST: Manual joinOrCreate request...");
-        const reservation: any = await clientA["createMatchMakeRequest"]("joinOrCreate", "arena", {
-            name: nameA,
-            classType: "warrior",
-            token: tokenA,
-            mapName: "arena.test"
+        console.log("TEST: Manual fetch joinOrCreate request...");
+        const response = await fetch(`http://localhost:${TEST_PORT}/matchmake/joinOrCreate/arena`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({
+                name: nameA,
+                classType: "warrior",
+                token: tokenA,
+                mapName: "arena.test"
+            })
         });
-        console.log("TEST: Reservation:", JSON.stringify(reservation, null, 2));
+        
+        console.log("TEST: Fetch status:", response.status, response.statusText);
+        const text = await response.text();
+        console.log("TEST: Fetch response:", text);
 
+        if (!response.ok) {
+             throw new Error(`Fetch failed: ${response.status} ${text}`);
+        }
+
+        const reservation = JSON.parse(text);
+        
         // Now try to consume it manually
-        const wsUrl = `ws://localhost:${TEST_PORT}/${reservation.room.processId}/${reservation.room.roomId}?sessionId=${reservation.sessionId}`;
+        const wsUrl = `ws://localhost:${TEST_PORT}/${reservation.processId}/${reservation.roomId}?sessionId=${reservation.sessionId}`;
         console.log("TEST: Connecting manual WS to:", wsUrl);
         
         const ws = new WebSocket(wsUrl);
