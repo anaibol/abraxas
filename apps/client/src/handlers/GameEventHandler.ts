@@ -45,11 +45,8 @@ export class GameEventHandler {
     private onAttackStart(data: ServerMessages["attack_start"]) {
         const sprite = this.spriteManager.getSprite(data.sessionId);
         if (sprite) {
-            sprite.container.setAlpha(0.7);
-            setTimeout(() => sprite.container.setAlpha(1), 100);
-            if (data.sessionId === this.room.sessionId) {
-                this.onConsoleMessage?.("You attacked!", "#cccccc");
-            }
+            this.spriteManager.pulseAlpha(data.sessionId, 0.7, 100);
+            if (data.sessionId === this.room.sessionId) this.onConsoleMessage?.("You attacked!", "#cccccc");
         }
         this.soundManager.playAttack();
     }
@@ -63,11 +60,8 @@ export class GameEventHandler {
     private onCastStart(data: ServerMessages["cast_start"]) {
         const sprite = this.spriteManager.getSprite(data.sessionId);
         if (sprite) {
-            sprite.container.setAlpha(0.8);
-            setTimeout(() => sprite.container.setAlpha(1), 140);
-            if (data.sessionId === this.room.sessionId) {
-                this.onConsoleMessage?.("You cast a spell!", "#aaaaff");
-            }
+            this.spriteManager.pulseAlpha(data.sessionId, 0.8, 140);
+            if (data.sessionId === this.room.sessionId) this.onConsoleMessage?.("You cast a spell!", "#aaaaff");
         }
         this.soundManager.playSpell();
     }
@@ -88,7 +82,7 @@ export class GameEventHandler {
     private onDeath(data: ServerMessages["death"]) {
         const sprite = this.spriteManager.getSprite(data.sessionId);
         if (sprite) {
-            sprite.container.setAlpha(0.3);
+            this.spriteManager.setAlpha(data.sessionId, 0.3);
         }
         if (data.sessionId === this.room.sessionId) {
             this.inputHandler.cancelTargeting();
@@ -100,7 +94,7 @@ export class GameEventHandler {
     private onRespawn(data: ServerMessages["respawn"]) {
         const sprite = this.spriteManager.getSprite(data.sessionId);
         if (sprite) {
-            sprite.container.setAlpha(1);
+            this.spriteManager.setAlpha(data.sessionId, 1);
             sprite.setTilePosition(data.tileX, data.tileY);
         }
         if (data.sessionId === this.room.sessionId) {
@@ -136,7 +130,7 @@ export class GameEventHandler {
     }
 
     private onInvalidTarget() {
-        this.effectManager.showFloatingText(this.room.sessionId, "Invalid target", "#ff8800");
+        this.effectManager.showNotification(this.room.sessionId, "Invalid target", "#ff8800");
     }
 
     private onLevelUp(data: ServerMessages["level_up"]) {

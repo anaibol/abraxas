@@ -22,6 +22,14 @@ export class NetworkManager<SC = unknown> {
     this.client = new Client(serverUrl ?? getServerUrl());
   }
 
+  private _send(type: string | number, payload?: any) {
+    try {
+      this.room?.send(type as any, payload);
+    } catch (e) {
+      // ignore if not connected
+    }
+  }
+
   public onWarp: ((data: { targetMap: string; targetX: number; targetY: number }) => void) | null = null;
 
   async connect(name: string, classType: ClassType, token?: string, mapName?: string): Promise<Room<SC>> {
@@ -54,7 +62,7 @@ export class NetworkManager<SC = unknown> {
   public onAudioData: ((sessionId: string, data: ArrayBuffer) => void) | null = null;
 
   sendAudio(data: ArrayBuffer) {
-    this.room?.send(ClientMessageType.Audio, data);
+    this._send(ClientMessageType.Audio, data);
   }
 
   getRoom(): Room<SC> {
@@ -72,82 +80,82 @@ export class NetworkManager<SC = unknown> {
   }
 
   sendMove(direction: Direction) {
-    this.room?.send(ClientMessageType.Move, { direction });
+    this._send(ClientMessageType.Move, { direction });
   }
 
   sendAttack(targetTileX?: number, targetTileY?: number) {
-    this.room?.send(ClientMessageType.Attack, { targetTileX, targetTileY });
+    this._send(ClientMessageType.Attack, { targetTileX, targetTileY });
   }
 
   sendCast(spellId: string, targetTileX: number, targetTileY: number) {
-    this.room?.send(ClientMessageType.Cast, { spellId, targetTileX, targetTileY });
+    this._send(ClientMessageType.Cast, { spellId, targetTileX, targetTileY });
   }
 
   sendPickup(dropId: string) {
-    this.room?.send(ClientMessageType.Pickup, { dropId });
+    this._send(ClientMessageType.Pickup, { dropId });
   }
 
   sendEquip(itemId: string) {
-    this.room?.send(ClientMessageType.Equip, { itemId });
+    this._send(ClientMessageType.Equip, { itemId });
   }
 
   sendUnequip(slot: EquipmentSlot) {
-    this.room?.send(ClientMessageType.Unequip, { slot });
+    this._send(ClientMessageType.Unequip, { slot });
   }
 
   sendUseItem(itemId: string) {
-    this.room?.send(ClientMessageType.UseItem, { itemId });
+    this._send(ClientMessageType.UseItem, { itemId });
   }
 
   sendDropItem(itemId: string) {
-    this.room?.send(ClientMessageType.DropItem, { itemId });
+    this._send(ClientMessageType.DropItem, { itemId });
   }
 
   sendChat(message: string) {
-    this.room?.send(ClientMessageType.Chat, { message });
+    this._send(ClientMessageType.Chat, { message });
   }
 
   // Party System
   sendPartyInvite(targetSessionId: string) {
-    this.room?.send(ClientMessageType.PartyInvite, { targetSessionId });
+    this._send(ClientMessageType.PartyInvite, { targetSessionId });
   }
 
   sendPartyAccept(partyId: string) {
-    this.room?.send(ClientMessageType.PartyAccept, { partyId });
+    this._send(ClientMessageType.PartyAccept, { partyId });
   }
 
   sendPartyLeave() {
-    this.room?.send(ClientMessageType.PartyLeave, {});
+    this._send(ClientMessageType.PartyLeave, {});
   }
 
   sendPartyKick(targetSessionId: string) {
-    this.room?.send(ClientMessageType.PartyKick, { targetSessionId });
+    this._send(ClientMessageType.PartyKick, { targetSessionId });
   }
 
   // Friend System
   sendFriendRequest(targetName: string) {
-    this.room?.send(ClientMessageType.FriendRequest, { targetName });
+    this._send(ClientMessageType.FriendRequest, { targetName });
   }
 
   sendFriendAccept(requesterId: string) {
-    this.room?.send(ClientMessageType.FriendAccept, { requesterId });
+    this._send(ClientMessageType.FriendAccept, { requesterId });
   }
 
   // Interaction
   sendInteract(npcId: string) {
-    this.room?.send(ClientMessageType.Interact, { npcId });
+    this._send(ClientMessageType.Interact, { npcId });
   }
 
   sendBuyItem(itemId: string, quantity: number) {
-    this.room?.send(ClientMessageType.BuyItem, { itemId, quantity });
+    this._send(ClientMessageType.BuyItem, { itemId, quantity });
   }
 
   sendSellItem(itemId: string, quantity: number, npcId?: string) {
-    this.room?.send(ClientMessageType.SellItem, { itemId, quantity, npcId });
+    this._send(ClientMessageType.SellItem, { itemId, quantity, npcId });
   }
 
   sendPing() {
-    this.room?.send(ClientMessageType.Ping, {});
+    this._send(ClientMessageType.Ping, {});
   }
 
   disconnect() {

@@ -97,13 +97,9 @@ export class GameScene extends Phaser.Scene {
     this.audioManager.init().catch(err => console.warn("Audio Context init failed:", err));
 
     this.network.onAudioData = (sessionId, data) => {
-        this.audioManager.playAudioChunk(data);
-        // Show speaking indicator on the sprite
-        const sprite = this.spriteManager.getSprite(sessionId);
-        if (sprite) {
-            sprite.showSpeakingIndicator(true);
-            this.time.delayedCall(300, () => sprite.showSpeakingIndicator(false));
-        }
+      this.audioManager.playAudioChunk(data);
+      // Show speaking indicator via SpriteManager helper
+      this.spriteManager.setSpeaking(sessionId, true, 300);
     };
 
 
@@ -147,7 +143,7 @@ export class GameScene extends Phaser.Scene {
               }
           }
           if (targetNpcId) {
-              this.room.send("interact", { npcId: targetNpcId });
+              this.network.sendInteract(targetNpcId);
           }
       },
       () => this.audioManager.startRecording((data) => this.network.sendAudio(data)),
@@ -235,42 +231,32 @@ export class GameScene extends Phaser.Scene {
     if (this.lastSidebarUpdate >= 100) {
       this.lastSidebarUpdate = 0;
       const localPlayer = this.room.state.players.get(this.room.sessionId);
-      if (localPlayer) {
-        const inventory: { itemId: string; quantity: number; slotIndex: number }[] = [];
-        if (localPlayer.inventory) {
-          for (const item of localPlayer.inventory) {
-            inventory.push({
-              itemId: item.itemId,
-              quantity: item.quantity,
-              slotIndex: item.slotIndex,
-            });
-          }
+        if (localPlayer) {
+          const inventory = this.buildInventory(localPlayer);
+          this.onStateUpdate({
+            name: localPlayer.name,
+            classType: localPlayer.classType,
+            hp: localPlayer.hp,
+            maxHp: localPlayer.maxHp,
+            mana: localPlayer.mana,
+            maxMana: localPlayer.maxMana,
+            alive: localPlayer.alive,
+            str: localPlayer.str,
+            agi: localPlayer.agi,
+            intStat: localPlayer.intStat,
+            gold: localPlayer.gold,
+            stealthed: localPlayer.stealthed,
+            stunned: localPlayer.stunned,
+            inventory,
+            equipment: {
+              weapon: localPlayer.equipWeapon ?? "",
+              armor: localPlayer.equipArmor ?? "",
+              shield: localPlayer.equipShield ?? "",
+              helmet: localPlayer.equipHelmet ?? "",
+              ring: localPlayer.equipRing ?? "",
+            },
+          });
         }
-
-        this.onStateUpdate({
-          name: localPlayer.name,
-          classType: localPlayer.classType,
-          hp: localPlayer.hp,
-          maxHp: localPlayer.maxHp,
-          mana: localPlayer.mana,
-          maxMana: localPlayer.maxMana,
-          alive: localPlayer.alive,
-          str: localPlayer.str,
-          agi: localPlayer.agi,
-          intStat: localPlayer.intStat,
-          gold: localPlayer.gold,
-          stealthed: localPlayer.stealthed,
-          stunned: localPlayer.stunned,
-          inventory,
-          equipment: {
-            weapon: localPlayer.equipWeapon ?? "",
-            armor: localPlayer.equipArmor ?? "",
-            shield: localPlayer.equipShield ?? "",
-            helmet: localPlayer.equipHelmet ?? "",
-            ring: localPlayer.equipRing ?? "",
-          },
-        });
-      }
     }
 
     // Camera
@@ -369,7 +355,16 @@ export class GameScene extends Phaser.Scene {
     const localSprite = this.spriteManager.getSprite(this.room.sessionId);
     if (!localSprite) return;
 
-    this.effectManager.showFloatingText(this.room.sessionId, "Invalid target", "#ff8800");
+    this.effectManager.showNotification(this.room.sessionId, "Invalid target", "#ff8800");
+  }
+
+  private buildInventory(localPlayer: any) {
+    const inventory: { itemId: string; quantity: number; slotIndex: number }[] = [];
+    if (!localPlayer.inventory) return inventory;
+    for (const item of localPlayer.inventory) {
+      inventory.push({ itemId: item.itemId, quantity: item.quantity, slotIndex: item.slotIndex });
+    }
+    return inventory;
   }
 
   private drawMap() {

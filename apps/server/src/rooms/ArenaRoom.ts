@@ -18,9 +18,10 @@ import {
     NPC_STATS, 
     EXP_TABLE, 
     NPC_DROPS, 
-    NPC_DROPS, 
+ 
     TileMap, 
     Direction, 
+    ServerMessages,
     ClassType, 
     JoinOptions, 
     EquipmentSlot, 
@@ -37,7 +38,6 @@ import { logger } from "../logger";
 import { MapService } from "../services/MapService";
 import { PersistenceService } from "../services/PersistenceService";
 import { AuthService } from "../database/auth";
-import { AuthService } from "../database/auth";
 import { prisma } from "../database/db";
 import { User } from "@prisma/client";
 import { MessageHandler } from "../handlers/MessageHandler";
@@ -51,7 +51,7 @@ import { QuestSystem } from "../systems/QuestSystem";
 export class ArenaRoom extends Room<{ state: GameState }> {
   constructor() {
     super();
-    logger.info("[ArenaRoom] Constructor called");
+    logger.info({ message: "[ArenaRoom] Constructor called" });
   }
 
   private map!: TileMap;
@@ -72,20 +72,21 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 
   async onCreate(options: JoinOptions & { mapName?: string }) {
     try {
-        logger.info("[ArenaRoom] Entering onCreate");
+        logger.info({ message: "[ArenaRoom] Entering onCreate" });
+        this.seatReservationTimeout = 60;
         this.setState(new GameState());
-        logger.info("[ArenaRoom] State initialized");
+        logger.info({ message: "[ArenaRoom] State initialized" });
         
         this.roomMapName = options.mapName || "arena.test";
-        logger.info(`[ArenaRoom] Map name: ${this.roomMapName}`);
+        logger.info({ message: `[ArenaRoom] Map name: ${this.roomMapName}` });
         
         const loadedMap = await MapService.getMap(this.roomMapName);
         if (!loadedMap) {
-            logger.error(`[ArenaRoom] Failed to load map: ${this.roomMapName}`);
+            logger.error({ message: `[ArenaRoom] Failed to load map: ${this.roomMapName}` });
             throw new Error(`Failed to load map: ${this.roomMapName}`);
         }
         this.map = loadedMap;
-        logger.info("[ArenaRoom] Map loaded");
+        logger.info({ message: "[ArenaRoom] Map loaded" });
 
         this.drops.setInventorySystem(this.inventorySystem);
         
@@ -227,37 +228,37 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         });
 
         logger.info({ room: this.roomId, intent: "room_created", result: "ok" });
-        logger.info("[ArenaRoom] onCreate completed successfully");
+        logger.info({ message: "[ArenaRoom] onCreate completed successfully" });
     } catch (e: any) {
-        logger.error(`[ArenaRoom] CRITICAL ERROR IN ONCREATE: ${e}`);
+        logger.error({ message: `[ArenaRoom] CRITICAL ERROR IN ONCREATE: ${e}` });
         if (e.stack) {
-            logger.error(e.stack);
+            logger.error({ message: e.stack });
         }
         throw e;
     }
   }
 
   async onAuth(client: Client, options: JoinOptions) {
-    logger.info(`[ArenaRoom] onAuth entering for client ${client.sessionId}`);
+    logger.info({ message: `[ArenaRoom] onAuth entering for client ${client.sessionId}` });
     if (!options.token) {
-        logger.error("[ArenaRoom] onAuth: No token provided");
+        logger.error({ message: "[ArenaRoom] onAuth: No token provided" });
         throw new Error("Token required");
     }
     const payload = AuthService.verifyToken(options.token);
     if (!payload) {
-        logger.error("[ArenaRoom] onAuth: Invalid token");
+        logger.error({ message: "[ArenaRoom] onAuth: Invalid token" });
         throw new Error("Invalid token");
     }
     
     // Fetch user to ensure valid
-    logger.info(`[ArenaRoom] onAuth: Fetching user ${payload.userId}`);
+    logger.info({ message: `[ArenaRoom] onAuth: Fetching user ${payload.userId}` });
     const user = await prisma.user.findUnique({ where: { id: payload.userId } });
     if (!user) {
-        logger.error(`[ArenaRoom] onAuth: User ${payload.userId} not found`);
+        logger.error({ message: `[ArenaRoom] onAuth: User ${payload.userId} not found` });
         throw new Error("User not found");
     }
 
-    logger.info(`[ArenaRoom] onAuth: Success for user ${user.username}`);
+    logger.info({ message: `[ArenaRoom] onAuth: Success for user ${user.username}` });
     return { user };
   }
 
@@ -470,8 +471,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         (x: number, y: number, excludeId: string) => this.spatial.isTileOccupied(x, y, excludeId),
         this.state.tick,
         this.roomId,
-        broadcast,
-        (caster: Entity, spellId: string, x: number, y: number) => this.onSummon(caster, spellId, x, y)
+        broadcast
     );
 
     this.combat.processWindups(

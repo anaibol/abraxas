@@ -19,23 +19,17 @@ export class SpriteManager {
 
     addPlayer(player: PlayerEntityState, sessionId: string) {
         if (this.sprites.has(sessionId)) return;
-
         const isLocal = sessionId === this.getSessionId();
-        const sprite = new PlayerSprite(
-            this.scene,
+        const sprite = this.createSprite({
             sessionId,
-            player.tileX,
-            player.tileY,
-            player.classType,
-            player.name,
-            isLocal
-        );
-
+            tileX: player.tileX,
+            tileY: player.tileY,
+            typeOrClass: player.classType,
+            name: player.name,
+            isLocal,
+        });
         this.sprites.set(sessionId, sprite);
-
-        if (isLocal) {
-            this.cameraController.follow(sprite);
-        }
+        if (isLocal) this.cameraController.follow(sprite);
     }
 
     removePlayer(sessionId: string) {
@@ -48,17 +42,14 @@ export class SpriteManager {
 
     addNpc(npc: NpcEntityState, sessionId: string) {
         if (this.sprites.has(sessionId)) return;
-        
-        const sprite = new PlayerSprite(
-            this.scene,
+        const sprite = this.createSprite({
             sessionId,
-            npc.tileX,
-            npc.tileY,
-            npc.type, 
-            npc.name, 
-            false
-        );
-        
+            tileX: npc.tileX,
+            tileY: npc.tileY,
+            typeOrClass: npc.type,
+            name: npc.name,
+            isLocal: false,
+        });
         this.sprites.set(sessionId, sprite);
     }
 
@@ -116,10 +107,44 @@ export class SpriteManager {
     flashSprite(sessionId: string, color: number) {
         const sprite = this.sprites.get(sessionId);
         if (sprite) {
-            sprite.container.setAlpha(0.5);
-            this.scene.time.delayedCall(80, () => {
-                sprite.container.setAlpha(1);
-            });
+            this.pulseAlpha(sessionId, 0.5, 80);
         }
+    }
+
+    pulseAlpha(sessionId: string, toAlpha: number, durationMs: number) {
+        const sprite = this.sprites.get(sessionId);
+        if (!sprite) return;
+        const prev = sprite.container.alpha;
+        sprite.container.setAlpha(toAlpha);
+        this.scene.time.delayedCall(durationMs, () => {
+            if (sprite && sprite.container) sprite.container.setAlpha(prev);
+        });
+    }
+
+    setAlpha(sessionId: string, alpha: number) {
+        const sprite = this.sprites.get(sessionId);
+        if (!sprite) return;
+        sprite.container.setAlpha(alpha);
+    }
+
+    setSpeaking(sessionId: string, speaking: boolean, durationMs?: number) {
+        const sprite = this.sprites.get(sessionId);
+        if (!sprite) return;
+        sprite.showSpeakingIndicator(speaking);
+        if (speaking && durationMs) {
+            this.scene.time.delayedCall(durationMs, () => sprite.showSpeakingIndicator(false));
+        }
+    }
+
+    private createSprite(opts: { sessionId: string; tileX: number; tileY: number; typeOrClass: string; name: string; isLocal: boolean; }) {
+        return new PlayerSprite(
+            this.scene,
+            opts.sessionId,
+            opts.tileX,
+            opts.tileY,
+            opts.typeOrClass,
+            opts.name,
+            opts.isLocal
+        );
     }
 }

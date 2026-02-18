@@ -2,6 +2,7 @@ import { prisma } from "../database/db";
 import { AuthService } from "../database/auth";
 import { CLASS_STATS, Direction, ClassType } from "@abraxas/shared";
 import type { InventoryEntry, EquipmentData } from "@abraxas/shared";
+import { Prisma } from "@prisma/client";
 
 export class PersistenceService {
     static async authenticateUser(username: string, passwordHash: string) {
@@ -43,23 +44,25 @@ export class PersistenceService {
         const stats = CLASS_STATS[classType];
         if (!stats) throw new Error("Invalid class type");
 
-        return await prisma.player.create({
-             data: {
-                 userId,
-                 name: playerName,
-                 classType,
-                 mapName,
-                 x,
-                 y,
-                 hp: stats.hp,
-                 maxHp: stats.hp,
-                 mana: stats.mana || 0,
-                 maxMana: stats.mana || 0,
-                 str: stats.str,
-                 agi: stats.agi,
-                 intStat: stats.int,
-                 facing: "down",
-             } as any,
+        const playerData: Prisma.PlayerCreateInput = {
+             user: { connect: { id: userId } },
+             name: playerName,
+             classType,
+             mapName,
+             x,
+             y,
+             hp: stats.hp,
+             maxHp: stats.hp,
+             mana: stats.mana || 0,
+             maxMana: stats.mana || 0,
+             str: stats.str,
+             agi: stats.agi,
+             intStat: stats.int,
+             facing: "down",
+         };
+
+         return await prisma.player.create({
+             data: playerData,
              include: {
                  inventory: true
              }

@@ -106,13 +106,13 @@ export class MessageHandler {
         if (!player || !player.alive) return;
     
         const drop = this.state.drops.get(data.dropId);
-        if (drop && this.drops.pickup(player, data.dropId, (msg) => client.send(ServerMessageType.Error, { message: msg }))) {
-            if (drop.type === "gold") {
-                this.broadcast(ServerMessageType.Notification, { message: `${player.name} picked up ${drop.amount} gold` });
+        if (drop && this.drops.tryPickup(player, data.dropId, this.state.drops, this.roomId, this.state.tick, (msg) => client.send(ServerMessageType.Error, { message: msg }))) {
+            if (drop.itemType === "gold") {
+                this.broadcast(ServerMessageType.Notification, { message: `${player.name} picked up ${drop.goldAmount} gold` });
             } else {
                 this.broadcast(ServerMessageType.Notification, { message: `${player.name} picked up ${drop.itemId}` });
                 
-                this.quests.updateProgress(player.userId, player.dbId, "collect", drop.itemId, drop.amount).then(updatedQuests => {
+                this.quests.updateProgress(player.userId, player.dbId, "collect", drop.itemId, drop.quantity).then(updatedQuests => {
                     for (const quest of updatedQuests) {
                         client.send(ServerMessageType.QuestUpdate, { quest });
                         if (quest.status === "completed") {
@@ -151,7 +151,15 @@ export class MessageHandler {
         const player = this.state.players.get(client.sessionId);
         if (!player || !player.alive) return;
         if (this.inventorySystem.removeItem(player, data.itemId)) {
-            this.drops.spawnDrop(player.tileX, player.tileY, "item", { itemId: data.itemId, amount: 1 });
+            this.drops.spawnItemDrop(
+                this.state.drops,
+                player.tileX, 
+                player.tileY, 
+                data.itemId,
+                1,
+                this.roomId,
+                this.state.tick
+            );
         }
     }
 

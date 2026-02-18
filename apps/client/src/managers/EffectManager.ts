@@ -61,6 +61,10 @@ export class EffectManager {
         if (!sprite) return;
         this.addText(sprite.renderX, sprite.renderY - 40, text, color, "10px");
     }
+
+    showNotification(sessionId: string, text: string, color = "#ffff00") {
+        this.showFloatingText(sessionId, text, color);
+    }
     
     private addText(x: number, y: number, content: string, color: string, fontSize: string) {
         const text = this.scene.add.text(x, y, content, {
