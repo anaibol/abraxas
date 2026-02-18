@@ -112,6 +112,33 @@ describe("Arena multiplayer smoke test", () => {
         console.log("TEST: Manual WS failed:", e);
     }
 
+    // Debug: Check seat reservation manually
+    try {
+        console.log("TEST: Manual joinOrCreate request...");
+        const reservation: any = await clientA["createMatchMakeRequest"]("joinOrCreate", "arena", {
+            name: nameA,
+            classType: "warrior",
+            token: tokenA,
+            mapName: "arena.test"
+        });
+        console.log("TEST: Reservation:", JSON.stringify(reservation, null, 2));
+
+        // Now try to consume it manually
+        const wsUrl = `ws://localhost:${TEST_PORT}/${reservation.room.processId}/${reservation.room.roomId}?sessionId=${reservation.sessionId}`;
+        console.log("TEST: Connecting manual WS to:", wsUrl);
+        
+        const ws = new WebSocket(wsUrl);
+        ws.onopen = () => console.log("TEST: Manual WS (reservation) connected!");
+        ws.onerror = (e) => console.log("TEST: Manual WS (reservation) error:", e);
+        ws.onclose = (e) => console.log("TEST: Manual WS (reservation) closed:", e.code, e.reason);
+        
+        await new Promise(r => setTimeout(r, 1000));
+        ws.close();
+        
+    } catch (e) {
+        console.log("TEST: Manual reservation failed:", e);
+    }
+
     const roomA: Room<GameState> = await clientA.joinOrCreate("arena", {
       name: nameA,
       classType: "warrior",

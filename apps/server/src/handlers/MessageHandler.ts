@@ -247,16 +247,7 @@ export class MessageHandler {
 
     this.quests
       .updateProgress(player.userId, player.dbId, "talk", npc.type, 1)
-      .then((updatedQuests) => {
-        for (const quest of updatedQuests) {
-          client.send(ServerMessageType.QuestUpdate, { quest });
-          if (quest.status === "completed") {
-            client.send(ServerMessageType.Notification, {
-              message: `Quest Completed: ${QUESTS[quest.questId].title}`,
-            });
-          }
-        }
-      });
+      .then((updatedQuests) => this.sendQuestUpdates(client, updatedQuests));
 
     if (npc.type === "merchant") {
       const inventory = MERCHANT_INVENTORY.general_store || [];
