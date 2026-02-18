@@ -29,6 +29,15 @@ export type NpcType =
   | "ghost"
   | "lich";
 
+export enum NpcState {
+  IDLE = "idle",
+  PATROL = "patrol",
+  CHASE = "chase",
+  ATTACK = "attack",
+  FLEE = "flee",
+  RETURN = "return",
+}
+
 export interface JoinOptions {
   name: string;
   classType: ClassType;
