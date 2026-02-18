@@ -1,4 +1,4 @@
-thimport { Room, Client } from "@colyseus/core";
+import { Room, Client } from "@colyseus/core";
 import { GameState } from "../schema/GameState";
 import { Player } from "../schema/Player";
 import { Npc } from "../schema/Npc";
