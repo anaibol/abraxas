@@ -5,6 +5,7 @@ import type {
   EquipmentSlot,
   WelcomeData,
   ServerMessages,
+  ClientMessages,
 } from "@abraxas/shared";
 import { ClientMessageType, ServerMessageType } from "@abraxas/shared";
 
@@ -21,8 +22,7 @@ function getServerUrl(): string {
 
 export class NetworkManager<SC = unknown> {
   private client: Client;
-  // Room<any, SC>: first param is room-class type (any = untyped messages), second is state
-  private room: Room<any, SC> | null = null;
+  private room: Room<SC> | null = null;
   private welcomeData: WelcomeData | null = null;
   private welcomeResolve: ((data: WelcomeData) => void) | null = null;
 
@@ -30,9 +30,13 @@ export class NetworkManager<SC = unknown> {
     this.client = new Client(serverUrl ?? getServerUrl());
   }
 
-  private _send(type: string | number, payload?: unknown) {
+  /** Type-safe send — payload type is inferred from ClientMessages[T]. */
+  private _send<T extends ClientMessageType>(
+    type: T,
+    payload: ClientMessages[T],
+  ): void {
     try {
-      (this.room as Room<any>)?.send(type, payload);
+      this.room?.send(type, payload);
     } catch {
       // ignore if not connected
     }
@@ -47,7 +51,7 @@ export class NetworkManager<SC = unknown> {
     classType: ClassType,
     token?: string,
     mapName?: string,
-  ): Promise<Room<any, SC>> {
+  ): Promise<Room<SC>> {
     this.room = await this.client.joinOrCreate<SC>("arena", {
       name,
       classType,
@@ -59,25 +63,22 @@ export class NetworkManager<SC = unknown> {
       this.welcomeResolve = resolve;
     });
 
-    (this.room as Room<any>).onMessage(
-      ServerMessageType.Welcome,
-      (data: WelcomeData) => {
-        this.welcomeData = data;
-        if (this.welcomeResolve) {
-          this.welcomeResolve(data);
-          this.welcomeResolve = null;
-        }
-      },
-    );
+    this.room.onMessage(ServerMessageType.Welcome, (data: WelcomeData) => {
+      this.welcomeData = data;
+      if (this.welcomeResolve) {
+        this.welcomeResolve(data);
+        this.welcomeResolve = null;
+      }
+    });
 
-    (this.room as Room<any>).onMessage(
+    this.room.onMessage(
       ServerMessageType.Warp,
       (data: ServerMessages[ServerMessageType.Warp]) => {
         if (this.onWarp) this.onWarp(data);
       },
     );
 
-    (this.room as Room<any>).onMessage(
+    this.room.onMessage(
       ServerMessageType.Audio,
       (data: ServerMessages[ServerMessageType.Audio]) => {
         if (this.onAudioData) this.onAudioData(data.sessionId, data.data);
@@ -85,7 +86,7 @@ export class NetworkManager<SC = unknown> {
     );
 
     await welcomePromise;
-    return this.room!;
+    return this.room;
   }
 
   public onAudioData: ((sessionId: string, data: ArrayBuffer) => void) | null =
@@ -100,7 +101,7 @@ export class NetworkManager<SC = unknown> {
     this._send(ClientMessageType.Audio, data);
   }
 
-  getRoom(): Room<any, SC> {
+  getRoom(): Room<SC> {
     if (!this.room) throw new Error("Not connected");
     return this.room;
   }

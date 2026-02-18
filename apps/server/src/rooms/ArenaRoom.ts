@@ -37,6 +37,7 @@ import {
   ServerMessageType,
   WelcomeData,
   QUESTS,
+  EQUIPMENT_SLOTS,
 } from "@abraxas/shared";
 import { logger } from "../logger";
 import { MapService } from "../services/MapService";
@@ -105,8 +106,10 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       (client, data) => this.messageHandler.handleEquip(client, data),
     ),
     [ClientMessageType.Unequip]: validate(
-      z.object({ slot: z.string() }),
-      (client, data) => this.messageHandler.handleUnequip(client, data as any),
+      z.object({
+        slot: z.enum(EQUIPMENT_SLOTS as [EquipmentSlot, ...EquipmentSlot[]]),
+      }),
+      (client, data) => this.messageHandler.handleUnequip(client, data),
     ),
     [ClientMessageType.UseItem]: validate(
       z.object({ itemId: z.string() }),
