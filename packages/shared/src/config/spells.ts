@@ -444,6 +444,87 @@ export const SPELLS: Record<string, Spell> = {
     fxId: 23,
   },
 
+  // ── PALADIN ───────────────────────────────────────────────────────────────
+
+  /** Q — Melee holy slam: consecrated strike that deals divine damage */
+  judgment: {
+    id: "judgment",
+    rangeTiles: 1,
+    manaCost: 20,
+    baseDamage: 28,
+    scalingStat: "str",
+    scalingRatio: 0.75,
+    cooldownMs: 2500,
+    windupMs: 130,
+    effect: "damage",
+    key: "Q",
+    fxId: 23,
+  },
+
+  /** W — Lay on Hands: channel divine energy to restore a large chunk of HP */
+  lay_on_hands: {
+    id: "lay_on_hands",
+    rangeTiles: 0,
+    manaCost: 35,
+    baseDamage: 50,
+    scalingStat: "int",
+    scalingRatio: 0.9,
+    cooldownMs: 6000,
+    windupMs: 200,
+    effect: "heal",
+    key: "W",
+    fxId: 1,
+  },
+
+  /** E — Consecration: radiate holy fire, damaging all enemies around the caster */
+  consecration: {
+    id: "consecration",
+    rangeTiles: 0,
+    manaCost: 30,
+    baseDamage: 22,
+    scalingStat: "str",
+    scalingRatio: 0.6,
+    cooldownMs: 7000,
+    windupMs: 250,
+    effect: "aoe",
+    key: "E",
+    aoeRadius: 2,
+    fxId: 34,
+  },
+
+  /** R — Aura of Protection: surround yourself in divine plate, massively boosting armor */
+  aura_of_protection: {
+    id: "aura_of_protection",
+    rangeTiles: 0,
+    manaCost: 25,
+    baseDamage: 0,
+    scalingStat: "str",
+    scalingRatio: 0,
+    cooldownMs: 16000,
+    windupMs: 100,
+    effect: "buff",
+    key: "R",
+    durationMs: 8000,
+    buffStat: "armor",
+    buffAmount: 18,
+    fxId: 18,
+  },
+
+  /** T — Holy Bolt: launch a bolt of divine light at a distant enemy */
+  holy_bolt: {
+    id: "holy_bolt",
+    rangeTiles: 6,
+    manaCost: 28,
+    baseDamage: 32,
+    scalingStat: "int",
+    scalingRatio: 0.85,
+    cooldownMs: 5000,
+    windupMs: 220,
+    effect: "damage",
+    key: "T",
+    fxId: 23,
+  },
+
   // ── NPC SPELLS ────────────────────────────────────────────────────────────
 
   /** Spider: DoT bite */

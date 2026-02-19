@@ -6,6 +6,7 @@ export const CLASS_APPEARANCE: Record<string, { bodyId: number; headId: number }
   RANGER: { bodyId: 60, headId: 2 },
   ROGUE: { bodyId: 45, headId: 4 },
   CLERIC: { bodyId: 50, headId: 5 },
+  PALADIN: { bodyId: 38, headId: 6 },
 };
 
 export const CLASS_STATS: Record<string, ClassStats> = {
@@ -79,6 +80,20 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     // Q: holy_strike (dmg) | W: heal (self heal) | E: divine_shield (invuln) | R: holy_nova (AoE heal) | T: curse (debuff) | Y: smite (ranged dmg)
     spells: ["holy_strike", "heal", "divine_shield", "holy_nova", "curse", "smite"],
   },
+  PALADIN: {
+    hp: 230,
+    mana: 100,
+    str: 22,
+    agi: 10,
+    int: 14,
+    speedTilesPerSecond: 6,
+    meleeRange: 1,
+    meleeCooldownMs: 480,
+    meleeWindupMs: 130,
+    armor: 12,
+    // Q: judgment (holy melee) | W: lay_on_hands (self heal) | E: consecration (AoE holy) | R: aura_of_protection (armor buff) | T: holy_bolt (ranged dmg)
+    spells: ["judgment", "lay_on_hands", "consecration", "aura_of_protection", "holy_bolt"],
+  },
 };
 
 export const LEVEL_UP_STATS: Record<string, { str: number; agi: number; int: number; hp: number; mp: number }> = {
@@ -87,6 +102,7 @@ export const LEVEL_UP_STATS: Record<string, { str: number; agi: number; int: num
   RANGER:  { str: 1, agi: 3, int: 0, hp: 22, mp: 10 },
   ROGUE:   { str: 1, agi: 3, int: 0, hp: 22, mp: 8 },
   CLERIC:  { str: 1, agi: 0, int: 3, hp: 26, mp: 15 },
+  PALADIN: { str: 2, agi: 0, int: 2, hp: 28, mp: 12 },
 };
 
 export const EXP_TABLE = [

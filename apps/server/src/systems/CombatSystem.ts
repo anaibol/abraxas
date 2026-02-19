@@ -43,6 +43,19 @@ export class CombatSystem {
 		this.lastMeleeMs.delete(sessionId);
 	}
 
+	/** Turns an entity to face a target tile (no-op when attacker is on the target tile). */
+	private faceToward(entity: Entity, tx: number, ty: number): void {
+		if (entity.tileX === tx && entity.tileY === ty) return;
+		const facing = MathUtils.getDirection(entity.getPosition(), { x: tx, y: ty });
+		if (entity.facing !== facing) entity.facing = facing;
+	}
+
+	/** Stores a buffered action and returns false (caller should propagate). */
+	private bufferAction(entity: Entity, action: Entity["bufferedAction"]): false {
+		entity.bufferedAction = action;
+		return false;
+	}
+
 	hasLineOfSight(
 		p1: { x: number; y: number },
 		p2: { x: number; y: number },
@@ -156,30 +169,16 @@ export class CombatSystem {
 		const meleeReady = now >= lastMelee + stats.meleeCooldownMs;
 		const gcdReady = now >= attacker.lastGcdMs + GCD_MS;
 
-		if (
-			!meleeReady ||
-			!gcdReady ||
-			this.activeWindups.has(attacker.sessionId)
-		) {
-			attacker.bufferedAction = {
+		if (!meleeReady || !gcdReady || this.activeWindups.has(attacker.sessionId)) {
+			return this.bufferAction(attacker, {
 				type: "attack",
 				targetTileX,
 				targetTileY,
 				bufferedAt: now,
-			};
-			return false;
+			});
 		}
 
-		// Facing check
-		const targetFacing = MathUtils.getDirection(attacker.getPosition(), {
-			x: targetTileX,
-			y: targetTileY,
-		});
-		if (attacker.tileX !== targetTileX || attacker.tileY !== targetTileY) {
-			if (attacker.facing !== targetFacing) {
-				attacker.facing = targetFacing;
-			}
-		}
+		this.faceToward(attacker, targetTileX, targetTileY);
 
 		if (stats.meleeRange > 1) {
 			const target = this.spatial.findEntityAtTile(targetTileX, targetTileY);
@@ -251,36 +250,20 @@ export class CombatSystem {
 			}
 		}
 
-		if (
-			now < caster.lastGcdMs + GCD_MS ||
-			this.activeWindups.has(caster.sessionId)
-		) {
-			caster.bufferedAction = {
+		if (now < caster.lastGcdMs + GCD_MS || this.activeWindups.has(caster.sessionId)) {
+			return this.bufferAction(caster, {
 				type: "cast",
 				spellId,
 				targetTileX,
 				targetTileY,
 				bufferedAt: now,
-			};
-			return false;
+			});
 		}
 
 		const cd = caster.spellCooldowns.get(spellId) || 0;
 		if (now < cd) return false;
 
-		// Facing check for targeted spells
-		if (
-			spell.rangeTiles > 0 &&
-			(caster.tileX !== targetTileX || caster.tileY !== targetTileY)
-		) {
-			const targetFacing = MathUtils.getDirection(caster.getPosition(), {
-				x: targetTileX,
-				y: targetTileY,
-			});
-			if (caster.facing !== targetFacing) {
-				caster.facing = targetFacing;
-			}
-		}
+		if (spell.rangeTiles > 0) this.faceToward(caster, targetTileX, targetTileY);
 
 		if (caster instanceof Player && caster.mana < spell.manaCost) {
 			sendToClient?.(ServerMessageType.Notification, {

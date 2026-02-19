@@ -388,7 +388,7 @@ export class MessageHandler {
 		} else if (npc.type === "banker") {
 			this.openBank(client);
 		} else {
-			this.openDialogue(client, npc);
+			this.openDialogue(client, player, npc);
 		}
 	}
 
@@ -397,10 +397,7 @@ export class MessageHandler {
 		client.send(ServerMessageType.OpenShop, { npcId: npc.sessionId, inventory });
 	}
 
-	private openDialogue(client: Client, npc: Npc) {
-		const player = this.getActivePlayer(client);
-		if (!player) return;
-
+	private openDialogue(client: Client, player: Player, npc: Npc) {
 		const dialogue = this.ctx.systems.quests.getDialogueOptions(
 			player.dbId,
 			npc.sessionId,
@@ -447,20 +444,9 @@ export class MessageHandler {
 
 		// Require player to be near the quest's NPC to turn in
 		const questDef = QUESTS[data.questId];
-		if (questDef) {
-			const isNearNpc = Array.from(this.ctx.state.npcs.values()).some(
-				(n) =>
-					n.type === questDef.npcId &&
-					n.alive &&
-					MathUtils.manhattanDist(
-						{ x: player.tileX, y: player.tileY },
-						{ x: n.tileX, y: n.tileY },
-					) <= 3,
-			);
-			if (!isNearNpc) {
-				this.sendError(client, "game.quest_near_npc");
-				return;
-			}
+		if (questDef && !this.isNearNpcType(player, questDef.npcId)) {
+			this.sendError(client, "game.quest_near_npc");
+			return;
 		}
 
 		this.ctx.systems.quests
@@ -580,7 +566,7 @@ export class MessageHandler {
 		const player = this.getActivePlayer(client);
 		if (!player) return;
 
-		if (!this.isNearMerchant(player)) {
+		if (!this.isNearNpcType(player, "merchant")) {
 			this.sendError(client, "game.too_far_merchant");
 			return;
 		}

@@ -19,7 +19,7 @@ export const EQUIPMENT_SLOTS = [
 	"ring",
 ] as const;
 export type EquipmentSlot = (typeof EQUIPMENT_SLOTS)[number];
-export type ClassType = "WARRIOR" | "MAGE" | "ROGUE" | "CLERIC" | "RANGER";
+export type ClassType = "WARRIOR" | "MAGE" | "ROGUE" | "CLERIC" | "RANGER" | "PALADIN";
 export type NpcType =
 	| "orc"
 	| "skeleton"

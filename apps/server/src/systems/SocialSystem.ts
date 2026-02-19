@@ -15,6 +15,10 @@ export class SocialSystem {
     private findClient: (sessionId: string) => Client | undefined,
   ) {}
 
+  private sendError(client: Client, message: string): void {
+    client.send(ServerMessageType.Error, { message });
+  }
+
   handleInvite(client: Client, targetSessionId: string): void {
     const inviter = this.state.players.get(client.sessionId);
     const target = this.state.players.get(targetSessionId);
@@ -23,16 +27,14 @@ export class SocialSystem {
 
     // Check if target is already in a party
     if (target.partyId) {
-      client.send(ServerMessageType.Error, {
-        message: "social.already_in_party",
-      });
+      this.sendError(client, "social.already_in_party");
       return;
     }
 
     let partyId = inviter.partyId;
     if (!partyId) {
       // Create a new party
-      partyId = Math.random().toString(36).substring(2, 9);
+      partyId = crypto.randomUUID();
       const party = new Party();
       party.id = partyId;
       party.leaderSessionId = inviter.sessionId;
@@ -43,9 +45,7 @@ export class SocialSystem {
     } else {
       const party = this.state.parties.get(partyId);
       if (party && party.leaderSessionId !== inviter.sessionId) {
-        client.send(ServerMessageType.Error, {
-          message: "social.leader_only_invite",
-        });
+        this.sendError(client, "social.leader_only_invite");
         return;
       }
     }
@@ -71,9 +71,7 @@ export class SocialSystem {
   handleAcceptInvite(client: Client, partyId: string): void {
     const invite = this.invitations.get(client.sessionId);
     if (!invite || invite.partyId !== partyId) {
-      client.send(ServerMessageType.Error, {
-        message: "social.no_invite",
-      });
+      this.sendError(client, "social.no_invite");
       return;
     }
 
@@ -86,7 +84,7 @@ export class SocialSystem {
     }
 
     if (party.memberIds.length >= 5) {
-      client.send(ServerMessageType.Error, { message: "social.party_full" });
+      this.sendError(client, "social.party_full");
       this.invitations.delete(client.sessionId);
       return;
     }
@@ -137,9 +135,7 @@ export class SocialSystem {
 
     const party = this.state.parties.get(player.partyId);
     if (!party || party.leaderSessionId !== client.sessionId) {
-      client.send(ServerMessageType.Error, {
-        message: "social.leader_only_kick",
-      });
+      this.sendError(client, "social.leader_only_kick");
       return;
     }
 

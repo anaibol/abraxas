@@ -14,6 +14,7 @@ export const BASIC_ITEMS_BY_CLASS: Record<ClassType, ReadonlySet<string>> = {
   RANGER:  new Set(["short_bow", "tunic", ...BASIC_CONSUMABLES]),
   ROGUE:   new Set(["dagger", "tunic", ...BASIC_CONSUMABLES]),
   CLERIC:  new Set(["holy_mace", "tunic", ...BASIC_CONSUMABLES]),
+  PALADIN: new Set(["holy_mace", "tunic", ...BASIC_CONSUMABLES]),
 };
 
 /** Potions every class starts with (3× HP + 3× mana). */
@@ -29,6 +30,7 @@ export const STARTING_EQUIPMENT: Record<ClassType, { items: string[]; gold: numb
   RANGER:  { items: ["elven_bow", "shadow_cloak", "iron_helmet", "ring_of_agility", ...STARTING_POTIONS], gold: 100 },
   ROGUE:   { items: ["venom_blades", "shadow_cloak", "iron_helmet", "ring_of_agility", ...STARTING_POTIONS], gold: 100 },
   CLERIC:  { items: ["blessed_hammer", "plate_armor", "iron_shield", "crown_of_thorns", "ring_of_vitality", ...STARTING_POTIONS], gold: 100 },
+  PALADIN: { items: ["blessed_hammer", "plate_armor", "iron_shield", "crown_of_thorns", "ring_of_strength", ...STARTING_POTIONS], gold: 100 },
 };
 
 // KILL_GOLD_BONUS moved to config/constants.ts

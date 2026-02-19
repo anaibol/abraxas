@@ -108,7 +108,6 @@ export class NpcSystem {
   }
 
   tick(
-    _dt: number,
     map: TileMap,
     now: number,
     tickCount: number,
@@ -156,15 +155,11 @@ export class NpcSystem {
     });
   }
 
-  private updateIdle(npc: Npc, tickCount: number): void {
-    const stats = NPC_STATS[npc.type];
-    if (stats.passive) return;
-    if (tickCount % IDLE_SCAN_INTERVAL !== 0) return;
-
+  /** Finds the nearest attackable player within AGGRO_RANGE, or null if none. */
+  private scanForAggroTarget(npc: Npc): Player | null {
     const entities = this.spatial.findEntitiesInRadius(npc.tileX, npc.tileY, AGGRO_RANGE);
-    let nearest: Entity | null = null;
+    let nearest: Player | null = null;
     let minDist = Infinity;
-
     for (const entity of entities) {
       if (entity instanceof Player && entity.isAttackable()) {
         const dist = MathUtils.manhattanDist(npc.getPosition(), entity.getPosition());
@@ -174,9 +169,17 @@ export class NpcSystem {
         }
       }
     }
+    return nearest;
+  }
 
-    if (nearest) {
-      npc.targetId = nearest.sessionId;
+  private updateIdle(npc: Npc, tickCount: number): void {
+    const stats = NPC_STATS[npc.type];
+    if (stats.passive) return;
+    if (tickCount % IDLE_SCAN_INTERVAL !== 0) return;
+
+    const target = this.scanForAggroTarget(npc);
+    if (target) {
+      npc.targetId = target.sessionId;
       npc.state = NpcState.CHASE;
       return;
     }
@@ -189,13 +192,11 @@ export class NpcSystem {
 
   private updatePatrol(npc: Npc, map: TileMap, now: number, tickCount: number, roomId: string): void {
     if (tickCount % IDLE_SCAN_INTERVAL === 0) {
-      const entities = this.spatial.findEntitiesInRadius(npc.tileX, npc.tileY, AGGRO_RANGE);
-      for (const entity of entities) {
-        if (entity instanceof Player && entity.isAttackable()) {
-          npc.targetId = entity.sessionId;
-          npc.state = NpcState.CHASE;
-          return;
-        }
+      const target = this.scanForAggroTarget(npc);
+      if (target) {
+        npc.targetId = target.sessionId;
+        npc.state = NpcState.CHASE;
+        return;
       }
     }
 
@@ -301,10 +302,22 @@ export class NpcSystem {
   private moveTowards(npc: Npc, tx: number, ty: number, map: TileMap, now: number, tickCount: number, roomId: string): void {
     const dx = tx - npc.tileX;
     const dy = ty - npc.tileY;
-    const primaryDir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? Direction.RIGHT : Direction.LEFT) : (dy > 0 ? Direction.DOWN : Direction.UP);
+
+    let primaryDir: Direction;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      primaryDir = dx > 0 ? Direction.RIGHT : Direction.LEFT;
+    } else {
+      primaryDir = dy > 0 ? Direction.DOWN : Direction.UP;
+    }
+
     const result = this.movementSystem.tryMove(npc, primaryDir, map, now, tickCount, roomId);
     if (!result.success) {
-      const altDir = (primaryDir === Direction.LEFT || primaryDir === Direction.RIGHT) ? (dy > 0 ? Direction.DOWN : Direction.UP) : (dx > 0 ? Direction.RIGHT : Direction.LEFT);
+      let altDir: Direction;
+      if (primaryDir === Direction.LEFT || primaryDir === Direction.RIGHT) {
+        altDir = dy > 0 ? Direction.DOWN : Direction.UP;
+      } else {
+        altDir = dx > 0 ? Direction.RIGHT : Direction.LEFT;
+      }
       this.movementSystem.tryMove(npc, altDir, map, now, tickCount, roomId);
     }
   }

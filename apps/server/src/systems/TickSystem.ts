@@ -44,6 +44,16 @@ interface TickOptions {
 	findClient: (sid: string) => Client | undefined;
 }
 
+/** Restores `ratio * max` (at least 1) of a stat, capped at its max. */
+function restoreStat(player: Player, stat: "hp" | "mana", ratio: number): void {
+	const max = stat === "hp" ? player.maxHp : player.maxMana;
+	const cur = stat === "hp" ? player.hp : player.mana;
+	if (cur >= max) return;
+	const gain = Math.max(1, Math.floor(max * ratio));
+	if (stat === "hp") player.hp = Math.min(max, cur + gain);
+	else player.mana = Math.min(max, cur + gain);
+}
+
 export class TickSystem {
 	constructor(private opts: TickOptions) {}
 
@@ -64,28 +74,24 @@ export class TickSystem {
 		);
 
 		// 2. NPCs
-		systems.npc.tick(deltaTime, map, now, state.tick, roomId, broadcast);
+		systems.npc.tick(map, now, state.tick, roomId, broadcast);
 
 		// 3. Combat
-		systems.combat.processWindups(
-			now,
-			broadcast,
-			(e, k) => this.opts.onEntityDeath(e, k),
-			(caster, spellId, x, y) => this.opts.onSummon(caster, spellId, x, y),
-		);
+		const { onEntityDeath, onSummon, findClient } = this.opts;
+		systems.combat.processWindups(now, broadcast, onEntityDeath, onSummon);
 
 		systems.combat.processBufferedActions(
 			now,
 			broadcast,
 			(sid) => {
-				const c = this.opts.findClient(sid);
+				const c = findClient(sid);
 				return <T extends ServerMessageType>(
 					type: T,
 					data?: ServerMessages[T],
 				) => c?.send(type, data);
 			},
-			(e, k) => this.opts.onEntityDeath(e, k),
-			(caster, spellId, x, y) => this.opts.onSummon(caster, spellId, x, y),
+			onEntityDeath,
+			onSummon,
 		);
 
 		// 4. Drops
@@ -97,29 +103,9 @@ export class TickSystem {
 		// HP   — passive: +0.5% maxHp every 30 ticks
 		for (const player of state.players.values()) {
 			if (!player.alive) continue;
-
-			if (player.meditating && state.tick % 5 === 0) {
-				if (player.mana < player.maxMana) {
-					player.mana = Math.min(
-						player.maxMana,
-						player.mana + Math.max(1, Math.floor(player.maxMana * 0.02)),
-					);
-				}
-			} else if (!player.meditating && state.tick % 20 === 0) {
-				if (player.mana < player.maxMana) {
-					player.mana = Math.min(
-						player.maxMana,
-						player.mana + Math.max(1, Math.floor(player.maxMana * 0.01)),
-					);
-				}
-			}
-
-			if (state.tick % 30 === 0 && player.hp < player.maxHp) {
-				player.hp = Math.min(
-					player.maxHp,
-					player.hp + Math.max(1, Math.floor(player.maxHp * 0.005)),
-				);
-			}
+			if (player.meditating && state.tick % 5 === 0) restoreStat(player, "mana", 0.02);
+			else if (!player.meditating && state.tick % 20 === 0) restoreStat(player, "mana", 0.01);
+			if (state.tick % 30 === 0) restoreStat(player, "hp", 0.005);
 		}
 
 		// 6. Respawns
