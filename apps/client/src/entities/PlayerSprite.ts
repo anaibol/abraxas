@@ -60,7 +60,6 @@ export class PlayerSprite {
   private lastPredictTime = 0;
   private lastServerTileX = 0;
   private lastServerTileY = 0;
-  private _destroyed = false;
 
   constructor(
     scene: Phaser.Scene,
@@ -273,7 +272,7 @@ export class PlayerSprite {
   }
 
   setFacing(direction: Direction) {
-    if (this._destroyed) return;
+    if (!this.container.scene) return;
     if (direction === this.currentDir) return;
     this.currentDir = direction;
     const dirName = DIR_NAME_MAP[direction];
@@ -302,7 +301,7 @@ export class PlayerSprite {
   }
 
   private setIdleFrame() {
-    if (this._destroyed) return;
+    if (!this.container.scene) return;
     const dirName = DIR_NAME_MAP[this.currentDir];
     const bodyGrhId = this.bodyEntry[dirName];
     const bodyStatic = this.resolver.resolveStaticGrh(bodyGrhId);
@@ -456,7 +455,7 @@ export class PlayerSprite {
   }
 
   setMoving(moving: boolean) {
-    if (this._destroyed) return;
+    if (!this.container.scene) return;
     if (moving === this.isMoving) return;
     this.isMoving = moving;
 
@@ -600,7 +599,7 @@ export class PlayerSprite {
   }
 
   update(delta: number) {
-    if (this._destroyed) return;
+    if (!this.container.scene) return;
     const dx = this.targetX - this.renderX;
     const dy = this.targetY - this.renderY;
     const distSq = dx * dx + dy * dy;
@@ -632,7 +631,9 @@ export class PlayerSprite {
   }
 
   destroy() {
-    this._destroyed = true;
+    this.bodySprite.stop();
+    this.weaponSprite?.stop();
+    this.shieldSprite?.stop();
     this.container.destroy();
   }
 }
