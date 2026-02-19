@@ -278,6 +278,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                 <Text {...labelStyle}>Email Address</Text>
                 <Input
                   type="email"
+                  autoComplete="username"
                   placeholder="knight@abraxas.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
