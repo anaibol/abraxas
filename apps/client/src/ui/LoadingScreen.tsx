@@ -1,14 +1,7 @@
 import { Flex, Text, Box } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import { useEffect, useState } from "react";
-
-const P = {
-  bg: "#040408",
-  gold: "#d4a843",
-  goldDim: "#b8962e",
-  goldDark: "#6e5a18",
-  font: "'Friz Quadrata', Georgia, serif",
-};
+import { P } from "./palette";
 
 const pulse = keyframes`
   0% { transform: scale(1); opacity: 0.3; }

@@ -5,6 +5,7 @@ import {
 } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import { type ClassType, getRandomName } from "@abraxas/shared";
+import { P } from "./palette";
 import { useTranslation } from "react-i18next";
 
 type LobbyProps = {
@@ -21,19 +22,6 @@ type CharacterSummary = {
 
 type Mode = "login" | "register" | "character_select" | "character_create";
 
-const P = {
-  bg: "#0e0c14dd",
-  surface: "#14111ecc",
-  raised: "#1a1628",
-  border: "#2e2840",
-  gold: "#d4a843",
-  goldDim: "#b8962e",
-  goldDark: "#6e5a18",
-  goldMuted: "#8a7a60",
-  goldText: "#c8b68a",
-  blood: "#c41e3a",
-  font: "'Friz Quadrata', Georgia, serif",
-};
 
 const CLASS_TYPES: readonly ClassType[] = [
   "WARRIOR",
