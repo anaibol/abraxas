@@ -34,13 +34,14 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		hp: 60,
 		str: 8,
 		agi: 15,
-		int: 5,
+		int: 10,
 		speedTilesPerSecond: 6,
 		meleeRange: 1,
 		meleeCooldownMs: 600,
 		meleeWindupMs: 150,
 		armor: 10,
-		spells: [],
+		// Skeleton mage variant: fires shadow bolts at range
+		spells: ["shadow_bolt"],
 		expReward: 40,
 	},
 	goblin: {

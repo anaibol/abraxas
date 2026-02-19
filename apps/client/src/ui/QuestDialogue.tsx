@@ -5,14 +5,14 @@ import { T } from "./tokens";
 interface DialogueOption {
     text: string;
     action: string;
-    data?: any;
+    data?: unknown;
 }
 
 interface QuestDialogueProps {
     npcId: string;
     text: string;
     options: DialogueOption[];
-    onAction: (action: string, data?: any) => void;
+    onAction: (action: string, data?: unknown) => void;
     onClose: () => void;
 }
 

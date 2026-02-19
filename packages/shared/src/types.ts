@@ -533,8 +533,7 @@ export type ClientMessages = {
 export type BroadcastFn = <T extends keyof ServerMessages>(
 	type: T,
 	data: ServerMessages[T],
-	// biome-ignore lint/suspicious/noExplicitAny: Colyseus Client type requires any here
-	options?: { except?: any; exceptSessionId?: string },
+	options?: { except?: unknown; exceptSessionId?: string },
 ) => void;
 
 export interface StatBonuses {

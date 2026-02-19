@@ -1,4 +1,4 @@
-import { type ClassType, type EquipmentSlot } from "@abraxas/shared";
+import { type ClassType, type EquipmentSlot, type PlayerQuestState } from "@abraxas/shared";
 
 export interface InventorySlot {
 	itemId: string;
@@ -46,7 +46,7 @@ export interface SidebarProps {
 	onUnequip?: (slot: EquipmentSlot) => void;
 	onUseItem?: (itemId: string) => void;
 	onDropItem?: (itemId: string) => void;
-	quests?: any; // To be refined if needed
+	quests?: PlayerQuestState[];
 	partyId?: string;
 	leaderId?: string;
 	partyMembers?: PartyMember[];
