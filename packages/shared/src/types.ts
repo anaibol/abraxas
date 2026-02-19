@@ -123,6 +123,12 @@ export interface NpcStats {
 	passive?: boolean;
 	/** NPC flees when HP drops below 25%. */
 	fleesWhenLow?: boolean;
+	/**
+	 * Probability (0–1) that the NPC will attempt a spell cast on any given
+	 * attack tick when a spell is off cooldown. Lower values produce a more
+	 * natural mix of melee and spells. Defaults to 0.4 if omitted.
+	 */
+	spellCastChance?: number;
 }
 
 /** Stats for player classes — extends NpcStats with a required mana pool. */

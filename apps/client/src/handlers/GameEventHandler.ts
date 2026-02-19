@@ -77,7 +77,7 @@ export class GameEventHandler {
 		if (sprite) {
 			this.spriteManager.pulseAlpha(data.sessionId, 0.7, 100);
 			if (this.isSelf(data.sessionId))
-				this.onConsoleMessage?.(t("game.you_attacked"), "#cccccc");
+				this.onConsoleMessage?.(t("game.you_attacked"), "#cccccc", "combat");
 		}
 		this.soundManager.playAttack();
 	}
@@ -95,7 +95,7 @@ export class GameEventHandler {
 			this.spriteManager.pulseAlpha(data.sessionId, 0.8, 140);
 			this.effectManager.playCastWindup(data.sessionId, data.spellId);
 			if (this.isSelf(data.sessionId))
-				this.onConsoleMessage?.(t("game.you_cast_spell"), "#aaaaff");
+				this.onConsoleMessage?.(t("game.you_cast_spell"), "#aaaaff", "combat");
 		}
 		this.soundManager.playSpell();
 
@@ -120,7 +120,7 @@ export class GameEventHandler {
 		this.soundManager.playHit();
 
 		if (this.isSelf(data.targetSessionId)) {
-			this.onConsoleMessage?.(t("game.you_took_damage", { amount: data.amount }), "#ff4444");
+			this.onConsoleMessage?.(t("game.you_took_damage", { amount: data.amount }), "#ff4444", "combat");
 		}
 	}
 
@@ -133,7 +133,7 @@ export class GameEventHandler {
 		}
 		if (this.isSelf(data.sessionId)) {
 			this.inputHandler.cancelTargeting();
-			this.onConsoleMessage?.(t("game.you_died"), "#ff0000");
+			this.onConsoleMessage?.(t("game.you_died"), "#ff0000", "combat");
 		}
 		this.soundManager.playDeath();
 	}
@@ -149,7 +149,7 @@ export class GameEventHandler {
 			);
 		}
 		if (this.isSelf(data.sessionId)) {
-			this.onConsoleMessage?.(t("game.you_respawned"), "#aaffaa");
+			this.onConsoleMessage?.(t("game.you_respawned"), "#aaffaa", "combat");
 		}
 	}
 
@@ -157,7 +157,7 @@ export class GameEventHandler {
 		this.effectManager.showHeal(data.sessionId, data.amount);
 		this.soundManager.playHeal();
 		if (this.isSelf(data.sessionId)) {
-			this.onConsoleMessage?.(t("game.you_healed", { amount: data.amount }), "#33cc33");
+			this.onConsoleMessage?.(t("game.you_healed", { amount: data.amount }), "#33cc33", "combat");
 		}
 	}
 
@@ -191,7 +191,7 @@ export class GameEventHandler {
 		this.spriteManager.applyStunVisual(data.targetSessionId, data.durationMs ?? 1500);
 		this.effectManager.showFloatingText(data.targetSessionId, `${t("game.buff_stunned")} ✦`, "#ffff44");
 		if (this.isSelf(data.targetSessionId)) {
-			this.onConsoleMessage?.(t("game.you_stunned"), "#ffff44");
+			this.onConsoleMessage?.(t("game.you_stunned"), "#ffff44", "combat");
 		}
 	}
 
