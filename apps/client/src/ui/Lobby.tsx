@@ -265,98 +265,107 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
         />
 
         {mode !== "class_select" ? (
-          <Flex direction="column" gap="4">
-            <Box>
-              <Text {...labelStyle}>Email Address</Text>
-              <Input
-                type="email"
-                placeholder="knight@abraxas.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                {...inputStyle}
-              />
-            </Box>
-
-            <Box>
-              <Text {...labelStyle}>Secret Key</Text>
-              <Input
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                {...inputStyle}
-              />
-            </Box>
-
-            <Box>
-              <Text {...labelStyle}>Character Name</Text>
-              <Flex gap="2">
+            <Flex 
+              as="form"
+              direction="column" 
+              gap="4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleAuth();
+              }}
+            >
+              <Box>
+                <Text {...labelStyle}>Email Address</Text>
                 <Input
-                  value={charName}
-                  onChange={(e) => setCharName(sanitizeCharName(e.target.value))}
-                  onBlur={() => setCharName((n: string) => formatCharName(n))}
-                  placeholder="E.g. Valerius the Bold"
-                  maxLength={20}
+                  type="email"
+                  placeholder="knight@abraxas.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   {...inputStyle}
                 />
-                <IconButton
-                  aria-label="Random Name"
-                  variant="ghost"
-                  color={P.goldDim}
-                  onClick={handleRandomName}
-                  _hover={{ bg: "transparent", color: P.gold, transform: "rotate(15deg) scale(1.1)" }}
-                  _active={{ transform: "scale(0.95)" }}
-                >
-                  <Text fontSize="20px">\uD83C\uDFB2</Text>
-                </IconButton>
-              </Flex>
-            </Box>
+              </Box>
 
-            {error && (
-              <Text color={P.blood} fontSize="12px" textAlign="center" py="2" fontWeight="600">
-                {error}
-              </Text>
-            )}
+              <Box>
+                <Text {...labelStyle}>Secret Key</Text>
+                <Input
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  {...inputStyle}
+                />
+              </Box>
 
-            <Button
-              mt="2"
-              w="100%"
-              h="50px"
-              bg={P.goldDim}
-              color="#08080c"
-              onClick={handleAuth}
-              fontFamily={P.font}
-              fontWeight="900"
-              fontSize="16px"
-              letterSpacing="4px"
-              textTransform="uppercase"
-              transition="all 0.2s"
-              _hover={{ bg: P.gold, transform: "translateY(-2px)", boxShadow: `0 5px 20px ${P.gold}44` }}
-              _active={{ transform: "translateY(0)" }}
-            >
-              {mode === "login" ? "Login" : "Register"}
-            </Button>
+              <Box>
+                <Text {...labelStyle}>Character Name</Text>
+                <Flex gap="2">
+                  <Input
+                    value={charName}
+                    onChange={(e) => setCharName(sanitizeCharName(e.target.value))}
+                    onBlur={() => setCharName((n: string) => formatCharName(n))}
+                    placeholder="E.g. Valerius the Bold"
+                    maxLength={20}
+                    {...inputStyle}
+                  />
+                  <IconButton
+                    aria-label="Random Name"
+                    type="button"
+                    variant="ghost"
+                    color={P.goldDim}
+                    onClick={handleRandomName}
+                    _hover={{ bg: "transparent", color: P.gold, transform: "rotate(15deg) scale(1.1)" }}
+                    _active={{ transform: "scale(0.95)" }}
+                  >
+                    <Text fontSize="20px">🎲</Text>
+                  </IconButton>
+                </Flex>
+              </Box>
 
-            <Flex justify="center" gap="2" mt="2">
-              <Text fontSize="12px" color={P.goldMuted}>
-                {mode === "login" ? "New to the Arena?" : "Already a combatant?"}
-              </Text>
-              <Text
-                fontSize="12px"
-                color={P.gold}
-                fontWeight="700"
-                cursor="pointer"
-                borderBottom="1px solid transparent"
-                _hover={{ borderBottomColor: P.gold }}
-                onClick={() => {
-                  setMode(mode === "login" ? "register" : "login");
-                  setError("");
-                }}
+              {error && (
+                <Text color={P.blood} fontSize="12px" textAlign="center" py="2" fontWeight="600">
+                  {error}
+                </Text>
+              )}
+
+              <Button
+                mt="2"
+                w="100%"
+                h="50px"
+                bg={P.goldDim}
+                color="#08080c"
+                type="submit"
+                fontFamily={P.font}
+                fontWeight="900"
+                fontSize="16px"
+                letterSpacing="4px"
+                textTransform="uppercase"
+                transition="all 0.2s"
+                _hover={{ bg: P.gold, transform: "translateY(-2px)", boxShadow: `0 5px 20px ${P.gold}44` }}
+                _active={{ transform: "translateY(0)" }}
               >
-                {mode === "login" ? "Create Account" : "Sign In"}
-              </Text>
+                {mode === "login" ? "Login" : "Register"}
+              </Button>
+
+              <Flex justify="center" gap="2" mt="2">
+                <Text fontSize="12px" color={P.goldMuted}>
+                  {mode === "login" ? "New to the Arena?" : "Already a combatant?"}
+                </Text>
+                <Text
+                  fontSize="12px"
+                  color={P.gold}
+                  fontWeight="700"
+                  cursor="pointer"
+                  borderBottom="1px solid transparent"
+                  _hover={{ borderBottomColor: P.gold }}
+                  onClick={() => {
+                    setMode(mode === "login" ? "register" : "login");
+                    setError("");
+                  }}
+                >
+                  {mode === "login" ? "Create Account" : "Sign In"}
+                </Text>
+              </Flex>
             </Flex>
-          </Flex>
         ) : (
           <Box animation={`${entrance} 0.4s ease-out`}>
             <Flex justify="space-between" align="baseline" mb="4">
