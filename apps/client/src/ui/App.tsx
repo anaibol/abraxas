@@ -78,7 +78,7 @@ export function App() {
   const [dialogueData, setDialogueData] = useState<{
     npcId: string;
     text: string;
-    options: any[];
+    options: { text: string; action: string; data?: unknown }[];
   } | null>(null);
   const [isRecording, setIsRecording] = useState(false);
 
@@ -223,7 +223,7 @@ export function App() {
             id: ++consoleMsgId,
             text: mapName
               ? `Traveling to ${mapName}...`
-              : `Welcome to the game, ${playerState.name}!`,
+              : "Welcome to Abraxas!",
             color: "#ffff00",
             timestamp: Date.now(),
           },
@@ -547,9 +547,7 @@ export function App() {
                 onFriendAccept={(rid: string) =>
                   networkRef.current?.sendFriendAccept(rid)
                 }
-                onWhisper={(name: string) => {
-                  setIsChatOpen(true);
-                }}
+                onWhisper={() => setIsChatOpen(true)}
               />
             </Box>
             {shopData && (
