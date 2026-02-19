@@ -58,7 +58,7 @@ const KEYBINDS: { key: string; label: string; category: string }[] = [
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <Box
-      fontSize="9px"
+      fontSize="11px"
       letterSpacing="3px"
       textTransform="uppercase"
       color={P.gold}
