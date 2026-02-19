@@ -24,7 +24,7 @@ export class SocialSystem {
     // Check if target is already in a party
     if (target.partyId) {
       client.send(ServerMessageType.Error, {
-        message: "Player is already in a party",
+        message: "social.already_in_party",
       });
       return;
     }
@@ -44,7 +44,7 @@ export class SocialSystem {
       const party = this.state.parties.get(partyId);
       if (party && party.leaderSessionId !== inviter.sessionId) {
         client.send(ServerMessageType.Error, {
-          message: "Only the party leader can invite",
+          message: "social.leader_only_invite",
         });
         return;
       }
@@ -62,8 +62,9 @@ export class SocialSystem {
         inviterName: inviter.name,
       });
       client.send(ServerMessageType.Notification, {
-        message: `Invited ${target.name} to party`,
-      });
+        message: "social.invited_to_party",
+        templateData: { name: target.name },
+      } as any);
     }
   }
 
@@ -71,7 +72,7 @@ export class SocialSystem {
     const invite = this.invitations.get(client.sessionId);
     if (!invite || invite.partyId !== partyId) {
       client.send(ServerMessageType.Error, {
-        message: "No active invitation for this party",
+        message: "social.no_invite",
       });
       return;
     }
@@ -85,7 +86,7 @@ export class SocialSystem {
     }
 
     if (party.memberIds.length >= 5) {
-      client.send(ServerMessageType.Error, { message: "Party is full" });
+      client.send(ServerMessageType.Error, { message: "social.party_full" });
       this.invitations.delete(client.sessionId);
       return;
     }
@@ -97,8 +98,9 @@ export class SocialSystem {
 
     this.broadcastPartyUpdate(partyId);
     this.broadcastToParty(partyId, ServerMessageType.Notification, {
-      message: `${player.name} joined the party`,
-    });
+      message: "social.joined_party",
+      templateData: { name: player.name },
+    } as any);
   }
 
   /** Sends an empty PartyUpdate to signal the client they are no longer in a party. */
@@ -122,8 +124,9 @@ export class SocialSystem {
     player.partyId = "";
 
     this.broadcastToParty(partyId, ServerMessageType.Notification, {
-      message: `${player.name} left the party`,
-    });
+      message: "social.left_party",
+      templateData: { name: player.name },
+    } as any);
     this.broadcastPartyUpdate(partyId);
     this.sendPartyLeft(client);
   }
@@ -135,7 +138,7 @@ export class SocialSystem {
     const party = this.state.parties.get(player.partyId);
     if (!party || party.leaderSessionId !== client.sessionId) {
       client.send(ServerMessageType.Error, {
-        message: "Only the leader can kick players",
+        message: "social.leader_only_kick",
       });
       return;
     }
@@ -150,7 +153,7 @@ export class SocialSystem {
       const targetClient = this.findClient(targetSessionId);
       if (targetClient) {
         targetClient.send(ServerMessageType.Notification, {
-          message: "You were kicked from the party",
+          message: "social.kicked_from_party",
         });
         this.sendPartyLeft(targetClient);
       }
@@ -174,8 +177,9 @@ export class SocialSystem {
         const newLeader = this.state.players.get(newLeaderId);
         if (newLeader) {
           this.broadcastToParty(party.id, ServerMessageType.Notification, {
-            message: `${newLeader.name} is now the party leader`,
-          });
+            message: "social.new_leader",
+            templateData: { name: newLeader.name },
+          } as any);
         }
       }
     }

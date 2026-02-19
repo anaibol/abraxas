@@ -5,6 +5,7 @@ import {
 } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import { type ClassType, getRandomName } from "@abraxas/shared";
+import { useTranslation } from "react-i18next";
 
 type LobbyProps = {
   onJoin: (charId: string, classType: ClassType, token: string) => void;
@@ -44,37 +45,27 @@ const CLASS_TYPES: readonly ClassType[] = [
 
 const CLASS_INFO: Record<
   ClassType,
-  { icon: string; color: string; desc: string; longDesc: string }
+  { icon: string; color: string }
 > = {
   WARRIOR: {
     icon: "\u2694\uFE0F",
     color: "#e63946",
-    desc: "HP:180 STR:25",
-    longDesc: "A master of close-quarters combat with high survivability.",
   },
   MAGE: {
     icon: "\u2728",
     color: "#4895ef",
-    desc: "INT:28 Mana:150",
-    longDesc: "Wields destructive arcane power from a distance.",
   },
   RANGER: {
     icon: "\uD83C\uDFF9",
     color: "#4caf50",
-    desc: "AGI:26 Range:5",
-    longDesc: "Swift and precise, striking foes before they can react.",
   },
   ROGUE: {
     icon: "\uD83D\uDDE1\uFE0F",
     color: "#9d4edd",
-    desc: "AGI:24 SPD:8",
-    longDesc: "A shadowy assassin specializing in speed and critical strikes.",
   },
   CLERIC: {
     icon: "\uD83D\uDEE1\uFE0F",
     color: "#ffca3a",
-    desc: "HP:160 STR:20",
-    longDesc: "A holy defender who blends combat with divine protection.",
   },
 };
 
@@ -125,6 +116,7 @@ function formatCharName(raw: string): string {
 const MAX_CHARACTERS = 5;
 
 export function Lobby({ onJoin, connecting }: LobbyProps) {
+  const { t } = useTranslation();
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -182,7 +174,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Authentication failed");
+        setError(data.error || t("lobby.error.auth_failed"));
         return;
       }
 
@@ -191,7 +183,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
       setCharacters(data.characters ?? []);
       setMode("character_select");
     } catch {
-      setError("Network error");
+      setError(t("lobby.error.network_error"));
     }
   };
 
@@ -199,11 +191,11 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
     setError("");
     const trimmed = charName.trim();
     if (!trimmed) {
-      setError("Character name is required");
+      setError(t("lobby.error.char_name_required"));
       return;
     }
     if (!CHAR_NAME_REGEX.test(trimmed)) {
-      setError("Each word must start with a capital letter and contain only letters (e.g. Dark Knight)");
+      setError(t("lobby.error.char_name_invalid"));
       return;
     }
 
@@ -220,7 +212,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Character creation failed");
+        setError(data.error || t("lobby.error.auth_failed"));
         return;
       }
 
@@ -229,7 +221,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
       setClassType("WARRIOR");
       setMode("character_select");
     } catch {
-      setError("Network error");
+      setError(t("lobby.error.network_error"));
     } finally {
       setCreating(false);
     }
@@ -300,7 +292,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
           animation={`${titleGlow} 4s infinite ease-in-out`}
           mb="1"
         >
-          Abraxas
+          {t("lobby.title")}
         </Text>
         <Text
           textAlign="center"
@@ -311,7 +303,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
           mb="8"
           ml="12px"
         >
-          Arena
+          {t("lobby.subtitle")}
         </Text>
 
         <Box
@@ -333,7 +325,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
             }}
           >
             <Box>
-              <Text {...labelStyle}>Email Address</Text>
+              <Text {...labelStyle}>{t("lobby.email_address")}</Text>
               <Input
                 type="email"
                 autoComplete="username"
@@ -345,7 +337,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
             </Box>
 
             <Box>
-              <Text {...labelStyle}>Secret Key</Text>
+              <Text {...labelStyle}>{t("lobby.secret_key")}</Text>
               <Input
                 type="password"
                 autoComplete="current-password"
@@ -378,12 +370,12 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
               _hover={{ bg: P.gold, transform: "translateY(-2px)", boxShadow: `0 5px 20px ${P.gold}44` }}
               _active={{ transform: "translateY(0)" }}
             >
-              {mode === "login" ? "Login" : "Register"}
+              {mode === "login" ? t("lobby.login") : t("lobby.register")}
             </Button>
 
             <Flex justify="center" gap="2" mt="2">
               <Text fontSize="12px" color={P.goldMuted}>
-                {mode === "login" ? "New to the Arena?" : "Already a combatant?"}
+                {mode === "login" ? t("lobby.new_to_arena") : t("lobby.already_combatant")}
               </Text>
               <Text
                 fontSize="12px"
@@ -397,7 +389,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                   setError("");
                 }}
               >
-                {mode === "login" ? "Create Account" : "Sign In"}
+                {mode === "login" ? t("lobby.create_account") : t("lobby.sign_in")}
               </Text>
             </Flex>
           </Flex>
@@ -407,9 +399,9 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
         {mode === "character_select" && (
           <Box animation={`${entrance} 0.4s ease-out`}>
             <Flex justify="space-between" align="center" mb="5">
-              <Text {...labelStyle} mb="0">Choose Your Champion</Text>
+              <Text {...labelStyle} mb="0">{t("lobby.choose_champion")}</Text>
               <Text fontSize="11px" color={P.goldDark}>
-                {characters.length}/{MAX_CHARACTERS} characters
+                {t("lobby.characters_count", { count: characters.length, max: MAX_CHARACTERS })}
               </Text>
             </Flex>
 
@@ -423,8 +415,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
               >
                 <Text fontSize="32px" opacity="0.4">⚔️</Text>
                 <Text fontSize="13px" color={P.goldMuted} textAlign="center">
-                  No champions yet.
-                  <br />Create your first character to enter the arena.
+                  {t("lobby.no_champions")}
                 </Text>
               </Flex>
             ) : (
@@ -467,7 +458,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                             {char.name}
                           </Text>
                           <Text fontSize="11px" color={P.goldDark} textTransform="uppercase" letterSpacing="1px">
-                            {char.class}
+                            {t(`classes.${char.class}.name`)}
                           </Text>
                         </Box>
                         <Badge
@@ -514,12 +505,12 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                   : {}
               }
             >
-              + New Character
+              + {t("lobby.new_character")}
             </Button>
 
             {connecting && (
               <Text fontSize="11px" color={P.goldMuted} textAlign="center" mt="3">
-                Connecting...
+                {t("lobby.connecting")}
               </Text>
             )}
 
@@ -535,7 +526,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
               onClick={resetToLogin}
               _hover={{ color: P.goldMuted }}
             >
-              Sign Out
+              {t("lobby.sign_out")}
             </Button>
           </Box>
         )}
@@ -544,17 +535,17 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
         {mode === "character_create" && (
           <Box animation={`${entrance} 0.4s ease-out`}>
             <Flex justify="space-between" align="baseline" mb="5">
-              <Text {...labelStyle} mb="0">New Character</Text>
+              <Text {...labelStyle} mb="0">{t("lobby.new_character")}</Text>
             </Flex>
 
             <Box mb="4">
-              <Text {...labelStyle}>Character Name</Text>
+              <Text {...labelStyle}>{t("lobby.character_name")}</Text>
               <Flex gap="2">
                 <Input
                   value={charName}
                   onChange={(e) => setCharName(sanitizeCharName(e.target.value))}
                   onBlur={() => setCharName((n: string) => formatCharName(n))}
-                  placeholder="E.g. Valerius the Bold"
+                  placeholder={t("lobby.character_name_placeholder")}
                   maxLength={20}
                   {...inputStyle}
                 />
@@ -572,7 +563,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
               </Flex>
             </Box>
 
-            <Text {...labelStyle} mb="3">Select Your Path</Text>
+            <Text {...labelStyle} mb="3">{t("lobby.select_path")}</Text>
             <Grid templateColumns="repeat(1, 1fr)" gap="2" mb="6">
               {CLASS_TYPES.map((cls) => {
                 const sel = classType === cls;
@@ -612,10 +603,10 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                           letterSpacing="2px"
                           textTransform="uppercase"
                         >
-                          {cls}
+                          {t(`classes.${cls}.name`)}
                         </Text>
                         <Text fontSize="11px" color={P.goldDark}>
-                          {info.desc}
+                          {t(`classes.${cls}.desc`)}
                         </Text>
                       </Box>
                       {sel && (
@@ -630,7 +621,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                     </Flex>
                     {sel && (
                       <Text mt="2" fontSize="11px" color={P.goldText} opacity="0.8" pl="35px">
-                        {info.longDesc}
+                        {t(`classes.${cls}.longDesc`)}
                       </Text>
                     )}
                   </Box>
@@ -658,7 +649,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
               textTransform="uppercase"
               _hover={{ bg: P.gold, transform: "translateY(-2px)", boxShadow: `0 5px 20px ${P.gold}44` }}
             >
-              Create Character
+              {t("lobby.create_character")}
             </Button>
 
             <Button
@@ -673,7 +664,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                 setMode("character_select");
               }}
             >
-              Back
+              {t("lobby.back")}
             </Button>
           </Box>
         )}

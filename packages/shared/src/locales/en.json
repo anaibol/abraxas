@@ -56,13 +56,71 @@
     }
   },
   "game": {
-    "welcome": "Welcome to Abraxas!",
-    "traveling": "Traveling to {{map}}...",
-    "not_enough_mana": "Not enough mana",
-    "class_restricted": "Your class cannot use that spell",
-    "invalid_target": "Invalid target",
-    "inventory_full": "Inventory full",
-    "item_not_found": "Item not found",
     "restricted_to": "Restricted to {{classes}}"
+  },
+  "social": {
+    "already_in_party": "Player is already in a party",
+    "leader_only_invite": "Only the party leader can invite",
+    "invited_to_party": "Invited {{name}} to party",
+    "no_invite": "No active invitation for this party",
+    "party_full": "Party is full",
+    "joined_party": "{{name}} joined the party",
+    "left_party": "{{name}} left the party",
+    "leader_only_kick": "Only the leader can kick players",
+    "kicked_from_party": "You were kicked from the party",
+    "new_leader": "{{name}} is now the party leader"
+  },
+  "sidebar": {
+    "tabs": {
+      "inv": "⚔️ Inv",
+      "spells": "📖 Spells",
+      "quests": "📜 Quests",
+      "party": "⚔️ Party",
+      "friends": "👥 Friends"
+    },
+    "inventory": {
+      "unequip_hint": "{{name}} (right-click unequip)",
+      "interactions_hint": "{{name}}{{qty}}\nClick: Select · Dbl-click: {{action}} · T: Drop",
+      "empty_spells": "No spells available",
+      "mana": "Mana",
+      "range": "Range",
+      "self": "Self"
+    },
+    "party": {
+      "not_in_party": "Not in a party. Invite someone to start one.",
+      "session_id": "Session ID",
+      "invite": "Invite",
+      "party_id": "Party ID: {{id}}",
+      "leader_tag": "(L)",
+      "trade": "[Trade]",
+      "kick": "[Kick]",
+      "leave": "Leave Party"
+    },
+    "friends": {
+      "friend_name": "Friend name",
+      "add": "Add",
+      "no_friends": "No friends yet.",
+      "whisper_tag": "[W]",
+      "party_invite_tag": "[P]",
+      "trade_tag": "[Trade]",
+      "pending_requests": "Pending Requests",
+      "accept": "[Accept]"
+    }
+  },
+  "status": {
+    "dead": "DEAD",
+    "stunned": "STUNNED",
+    "stealthed": "STEALTHED",
+    "transmitting": "TRANSMITTING",
+    "health": "Health",
+    "mana": "Mana"
+  },
+  "controls": {
+    "move": "Move",
+    "melee": "Melee",
+    "pickup": "Pickup",
+    "drop": "Drop",
+    "use": "Use",
+    "equip": "Equip"
   }
 }

@@ -56,13 +56,71 @@
     }
   },
   "game": {
-    "welcome": "¡Bienvenido a Abraxas!",
-    "traveling": "Viajando a {{map}}...",
-    "not_enough_mana": "No hay suficiente maná",
-    "class_restricted": "Tu clase no puede usar ese hechizo",
-    "invalid_target": "Objetivo inválido",
-    "inventory_full": "Inventario lleno",
-    "item_not_found": "Objeto no encontrado",
     "restricted_to": "Restringido a {{classes}}"
+  },
+  "social": {
+    "already_in_party": "El jugador ya está en un grupo",
+    "leader_only_invite": "Solo el líder del grupo puede invitar",
+    "invited_to_party": "Invitado {{name}} al grupo",
+    "no_invite": "No hay una invitación activa para este grupo",
+    "party_full": "El grupo está lleno",
+    "joined_party": "{{name}} se ha unido al grupo",
+    "left_party": "{{name}} ha abandonado el grupo",
+    "leader_only_kick": "Solo el líder puede expulsar jugadores",
+    "kicked_from_party": "Has sido expulsado del grupo",
+    "new_leader": "{{name}} es ahora el líder del grupo"
+  },
+  "sidebar": {
+    "tabs": {
+      "inv": "⚔️ Inv",
+      "spells": "📖 Hechizos",
+      "quests": "📜 Misiones",
+      "party": "⚔️ Grupo",
+      "friends": "👥 Amigos"
+    },
+    "inventory": {
+      "unequip_hint": "{{name}} (clic derecho desequipar)",
+      "interactions_hint": "{{name}}{{qty}}\nClic: Seleccionar · Doble-clic: {{action}} · T: Soltar",
+      "empty_spells": "No hay hechizos disponibles",
+      "mana": "Maná",
+      "range": "Rango",
+      "self": "Propio"
+    },
+    "party": {
+      "not_in_party": "No estás en un grupo. Invita a alguien para empezar uno.",
+      "session_id": "ID de Sesión",
+      "invite": "Invitar",
+      "party_id": "ID de Grupo: {{id}}",
+      "leader_tag": "(L)",
+      "trade": "[Comerciar]",
+      "kick": "[Echar]",
+      "leave": "Abandonar Grupo"
+    },
+    "friends": {
+      "friend_name": "Nombre del amigo",
+      "add": "Añadir",
+      "no_friends": "Aún no tienes amigos.",
+      "whisper_tag": "[S]",
+      "party_invite_tag": "[G]",
+      "trade_tag": "[Comerciar]",
+      "pending_requests": "Peticiones Pendientes",
+      "accept": "[Aceptar]"
+    }
+  },
+  "status": {
+    "dead": "MUERTO",
+    "stunned": "ATURDIDO",
+    "stealthed": "SIGILO",
+    "transmitting": "TRANSMITIENDO",
+    "health": "Salud",
+    "mana": "Maná"
+  },
+  "controls": {
+    "move": "Moverse",
+    "melee": "Atacar",
+    "pickup": "Recoger",
+    "drop": "Soltar",
+    "use": "Usar",
+    "equip": "Equipar"
   }
 }

@@ -56,13 +56,71 @@
     }
   },
   "game": {
-    "welcome": "Bienvenue sur Abraxas !",
-    "traveling": "Voyage vers {{map}}...",
-    "not_enough_mana": "Pas assez de mana",
-    "class_restricted": "Votre classe ne peut pas utiliser ce sort",
-    "invalid_target": "Cible invalide",
-    "inventory_full": "Inventaire plein",
-    "item_not_found": "Objet non trouvé",
     "restricted_to": "Restreint à {{classes}}"
+  },
+  "social": {
+    "already_in_party": "Le joueur est déjà dans un groupe",
+    "leader_only_invite": "Seul le chef de groupe peut inviter",
+    "invited_to_party": "{{name}} invité au groupe",
+    "no_invite": "Pas d'invitation active pour ce groupe",
+    "party_full": "Le groupe est plein",
+    "joined_party": "{{name}} a rejoint le groupe",
+    "left_party": "{{name}} a quitté le groupe",
+    "leader_only_kick": "Seul le chef peut exclure des joueurs",
+    "kicked_from_party": "Vous avez été exclu du groupe",
+    "new_leader": "{{name}} est maintenant le chef de groupe"
+  },
+  "sidebar": {
+    "tabs": {
+      "inv": "⚔️ Inv",
+      "spells": "📖 Sorts",
+      "quests": "📜 Quêtes",
+      "party": "⚔️ Groupe",
+      "friends": "👥 Amis"
+    },
+    "inventory": {
+      "unequip_hint": "{{name}} (clic droit déséquiper)",
+      "interactions_hint": "{{name}}{{qty}}\nClic : Sélectionner · Double-clic : {{action}} · T : Jeter",
+      "empty_spells": "Aucun sort disponible",
+      "mana": "Mana",
+      "range": "Portée",
+      "self": "Soi"
+    },
+    "party": {
+      "not_in_party": "Pas dans un groupe. Invitez quelqu'un pour en commencer un.",
+      "session_id": "ID de session",
+      "invite": "Inviter",
+      "party_id": "ID de groupe : {{id}}",
+      "leader_tag": "(L)",
+      "trade": "[Échanger]",
+      "kick": "[Exclure]",
+      "leave": "Quitter le groupe"
+    },
+    "friends": {
+      "friend_name": "Nom de l'ami",
+      "add": "Ajouter",
+      "no_friends": "Pas encore d'amis.",
+      "whisper_tag": "[M]",
+      "party_invite_tag": "[G]",
+      "trade_tag": "[Échanger]",
+      "pending_requests": "Demandes en attente",
+      "accept": "[Accepter]"
+    }
+  },
+  "status": {
+    "dead": "MORT",
+    "stunned": "ÉTOURDI",
+    "stealthed": "CAMOUFLÉ",
+    "transmitting": "TRANSMISSION",
+    "health": "Santé",
+    "mana": "Mana"
+  },
+  "controls": {
+    "move": "Déplacer",
+    "melee": "Attaquer",
+    "pickup": "Ramasser",
+    "drop": "Jeter",
+    "use": "Utiliser",
+    "equip": "Équiper"
   }
 }

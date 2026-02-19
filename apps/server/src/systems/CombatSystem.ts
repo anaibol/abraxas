@@ -245,7 +245,7 @@ export class CombatSystem {
 			const classStats = caster.getStats();
 			if (classStats && !classStats.spells.includes(spellId)) {
 				sendToClient?.(ServerMessageType.Notification, {
-					message: "Your class cannot use that spell",
+					message: "game.class_restricted",
 				});
 				return false;
 			}
@@ -284,7 +284,7 @@ export class CombatSystem {
 
 		if (caster instanceof Player && caster.mana < spell.manaCost) {
 			sendToClient?.(ServerMessageType.Notification, {
-				message: "Not enough mana",
+				message: "game.not_enough_mana",
 			});
 			return false;
 		}

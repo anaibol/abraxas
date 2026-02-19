@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Box, Flex, Text, Grid, Input, Button, VStack, HStack } from "@chakra-ui/react";
+import { useTranslation } from "react-i18next";
 import { CLASS_STATS, SPELLS, ITEMS, EQUIPMENT_SLOTS, type EquipmentSlot, type PlayerQuestState } from "@abraxas/shared";
 import { QuestLog } from "./QuestLog";
 
@@ -124,11 +125,11 @@ const ITEM_ICONS: Record<string, string> = {
 };
 
 const SIDEBAR_TABS: readonly { key: "inv" | "spells" | "quests" | "party" | "friends"; label: string }[] = [
-  { key: "inv", label: "\u2694 Inv" },
-  { key: "spells", label: "\uD83D\uDCD6 Spells" },
-  { key: "quests", label: "\uD83D\uDCDC Quests" },
-  { key: "party", label: "\u2694\uFE0F Party" },
-  { key: "friends", label: "\uD83D\uDC65 Friends" },
+  { key: "inv", label: "inv" },
+  { key: "spells", label: "spells" },
+  { key: "quests", label: "quests" },
+  { key: "party", label: "party" },
+  { key: "friends", label: "friends" },
 ];
 
 export function Sidebar({
@@ -138,6 +139,7 @@ export function Sidebar({
   friends = [], pendingFriendRequests = [], onFriendRequest, onFriendAccept, onWhisper, onTradeRequest,
   selectedItemId, onSelectItem,
 }: SidebarProps) {
+  const { t } = useTranslation();
   const [tab, setTab] = useState<"inv" | "spells" | "quests" | "party" | "friends">("inv");
   const [inviteId, setInviteId] = useState("");
   const [friendName, setFriendName] = useState("");
@@ -157,13 +159,13 @@ export function Sidebar({
         <Text fontSize="9px" color={P.goldDark} letterSpacing="4px" textTransform="uppercase" mt="0.5">
           {state.classType}
         </Text>
-        {!state.alive && <Text fontSize="12px" color={P.bloodBright} fontWeight="700" mt="1" letterSpacing="3px">DEAD</Text>}
-        {state.stunned && <Text fontSize="10px" color="#cccc33" fontWeight="700" mt="0.5" letterSpacing="2px">STUNNED</Text>}
-        {state.stealthed && <Text fontSize="10px" color="#9944cc" fontWeight="700" mt="0.5" letterSpacing="2px">STEALTHED</Text>}
+        {!state.alive && <Text fontSize="12px" color={P.bloodBright} fontWeight="700" mt="1" letterSpacing="3px">{t("status.dead")}</Text>}
+        {state.stunned && <Text fontSize="10px" color="#cccc33" fontWeight="700" mt="0.5" letterSpacing="2px">{t("status.stunned")}</Text>}
+        {state.stealthed && <Text fontSize="10px" color="#9944cc" fontWeight="700" mt="0.5" letterSpacing="2px">{t("status.stealthed")}</Text>}
         {isRecording && (
             <Flex align="center" justify="center" gap="2" mt="1.5">
                 <Box w="8px" h="8px" bg="#ff0000" borderRadius="full" animation="pulse 1s infinite" />
-                <Text fontSize="10px" color="#ff4444" fontWeight="700" letterSpacing="2px">TRANSMITTING</Text>
+                <Text fontSize="10px" color="#ff4444" fontWeight="700" letterSpacing="2px">{t("status.transmitting")}</Text>
             </Flex>
         )}
         {/* Level + XP bar */}
@@ -210,7 +212,7 @@ export function Sidebar({
             _hover={{ color: P.goldText, bg: P.surface }}
             onClick={() => setTab(key)}
           >
-            {label}
+            {t(`sidebar.tabs.${key}`)}
           </Box>
         ))}
       </Flex>
@@ -236,7 +238,7 @@ export function Sidebar({
                     alignItems="center"
                     justifyContent="center"
                     cursor={def ? "pointer" : "default"}
-                    title={def ? `${def.name} (right-click unequip)` : slot}
+                    title={def ? t("sidebar.inventory.unequip_hint", { name: def.name }) : slot}
                     onClick={() => def && onUnequip?.(slot)}
                     _hover={def ? { borderColor: P.gold } : {}}
                     position="relative"
@@ -269,11 +271,15 @@ export function Sidebar({
                   borderRadius="2px"
                   transition="all 0.1s"
                   cursor={def ? "pointer" : "default"}
-                  title={
-                    def
-                      ? `${def.name}${invItem && invItem.quantity > 1 ? ` x${invItem.quantity}` : ""}\nClick: Select · Dbl-click: ${def.consumeEffect ? "Use" : "Equip"} · T: Drop`
-                      : ""
-                  }
+                    title={
+                      def
+                        ? t("sidebar.inventory.interactions_hint", {
+                            name: def.name,
+                            qty: invItem && invItem.quantity > 1 ? ` x${invItem.quantity}` : "",
+                            action: def.consumeEffect ? t("controls.use") : t("controls.equip")
+                          })
+                        : ""
+                    }
                   _hover={def ? { borderColor: P.gold, bg: P.surface } : {}}
                   display="flex"
                   alignItems="center"
@@ -317,7 +323,7 @@ export function Sidebar({
       {tab === "spells" && (
         <Box flex="1" overflow="auto" p="2.5">
           {classSpells.length === 0 ? (
-            <Text textAlign="center" color={P.borderLight} fontSize="11px" py="8" fontStyle="italic">No spells available</Text>
+            <Text textAlign="center" color={P.borderLight} fontSize="11px" py="8" fontStyle="italic">{t("sidebar.inventory.empty_spells")}</Text>
           ) : (
             <Flex direction="column" gap="1.5">
               {classSpells.map((spell) => (
@@ -342,7 +348,7 @@ export function Sidebar({
                       {spell.id.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())}
                     </Text>
                     <Text fontSize="9px" color={P.goldDark} mt="0.5">
-                      Mana: {spell.manaCost} · {spell.rangeTiles > 0 ? `Range: ${spell.rangeTiles}` : "Self"} · [{spell.key}]
+                      {t("sidebar.inventory.mana")}: {spell.manaCost} · {spell.rangeTiles > 0 ? `${t("sidebar.inventory.range")}: ${spell.rangeTiles}` : t("sidebar.inventory.self")} · [{spell.key}]
                     </Text>
                   </Box>
                 </Flex>
@@ -359,10 +365,10 @@ export function Sidebar({
         <Box flex="1" overflow="auto" p="3">
           {!partyId ? (
             <VStack align="stretch" gap="3">
-              <Text fontSize="11px" color={P.goldDark} fontStyle="italic">Not in a party. Invite someone to start one.</Text>
+              <Text fontSize="11px" color={P.goldDark} fontStyle="italic">{t("sidebar.party.not_in_party")}</Text>
               <HStack gap="2">
                 <Input
-                  placeholder="Session ID"
+                  placeholder={t("sidebar.party.session_id")}
                   size="xs"
                   value={inviteId}
                   onChange={(e) => setInviteId(e.target.value)}
@@ -382,19 +388,19 @@ export function Sidebar({
                   _hover={{ bg: P.surface, borderColor: P.gold }}
                   onClick={() => { onPartyInvite?.(inviteId); setInviteId(""); }}
                 >
-                  Invite
+                  {t("sidebar.party.invite")}
                 </Button>
               </HStack>
             </VStack>
           ) : (
             <VStack align="stretch" gap="2">
-              <Text fontSize="9px" color={P.goldDark} letterSpacing="2px" textTransform="uppercase">Party ID: <Box as="span" color={P.gold} fontFamily={P.mono}>{partyId}</Box></Text>
+              <Text fontSize="9px" color={P.goldDark} letterSpacing="2px" textTransform="uppercase">{t("sidebar.party.party_id", { id: partyId })}</Text>
               {partyMembers.map((member) => (
                 <Flex key={member.sessionId} justify="space-between" align="center" p="2" bg={P.darkest} border="1px solid" borderColor={P.border} borderRadius="2px">
                   <HStack gap="2">
                     <Box w="6px" h="6px" borderRadius="full" bg="green.400" flexShrink={0} />
                     <Text fontSize="12px" color={member.sessionId === leaderId ? P.gold : P.goldText} fontWeight={member.sessionId === leaderId ? "700" : "400"}>
-                      {member.name}{member.sessionId === leaderId ? " (L)" : ""}
+                      {member.name}{member.sessionId === leaderId ? ` ${t("sidebar.party.leader_tag")}` : ""}
                     </Text>
                   </HStack>
                   <HStack gap="1">
@@ -405,7 +411,7 @@ export function Sidebar({
                     )}
                     {leaderId === partyMembers[0]?.sessionId && member.sessionId !== leaderId && (
                       <Button size="xs" variant="ghost" p="0" h="auto" minW="auto" color="red.400" fontSize="10px" onClick={() => onPartyKick?.(member.sessionId)}>
-                        [Kick]
+                        {t("sidebar.party.kick")}
                       </Button>
                     )}
                   </HStack>
@@ -421,7 +427,7 @@ export function Sidebar({
                 fontSize="10px"
                 onClick={onPartyLeave}
               >
-                Leave Party
+                {t("sidebar.party.leave")}
               </Button>
             </VStack>
           )}
@@ -434,7 +440,7 @@ export function Sidebar({
           <VStack align="stretch" gap="3">
             <HStack gap="2">
               <Input
-                placeholder="Friend name"
+                placeholder={t("sidebar.friends.friend_name")}
                 size="xs"
                 value={friendName}
                 onChange={(e) => setFriendName(e.target.value)}
@@ -454,12 +460,12 @@ export function Sidebar({
                 _hover={{ bg: P.surface, borderColor: P.gold }}
                 onClick={() => { onFriendRequest?.(friendName); setFriendName(""); }}
               >
-                Add
+                {t("sidebar.friends.add")}
               </Button>
             </HStack>
             <VStack align="stretch" gap="1">
               {friends.length === 0 && (
-                <Text fontSize="11px" color={P.goldDark} textAlign="center" fontStyle="italic" py="4">No friends yet.</Text>
+                <Text fontSize="11px" color={P.goldDark} textAlign="center" fontStyle="italic" py="4">{t("sidebar.friends.no_friends")}</Text>
               )}
               {friends.map((friend) => (
                 <Flex key={friend.id} justify="space-between" align="center" p="2" bg={P.darkest} border="1px solid" borderColor={P.border} borderRadius="2px">
@@ -469,11 +475,11 @@ export function Sidebar({
                   </HStack>
                   <HStack gap="1">
                     <Button size="xs" variant="ghost" p="0" h="auto" minW="auto" color={P.gold} fontSize="10px" onClick={() => onWhisper?.(friend.name)}>
-                      [W]
+                      {t("sidebar.friends.whisper_tag")}
                     </Button>
                     {friend.online && (
                       <Button size="xs" variant="ghost" p="0" h="auto" minW="auto" color="blue.400" fontSize="10px" onClick={() => onPartyInvite?.(friend.id)}>
-                        [P]
+                        {t("sidebar.friends.party_invite_tag")}
                       </Button>
                     )}
                     {friend.online && (
@@ -487,7 +493,7 @@ export function Sidebar({
             </VStack>
             {pendingFriendRequests.length > 0 && (
               <VStack align="stretch" gap="1">
-                <Text fontSize="9px" letterSpacing="2px" color={P.goldDark} textTransform="uppercase">Pending Requests</Text>
+                <Text fontSize="9px" letterSpacing="2px" color={P.goldDark} textTransform="uppercase">{t("sidebar.friends.pending_requests")}</Text>
                 {pendingFriendRequests.map((req) => (
                   <Flex key={req.id} justify="space-between" align="center" p="2" bg={P.darkest} border="1px solid" borderColor={P.border} borderRadius="2px">
                     <Text fontSize="12px" color={P.goldText}>{req.name}</Text>
@@ -501,7 +507,7 @@ export function Sidebar({
                       fontSize="10px"
                       onClick={() => onFriendAccept?.(req.id)}
                     >
-                      [Accept]
+                      {t("sidebar.friends.accept")}
                     </Button>
                   </Flex>
                 ))}
@@ -522,7 +528,7 @@ export function Sidebar({
 
         {/* HP bar */}
         <Box px="3.5" pt="2.5" pb="1">
-          <Text fontSize="8px" letterSpacing="3px" color={P.goldDark} textAlign="center" textTransform="uppercase" mb="0.5">Salud</Text>
+          <Text fontSize="8px" letterSpacing="3px" color={P.goldDark} textAlign="center" textTransform="uppercase" mb="0.5">{t("status.health")}</Text>
           <Box pos="relative" h="22px" bg="#0a0810" border="1px solid" borderColor={P.border} borderRadius="2px" overflow="hidden">
             <Box h="100%" w={`${hpPct}%`} bg={hpColor} transition="width 0.2s" />
             <Flex pos="absolute" inset="0" align="center" justify="center" fontSize="10px" fontWeight="700" color="#fff" textShadow="1px 1px 3px #000" fontFamily={P.mono}>
@@ -533,7 +539,7 @@ export function Sidebar({
 
         {/* Mana bar */}
         <Box px="3.5" pt="1.5" pb="2.5">
-          <Text fontSize="8px" letterSpacing="3px" color={P.goldDark} textAlign="center" textTransform="uppercase" mb="0.5">Mana</Text>
+          <Text fontSize="8px" letterSpacing="3px" color={P.goldDark} textAlign="center" textTransform="uppercase" mb="0.5">{t("status.mana")}</Text>
           <Box pos="relative" h="22px" bg="#080818" border="1px solid" borderColor={P.border} borderRadius="2px" overflow="hidden">
             <Box h="100%" w={`${manaPct}%`} bg={P.arcane} transition="width 0.2s" />
             <Flex pos="absolute" inset="0" align="center" justify="center" fontSize="10px" fontWeight="700" color="#fff" textShadow="1px 1px 3px #000" fontFamily={P.mono}>
@@ -545,10 +551,10 @@ export function Sidebar({
 
       {/* Keybinds */}
       <Flex px="3" py="2" gap="2" justify="center" flexWrap="wrap" borderTop="1px solid" borderTopColor={P.raised} bg={P.bg}>
-        <KeyHint keys="Arrows" action="Move" />
-        <KeyHint keys="Ctrl" action="Melee" />
-        <KeyHint keys="A" action="Pickup" />
-        <KeyHint keys="T" action="Drop" />
+        <KeyHint keys="Arrows" action={t("controls.move")} />
+        <KeyHint keys="Ctrl" action={t("controls.melee")} />
+        <KeyHint keys="A" action={t("controls.pickup")} />
+        <KeyHint keys="T" action={t("controls.drop")} />
         {classSpells.map((spell) => (
           <KeyHint key={spell.id} keys={`${spell.key}${spell.rangeTiles > 0 ? "+Click" : ""}`} action={spell.id.split("_")[0]} />
         ))}

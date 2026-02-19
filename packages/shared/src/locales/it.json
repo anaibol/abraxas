@@ -56,13 +56,71 @@
     }
   },
   "game": {
-    "welcome": "Benvenuto su Abraxas!",
-    "traveling": "In viaggio verso {{map}}...",
-    "not_enough_mana": "Mana insufficiente",
-    "class_restricted": "La tua classe non può usare questo incantesimo",
-    "invalid_target": "Bersaglio non valido",
-    "inventory_full": "Inventario pieno",
-    "item_not_found": "Oggetto non trovato",
     "restricted_to": "Limitato a {{classes}}"
+  },
+  "social": {
+    "already_in_party": "Il giocatore è già in un gruppo",
+    "leader_only_invite": "Solo il leader del gruppo può invitare",
+    "invited_to_party": "Invitato {{name}} al gruppo",
+    "no_invite": "Nessun invito attivo per questo gruppo",
+    "party_full": "Il gruppo è pieno",
+    "joined_party": "{{name}} si è unito al gruppo",
+    "left_party": "{{name}} ha lasciato il gruppo",
+    "leader_only_kick": "Solo il leader può cacciare i giocatori",
+    "kicked_from_party": "Sei stato cacciato dal gruppo",
+    "new_leader": "{{name}} è ora il leader del gruppo"
+  },
+  "sidebar": {
+    "tabs": {
+      "inv": "⚔️ Inv",
+      "spells": "📖 Incantesimi",
+      "quests": "📜 Missioni",
+      "party": "⚔️ Gruppo",
+      "friends": "👥 Amici"
+    },
+    "inventory": {
+      "unequip_hint": "{{name}} (tasto destro rimuovi)",
+      "interactions_hint": "{{name}}{{qty}}\nClic: Seleziona · Doppio clic: {{action}} · T: Lascia",
+      "empty_spells": "Nessun incantesimo disponibile",
+      "mana": "Mana",
+      "range": "Portata",
+      "self": "Sé"
+    },
+    "party": {
+      "not_in_party": "Non sei in un gruppo. Invita qualcuno per iniziarne uno.",
+      "session_id": "ID Sessione",
+      "invite": "Invita",
+      "party_id": "ID Gruppo: {{id}}",
+      "leader_tag": "(L)",
+      "trade": "[Scambia]",
+      "kick": "[Caccia]",
+      "leave": "Lascia Gruppo"
+    },
+    "friends": {
+      "friend_name": "Nome amico",
+      "add": "Aggiungi",
+      "no_friends": "Ancora nessun amico.",
+      "whisper_tag": "[S]",
+      "party_invite_tag": "[G]",
+      "trade_tag": "[Scambia]",
+      "pending_requests": "Richieste in Sospeso",
+      "accept": "[Accetta]"
+    }
+  },
+  "status": {
+    "dead": "MORTO",
+    "stunned": "STORDITO",
+    "stealthed": "OCCULTATO",
+    "transmitting": "TRASMISSIONE",
+    "health": "Salute",
+    "mana": "Mana"
+  },
+  "controls": {
+    "move": "Muovi",
+    "melee": "Attacca",
+    "pickup": "Raccogli",
+    "drop": "Lascia",
+    "use": "Usa",
+    "equip": "Equip"
   }
 }

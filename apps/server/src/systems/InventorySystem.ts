@@ -81,7 +81,7 @@ export class InventorySystem {
       }
     }
 
-    onError?.("Inventory full");
+    onError?.("game.inventory_full");
     return false;
   }
 
@@ -118,13 +118,13 @@ export class InventorySystem {
       return false;
     }
     if (def.slot === "consumable") {
-      onError?.("Cannot equip consumable");
+      onError?.("game.cannot_equip_consumable");
       return false;
     }
 
     // Check class restriction
     if (def.requiredClass && !def.requiredClass.includes(player.classType)) {
-      onError?.(`Restricted to ${def.requiredClass.join(", ")}`);
+      onError?.("game.restricted_to");
       return false;
     }
 
@@ -136,7 +136,7 @@ export class InventorySystem {
 
     const slotKey = EQUIP_SLOT_MAP[def.slot];
     if (!slotKey) {
-      onError?.("Invalid equipment slot");
+      onError?.("game.invalid_equip_slot");
       return false;
     }
 
@@ -144,7 +144,7 @@ export class InventorySystem {
     const currentItem = getEquipSlot(player, slotKey);
     if (currentItem) {
       if (player.inventory.length >= MAX_INVENTORY_SLOTS) {
-        onError?.("Inventory full - cannot unequip current item");
+        onError?.("game.inventory_full");
         return false;
       }
       this.unequipItem(player, def.slot);
@@ -183,7 +183,7 @@ export class InventorySystem {
   ): boolean {
     const def = ITEMS[itemId];
     if (!def || !def.consumeEffect) {
-      onError?.("Item not usable");
+      onError?.("game.item_not_usable");
       return false;
     }
     if (!this.findItem(player, itemId)) {

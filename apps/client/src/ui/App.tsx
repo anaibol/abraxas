@@ -9,6 +9,7 @@ import {
 } from "@chakra-ui/react";
 import { Box, Flex } from "@chakra-ui/react";
 import { useState, useRef, useCallback, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { system } from "./theme";
 import { Lobby } from "./Lobby";
 import { LoadingScreen } from "./LoadingScreen";
@@ -47,6 +48,7 @@ let killFeedId = 0;
 let consoleMsgId = 0;
 
 export function App() {
+  const { t } = useTranslation();
   const [phase, setPhase] = useState<"lobby" | "game">("lobby");
   const [connecting, setConnecting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -335,8 +337,8 @@ export function App() {
           {
             id: ++consoleMsgId,
             text: mapName
-              ? `Traveling to ${mapName}...`
-              : "Welcome to Abraxas!",
+              ? t("game.traveling", { map: mapName })
+              : t("game.welcome"),
             color: "#ffff00",
             timestamp: Date.now(),
           },
