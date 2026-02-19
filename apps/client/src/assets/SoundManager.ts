@@ -34,10 +34,6 @@ export class SoundManager {
   playHeal() {
     this.play("sfx-heal", { volume: 0.5 });
   }
-  playClick() {
-    this.play("sfx-click", { volume: 0.3 });
-  }
-
   startMusic() {
     if (this.music) return;
     this.music = this.scene.sound.add("music-arena", {

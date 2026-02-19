@@ -83,6 +83,32 @@ export const loginEndpoint = createEndpoint(
   },
 );
 
+export const meEndpoint = createEndpoint(
+  "/api/me",
+  { method: "GET" },
+  async (ctx) => {
+    const authHeader = ctx.request.headers.get("authorization") ?? "";
+    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+
+    if (!token) {
+      return ctx.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const payload = AuthService.verifyToken(token);
+    if (!payload) {
+      return ctx.json({ error: "Invalid or expired token" }, { status: 401 });
+    }
+
+    const characters = await prisma.character.findMany({
+      where: { accountId: payload.userId },
+      select: { id: true, name: true, class: true, level: true },
+      orderBy: { lastLoginAt: "desc" },
+    });
+
+    return ctx.json({ characters });
+  },
+);
+
 export const createCharacterEndpoint = createEndpoint(
   "/api/characters",
   {

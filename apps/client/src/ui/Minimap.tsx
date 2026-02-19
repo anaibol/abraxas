@@ -76,7 +76,7 @@ export const Minimap: FC<MinimapProps> = ({ map, players, npcs, currentPlayerId 
     <div
       style={{
         position: "absolute",
-        top: "20px",
+        bottom: "20px",
         right: "20px",
         border: "2px solid #555",
         backgroundColor: "rgba(0, 0, 0, 0.8)",

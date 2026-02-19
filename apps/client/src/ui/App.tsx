@@ -261,13 +261,7 @@ export function App() {
         const welcome = network.getWelcomeData();
 
         if (!audioManagerRef.current) {
-          const am = new AudioManager();
-          try {
-            await am.init();
-            audioManagerRef.current = am;
-          } catch (err) {
-            console.error("AudioManager init failed:", err);
-          }
+          audioManagerRef.current = new AudioManager();
         }
 
         setMapData({
@@ -437,15 +431,6 @@ export function App() {
             ServerMessageType.BankSync,
             (data: ServerMessages[ServerMessageType.BankSync]) => {
               setBankData({ items: data.items });
-            },
-          );
-
-        network
-          .getRoom()
-          .onMessage(
-            ServerMessageType.Audio,
-            (data: ServerMessages[ServerMessageType.Audio]) => {
-              audioManagerRef.current?.playAudioChunk(data.data);
             },
           );
 
@@ -704,18 +689,6 @@ export function App() {
 
 // ── Drop quantity dialog ──────────────────────────────────────────────────────
 
-const DQ = {
-  bg: "#0e0c14",
-  surface: "#14111e",
-  raised: "#1a1628",
-  border: "#2e2840",
-  gold: "#d4a843",
-  goldDark: "#6e5a18",
-  goldText: "#c8b68a",
-  font: "'Friz Quadrata', Georgia, serif",
-  mono: "'Consolas', monospace",
-} as const;
-
 function DropQuantityDialog({
   itemName,
   maxQty,
@@ -728,21 +701,8 @@ function DropQuantityDialog({
   onCancel: () => void;
 }) {
   const [qty, setQty] = useState(maxQty);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  // Focus input on mount; Escape cancels, Enter confirms
-  useEffect(() => {
-    inputRef.current?.focus();
-    inputRef.current?.select();
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onCancel();
-      if (e.key === "Enter") onConfirm(Math.min(Math.max(1, qty), maxQty));
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [qty, maxQty, onConfirm, onCancel]);
-
-  const handleConfirm = () => onConfirm(Math.min(Math.max(1, qty), maxQty));
+  const clamp = (n: number) => Math.min(Math.max(1, n), maxQty);
+  const confirm = () => onConfirm(clamp(qty));
 
   return (
     <Box
@@ -756,52 +716,44 @@ function DropQuantityDialog({
       onClick={onCancel}
     >
       <Box
-        bg={DQ.bg}
-        border={`2px solid ${DQ.border}`}
+        bg="#0e0c14"
+        border="2px solid #2e2840"
         borderRadius="4px"
         p="5"
         w="260px"
-        fontFamily={DQ.font}
+        fontFamily="'Friz Quadrata', Georgia, serif"
         onClick={(e) => e.stopPropagation()}
       >
-        <Box
-          fontSize="11px"
-          letterSpacing="3px"
-          textTransform="uppercase"
-          color={DQ.gold}
-          fontWeight="700"
-          mb="1"
-          textAlign="center"
-        >
+        <Box fontSize="11px" letterSpacing="3px" textTransform="uppercase" color="#d4a843" fontWeight="700" mb="1" textAlign="center">
           Drop Item
         </Box>
-        <Box
-          fontSize="13px"
-          color={DQ.goldText}
-          textAlign="center"
-          mb="3"
-        >
+        <Box fontSize="13px" color="#c8b68a" textAlign="center" mb="3">
           {itemName}
         </Box>
 
         <Box mb="3">
-          <Box fontSize="9px" color={DQ.goldDark} letterSpacing="2px" textTransform="uppercase" mb="1">
+          <Box fontSize="9px" color="#6e5a18" letterSpacing="2px" textTransform="uppercase" mb="1">
             Quantity (1 – {maxQty})
           </Box>
           <input
-            ref={inputRef}
+            // biome-ignore lint/a11y/noAutofocus: dialog input needs immediate focus for keyboard shortcuts
+            autoFocus
             type="number"
             min={1}
             max={maxQty}
             value={qty}
             onChange={(e) => setQty(Number(e.target.value))}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") { e.preventDefault(); onCancel(); }
+              if (e.key === "Enter")  { e.preventDefault(); confirm(); }
+            }}
             style={{
               width: "100%",
-              background: DQ.surface,
-              border: `1px solid ${DQ.border}`,
+              background: "#14111e",
+              border: "1px solid #2e2840",
               borderRadius: "2px",
-              color: DQ.goldText,
-              fontFamily: DQ.mono,
+              color: "#c8b68a",
+              fontFamily: "'Consolas', monospace",
               fontSize: "14px",
               padding: "4px 8px",
               outline: "none",
@@ -811,40 +763,10 @@ function DropQuantityDialog({
         </Box>
 
         <Flex gap="2">
-          <Box
-            as="button"
-            flex="1"
-            py="1.5"
-            fontSize="11px"
-            fontWeight="700"
-            letterSpacing="1px"
-            bg={DQ.raised}
-            border={`1px solid ${DQ.border}`}
-            borderRadius="2px"
-            color={DQ.goldText}
-            cursor="pointer"
-            fontFamily={DQ.font}
-            onClick={onCancel}
-            style={{ transition: "background 0.1s" }}
-          >
+          <Box as="button" flex="1" py="1.5" fontSize="11px" fontWeight="700" letterSpacing="1px" bg="#1a1628" border="1px solid #2e2840" borderRadius="2px" color="#c8b68a" cursor="pointer" fontFamily="'Friz Quadrata', Georgia, serif" onClick={onCancel}>
             Cancel
           </Box>
-          <Box
-            as="button"
-            flex="1"
-            py="1.5"
-            fontSize="11px"
-            fontWeight="700"
-            letterSpacing="1px"
-            bg={DQ.goldDark}
-            border={`1px solid ${DQ.gold}`}
-            borderRadius="2px"
-            color={DQ.gold}
-            cursor="pointer"
-            fontFamily={DQ.font}
-            onClick={handleConfirm}
-            style={{ transition: "background 0.1s" }}
-          >
+          <Box as="button" flex="1" py="1.5" fontSize="11px" fontWeight="700" letterSpacing="1px" bg="#6e5a18" border="1px solid #d4a843" borderRadius="2px" color="#d4a843" cursor="pointer" fontFamily="'Friz Quadrata', Georgia, serif" onClick={confirm}>
             Drop
           </Box>
         </Flex>

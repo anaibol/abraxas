@@ -148,7 +148,7 @@ export function BankWindow({
         {/* Bank Section */}
         <Box>
           <Text color={P.goldMuted} fontSize="12px" mb="4" fontWeight="bold" letterSpacing="2px">
-            VAULT STORAGE {bankItems.length} / 40
+            VAULT STORAGE {bankItems.length} / 24
           </Text>
           <Grid templateColumns="repeat(6, 1fr)" gap="2" bg="blackAlpha.400" p="3" borderRadius="8px" border="1px solid" borderColor={P.border}>
             {Array.from({ length: 24 }).map((_, i) => {

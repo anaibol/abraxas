@@ -764,7 +764,7 @@ export class MessageHandler {
 
 		const trade = this.ctx.systems.trade.updateOffer(client.sessionId, data);
 		if (trade) {
-			this.ctx.broadcast(ServerMessageType.TradeStateUpdate, trade);
+			this.sendToParticipants(trade, ServerMessageType.TradeStateUpdate, trade);
 		}
 	}
 
