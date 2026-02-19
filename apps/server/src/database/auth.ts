@@ -7,7 +7,7 @@ const SALT_ROUNDS = 10;
 
 type AuthPayload = {
   userId: string;
-  username: string;
+  email: string;
 };
 
 export class AuthService {

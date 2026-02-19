@@ -82,22 +82,24 @@ describe("Arena multiplayer smoke test", () => {
     const testSuffix = Date.now().toString();
     const nameA = "Warrior_" + testSuffix;
     const nameB = "Wizard_" + testSuffix;
+    const emailA = `warrior_${testSuffix}@test.com`;
+    const emailB = `wizard_${testSuffix}@test.com`;
 
     // Seed users
     const password = await AuthService.hashPassword("password");
     const userA = await prisma.account.upsert({
-      where: { username: nameA },
+      where: { email: emailA },
       update: { password },
-      create: { username: nameA, password }
+      create: { email: emailA, password }
     });
     const userB = await prisma.account.upsert({
-      where: { username: nameB },
+      where: { email: emailB },
       update: { password },
-      create: { username: nameB, password }
+      create: { email: emailB, password }
     });
 
-    const tokenA = AuthService.generateToken({ userId: userA.id, username: nameA });
-    const tokenB = AuthService.generateToken({ userId: userB.id, username: nameB });
+    const tokenA = AuthService.generateToken({ userId: userA.id, email: emailA });
+    const tokenB = AuthService.generateToken({ userId: userB.id, email: emailB });
 
     async function joinWithRetry(client: Client, token: string, opts: any, attempts = 3) {
       // Set token correctly for Colyseus 0.17

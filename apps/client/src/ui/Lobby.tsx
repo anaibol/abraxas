@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Box, Flex, Text, Input, Button, Grid } from "@chakra-ui/react";
-import { type ClassType, getRandomName } from "@abraxas/shared";
+import type { ClassType } from "@abraxas/shared";
 
 interface LobbyProps {
   onJoin: (charId: string, classType: ClassType, token: string) => void;
@@ -52,11 +52,26 @@ const inputStyle = {
   _focus: { borderColor: P.gold },
 } as const;
 
+const CHAR_NAME_REGEX = /^[A-Z][a-z]*( [A-Z][a-z]*)*$/;
+
+function sanitizeCharName(raw: string): string {
+  return raw.replace(/[^a-zA-Z ]/g, "").replace(/ {2,}/g, " ");
+}
+
+function formatCharName(raw: string): string {
+  return raw
+    .trim()
+    .split(" ")
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(" ");
+}
+
 export function Lobby({ onJoin, connecting }: LobbyProps) {
   const [mode, setMode] = useState<"login" | "register" | "class_select">(
     "login",
   );
-  const [username, setUsername] = useState(getRandomName());
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [charName, setCharName] = useState("");
   const [classType, setClassType] = useState<ClassType>("WARRIOR");
@@ -66,20 +81,33 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
   // We store them so the class_select screen can pre-fill and join correctly.
   const [resolvedCharName, setResolvedCharName] = useState("");
   const [resolvedCharId, setResolvedCharId] = useState("");
-  const [resolvedClass, setResolvedClass] = useState<ClassType>("WARRIOR");
+  const [, setResolvedClass] = useState<ClassType>("WARRIOR");
   const [token, setToken] = useState("");
 
   const handleAuth = async () => {
     setError("");
+
+    if (mode === "register") {
+      const trimmed = charName.trim();
+      if (!trimmed) {
+        setError("Character name is required");
+        return;
+      }
+      if (!CHAR_NAME_REGEX.test(trimmed)) {
+        setError("Each word must start with a capital letter and contain only letters (e.g. Dark Knight)");
+        return;
+      }
+    }
+
     const url = mode === "login" ? "/api/login" : "/api/register";
 
     const body =
       mode === "login"
-        ? { username, password }
+        ? { email, password }
         : {
-            username,
+            email,
             password,
-            charName: charName.trim() || username,
+            charName: charName.trim(),
             classType,
           };
 
@@ -101,7 +129,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
 
       if (mode === "login") {
         // Server tells us the char's name and class from the DB.
-        const name: string = data.charName ?? username;
+        const name: string = data.charName ?? "";
         const cls: ClassType = data.classType ?? "warrior";
         setResolvedCharName(name);
         setResolvedClass(cls);
@@ -109,7 +137,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
         onJoin(data.charId, cls, data.token);
       } else {
         // Registration: go to class_select to confirm the chosen class.
-        setResolvedCharName(charName.trim() || username);
+        setResolvedCharName(charName.trim());
         setResolvedClass(classType);
         setMode("class_select");
       }
@@ -174,11 +202,11 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
 
         {mode !== "class_select" ? (
           <>
-            <Text {...labelStyle}>Username</Text>
+            <Text {...labelStyle}>Email</Text>
             <Input
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              maxLength={20}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               borderColor={P.border}
               mb="4"
               {...inputStyle}
@@ -200,7 +228,8 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                 <Input
                   value={charName}
                   onChange={(e) => setCharName(e.target.value)}
-                  placeholder={username}
+                  onBlur={() => setCharName((n) => formatCharName(n))}
+                  placeholder="Dark Knight"
                   maxLength={20}
                   borderColor={P.border}
                   mb="4"

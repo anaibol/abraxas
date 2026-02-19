@@ -17,26 +17,35 @@ export const registerEndpoint = createEndpoint(
   {
     method: "POST",
     body: z.object({
-      username: z.string().min(3).max(20),
+      email: z.string().email(),
       password: z.string().min(6),
-      charName: z.string().min(2).max(20),
+      charName: z
+        .string()
+        .min(2)
+        .max(20)
+        .regex(/^[A-Z][a-z]*( [A-Z][a-z]*)*$/, "Each word must start with a capital letter and contain only letters"),
       classType: z.nativeEnum(CharacterClass),
     }),
   },
   async (ctx) => {
-    const { username, password, charName, classType } = ctx.body;
+    const { email, password, charName, classType } = ctx.body;
     const stats = CLASS_STATS[classType];
 
     try {
-      const existing = await prisma.account.findUnique({ where: { username } });
+      const existing = await prisma.account.findUnique({ where: { email } });
       if (existing) {
-        return ctx.json({ error: "Username already taken" }, { status: 409 });
+        return ctx.json({ error: "Email already registered" }, { status: 409 });
+      }
+
+      const existingChar = await prisma.character.findUnique({ where: { name: charName } });
+      if (existingChar) {
+        return ctx.json({ error: "Character name already taken" }, { status: 409 });
       }
 
       const hashedPassword = await AuthService.hashPassword(password);
       const user = await prisma.account.create({
         data: {
-          username,
+          email,
           password: hashedPassword,
           characters: {
             create: {
@@ -62,7 +71,7 @@ export const registerEndpoint = createEndpoint(
 
       const token = AuthService.generateToken({
         userId: user.id,
-        username: user.username,
+        email: user.email,
       });
       return ctx.json({ token, charId: user.characters[0]?.id });
     } catch (e) {
@@ -77,15 +86,15 @@ export const loginEndpoint = createEndpoint(
   {
     method: "POST",
     body: z.object({
-      username: z.string(),
+      email: z.string().email(),
       password: z.string(),
     }),
   },
   async (ctx) => {
-    const { username, password } = ctx.body;
+    const { email, password } = ctx.body;
 
     try {
-      const user = await prisma.account.findUnique({ where: { username } });
+      const user = await prisma.account.findUnique({ where: { email } });
       if (!user || !(await AuthService.verifyPassword(password, user.password))) {
         return ctx.json({ error: "Invalid credentials" }, { status: 401 });
       }
@@ -97,7 +106,7 @@ export const loginEndpoint = createEndpoint(
 
       const token = AuthService.generateToken({
         userId: user.id,
-        username: user.username,
+        email: user.email,
       });
       return ctx.json({
         token,
