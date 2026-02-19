@@ -94,10 +94,11 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage }: Co
   return (
     <Box
       pos="fixed"
-      bottom="20px"
+      bottom={{ base: "210px", md: "20px" }}
       left="20px"
-      w="420px"
-      h="240px"
+      w={{ base: "55vw", md: "420px" }}
+      maxW={{ base: "240px", md: "420px" }}
+      h={{ base: "130px", md: "240px" }}
       bg="rgba(0, 0, 0, 0.45)"
       border="1px solid rgba(255,255,255,0.1)"
       borderRadius="4px"
@@ -111,22 +112,23 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage }: Co
       flexDirection="column"
     >
       {/* Tabs */}
-      <HStack gap="0" bg="rgba(0,0,0,0.3)" borderBottom="1px solid rgba(255,255,255,0.1)">
+      <HStack gap="0" bg="rgba(0,0,0,0.3)" borderBottom="1px solid rgba(255,255,255,0.1)" overflow="hidden">
         {TABS.map(tab => (
           <Box
             key={tab.id}
-            px="3"
+            px={{ base: "2", md: "3" }}
             py="1"
             cursor="pointer"
-            fontSize="12px"
+            fontSize={{ base: "10px", md: "12px" }}
             fontWeight="bold"
-            letterSpacing="1px"
+            letterSpacing={{ base: "0", md: "1px" }}
             bg={activeChannel === tab.id ? "rgba(255,255,255,0.1)" : "transparent"}
             color={activeChannel === tab.id ? tab.color : "#666"}
             borderBottom={activeChannel === tab.id ? `2px solid ${tab.color}` : "none"}
             onClick={() => setActiveChannel(tab.id)}
             pointerEvents="auto"
             _hover={{ color: tab.color }}
+            flexShrink={0}
           >
             {tab.label}
           </Box>

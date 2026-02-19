@@ -126,7 +126,9 @@ export function TradeWindow({
       bg="rgba(0,0,0,0.7)"
     >
       <Box
-        w="560px"
+        w={{ base: "calc(100vw - 32px)", md: "560px" }}
+        maxH="90dvh"
+        overflowY="auto"
         bg={T.bg}
         border="2px solid"
         borderColor={T.border}
@@ -146,9 +148,9 @@ export function TradeWindow({
         </Box>
 
         {/* Offer panels */}
-        <Flex gap="3" p="4">
+        <Flex gap="3" p="4" direction={{ base: "column", sm: "row" }}>
           {renderOfferSlots(me.offer.items, me.offer.gold, "Your Offer", myConfirmed)}
-          <Box w="1px" bg={T.border} flexShrink={0} />
+          <Box w={{ base: "100%", sm: "1px" }} h={{ base: "1px", sm: "auto" }} bg={T.border} flexShrink={0} />
           {renderOfferSlots(them.offer.items, them.offer.gold, `${them.name}'s Offer`, theirConfirmed)}
         </Flex>
 
@@ -183,7 +185,7 @@ export function TradeWindow({
             <Text fontSize="11px" color={T.goldDark} letterSpacing="2px" textTransform="uppercase" mb="1.5">
               Add Items (click to add · click offer to remove)
             </Text>
-            <Grid templateColumns="repeat(8, 1fr)" gap="1">
+            <Grid templateColumns={{ base: "repeat(6, 1fr)", md: "repeat(8, 1fr)" }} gap="1">
               {playerInventory.map((slot) => {
                 const def = ITEMS[slot.itemId];
                 const inOffer = offerItems.find((i) => i.itemId === slot.itemId);

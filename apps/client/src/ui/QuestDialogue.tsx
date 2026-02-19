@@ -29,7 +29,7 @@ export function QuestDialogue({ npcId, text, options, onAction, onClose }: Quest
             fontFamily={T.display}
         >
             <Box
-                w="450px"
+                w={{ base: "calc(100vw - 32px)", md: "450px" }}
                 bg={T.bg}
                 border="3px solid"
                 borderColor={T.border}

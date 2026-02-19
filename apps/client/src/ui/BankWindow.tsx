@@ -55,9 +55,10 @@ export function BankWindow({
       border="1px solid"
       borderColor={T.gold}
       borderRadius="12px"
-      p="8"
-      minW="700px"
-      maxH="90vh"
+      p={{ base: "4", md: "8" }}
+      w={{ base: "calc(100vw - 24px)", md: "700px" }}
+      maxH="90dvh"
+      overflowY="auto"
       boxShadow="0 20px 80px rgba(0,0,0,0.9), inset 0 0 40px rgba(212, 168, 67, 0.05)"
       fontFamily={T.display}
       zIndex="200"
@@ -90,13 +91,13 @@ export function BankWindow({
         </Button>
       </Flex>
 
-      <Grid templateColumns="1fr 1fr" gap="8">
+      <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={{ base: "4", md: "8" }}>
         {/* Inventory Section */}
         <Box>
           <Text color={T.goldMuted} fontSize="12px" mb="4" fontWeight="bold" letterSpacing="2px">
             {t("ui.bank.inventory_label")}
           </Text>
-          <Grid templateColumns="repeat(6, 1fr)" gap="2" bg="blackAlpha.400" p="3" borderRadius="8px" border="1px solid" borderColor={T.border}>
+          <Grid templateColumns={{ base: "repeat(4, 1fr)", md: "repeat(6, 1fr)" }} gap="2" bg="blackAlpha.400" p="3" borderRadius="8px" border="1px solid" borderColor={T.border}>
             {Array.from({ length: 24 }).map((_, i) => {
               const invItem = playerInventory.find((it) => it.slotIndex === i);
               const def = invItem ? ITEMS[invItem.itemId] : null;
@@ -141,7 +142,7 @@ export function BankWindow({
           <Text color={T.goldMuted} fontSize="12px" mb="4" fontWeight="bold" letterSpacing="2px">
             {t("ui.bank.vault_label")} {bankItems.length} / 24
           </Text>
-          <Grid templateColumns="repeat(6, 1fr)" gap="2" bg="blackAlpha.400" p="3" borderRadius="8px" border="1px solid" borderColor={T.border}>
+          <Grid templateColumns={{ base: "repeat(4, 1fr)", md: "repeat(6, 1fr)" }} gap="2" bg="blackAlpha.400" p="3" borderRadius="8px" border="1px solid" borderColor={T.border}>
             {Array.from({ length: 24 }).map((_, i) => {
               const bankItem = bankItems.find((it) => it.slotIndex === i);
               const def = bankItem ? ITEMS[bankItem.itemId] : null;
@@ -185,7 +186,7 @@ export function BankWindow({
       {/* Control Panel */}
       <Box mt="8" minH="120px" borderTop="1px solid" borderColor={T.border} pt="6">
         {selectedItem ? (
-          <Flex gap="6" align="center">
+          <Flex gap={{ base: "3", md: "6" }} align={{ base: "flex-start", md: "center" }} direction={{ base: "column", md: "row" }}>
             <Box w="60px" h="60px" bg="blackAlpha.600" border="1px solid" borderColor={T.gold} borderRadius="8px" display="flex" alignItems="center" justifyContent="center">
                <Text fontSize="32px">{"\u2728"}</Text>
             </Box>

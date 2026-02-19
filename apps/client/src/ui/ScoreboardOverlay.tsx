@@ -152,9 +152,8 @@ export function ScoreboardOverlay({
         bg={T.bg}
         border={`2px solid ${HEX.border}`}
         borderRadius="4px"
-        w="860px"
-        maxW="95vw"
-        maxH="85vh"
+        w={{ base: "95vw", md: "860px" }}
+        maxH="85dvh"
         overflow="hidden"
         boxShadow="0 8px 48px rgba(0,0,0,0.85)"
       >
@@ -185,15 +184,16 @@ export function ScoreboardOverlay({
             color={SC.textMuted}
             letterSpacing="2px"
             fontFamily={FONT}
+            display={{ base: "none", md: "block" }}
           >
             Hold TAB to view
           </Box>
         </Flex>
 
         {/* Body */}
-        <Grid templateColumns="1fr 1fr 200px" gap="0" h="calc(85vh - 52px)" overflow="hidden">
+        <Grid templateColumns={{ base: "1fr", md: "1fr 1fr 200px" }} gap="0" maxH="calc(85dvh - 52px)" overflowY={{ base: "auto", md: "hidden" }}>
           {/* NPC Kills */}
-          <Box px="4" py="4" borderRight={`1px solid ${HEX.border}`} overflowY="auto">
+          <Box px="4" py="4" borderRight={{ base: "none", md: `1px solid ${HEX.border}` }} borderBottom={{ base: `1px solid ${HEX.border}`, md: "none" }} overflowY="auto">
             <SectionTitle>Top NPC Hunters</SectionTitle>
             {npcRanking.length === 0 ? (
               <Box fontSize="12px" color={SC.textMuted} fontFamily={FONT} textAlign="center" mt="4">
@@ -242,7 +242,7 @@ export function ScoreboardOverlay({
           </Box>
 
           {/* PVP Kills + Online Players */}
-          <Box px="4" py="4" borderRight={`1px solid ${HEX.border}`} overflowY="auto">
+          <Box px="4" py="4" borderRight={{ base: "none", md: `1px solid ${HEX.border}` }} borderBottom={{ base: `1px solid ${HEX.border}`, md: "none" }} overflowY="auto">
             <SectionTitle>Top PvP Warriors</SectionTitle>
             {pvpRanking.length === 0 ? (
               <Box fontSize="12px" color={SC.textMuted} fontFamily={FONT} textAlign="center" mt="4">

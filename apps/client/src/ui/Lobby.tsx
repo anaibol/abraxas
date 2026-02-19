@@ -240,12 +240,14 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
     <Flex
       pos="fixed"
       inset="0"
-      align="center"
+      align={{ base: "flex-start", md: "center" }}
       justify="center"
       bg="rgba(2, 2, 4, 0.9)"
       zIndex="100"
       backdropFilter="blur(8px)"
       animation={`${entrance} 0.5s ease-out`}
+      overflowY="auto"
+      py={{ base: "4", md: "0" }}
     >
       <Box
         bg={T.bg}
@@ -253,15 +255,14 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
         borderColor={T.goldDim}
         backdropFilter="blur(20px)"
         borderRadius="12px"
-        p="12"
-        minW={isCharSelectWide ? "540px" : "460px"}
-        maxW="600px"
-        w="100%"
+        p={{ base: "6", md: "12" }}
+        w={{ base: "calc(100vw - 32px)", md: isCharSelectWide ? "540px" : "460px" }}
+        maxW={{ base: "100%", md: "600px" }}
         boxShadow={`0 10px 50px rgba(0,0,0,0.8), 0 0 0 1px ${HEX.border}`}
         fontFamily={T.display}
         position="relative"
         overflow="hidden"
-        transition="min-width 0.3s ease"
+        transition="width 0.3s ease"
       >
         {/* Language Selector */}
         <Flex position="absolute" top="12px" left="12px" gap="2" zIndex={10}>
@@ -304,10 +305,10 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
 
         <Text
           textAlign="center"
-          fontSize="40px"
+          fontSize={{ base: "28px", md: "40px" }}
           fontWeight="900"
           color={T.gold}
-          letterSpacing="10px"
+          letterSpacing={{ base: "6px", md: "10px" }}
           textTransform="uppercase"
           animation={`${titleGlow} 4s infinite ease-in-out`}
           mb="1"
@@ -318,10 +319,10 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
           textAlign="center"
           fontSize="12px"
           color={T.goldDark}
-          letterSpacing="12px"
+          letterSpacing={{ base: "4px", md: "12px" }}
           textTransform="uppercase"
           mb="8"
-          ml="12px"
+          ml={{ base: "4px", md: "12px" }}
         >
           {t("lobby.subtitle")}
         </Text>
