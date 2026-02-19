@@ -24,9 +24,9 @@ path = "/health"
 timeout = "5s"
 
 [[vm]]
-cpu_kind = 'shared'
-cpus = 1
-memory = '512mb'
+cpu_kind = 'performance'
+cpus = 2
+memory = '2gb'
 
 [deploy]
 release_command = "sh -c 'cd apps/server && bunx prisma migrate deploy'"
