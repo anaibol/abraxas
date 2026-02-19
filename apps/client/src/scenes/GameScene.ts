@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import type { Room } from "@colyseus/sdk";
+import { Callbacks } from "@colyseus/sdk";
 import type { NetworkManager } from "../network/NetworkManager";
 import type { WelcomeData } from "@abraxas/shared";
 import { InputHandler } from "../systems/InputHandler";
@@ -14,20 +15,12 @@ import { EffectManager } from "../managers/EffectManager";
 import { GameEventHandler } from "../handlers/GameEventHandler";
 import { AudioManager } from "../managers/AudioManager";
 
-import { GameState } from "../../../server/src/schema/GameState";
-import { Player } from "../../../server/src/schema/Player";
-import { Npc } from "../../../server/src/schema/Npc";
-import { Drop } from "../../../server/src/schema/Drop";
+import type { GameState } from "../../../server/src/schema/GameState";
+import type { Player } from "../../../server/src/schema/Player";
 
 type StateCallback = (state: PlayerState) => void;
 type KillFeedCallback = (killer: string, victim: string) => void;
 export type ConsoleCallback = (text: string, color?: string) => void;
-
-/** Typed wrapper for Colyseus MapSchema onAdd/onRemove (client SDK v2 doesn't expose these in its types) */
-type ObservableMap<T> = {
-  onAdd(callback: (item: T, key: string) => void, triggerAll?: boolean): void;
-  onRemove(callback: (item: T, key: string) => void): void;
-};
 
 export class GameScene extends Phaser.Scene {
   private network: NetworkManager;
@@ -163,18 +156,16 @@ export class GameScene extends Phaser.Scene {
       () => this.audioManager.stopRecording(),
     );
 
-    // Listen for player add/remove/change
-    (this.room.state.players as unknown as ObservableMap<Player>).onAdd(
-      (player, sessionId) => {
-        this.spriteManager.addPlayer(player, sessionId);
-      },
-    );
+    // Listen for state changes using @colyseus/schema v4 Callbacks API
+    const $state = Callbacks.get(this.room);
 
-    (this.room.state.players as unknown as ObservableMap<Player>).onRemove(
-      (_player, sessionId) => {
-        this.spriteManager.removePlayer(sessionId);
-      },
-    );
+    $state.onAdd("players", (player, sessionId) => {
+      this.spriteManager.addPlayer(player, sessionId);
+    });
+
+    $state.onRemove("players", (_player, sessionId) => {
+      this.spriteManager.removePlayer(sessionId);
+    });
 
     // Game Event Handler
     const gameEventHandler = new GameEventHandler(
@@ -190,28 +181,22 @@ export class GameScene extends Phaser.Scene {
     gameEventHandler.setupListeners();
 
     // Drops
-    (this.room.state.drops as unknown as ObservableMap<Drop>).onAdd(
-      (drop, id) => {
-        this.addDrop(drop, id);
-      },
-    );
+    $state.onAdd("drops", (drop, id) => {
+      this.addDrop(drop, id);
+    });
 
-    (this.room.state.drops as unknown as ObservableMap<Drop>).onRemove(
-      (_drop, id) => {
-        this.removeDrop(id);
-      },
-    );
+    $state.onRemove("drops", (_drop, id) => {
+      this.removeDrop(id);
+    });
 
     // NPCs
-    (this.room.state.npcs as unknown as ObservableMap<Npc>).onAdd((npc, id) => {
+    $state.onAdd("npcs", (npc, id) => {
       this.spriteManager.addNpc(npc, id);
     });
 
-    (this.room.state.npcs as unknown as ObservableMap<Npc>).onRemove(
-      (_npc, id) => {
-        this.spriteManager.removeNpc(id);
-      },
-    );
+    $state.onRemove("npcs", (_npc, id) => {
+      this.spriteManager.removeNpc(id);
+    });
 
     // Debug text — only visible in development
     if (import.meta.env.DEV) {
@@ -456,7 +441,7 @@ export class GameScene extends Phaser.Scene {
       if (sid === this.room.sessionId) continue;
       if (p.alive && p.tileX === nextX && p.tileY === nextY) return;
     }
-    for (const [sid, n] of this.room.state.npcs) {
+    for (const [_sid, n] of this.room.state.npcs) {
       if (n.alive && n.tileX === nextX && n.tileY === nextY) return;
     }
 
