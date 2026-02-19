@@ -139,7 +139,7 @@ export class InputHandler {
       if (key.isDown) {
         if (time - this.lastMoveSentMs >= this.moveIntervalMs) {
           const direction = KEY_TO_DIRECTION[Number(keyCode)];
-          if (direction) {
+          if (direction !== undefined) {
             this.network.sendMove(direction);
             this.onLocalMove?.(direction);
             this.lastMoveSentMs += this.moveIntervalMs;
