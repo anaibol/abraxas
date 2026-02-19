@@ -827,15 +827,15 @@ function DropQuantityDialog({
         fontFamily="'Friz Quadrata', Georgia, serif"
         onClick={(e) => e.stopPropagation()}
       >
-        <Box fontSize="11px" letterSpacing="3px" textTransform="uppercase" color="#d4a843" fontWeight="700" mb="1" textAlign="center">
+        <Box fontSize="13px" letterSpacing="3px" textTransform="uppercase" color="#d4a843" fontWeight="700" mb="1" textAlign="center">
           Drop Item
         </Box>
-        <Box fontSize="13px" color="#c8b68a" textAlign="center" mb="3">
+        <Box fontSize="14px" color="#c8b68a" textAlign="center" mb="3">
           {itemName}
         </Box>
 
         <Box mb="3">
-          <Box fontSize="9px" color="#6e5a18" letterSpacing="2px" textTransform="uppercase" mb="1">
+          <Box fontSize="11px" color="#6e5a18" letterSpacing="2px" textTransform="uppercase" mb="1">
             Quantity (1 – {maxQty})
           </Box>
           <input
