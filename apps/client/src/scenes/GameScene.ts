@@ -196,7 +196,7 @@ export class GameScene extends Phaser.Scene {
 			$state.onRemove("npcs", (_npc, id) => {
 				npcOnChangeUnsubs.get(id)?.();
 				npcOnChangeUnsubs.delete(id);
-				this.spriteManager.removeNpc(id);
+				this.spriteManager.removePlayer(id);
 			}),
 		);
 
@@ -278,26 +278,29 @@ export class GameScene extends Phaser.Scene {
 		}
 	}
 
-	private onEnterTargeting(rangeTiles: number) {
-		this.targetingRangeTiles = rangeTiles;
-		this.input.setDefaultCursor("crosshair");
-		this.rangeOverlay = this.add.graphics();
-		this.rangeOverlay.setDepth(1);
-		this.tileHighlight = this.add.graphics();
-		this.tileHighlight.setDepth(2);
-		this.lastOverlayCenterX = -1;
-		this.lastOverlayCenterY = -1;
-	}
-
-	private onExitTargeting() {
-		this.input.setDefaultCursor("default");
-		this.targetingRangeTiles = 0;
+	private clearTargetingOverlay() {
 		this.rangeOverlay?.destroy();
 		this.rangeOverlay = null;
 		this.tileHighlight?.destroy();
 		this.tileHighlight = null;
 		this.lastOverlayCenterX = -1;
 		this.lastOverlayCenterY = -1;
+	}
+
+	private onEnterTargeting(rangeTiles: number) {
+		this.clearTargetingOverlay();
+		this.targetingRangeTiles = rangeTiles;
+		this.input.setDefaultCursor("crosshair");
+		this.rangeOverlay = this.add.graphics();
+		this.rangeOverlay.setDepth(1);
+		this.tileHighlight = this.add.graphics();
+		this.tileHighlight.setDepth(2);
+	}
+
+	private onExitTargeting() {
+		this.input.setDefaultCursor("default");
+		this.targetingRangeTiles = 0;
+		this.clearTargetingOverlay();
 	}
 
 	private updateTargetingOverlay() {

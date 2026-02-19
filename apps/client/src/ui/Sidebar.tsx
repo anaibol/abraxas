@@ -383,6 +383,360 @@ function SidebarFooter({ state, isMobile, classSpells }: { state: PlayerState; i
   );
 }
 
+function InventoryTab({ state, selectedItemId, onSelectItem, onEquip, onUnequip, onUseItem }: {
+  state: PlayerState;
+  selectedItemId?: string | null;
+  onSelectItem?: (id: string | null) => void;
+  onEquip?: (id: string) => void;
+  onUnequip?: (slot: EquipmentSlot) => void;
+  onUseItem?: (id: string) => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <Box p="2.5">
+      {/* Equipment slots */}
+      {state.equipment && (
+        <Flex gap="1" mb="2" justify="center">
+          {EQUIPMENT_SLOTS.map((slot) => {
+            const equipped = state.equipment![slot];
+            const def = equipped ? ITEMS[equipped] : null;
+            return (
+              <Box
+                key={slot}
+                w="42px" h="42px"
+                bg={P.darkest}
+                border="1px solid"
+                borderColor={def ? (RARITY_COLORS[def.rarity] || P.border) : P.border}
+                borderRadius="2px"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                cursor={def ? "pointer" : "default"}
+                title={def ? t("sidebar.inventory.unequip_hint", { name: t(def.name) }) : t(`controls.unequip`)}
+                onClick={() => def && onUnequip?.(slot)}
+                _hover={def ? { borderColor: P.gold } : {}}
+                position="relative"
+              >
+                <Text fontSize="16px">{def ? (ITEM_ICONS[def.slot] || "\u2728") : ""}</Text>
+                {!def && <Text fontSize="7px" color={P.goldDark} position="absolute" bottom="1px">{slot.slice(0, 3).toUpperCase()}</Text>}
+              </Box>
+            );
+          })}
+        </Flex>
+      )}
+      <Grid templateColumns="repeat(4, 1fr)" gap="1">
+        {Array.from({ length: 24 }, (_, i) => {
+          const invItem = state.inventory?.find((it) => it.slotIndex === i);
+          const def = invItem ? ITEMS[invItem.itemId] : null;
+          const isSelected = !!invItem && invItem.itemId === selectedItemId;
+          return (
+            <Box
+              key={i}
+              aspectRatio="1"
+              bg={isSelected ? P.surface : P.darkest}
+              border="2px solid"
+              borderColor={
+                isSelected
+                  ? P.gold
+                  : def
+                    ? (RARITY_COLORS[def.rarity] || P.border)
+                    : P.border
+              }
+              borderRadius="2px"
+              transition="all 0.1s"
+              cursor={def ? "pointer" : "default"}
+                title={
+                  def
+                    ? t("sidebar.inventory.interactions_hint", {
+                        name: t(def.name),
+                        qty: invItem && invItem.quantity > 1 ? ` x${invItem.quantity}` : "",
+                        action: def.consumeEffect ? t("controls.use") : t("controls.equip")
+                      })
+                    : ""
+                }
+              _hover={def ? { borderColor: P.gold, bg: P.surface } : {}}
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              position="relative"
+              onClick={() => {
+                if (!def || !invItem) return;
+                onSelectItem?.(isSelected ? null : invItem.itemId);
+              }}
+              onDoubleClick={() => {
+                if (!def || !invItem) return;
+                if (def.consumeEffect) {
+                  onUseItem?.(invItem.itemId);
+                } else if (def.slot !== "consumable") {
+                  onEquip?.(invItem.itemId);
+                }
+              }}
+            >
+              {def && <Text fontSize="16px">{ITEM_ICONS[def.slot] || "\u2728"}</Text>}
+              {invItem && invItem.quantity > 1 && (
+                <Text fontSize="8px" color="#fff" position="absolute" bottom="0" right="1px" fontFamily={P.mono}>{invItem.quantity}</Text>
+              )}
+              {isSelected && (
+                <Box
+                  position="absolute"
+                  bottom="0" left="0" right="0"
+                  h="2px"
+                  bg={P.gold}
+                  borderRadius="0 0 2px 2px"
+                />
+              )}
+            </Box>
+          );
+        })}
+      </Grid>
+    </Box>
+  );
+}
+
+function SpellsTab({ classSpells, pendingSpellId, onSpellClick }: {
+  classSpells: any[];
+  pendingSpellId?: string | null;
+  onSpellClick?: (id: string, range: number) => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <Box p="2.5">
+      {classSpells.length === 0 ? (
+        <Text textAlign="center" color={P.borderLight} fontSize="11px" py="8" fontStyle="italic">{t("sidebar.inventory.empty_spells")}</Text>
+      ) : (
+        <Flex direction="column" gap="1.5">
+          {classSpells.map((spell) => {
+            const isPending = pendingSpellId === spell.id;
+            return (
+              <Flex
+                key={spell.id}
+                align="center"
+                gap="3"
+                p="2.5"
+                bg={isPending ? P.surface : P.darkest}
+                border="1px solid"
+                borderColor={isPending ? P.gold : P.border}
+                borderRadius="2px"
+                cursor="pointer"
+                transition="all 0.12s"
+                _hover={{ bg: P.surface, borderColor: P.gold }}
+                onClick={() => onSpellClick?.(spell.id, spell.rangeTiles)}
+                title={spell.rangeTiles > 0 ? t("sidebar.inventory.spell_click_hint") : undefined}
+              >
+                <Flex
+                  w="36px" h="36px" align="center" justify="center"
+                  bg={isPending ? P.raised : P.surface}
+                  border="1px solid"
+                  borderColor={isPending ? P.gold : P.border}
+                  borderRadius="2px"
+                  fontSize="20px"
+                  flexShrink={0}
+                >
+                  {SPELL_ICONS[spell.id] || "\u2728"}
+                </Flex>
+                <Box flex="1">
+                  <Text fontSize="12px" fontWeight="700" color={isPending ? P.gold : P.goldText}>
+                    {t(`spells.${spell.id}.name`)}
+                  </Text>
+                  <Text fontSize="9px" color={P.goldDark} mt="0.5">
+                    {t("sidebar.inventory.mana")}: {spell.manaCost} · {spell.rangeTiles > 0 ? `${t("sidebar.inventory.range")}: ${spell.rangeTiles}` : t("sidebar.inventory.self")} · [{spell.key}]
+                  </Text>
+                </Box>
+                {isPending && (
+                  <Text fontSize="9px" color={P.gold} fontWeight="700" letterSpacing="1px" textTransform="uppercase" flexShrink={0}>
+                    {t("sidebar.inventory.targeting")}
+                  </Text>
+                )}
+              </Flex>
+            );
+          })}
+        </Flex>
+      )}
+    </Box>
+  );
+}
+
+function PartyTab({ partyId, leaderId, partyMembers, inviteId, setInviteId, onPartyInvite, onPartyLeave, onPartyKick, onTradeRequest }: {
+  partyId: string;
+  leaderId: string;
+  partyMembers: PartyMember[];
+  inviteId: string;
+  setInviteId: (val: string) => void;
+  onPartyInvite?: (id: string) => void;
+  onPartyLeave?: () => void;
+  onPartyKick?: (id: string) => void;
+  onTradeRequest?: (id: string) => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <Box p="3">
+      {!partyId ? (
+        <VStack align="stretch" gap="3">
+          <Text fontSize="11px" color={P.goldDark} fontStyle="italic">{t("sidebar.party.not_in_party")}</Text>
+          <HStack gap="2">
+            <Input
+              placeholder={t("sidebar.party.session_id")}
+              size="xs"
+              value={inviteId}
+              onChange={(e) => setInviteId(e.target.value)}
+              bg={P.darkest}
+              borderColor={P.border}
+              color={P.goldText}
+              fontSize="11px"
+              fontFamily={P.mono}
+              _focus={{ borderColor: P.gold }}
+            />
+            <Button
+              size="xs"
+              bg={P.raised}
+              color={P.gold}
+              borderColor={P.border}
+              border="1px solid"
+              _hover={{ bg: P.surface, borderColor: P.gold }}
+              onClick={() => { onPartyInvite?.(inviteId); setInviteId(""); }}
+            >
+              {t("sidebar.party.invite")}
+            </Button>
+          </HStack>
+        </VStack>
+      ) : (
+        <VStack align="stretch" gap="2">
+          <Text fontSize="9px" color={P.goldDark} letterSpacing="2px" textTransform="uppercase">{t("sidebar.party.party_id", { id: partyId })}</Text>
+          {partyMembers.map((member) => (
+            <Flex key={member.sessionId} justify="space-between" align="center" p="2" bg={P.darkest} border="1px solid" borderColor={P.border} borderRadius="2px">
+              <HStack gap="2">
+                <Box w="6px" h="6px" borderRadius="full" bg="green.400" flexShrink={0} />
+                <Text fontSize="12px" color={member.sessionId === leaderId ? P.gold : P.goldText} fontWeight={member.sessionId === leaderId ? "700" : "400"}>
+                  {member.name}{member.sessionId === leaderId ? ` ${t("sidebar.party.leader_tag")}` : ""}
+                </Text>
+              </HStack>
+              <HStack gap="1">
+                {member.sessionId !== leaderId && (
+                  <Button size="xs" variant="ghost" p="0" h="auto" minW="auto" color={P.gold} fontSize="10px" onClick={() => onTradeRequest?.(member.sessionId)}>
+                    {t("sidebar.social.trade")}
+                  </Button>
+                )}
+                {leaderId === partyMembers[0]?.sessionId && member.sessionId !== leaderId && (
+                  <Button size="xs" variant="ghost" p="0" h="auto" minW="auto" color="red.400" fontSize="10px" onClick={() => onPartyKick?.(member.sessionId)}>
+                    {t("sidebar.social.kick")}
+                  </Button>
+                )}
+              </HStack>
+            </Flex>
+          ))}
+          <Button
+            mt="1"
+            size="xs"
+            variant="outline"
+            borderColor={P.blood}
+            color="red.400"
+            _hover={{ bg: P.blood }}
+            fontSize="10px"
+            onClick={onPartyLeave}
+          >
+            {t("sidebar.party.leave")}
+          </Button>
+        </VStack>
+      )}
+    </Box>
+  );
+}
+
+function FriendsTab({ friends, pendingFriendRequests, friendName, setFriendName, onFriendRequest, onFriendAccept, onWhisper, onTradeRequest, onPartyInvite }: {
+  friends: Friend[];
+  pendingFriendRequests: { id: string; name: string }[];
+  friendName: string;
+  setFriendName: (val: string) => void;
+  onFriendRequest?: (name: string) => void;
+  onFriendAccept?: (id: string) => void;
+  onWhisper?: (name: string) => void;
+  onTradeRequest?: (id: string) => void;
+  onPartyInvite?: (id: string) => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <Box p="3">
+      <VStack align="stretch" gap="3">
+        <HStack gap="2">
+          <Input
+            placeholder={t("sidebar.friends.friend_name")}
+            size="xs"
+            value={friendName}
+            onChange={(e) => setFriendName(e.target.value)}
+            bg={P.darkest}
+            borderColor={P.border}
+            color={P.goldText}
+            fontSize="11px"
+            fontFamily={P.mono}
+            _focus={{ borderColor: P.gold }}
+          />
+          <Button
+            size="xs"
+            bg={P.raised}
+            color={P.gold}
+            borderColor={P.border}
+            border="1px solid"
+            _hover={{ bg: P.surface, borderColor: P.gold }}
+            onClick={() => { onFriendRequest?.(friendName); setFriendName(""); }}
+          >
+            {t("sidebar.friends.add")}
+          </Button>
+        </HStack>
+        <VStack align="stretch" gap="1">
+          {friends.length === 0 && (
+            <Text fontSize="11px" color={P.goldDark} textAlign="center" fontStyle="italic" py="4">{t("sidebar.friends.no_friends")}</Text>
+          )}
+          {friends.map((friend) => (
+            <Flex key={friend.id} justify="space-between" align="center" p="2" bg={P.darkest} border="1px solid" borderColor={P.border} borderRadius="2px">
+              <HStack gap="2">
+                <Box w="6px" h="6px" borderRadius="full" bg={friend.online ? "green.400" : "gray.600"} flexShrink={0} />
+                <Text fontSize="12px" color={friend.online ? P.goldText : P.goldDark}>{friend.name}</Text>
+              </HStack>
+              <HStack gap="1">
+                <Button size="xs" variant="ghost" p="0" h="auto" minW="auto" color={P.gold} fontSize="10px" onClick={() => onWhisper?.(friend.name)}>
+                  {t("sidebar.social.whisper")}
+                </Button>
+                {friend.online && (
+                  <Button size="xs" variant="ghost" p="0" h="auto" minW="auto" color="blue.400" fontSize="10px" onClick={() => onPartyInvite?.(friend.id)}>
+                    {t("sidebar.social.party_invite")}
+                  </Button>
+                )}
+                {friend.online && (
+                  <Button size="xs" variant="ghost" p="0" h="auto" minW="auto" color={P.gold} fontSize="10px" onClick={() => onTradeRequest?.(friend.id)}>
+                    {t("sidebar.social.trade")}
+                  </Button>
+                )}
+              </HStack>
+            </Flex>
+          ))}
+        </VStack>
+        {pendingFriendRequests.length > 0 && (
+          <VStack align="stretch" gap="1">
+            <Text fontSize="9px" letterSpacing="2px" color={P.goldDark} textTransform="uppercase">{t("sidebar.friends.pending_requests")}</Text>
+            {pendingFriendRequests.map((req) => (
+              <Flex key={req.id} justify="space-between" align="center" p="2" bg={P.darkest} border="1px solid" borderColor={P.border} borderRadius="2px">
+                <Text fontSize="12px" color={P.goldText}>{req.name}</Text>
+                <Button
+                  size="xs"
+                  variant="ghost"
+                  p="0"
+                  h="auto"
+                  minW="auto"
+                  color="green.400"
+                  fontSize="10px"
+                  onClick={() => onFriendAccept?.(req.id)}
+                >
+                  {t("sidebar.friends.accept")}
+                </Button>
+              </Flex>
+            ))}
+          </VStack>
+        )}
+      </VStack>
+    </Box>
+  );
+}
+
 function StatChip({ label, value }: { label: string; value: number }) {
   return (
     <Box textAlign="center">

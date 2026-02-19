@@ -76,63 +76,41 @@ export class MessageHandler {
 			handler: (client: Client, message: ClientMessages[T]) => void,
 		) => void,
 	) {
-		register(ClientMessageType.Move, (c, d) => this.handleMove(c, d));
-		register(ClientMessageType.Attack, (c, d) => this.handleAttack(c, d));
-		register(ClientMessageType.Cast, (c, d) => this.handleCast(c, d));
-		register(ClientMessageType.Pickup, (c, d) => this.handlePickup(c, d));
-		register(ClientMessageType.DropItem, (c, d) => this.handleDropItem(c, d));
-		register(ClientMessageType.Equip, (c, d) => this.handleEquip(c, d));
-		register(ClientMessageType.Unequip, (c, d) => this.handleUnequip(c, d));
-		register(ClientMessageType.UseItem, (c, d) => this.handleUseItem(c, d));
-		register(ClientMessageType.Chat, (c, d) => this.handleChat(c, d));
-		register(ClientMessageType.Interact, (c, d) => this.handleInteract(c, d));
-		register(ClientMessageType.BuyItem, (c, d) => this.handleBuyItem(c, d));
-		register(ClientMessageType.SellItem, (c, d) => this.handleSellItem(c, d));
-		register(ClientMessageType.PartyInvite, (c, d) =>
-			this.handlePartyInvite(c, d),
-		);
-		register(ClientMessageType.PartyAccept, (c, d) =>
-			this.handlePartyAccept(c, d),
-		);
-		register(ClientMessageType.PartyLeave, (c) => this.handlePartyLeave(c));
-		register(ClientMessageType.PartyKick, (c, d) => this.handlePartyKick(c, d));
-		register(ClientMessageType.FriendRequest, (c, d) =>
-			this.handleFriendRequest(c, d),
-		);
-		register(ClientMessageType.FriendAccept, (c, d) =>
-			this.handleFriendAccept(c, d),
-		);
-		register(ClientMessageType.QuestAccept, (c, d) =>
-			this.handleQuestAccept(c, d),
-		);
-		register(ClientMessageType.QuestComplete, (c, d) =>
-			this.handleQuestComplete(c, d),
-		);
-		register(ClientMessageType.Audio, (c, d) => this.handleAudio(c, d));
+		register(ClientMessageType.Move, this.handleMove.bind(this));
+		register(ClientMessageType.Attack, this.handleAttack.bind(this));
+		register(ClientMessageType.Cast, this.handleCast.bind(this));
+		register(ClientMessageType.Pickup, this.handlePickup.bind(this));
+		register(ClientMessageType.DropItem, this.handleDropItem.bind(this));
+		register(ClientMessageType.Equip, this.handleEquip.bind(this));
+		register(ClientMessageType.Unequip, this.handleUnequip.bind(this));
+		register(ClientMessageType.UseItem, this.handleUseItem.bind(this));
+		register(ClientMessageType.Chat, this.handleChat.bind(this));
+		register(ClientMessageType.Interact, this.handleInteract.bind(this));
+		register(ClientMessageType.BuyItem, this.handleBuyItem.bind(this));
+		register(ClientMessageType.SellItem, this.handleSellItem.bind(this));
+		register(ClientMessageType.PartyInvite, this.handlePartyInvite.bind(this));
+		register(ClientMessageType.PartyAccept, this.handlePartyAccept.bind(this));
+		register(ClientMessageType.PartyLeave, this.handlePartyLeave.bind(this));
+		register(ClientMessageType.PartyKick, this.handlePartyKick.bind(this));
+		register(ClientMessageType.FriendRequest, this.handleFriendRequest.bind(this));
+		register(ClientMessageType.FriendAccept, this.handleFriendAccept.bind(this));
+		register(ClientMessageType.QuestAccept, this.handleQuestAccept.bind(this));
+		register(ClientMessageType.QuestComplete, this.handleQuestComplete.bind(this));
+		register(ClientMessageType.Audio, this.handleAudio.bind(this));
 
 		// Trading
-		register(ClientMessageType.TradeRequest, (c, d) =>
-			this.handleTradeRequest(c, d),
-		);
-		register(ClientMessageType.TradeAccept, (c, d) =>
-			this.handleTradeAccept(c, d),
-		);
-		register(ClientMessageType.TradeOfferUpdate, (c, d) =>
-			this.handleTradeOfferUpdate(c, d),
-		);
-		register(ClientMessageType.TradeConfirm, (c) => this.handleTradeConfirm(c));
-		register(ClientMessageType.TradeCancel, (c) => this.handleTradeCancel(c));
+		register(ClientMessageType.TradeRequest, this.handleTradeRequest.bind(this));
+		register(ClientMessageType.TradeAccept, this.handleTradeAccept.bind(this));
+		register(ClientMessageType.TradeOfferUpdate, this.handleTradeOfferUpdate.bind(this));
+		register(ClientMessageType.TradeConfirm, this.handleTradeConfirm.bind(this));
+		register(ClientMessageType.TradeCancel, this.handleTradeCancel.bind(this));
 
 		// Bank
-		register(ClientMessageType.BankDeposit, (c, d) =>
-			this.handleBankDeposit(c, d),
-		);
-		register(ClientMessageType.BankWithdraw, (c, d) =>
-			this.handleBankWithdraw(c, d),
-		);
-		register(ClientMessageType.BankClose, (c) => this.handleBankClose(c));
+		register(ClientMessageType.BankDeposit, this.handleBankDeposit.bind(this));
+		register(ClientMessageType.BankWithdraw, this.handleBankWithdraw.bind(this));
+		register(ClientMessageType.BankClose, this.handleBankClose.bind(this));
 
-		register(ClientMessageType.Meditate, (c) => this.handleMeditate(c));
+		register(ClientMessageType.Meditate, this.handleMeditate.bind(this));
 	}
 
 	// ── Helpers ─────────────────────────────────────────────────────────────

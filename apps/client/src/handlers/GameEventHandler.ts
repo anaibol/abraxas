@@ -171,11 +171,7 @@ export class GameEventHandler {
 	}
 
 	private onInvalidTarget() {
-		this.effectManager.showNotification(
-			this.room.sessionId,
-			"Invalid target",
-			"#ff8800",
-		);
+		this.effectManager.showFloatingText(this.room.sessionId, "Invalid target", "#ff8800");
 	}
 
 	private onLevelUp(data: ServerMessages["level_up"]) {

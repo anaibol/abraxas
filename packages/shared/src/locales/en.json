@@ -168,6 +168,7 @@
     "drop": "Drop",
     "use": "Use",
     "equip": "Equip",
+    "unequip": "Unequip",
     "meditate": "Meditate"
   },
   "npcs": {

@@ -180,22 +180,14 @@ export class InputHandler {
       for (const { key, spellId, rangeTiles } of this.spellKeys) {
         if (Phaser.Input.Keyboard.JustDown(key)) {
           this.cancelTargeting();
-          if (rangeTiles > 0) {
-            this.enterTargeting({ mode: "spell", spellId, rangeTiles });
-          } else {
-            this.network.sendCast(spellId, 0, 0);
-          }
+          this.handleSpellKey(spellId, rangeTiles);
           return;
         }
       }
 
       if (Phaser.Input.Keyboard.JustDown(this.ctrlKey)) {
         this.cancelTargeting();
-        if (this.meleeRange > 1) {
-          this.enterTargeting({ mode: "attack", rangeTiles: this.meleeRange });
-        } else {
-          this.network.sendAttack();
-        }
+        this.handleAttackInput();
         return;
       }
 
@@ -203,11 +195,7 @@ export class InputHandler {
     }
 
     if (Phaser.Input.Keyboard.JustDown(this.ctrlKey)) {
-      if (this.meleeRange > 1) {
-        this.enterTargeting({ mode: "attack", rangeTiles: this.meleeRange });
-      } else {
-        this.network.sendAttack();
-      }
+      this.handleAttackInput();
     }
 
     if (leftClicked) {
@@ -217,12 +205,16 @@ export class InputHandler {
 
     for (const { key, spellId, rangeTiles } of this.spellKeys) {
       if (Phaser.Input.Keyboard.JustDown(key)) {
-        if (rangeTiles > 0) {
-          this.enterTargeting({ mode: "spell", spellId, rangeTiles });
-        } else {
-          this.network.sendCast(spellId, 0, 0);
-        }
+        this.handleSpellKey(spellId, rangeTiles);
       }
+    }
+  }
+
+  private handleSpellKey(spellId: string, rangeTiles: number) {
+    if (rangeTiles > 0) {
+      this.enterTargeting({ mode: "spell", spellId, rangeTiles });
+    } else {
+      this.network.sendCast(spellId, 0, 0);
     }
   }
 

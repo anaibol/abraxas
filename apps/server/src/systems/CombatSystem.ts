@@ -451,16 +451,65 @@ export class CombatSystem {
 			return;
 		}
 
-		// Self-target spells (rangeTiles === 0) always target the caster
-		if (spell.rangeTiles === 0) {
-			this.applySpellToTarget(
-				attacker,
-				attacker,
-				spell,
-				broadcast,
-				onDeath,
-				now,
+		// AoE heal — heals all same-faction entities (including caster) in radius.
+		// Handled before the rangeTiles === 0 check so aoeRadius is respected.
+		if (spell.effect === "aoe_heal") {
+			const radius = spell.aoeRadius ?? 3;
+			const candidates = this.spatial.findEntitiesInRadius(
+				windup.targetTileX,
+				windup.targetTileY,
+				radius,
 			);
+			for (const candidate of candidates) {
+				const isAlly =
+					candidate.sessionId === attacker.sessionId ||
+					this.sameFaction(attacker, candidate);
+				if (!isAlly || !candidate.alive) continue;
+				const scalingStat = this.boosted(attacker, spell.scalingStat, now);
+				const healAmount = calcHealAmount(spell.baseDamage, scalingStat, spell.scalingRatio);
+				candidate.hp = Math.min(candidate.maxHp, candidate.hp + healAmount);
+				broadcast(ServerMessageType.Heal, {
+					sessionId: candidate.sessionId,
+					amount: healAmount,
+					hpAfter: candidate.hp,
+				});
+			}
+			broadcast(ServerMessageType.CastHit, {
+				sessionId: attacker.sessionId,
+				spellId: spell.id,
+				targetTileX: windup.targetTileX,
+				targetTileY: windup.targetTileY,
+				fxId: spell.fxId,
+			});
+			return;
+		}
+
+		// Self-target spells (rangeTiles === 0) always target the caster.
+		// AoE spells with rangeTiles === 0 target a radius around the caster.
+		if (spell.rangeTiles === 0) {
+			const aoeRadius = spell.aoeRadius ?? 0;
+			if (aoeRadius > 0) {
+				// AoE originating from caster position
+				const victims = this.spatial.findEntitiesInRadius(
+					attacker.tileX,
+					attacker.tileY,
+					aoeRadius,
+				);
+				for (const victim of victims) {
+					if (victim.sessionId === attacker.sessionId) continue;
+					if (this.sameFaction(attacker, victim)) continue;
+					this.applySpellToTarget(attacker, victim, spell, broadcast, onDeath, now);
+				}
+				broadcast(ServerMessageType.CastHit, {
+					sessionId: attacker.sessionId,
+					spellId: spell.id,
+					targetTileX: attacker.tileX,
+					targetTileY: attacker.tileY,
+					fxId: spell.fxId,
+				});
+			} else {
+				this.applySpellToTarget(attacker, attacker, spell, broadcast, onDeath, now);
+			}
 			return;
 		}
 
@@ -570,6 +619,32 @@ export class CombatSystem {
 				spell.dotDurationMs ?? spell.durationMs ?? 5000,
 				now,
 			);
+		} else if (spell.effect === "leech") {
+			// Deal damage to target, then heal caster for a fraction of that damage.
+			const defenderInt = this.boosted(target, "int", now);
+			const damage = calcSpellDamage(
+				spell.baseDamage,
+				scalingStatValue,
+				spell.scalingRatio,
+				defenderInt,
+			);
+			target.hp -= damage;
+			broadcast(ServerMessageType.Damage, {
+				targetSessionId: target.sessionId,
+				amount: damage,
+				hpAfter: target.hp,
+				type: "magic",
+			});
+			if (target.hp <= 0) {
+				onDeath(target, attacker.sessionId);
+			}
+			const healBack = Math.max(1, Math.round(damage * (spell.leechRatio ?? 0.5)));
+			attacker.hp = Math.min(attacker.maxHp, attacker.hp + healBack);
+			broadcast(ServerMessageType.Heal, {
+				sessionId: attacker.sessionId,
+				amount: healBack,
+				hpAfter: attacker.hp,
+			});
 		} else if (spell.effect === "damage" || spell.baseDamage > 0) {
 			const defenderInt = this.boosted(target, "int", now);
 			const damage = calcSpellDamage(
@@ -609,6 +684,21 @@ export class CombatSystem {
 			broadcast(ServerMessageType.StunApplied, {
 				targetSessionId: target.sessionId,
 				durationMs: spell.durationMs ?? 1000,
+			});
+		} else if (spell.effect === "debuff") {
+			// Applies a negative stat modifier to reduce the target's effectiveness.
+			this.buffSystem.addBuff(
+				target.sessionId,
+				spell.id,
+				spell.buffStat ?? "armor",
+				-(spell.buffAmount ?? 10),
+				spell.durationMs ?? 5000,
+				now,
+			);
+			broadcast(ServerMessageType.BuffApplied, {
+				sessionId: target.sessionId,
+				spellId: spell.id,
+				durationMs: spell.durationMs ?? 5000,
 			});
 		} else if (spell.effect === "buff" || spell.buffStat) {
 			this.buffSystem.addBuff(

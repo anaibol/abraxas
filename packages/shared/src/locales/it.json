@@ -167,7 +167,8 @@
     "pickup": "Raccogli",
     "drop": "Lascia",
     "use": "Usa",
-    "equip": "Equip",
+    "equip": "Equipaggia",
+    "unequip": "Rimuovi",
     "meditate": "Medita"
   },
   "npcs": {

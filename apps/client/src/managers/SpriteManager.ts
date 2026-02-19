@@ -16,14 +16,7 @@ export class SpriteManager {
 	addPlayer(player: PlayerEntityState, sessionId: string) {
 		if (this.sprites.has(sessionId)) return;
 		const isLocal = sessionId === this.getSessionId();
-		const sprite = this.createSprite({
-			sessionId,
-			tileX: player.tileX,
-			tileY: player.tileY,
-			typeOrClass: player.classType,
-			name: player.name,
-			isLocal,
-		});
+		const sprite = new PlayerSprite(this.scene, sessionId, player.tileX, player.tileY, player.classType, player.name, isLocal);
 		this.sprites.set(sessionId, sprite);
 		if (isLocal) this.cameraController.follow(sprite);
 	}
@@ -58,14 +51,7 @@ export class SpriteManager {
 
 	addNpc(npc: NpcEntityState, id: string) {
 		if (this.sprites.has(id)) return;
-		const sprite = this.createSprite({
-			sessionId: id,
-			tileX: npc.tileX,
-			tileY: npc.tileY,
-			typeOrClass: npc.type,
-			name: npc.name,
-			isLocal: false,
-		});
+		const sprite = new PlayerSprite(this.scene, id, npc.tileX, npc.tileY, npc.type, npc.name, false);
 		this.sprites.set(id, sprite);
 	}
 
@@ -76,10 +62,6 @@ export class SpriteManager {
 		sprite.setFacing(npc.facing);
 		sprite.updateHpMana(npc.hp, 0);
 		this.updateAlpha(sprite, npc);
-	}
-
-	removeNpc(id: string) {
-		this.removePlayer(id);
 	}
 
 	/** Per-frame interpolation — all state-driven updates happen via syncPlayer/syncNpc. */
@@ -174,22 +156,4 @@ export class SpriteManager {
 		}
 	}
 
-	private createSprite(opts: {
-		sessionId: string;
-		tileX: number;
-		tileY: number;
-		typeOrClass: string;
-		name: string;
-		isLocal: boolean;
-	}) {
-		return new PlayerSprite(
-			this.scene,
-			opts.sessionId,
-			opts.tileX,
-			opts.tileY,
-			opts.typeOrClass,
-			opts.name,
-			opts.isLocal,
-		);
-	}
 }
