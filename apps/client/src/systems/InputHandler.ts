@@ -217,6 +217,14 @@ export class InputHandler {
     }
   }
 
+  handleAttackInput() {
+    if (this.meleeRange > 1) {
+      this.enterTargeting({ mode: "attack", rangeTiles: this.meleeRange });
+    } else {
+      this.network.sendAttack();
+    }
+  }
+
   triggerMove(direction: Direction, time: number) {
     if (time - this.lastMoveSentMs >= this.moveIntervalMs) {
       this.network.sendMove(direction);

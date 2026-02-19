@@ -1,4 +1,5 @@
 import { Box, Flex, Text, Button, VStack } from "@chakra-ui/react";
+import { useTranslation } from "react-i18next";
 
 interface DialogueOption {
     text: string;
@@ -24,6 +25,7 @@ const COLORS = {
 };
 
 export function QuestDialogue({ npcId, text, options, onAction, onClose }: QuestDialogueProps) {
+    const { t } = useTranslation();
     return (
         <Flex
             pos="fixed"
@@ -46,7 +48,7 @@ export function QuestDialogue({ npcId, text, options, onAction, onClose }: Quest
                 {/* Header */}
                 <Box bg={COLORS.surface} px="4" py="2" borderBottom="2px solid" borderColor={COLORS.border}>
                     <Text color={COLORS.gold} fontWeight="bold" fontSize="18px" textTransform="uppercase" letterSpacing="2px">
-                        {npcId.replace(/_/g, " ")}
+                        {t("npcs." + npcId)}
                     </Text>
                 </Box>
 

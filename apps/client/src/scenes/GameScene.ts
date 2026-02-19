@@ -236,6 +236,18 @@ export class GameScene extends Phaser.Scene {
 		this.audioManager.cleanup();
 	}
 
+	triggerMove(direction: Direction) {
+		this.inputHandler.triggerMove(direction, this.time.now);
+	}
+
+	triggerAttack() {
+		this.inputHandler.handleAttackInput();
+	}
+
+	triggerCast(spellId: string) {
+		this.network.sendCast(spellId, 0, 0);
+	}
+
 	startSpellTargeting(spellId: string, rangeTiles: number) {
 		this.inputHandler.cancelTargeting();
 		if (rangeTiles > 0) {

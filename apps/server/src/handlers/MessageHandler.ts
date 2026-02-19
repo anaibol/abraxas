@@ -405,7 +405,6 @@ export class MessageHandler {
 		);
 		if (availableQuests.length > 0) {
 			const questId = availableQuests[0];
-			const questDef = QUESTS[questId];
 			client.send(ServerMessageType.OpenDialogue, {
 				npcId: npc.sessionId,
 				text: "dialogue.accept_prompt",
@@ -569,7 +568,7 @@ export class MessageHandler {
 		if (!player) return;
 
 		if (!this.isNearMerchant(player)) {
-			this.sendError(client, "You are too far from a merchant");
+			this.sendError(client, "game.too_far_merchant");
 			return;
 		}
 
@@ -618,7 +617,7 @@ export class MessageHandler {
 		if (!player) return;
 
 		if (!this.isNearMerchant(player)) {
-			this.sendError(client, "You are too far from a merchant");
+			this.sendError(client, "game.too_far_merchant");
 			return;
 		}
 
@@ -628,7 +627,7 @@ export class MessageHandler {
 		// Cap quantity to what the player actually has in inventory
 		const slot = player.inventory.find((s) => s.itemId === data.itemId);
 		if (!slot) {
-			this.sendError(client, "Item not found in inventory");
+			this.sendError(client, "game.item_not_found");
 			return;
 		}
 		const quantity = Math.min(data.quantity ?? 1, slot.quantity);
@@ -643,7 +642,7 @@ export class MessageHandler {
 				templateData: { quantity, item: itemDef.name, gold: sellValue },
 			});
 		} else {
-			this.sendError(client, "Item not found in inventory");
+			this.sendError(client, "game.item_not_found");
 		}
 	}
 
@@ -728,8 +727,7 @@ export class MessageHandler {
 		}
 
 		this.ctx.systems.trade.handleRequest(player, target, (sid, type, msg) => {
-			const found = this.findClient(sid);
-			found?.send(type, msg);
+			this.ctx.findClientBySessionId(sid)?.send(type, msg);
 		});
 	}
 
@@ -743,7 +741,7 @@ export class MessageHandler {
 
 		const trade = this.ctx.systems.trade.handleAccept(requester, player);
 		if (trade) {
-			const rClient = this.findClient(requester.sessionId);
+			const rClient = this.ctx.findClientBySessionId(requester.sessionId);
 			rClient?.send(ServerMessageType.TradeStarted, {
 				targetSessionId: player.sessionId,
 				targetName: player.name,
@@ -764,10 +762,8 @@ export class MessageHandler {
 		type: ServerMessageType,
 		data: unknown,
 	) {
-		const a = this.findClient(trade.alice.sessionId);
-		const b = this.findClient(trade.bob.sessionId);
-		a?.send(type, data);
-		b?.send(type, data);
+		this.ctx.findClientBySessionId(trade.alice.sessionId)?.send(type, data);
+		this.ctx.findClientBySessionId(trade.bob.sessionId)?.send(type, data);
 	}
 
 	handleTradeOfferUpdate(
@@ -815,13 +811,9 @@ export class MessageHandler {
 		const trade = this.ctx.systems.trade.cancel(client.sessionId);
 		if (trade) {
 			this.sendToParticipants(trade, ServerMessageType.TradeCancelled, {
-				reason: "Trade cancelled",
+				reason: "game.trade_cancelled_by_player",
 			});
 		}
-	}
-
-	private findClient(sessionId: string): Client | undefined {
-		return this.ctx.findClientBySessionId(sessionId);
 	}
 
 	// ── Bank Handlers ────────────────────────────────────────────────────────

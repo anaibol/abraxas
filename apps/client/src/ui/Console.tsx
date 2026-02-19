@@ -18,6 +18,14 @@ interface ConsoleProps {
 
 type Channel = "all" | "global" | "party" | "whisper" | "system";
 
+const TABS: { id: Channel; label: string; color: string }[] = [
+  { id: "all", label: "ALL", color: "#ccc" },
+  { id: "global", label: "GLOBAL", color: "#fff" },
+  { id: "party", label: "PARTY", color: "#77f" },
+  { id: "whisper", label: "WHISPER", color: "#f7f" },
+  { id: "system", label: "SYSTEM", color: "#ff7" },
+];
+
 export function Console({ messages, onSendChat, isChatOpen, prefillMessage }: ConsoleProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -74,26 +82,13 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage }: Co
   }, [isChatOpen]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-      if (e.key === "Enter") {
-          if (inputValue.trim()) {
-              let prefix = "";
-              if (activeChannel === "party") prefix = "/p ";
-              // Whisper needs a target, so we don't auto-prefix it easily here without more UI
-              
-              onSendChat?.(prefix + inputValue);
-              setInputValue("");
-          }
-      }
-      e.stopPropagation();
+    if (e.key === "Enter") {
+      const prefix = activeChannel === "party" ? "/p " : "";
+      onSendChat?.(prefix + inputValue);
+      setInputValue("");
+    }
+    e.stopPropagation();
   };
-
-  const tabs: { id: Channel; label: string; color: string }[] = [
-    { id: "all", label: "ALL", color: "#ccc" },
-    { id: "global", label: "GLOBAL", color: "#fff" },
-    { id: "party", label: "PARTY", color: "#77f" },
-    { id: "whisper", label: "WHISPER", color: "#f7f" },
-    { id: "system", label: "SYSTEM", color: "#ff7" },
-  ];
 
   return (
     <Box
@@ -116,7 +111,7 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage }: Co
     >
       {/* Tabs */}
       <HStack gap="0" bg="rgba(0,0,0,0.3)" borderBottom="1px solid rgba(255,255,255,0.1)">
-        {tabs.map(tab => (
+        {TABS.map(tab => (
           <Box
             key={tab.id}
             px="3"

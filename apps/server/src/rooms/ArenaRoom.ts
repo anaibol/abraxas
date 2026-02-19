@@ -248,15 +248,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 			await this.friends.sendUpdateToUser(auth.id, client.sessionId);
 			const quests = await this.quests.loadCharQuests(char.id);
 			client.send(ServerMessageType.QuestList, { quests });
-			client.send(ServerMessageType.Welcome, {
-				sessionId: client.sessionId,
-				tileX: player.tileX,
-				tileY: player.tileY,
-				mapWidth: this.map.width,
-				mapHeight: this.map.height,
-				tileSize: this.map.tileSize,
-				collision: this.map.collision,
-			});
+			this.sendWelcome(client, player);
 			logger.info({
 				room: this.roomId,
 				sessionId: client.sessionId,
@@ -291,6 +283,10 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 			this.friends.setUserOnline(player.userId, client.sessionId);
 		}
 
+		this.sendWelcome(client, player);
+	}
+
+	private sendWelcome(client: Client, player: Player) {
 		client.send(ServerMessageType.Welcome, {
 			sessionId: client.sessionId,
 			tileX: player.tileX,

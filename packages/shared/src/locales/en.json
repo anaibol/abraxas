@@ -83,7 +83,8 @@
     "trade_completed": "Trade completed successfully",
     "trade_cancelled": "Trade cancelled: {{reason}}",
     "item_used": "Used: {{item}}",
-    "invalid_target": "Invalid target"
+    "invalid_target": "Invalid target",
+    "trade_cancelled_by_player": "Player cancelled the trade"
   },
   "social": {
     "already_in_party": "Player is already in a party",

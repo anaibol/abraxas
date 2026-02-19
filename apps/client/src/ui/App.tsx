@@ -8,7 +8,7 @@ import {
   ToastCloseTrigger,
 } from "@chakra-ui/react";
 import { Box, Flex } from "@chakra-ui/react";
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { system } from "./theme";
 import { Lobby } from "./Lobby";
@@ -29,8 +29,9 @@ import type {
   ServerMessages,
   TradeState,
 } from "@abraxas/shared";
-import { getRandomName, ServerMessageType, ITEMS } from "@abraxas/shared";
+import { getRandomName, ServerMessageType, ITEMS, CLASS_STATS, SPELLS, Direction } from "@abraxas/shared";
 import { QuestDialogue } from "./QuestDialogue";
+import { MobileControls } from "./MobileControls";
 import { NetworkManager } from "../network/NetworkManager";
 import { AudioManager } from "../managers/AudioManager";
 import Phaser from "phaser";
@@ -44,11 +45,10 @@ const toaster = createToaster({
   pauseOnPageIdle: true,
 });
 
-let killFeedId = 0;
-let consoleMsgId = 0;
-
 export function App() {
   const { t } = useTranslation();
+  const killFeedIdRef = useRef(0);
+  const consoleMsgIdRef = useRef(0);
   const [phase, setPhase] = useState<"lobby" | "game">("lobby");
   const [connecting, setConnecting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -103,6 +103,8 @@ export function App() {
   const [showScoreboard, setShowScoreboard] = useState(false);
   const [killStats, setKillStats] = useState<Record<string, KillStats>>({});
   const [pendingSpellId, setPendingSpellId] = useState<string | null>(null);
+  const [isMobile] = useState(() => typeof window !== "undefined" && ("ontouchstart" in window || navigator.maxTouchPoints > 0));
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const gameContainerRef = useRef<HTMLDivElement>(null);
   const phaserGameRef = useRef<Phaser.Game | null>(null);
@@ -272,7 +274,7 @@ export function App() {
     setConsoleMessages((prev) => {
       const next = [
         ...prev,
-        { id: ++consoleMsgId, text, color, timestamp: Date.now() },
+        { id: ++consoleMsgIdRef.current, text, color, timestamp: Date.now() },
       ];
       return next.length > 50 ? next.slice(next.length - 50) : next;
     });
@@ -336,7 +338,7 @@ export function App() {
         // Add welcome message
         setConsoleMessages([
           {
-            id: ++consoleMsgId,
+            id: ++consoleMsgIdRef.current,
             text: mapName
               ? t("game.traveling", { map: mapName })
               : t("game.welcome"),
@@ -374,7 +376,7 @@ export function App() {
             (data: ServerMessages[ServerMessageType.Chat]) => {
               setConsoleMessages((prev) => {
                 const newMsg: ConsoleMessage = {
-                  id: ++consoleMsgId,
+                  id: ++consoleMsgIdRef.current,
                   text: `${data.senderName}: ${data.message}`,
                   color:
                     data.channel === "party"
@@ -613,27 +615,14 @@ export function App() {
                 setKillFeed((prev) => [
                   ...prev.slice(-9),
                   {
-                    id: ++killFeedId,
+                    id: ++killFeedIdRef.current,
                     killerName,
                     victimName,
                     timestamp: Date.now(),
                   },
                 ]);
               },
-              (text: string, color?: string) => {
-                setConsoleMessages((prev) => {
-                  const newMsg: ConsoleMessage = {
-                    id: ++consoleMsgId,
-                    text,
-                    color,
-                    timestamp: Date.now(),
-                  };
-                  // Keep last 50 messages
-                  const next = [...prev, newMsg];
-                  if (next.length > 50) return next.slice(next.length - 50);
-                  return next;
-                });
-              },
+              addConsoleMessage,
               () => {
                 setIsLoading(false);
                 setConnecting(false);
@@ -700,20 +689,50 @@ export function App() {
     }
   }, []);
 
-  const handleSendChat = (msg: string) => {
-    const trimmed = msg.trim();
+  const mobileSpells = useMemo(() => {
+    const classStats = CLASS_STATS[playerState.classType?.toUpperCase() ?? "WARRIOR"];
+    if (!classStats) return [];
+    return classStats.spells
+      .map((spellId) => {
+        const spell = SPELLS[spellId];
+        if (!spell) return null;
+        return { key: spell.key, spellId: spell.id, rangeTiles: spell.rangeTiles };
+      })
+      .filter(Boolean) as { key: string; spellId: string; rangeTiles: number }[];
+  }, [playerState.classType]);
 
-    // Client-side /ping command: measure RTT without sending to server as chat
+  const handleMobileMove = useCallback((direction: Direction) => {
+    const game = phaserGameRef.current;
+    if (!game) return;
+    const scene = game.scene.getScene("GameScene") as GameScene | null;
+    scene?.triggerMove(direction);
+  }, []);
+
+  const handleMobileAttack = useCallback(() => {
+    const game = phaserGameRef.current;
+    if (!game) return;
+    const scene = game.scene.getScene("GameScene") as GameScene | null;
+    scene?.triggerAttack();
+  }, []);
+
+  const handleMobileSpell = useCallback((spellId: string, rangeTiles: number) => {
+    handleSpellClick(spellId, rangeTiles);
+  }, [handleSpellClick]);
+
+  const handleSendChat = (msg: string) => {
+    setIsChatOpen(false);
+
+    const trimmed = msg.trim();
+    if (!trimmed) return;
+
     if (trimmed === "/ping") {
       networkRef.current?.ping((rtt) => {
         addConsoleMessage(`Pong! ${rtt}ms`, "#00ffff");
       });
-      setIsChatOpen(false);
       return;
     }
 
     networkRef.current?.sendChat(msg);
-    setIsChatOpen(false);
   };
 
   useEffect(() => {
@@ -763,34 +782,62 @@ export function App() {
                   players={roomRef.current.state?.players}
                   npcs={roomRef.current.state?.npcs}
                   currentPlayerId={roomRef.current.sessionId}
+                  isMobile={isMobile}
                 />
               )}
+              {/* Mobile sidebar toggle button */}
+              {isMobile && (
+                <Box
+                  position="absolute"
+                  top="12px"
+                  right="12px"
+                  zIndex={60}
+                  w="44px"
+                  h="44px"
+                  bg="rgba(10, 8, 20, 0.82)"
+                  border="1px solid rgba(212, 168, 67, 0.4)"
+                  borderRadius="8px"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  fontSize="20px"
+                  color="rgba(212, 168, 67, 0.9)"
+                  cursor="pointer"
+                  onPointerDown={(e) => { e.preventDefault(); setIsSidebarOpen((v) => !v); }}
+                >
+                  ☰
+                </Box>
+              )}
             </Box>
-            <Sidebar
-              state={playerState}
-              isRecording={isRecording}
-              quests={quests}
-              onEquip={(itemId) => networkRef.current?.sendEquip(itemId)}
-              onUnequip={(slot) => networkRef.current?.sendUnequip(slot)}
-              onUseItem={(itemId) => networkRef.current?.sendUseItem(itemId)}
-              onDropItem={(itemId) => networkRef.current?.sendDropItem(itemId)}
-              partyId={partyData?.partyId}
-              leaderId={partyData?.leaderId}
-              partyMembers={partyData?.members || []}
-              onPartyInvite={(sid: string) => networkRef.current?.sendPartyInvite(sid)}
-              onPartyLeave={() => networkRef.current?.sendPartyLeave()}
-              onPartyKick={(sid: string) => networkRef.current?.sendPartyKick(sid)}
-              friends={friendsData}
-              pendingFriendRequests={pendingFriendRequests}
-              onFriendRequest={(name: string) => networkRef.current?.sendFriendRequest(name)}
-              onFriendAccept={(rid: string) => networkRef.current?.sendFriendAccept(rid)}
-              onWhisper={(name: string) => { setChatPrefill(`/w ${name} `); setIsChatOpen(true); }}
-              onTradeRequest={(sid: string) => networkRef.current?.sendTradeRequest(sid)}
-              selectedItemId={selectedItemId}
-              onSelectItem={setSelectedItemId}
-              onSpellClick={handleSpellClick}
-              pendingSpellId={pendingSpellId}
-            />
+            {(!isMobile || isSidebarOpen) && (
+              <Sidebar
+                state={playerState}
+                isRecording={isRecording}
+                quests={quests}
+                onEquip={(itemId) => networkRef.current?.sendEquip(itemId)}
+                onUnequip={(slot) => networkRef.current?.sendUnequip(slot)}
+                onUseItem={(itemId) => networkRef.current?.sendUseItem(itemId)}
+                onDropItem={(itemId) => networkRef.current?.sendDropItem(itemId)}
+                partyId={partyData?.partyId}
+                leaderId={partyData?.leaderId}
+                partyMembers={partyData?.members || []}
+                onPartyInvite={(sid: string) => networkRef.current?.sendPartyInvite(sid)}
+                onPartyLeave={() => networkRef.current?.sendPartyLeave()}
+                onPartyKick={(sid: string) => networkRef.current?.sendPartyKick(sid)}
+                friends={friendsData}
+                pendingFriendRequests={pendingFriendRequests}
+                onFriendRequest={(name: string) => networkRef.current?.sendFriendRequest(name)}
+                onFriendAccept={(rid: string) => networkRef.current?.sendFriendAccept(rid)}
+                onWhisper={(name: string) => { setChatPrefill(`/w ${name} `); setIsChatOpen(true); }}
+                onTradeRequest={(sid: string) => networkRef.current?.sendTradeRequest(sid)}
+                selectedItemId={selectedItemId}
+                onSelectItem={setSelectedItemId}
+                onSpellClick={handleSpellClick}
+                pendingSpellId={pendingSpellId}
+                isMobile={isMobile}
+                onClose={isMobile ? () => setIsSidebarOpen(false) : undefined}
+              />
+            )}
             {shopData && (
               <MerchantShop
                 npcId={shopData.npcId}
@@ -858,6 +905,37 @@ export function App() {
             onSendChat={(msg) => { setChatPrefill(undefined); handleSendChat(msg); }}
             prefillMessage={chatPrefill}
           />
+          {/* Mobile chat button */}
+          {isMobile && !isChatOpen && (
+            <Box
+              position="fixed"
+              bottom="212px"
+              left="16px"
+              zIndex={60}
+              w="44px"
+              h="44px"
+              bg="rgba(10, 8, 20, 0.82)"
+              border="1px solid rgba(212, 168, 67, 0.4)"
+              borderRadius="8px"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              fontSize="18px"
+              cursor="pointer"
+              onPointerDown={(e) => { e.preventDefault(); setIsChatOpen(true); }}
+            >
+              💬
+            </Box>
+          )}
+          {/* Mobile movement and action controls */}
+          {isMobile && (
+            <MobileControls
+              onMove={handleMobileMove}
+              onAttack={handleMobileAttack}
+              onSpell={handleMobileSpell}
+              spells={mobileSpells}
+            />
+          )}
           {tradeData && roomRef.current && (
             <TradeWindow
               trade={tradeData}

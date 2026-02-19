@@ -83,7 +83,8 @@
     "trade_completed": "Échange terminé avec succès",
     "trade_cancelled": "Échange annulé : {{reason}}",
     "item_used": "Utilisé : {{item}}",
-    "invalid_target": "Cible invalide"
+    "invalid_target": "Cible invalide",
+    "trade_cancelled_by_player": "Le joueur a annulé l'échange"
   },
   "social": {
     "already_in_party": "Le joueur est déjà dans un groupe",

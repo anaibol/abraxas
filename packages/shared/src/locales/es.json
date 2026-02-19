@@ -83,7 +83,8 @@
     "trade_completed": "Intercambio completado con éxito",
     "trade_cancelled": "Intercambio cancelado: {{reason}}",
     "item_used": "Usado: {{item}}",
-    "invalid_target": "Objetivo inválido"
+    "invalid_target": "Objetivo inválido",
+    "trade_cancelled_by_player": "El jugador canceló el intercambio"
   },
   "social": {
     "already_in_party": "El jugador ya está en un grupo",
