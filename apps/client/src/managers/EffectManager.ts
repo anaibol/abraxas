@@ -707,6 +707,26 @@ export class EffectManager {
     });
   }
 
+  // ── Paladin ─────────────────────────────────────────────────────────────
+
+  private fx_consecration(px: number, py: number) {
+    // Holy fire burns the ground around the paladin
+    this.ring(px, py, 0xffcc00, 5, 48, 480, 0.85, 4);
+    this.scene.time.delayedCall(80, () => this.ring(px, py, 0xff6600, 5, 36, 380, 0.6, 3));
+    this.burst(px, py, TEX.CIRCLE, {
+      colors: [0xff6600, 0xffcc00, 0xffffff, 0xffee44],
+      count: 32, speed: { min: 50, max: 145 },
+      scale: { start: 0.65, end: 0 }, lifespan: { min: 400, max: 840 },
+      gravityY: -32, radius: 30,
+    });
+    this.burst(px, py, TEX.STAR, {
+      colors: [0xffffff, 0xffee44],
+      count: 14, speed: { min: 25, max: 72 },
+      scale: { start: 0.5, end: 0 }, lifespan: { min: 500, max: 920 },
+      rotate: { start: 0, end: 360 }, gravityY: -42, radius: 24,
+    });
+  }
+
   private fx_default(px: number, py: number) {
     this.ring(px, py, 0xaaaaff, 4, 32, 320, 0.7, 2);
     this.burst(px, py, TEX.CIRCLE, {
@@ -758,8 +778,14 @@ export class EffectManager {
       case "banshee_wail": return this.fx_banshee_wail(px, py);
       case "shadow_bolt":  return this.fx_shadow_bolt(px, py);
       case "soul_drain":   return this.fx_soul_drain(px, py);
-      case "web_shot":     return this.fx_web_shot(px, py);
-      default:             return this.fx_default(px, py);
+      case "web_shot":          return this.fx_web_shot(px, py);
+      // ── Paladin ────────────────────────────────────────────────────────────
+      case "judgment":          return this.fx_holy_strike(px, py);
+      case "lay_on_hands":      return this.fx_heal(px, py);
+      case "consecration":      return this.fx_consecration(px, py);
+      case "aura_of_protection": return this.fx_divine_shield(px, py);
+      case "holy_bolt":         return this.fx_smite(px, py);
+      default:                  return this.fx_default(px, py);
     }
   }
 
