@@ -252,7 +252,7 @@ export function App() {
             id: ++consoleMsgId,
             text: mapName
               ? `Traveling to ${mapName}...`
-              : `Welcome to the game, ${name}!`,
+              : `Welcome to the game, ${playerState.name}!`,
             color: "#ffff00",
             timestamp: Date.now(),
           },
@@ -276,26 +276,6 @@ export function App() {
                         : "#ffffff",
                   timestamp: Date.now(),
                   channel: data.channel,
-                };
-                const next = [...prev, newMsg];
-                if (next.length > 50) return next.slice(next.length - 50);
-                return next;
-              });
-            },
-          );
-
-        // Listen for notifications
-        network
-          .getRoom()
-          .onMessage(
-            ServerMessageType.Notification,
-            (data: ServerMessages[ServerMessageType.Notification]) => {
-              setConsoleMessages((prev) => {
-                const newMsg: ConsoleMessage = {
-                  id: ++consoleMsgId,
-                  text: data.message,
-                  color: "#00ff00",
-                  timestamp: Date.now(),
                 };
                 const next = [...prev, newMsg];
                 if (next.length > 50) return next.slice(next.length - 50);
