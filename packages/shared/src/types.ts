@@ -4,6 +4,13 @@ export enum Direction {
   LEFT = 2,
   RIGHT = 3,
 }
+
+export const DIRECTION_DELTA: Record<Direction, { dx: number; dy: number }> = {
+  [Direction.UP]: { dx: 0, dy: -1 },
+  [Direction.DOWN]: { dx: 0, dy: 1 },
+  [Direction.LEFT]: { dx: -1, dy: 0 },
+  [Direction.RIGHT]: { dx: 1, dy: 0 },
+};
 export const EQUIPMENT_SLOTS = ["weapon", "armor", "shield", "helmet", "ring"] as const;
 export type EquipmentSlot = (typeof EQUIPMENT_SLOTS)[number];
 export type ClassType = "WARRIOR" | "MAGE" | "ROGUE" | "CLERIC" | "RANGER";
@@ -152,12 +159,26 @@ export interface EquipmentData {
   ring: string;
 }
 
-export const DIRECTION_DELTA: Record<number, { dx: number; dy: number }> = {
-  [Direction.UP]: { dx: 0, dy: -1 },
-  [Direction.DOWN]: { dx: 0, dy: 1 },
-  [Direction.LEFT]: { dx: -1, dy: 0 },
-  [Direction.RIGHT]: { dx: 1, dy: 0 },
-};
+export interface TradeOffer {
+  gold: number;
+  items: { itemId: string; quantity: number }[];
+  confirmed: boolean;
+}
+
+export interface TradeState {
+  tradeId: string;
+  alice: {
+    sessionId: string;
+    name: string;
+    offer: TradeOffer;
+  };
+  bob: {
+    sessionId: string;
+    name: string;
+    offer: TradeOffer;
+  };
+}
+
 
 export interface BaseEntityState {
   sessionId: string;
@@ -227,6 +248,13 @@ export enum ServerMessageType {
   QuestUpdate = "quest_update",
   QuestAvailable = "quest_available",
   OpenDialogue = "open_dialogue",
+
+  // Trading
+  TradeRequested = "trade_requested",
+  TradeStarted = "trade_started",
+  TradeStateUpdate = "trade_state_update",
+  TradeCompleted = "trade_completed",
+  TradeCancelled = "trade_cancelled",
 }
 
 export enum ChatChannel {
@@ -346,6 +374,19 @@ export type ServerMessages = {
     text: string;
     options: { text: string; action: string; data?: unknown }[];
   };
+
+  // Trading
+  [ServerMessageType.TradeRequested]: {
+    requesterSessionId: string;
+    requesterName: string;
+  };
+  [ServerMessageType.TradeStarted]: {
+    targetSessionId: string;
+    targetName: string;
+  };
+  [ServerMessageType.TradeStateUpdate]: TradeState;
+  [ServerMessageType.TradeCompleted]: {};
+  [ServerMessageType.TradeCancelled]: { reason: string };
 };
 
 export type WelcomeData = ServerMessages[ServerMessageType.Welcome];
@@ -372,6 +413,13 @@ export enum ClientMessageType {
   SellItem = "sell_item",
   QuestAccept = "quest_accept",
   QuestComplete = "quest_complete",
+
+  // Trading
+  TradeRequest = "trade_request",
+  TradeAccept = "trade_accept",
+  TradeOfferUpdate = "trade_offer_update",
+  TradeConfirm = "trade_confirm",
+  TradeCancel = "trade_cancel",
 }
 
 export type ClientMessages = {
@@ -404,10 +452,24 @@ export type ClientMessages = {
   };
   [ClientMessageType.QuestAccept]: { questId: string };
   [ClientMessageType.QuestComplete]: { questId: string };
+
+  // Trading
+  [ClientMessageType.TradeRequest]: { targetSessionId: string };
+  [ClientMessageType.TradeAccept]: { requesterSessionId: string };
+  [ClientMessageType.TradeOfferUpdate]: {
+    gold: number;
+    items: { itemId: string; quantity: number }[];
+  };
+  [ClientMessageType.TradeConfirm]: {};
+  [ClientMessageType.TradeCancel]: {};
 };
 
 export interface BroadcastFn {
-  <T extends keyof ServerMessages>(type: T, data: ServerMessages[T]): void;
+  <T extends keyof ServerMessages>(
+    type: T,
+    data: ServerMessages[T],
+    options?: { except?: any; exceptSessionId?: string },
+  ): void;
 }
 
 export interface StatBonuses {

@@ -5,95 +5,104 @@ import { SpatialLookup, Entity } from "../utils/SpatialLookup";
 import { Player } from "../schema/Player";
 
 interface EntityTimers {
-  lastMoveMs: number;
+	lastMoveMs: number;
 }
 
 export interface MoveResult {
-  success: boolean;
-  warp?: {
-    targetMap: string;
-    targetX: number;
-    targetY: number;
-  };
+	success: boolean;
+	warp?: {
+		targetMap: string;
+		targetX: number;
+		targetY: number;
+	};
 }
 
 export class MovementSystem {
-  constructor(private spatial: SpatialLookup) {}
+	constructor(private spatial: SpatialLookup) {}
 
-  removePlayer(_sessionId: string): void {
-    // No-op: timers are now part of the Char entity
-  }
+	removePlayer(_sessionId: string): void {
+		// No-op: timers are now part of the Char entity
+	}
 
-  /**
-   * Attempts to move an entity in a direction.
-   * Handles timing, bounds, collision, and tile occupancy.
-   * Returns a MoveResult with success status and optional warp data.
-   */
-  tryMove(
-    entity: Entity,
-    direction: Direction,
-    map: TileMap,
-    now: number,
-    tick: number,
-    roomId: string,
-  ): MoveResult {
+	/**
+	 * Attempts to move an entity in a direction.
+	 * Handles timing, bounds, collision, and tile occupancy.
+	 * Returns a MoveResult with success status and optional warp data.
+	 */
+	tryMove(
+		entity: Entity,
+		direction: Direction,
+		map: TileMap,
+		now: number,
+		tick: number,
+		roomId: string,
+	): MoveResult {
+		const stats = entity.getStats();
+		if (!stats) return { success: false };
 
-    const stats = entity.getStats();
-    if (!stats) return { success: false };
+		const speed = stats.speedTilesPerSecond;
+		if (speed <= 0) return { success: false };
+		const moveIntervalMs = 1000 / speed;
 
-    const speed = stats.speedTilesPerSecond;
-    if (speed <= 0) return { success: false };
-    const moveIntervalMs = 1000 / speed;
+		// Movement timing check (15ms jitter tolerance)
+		if (now - entity.lastMoveMs < moveIntervalMs - 15) {
+			if (entity instanceof Player) {
+				logger.debug({
+					room: roomId,
+					tick,
+					clientId: entity.sessionId,
+					intent: "move",
+					result: "too_fast",
+				});
+			}
+			return { success: false };
+		}
 
-    // Movement timing check (15ms jitter tolerance)
-    if (now - entity.lastMoveMs < moveIntervalMs - 15) {
-      if (entity instanceof Player) {
-        logger.debug({ room: roomId, tick, clientId: entity.sessionId, intent: "move", result: "too_fast" });
-      }
-      return { success: false };
-    }
+		const delta = DIRECTION_DELTA[direction];
+		const newX = entity.tileX + delta.dx;
+		const newY = entity.tileY + delta.dy;
 
-    const delta = DIRECTION_DELTA[direction];
-    const newX = entity.tileX + delta.dx;
-    const newY = entity.tileY + delta.dy;
+		entity.facing = direction;
 
-    // Bounds, Collision, and Occupancy checks
-    if (
-      newX < 0 || newX >= map.width || newY < 0 || newY >= map.height ||
-      map.collision[newY]?.[newX] === 1 ||
-      this.spatial.isTileOccupied(newX, newY, entity.sessionId)
-    ) {
-      return { success: false };
-    }
+		// Bounds, Collision, and Occupancy checks
+		if (
+			newX < 0 ||
+			newX >= map.width ||
+			newY < 0 ||
+			newY >= map.height ||
+			map.collision[newY]?.[newX] === 1 ||
+			this.spatial.isTileOccupied(newX, newY, entity.sessionId)
+		) {
+			return { success: false };
+		}
 
-    const posBefore = entity.getPosition();
-    entity.facing = direction;
-    entity.tileX = newX;
-    entity.tileY = newY;
+		const posBefore = entity.getPosition();
+		entity.tileX = newX;
+		entity.tileY = newY;
 
-    this.spatial.updatePosition(entity, posBefore.x, posBefore.y);
+		this.spatial.updatePosition(entity, posBefore.x, posBefore.y);
 
-    // Timing drift cap
-    entity.lastMoveMs += moveIntervalMs;
-    if (now - entity.lastMoveMs > moveIntervalMs) {
-      entity.lastMoveMs = now;
-    }
+		// Timing drift cap
+		entity.lastMoveMs += moveIntervalMs;
+		if (now - entity.lastMoveMs > moveIntervalMs) {
+			entity.lastMoveMs = now;
+		}
 
-    if (entity instanceof Player) {
-      logger.debug({
-        room: roomId,
-        tick,
-        clientId: entity.sessionId,
-        intent: "move",
-        result: "ok",
-        posBefore,
-        posAfter: { x: newX, y: newY },
-      });
-    }
+		if (entity instanceof Player) {
+			logger.debug({
+				room: roomId,
+				tick,
+				clientId: entity.sessionId,
+				intent: "move",
+				result: "ok",
+				posBefore,
+				posAfter: { x: newX, y: newY },
+			});
+		}
 
-    // Warp detection
-    const warp = map.warps?.find((w) => w.x === newX && w.y === newY);
+		// Warp detection
+		const warp = map.warps?.find((w) => w.x === newX && w.y === newY);
 
-    return { success: true, warp };
-  }
+		return { success: true, warp };
+	}
 }
