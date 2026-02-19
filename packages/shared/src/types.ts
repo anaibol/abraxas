@@ -208,6 +208,7 @@ export interface PlayerEntityState extends BaseEntityState {
 	equipWeapon: string;
 	equipShield: string;
 	equipHelmet: string;
+	meditating: boolean;
 	type?: never;
 }
 
@@ -447,6 +448,8 @@ export enum ClientMessageType {
 	BankDeposit = "bank_deposit",
 	BankWithdraw = "bank_withdraw",
 	BankClose = "bank_close",
+
+	Meditate = "meditate",
 }
 
 export type ClientMessages = {
@@ -502,6 +505,8 @@ export type ClientMessages = {
 		bankSlotIndex: number;
 	};
 	[ClientMessageType.BankClose]: {};
+
+	[ClientMessageType.Meditate]: {};
 };
 
 export interface BroadcastFn {

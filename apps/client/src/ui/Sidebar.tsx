@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import { Box, Flex, Text, Grid, Input, Button, VStack, HStack } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 import { CLASS_STATS, SPELLS, ITEMS, EQUIPMENT_SLOTS, type EquipmentSlot, type PlayerQuestState } from "@abraxas/shared";
+import { P } from "./palette";
 import { QuestLog } from "./QuestLog";
 
 export interface InventorySlot {
@@ -40,24 +41,6 @@ export interface PlayerState {
   equipment?: EquipmentState;
 }
 
-const P = {
-  bg: "#0e0c14",
-  surface: "#14111e",
-  raised: "#1a1628",
-  darkest: "#08080c",
-  border: "#2e2840",
-  borderLight: "#3e3555",
-  gold: "#d4a843",
-  goldDim: "#b8962e",
-  goldDark: "#6e5a18",
-  goldMuted: "#8a7a60",
-  goldText: "#c8b68a",
-  blood: "#8b1a1a",
-  bloodBright: "#c41e3a",
-  arcane: "#1e3a8a",
-  font: "'Friz Quadrata', Georgia, serif",
-  mono: "'Consolas', monospace",
-};
 
 const SPELL_ICONS: Record<string, string> = {
   fireball: "\uD83D\uDD25",

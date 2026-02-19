@@ -29,6 +29,7 @@ export class GameScene extends Phaser.Scene {
 	private onConsoleMessage?: ConsoleCallback;
 	private onReady?: () => void;
 	private onError?: (message: string) => void;
+	private onPttChange?: (recording: boolean) => void;
 	private room!: Room<GameState>;
 	private welcome!: WelcomeData;
 	private resolver!: AoGrhResolver;
@@ -38,7 +39,7 @@ export class GameScene extends Phaser.Scene {
 	private inputHandler!: InputHandler;
 	private cameraController!: CameraController;
 	private soundManager!: SoundManager;
-	private audioManager!: AudioManager;
+	private audioManager: AudioManager;
 	private gameEventHandler!: GameEventHandler;
 
 	private collisionGrid: number[][] = [];
@@ -56,19 +57,23 @@ export class GameScene extends Phaser.Scene {
 
 	constructor(
 		network: NetworkManager,
+		audioManager: AudioManager,
 		onStateUpdate: StateCallback,
 		onKillFeed?: KillFeedCallback,
 		onConsoleMessage?: ConsoleCallback,
 		onReady?: () => void,
 		onError?: (message: string) => void,
+		onPttChange?: (recording: boolean) => void,
 	) {
 		super({ key: "GameScene" });
 		this.network = network;
+		this.audioManager = audioManager;
 		this.onStateUpdate = onStateUpdate;
 		this.onKillFeed = onKillFeed;
 		this.onConsoleMessage = onConsoleMessage;
 		this.onReady = onReady;
 		this.onError = onError;
+		this.onPttChange = onPttChange;
 	}
 
 	create() {
@@ -89,8 +94,6 @@ export class GameScene extends Phaser.Scene {
 		this.muteKey?.on("down", () => {
 			this.soundManager.toggleMute();
 		});
-
-		this.audioManager = new AudioManager();
 
 		this.network.onAudioData = (sessionId, data) => {
 			this.audioManager.playAudioChunk(data);
@@ -131,11 +134,15 @@ export class GameScene extends Phaser.Scene {
 				}
 				if (targetNpcId) this.network.sendInteract(targetNpcId);
 			},
-			() =>
-				this.audioManager.startRecording((data) =>
-					this.network.sendAudio(data),
-				),
-			() => this.audioManager.stopRecording(),
+			() => {
+				this.audioManager.startRecording((data) => this.network.sendAudio(data));
+				this.onPttChange?.(true);
+			},
+			() => {
+				this.audioManager.stopRecording();
+				this.onPttChange?.(false);
+			},
+			() => this.network.sendMeditate(),
 		);
 
 		const $state = Callbacks.get(this.room);
@@ -233,7 +240,6 @@ export class GameScene extends Phaser.Scene {
 		this.inputHandler.destroy();
 		if (this.muteKey) this.input.keyboard?.removeKey(this.muteKey);
 		this.soundManager.stopMusic();
-		this.audioManager.cleanup();
 	}
 
 	triggerMove(direction: Direction) {

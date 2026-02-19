@@ -10,7 +10,7 @@ export const CLASS_APPEARANCE: Record<string, { bodyId: number; headId: number }
 
 export const CLASS_STATS: Record<string, ClassStats> = {
   WARRIOR: {
-    hp: 180,
+    hp: 240,
     mana: 40,
     str: 25,
     agi: 12,
@@ -23,7 +23,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     spells: ["war_cry", "shield_bash"],
   },
   MAGE: {
-    hp: 80,
+    hp: 140,
     mana: 150,
     str: 6,
     agi: 10,
@@ -36,7 +36,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     spells: ["fireball", "ice_bolt", "thunderstorm", "mana_shield"],
   },
   RANGER: {
-    hp: 100,
+    hp: 160,
     mana: 80,
     str: 10,
     agi: 26,
@@ -49,7 +49,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     spells: ["multi_shot", "poison_arrow", "evasion"],
   },
   ROGUE: {
-    hp: 95,
+    hp: 150,
     mana: 60,
     str: 14,
     agi: 24,
@@ -62,7 +62,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     spells: ["backstab", "stealth", "envenom"],
   },
   CLERIC: {
-    hp: 160,
+    hp: 220,
     mana: 100,
     str: 20,
     agi: 10,
@@ -77,11 +77,11 @@ export const CLASS_STATS: Record<string, ClassStats> = {
 };
 
 export const LEVEL_UP_STATS: Record<string, { str: number; agi: number; int: number; hp: number; mp: number }> = {
-  WARRIOR: { str: 3, agi: 1, int: 0, hp: 25, mp: 5 },
-  MAGE:    { str: 0, agi: 1, int: 3, hp: 10, mp: 20 },
-  RANGER:  { str: 1, agi: 3, int: 0, hp: 15, mp: 10 },
-  ROGUE:   { str: 1, agi: 3, int: 0, hp: 15, mp: 8 },
-  CLERIC:  { str: 1, agi: 0, int: 3, hp: 20, mp: 15 },
+  WARRIOR: { str: 3, agi: 1, int: 0, hp: 30, mp: 5 },
+  MAGE:    { str: 0, agi: 1, int: 3, hp: 18, mp: 20 },
+  RANGER:  { str: 1, agi: 3, int: 0, hp: 22, mp: 10 },
+  ROGUE:   { str: 1, agi: 3, int: 0, hp: 22, mp: 8 },
+  CLERIC:  { str: 1, agi: 0, int: 3, hp: 26, mp: 15 },
 };
 
 export const EXP_TABLE = [

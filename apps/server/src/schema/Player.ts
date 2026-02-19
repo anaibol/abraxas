@@ -8,6 +8,7 @@ export class Player extends Char {
   // ── Shared (visible to all clients) ─────────────────────────────────────
   @type("string") partyId: string = "";
   @type("string") classType: ClassType = "WARRIOR";
+  @type("boolean") meditating: boolean = false;
 
   // ── Private (only visible to the owning client via StateView) ────────────
 

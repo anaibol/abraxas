@@ -262,6 +262,10 @@ export class NetworkManager {
     this._send(ClientMessageType.BankClose, {});
   }
 
+  sendMeditate() {
+    this._send(ClientMessageType.Meditate, {});
+  }
+
   // Trade System
   sendTradeRequest(targetSessionId: string) {
     this._send(ClientMessageType.TradeRequest, { targetSessionId });

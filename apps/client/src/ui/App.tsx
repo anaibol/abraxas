@@ -205,22 +205,6 @@ export function App() {
     const handleKey = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
 
-      // PTT voice (V)
-      if (key === "v") {
-        if (e.type === "keydown" && !isRecording) {
-          setIsRecording(true);
-          if (audioManagerRef.current) {
-            audioManagerRef.current.startRecording((buffer) => {
-              networkRef.current?.sendAudio(buffer);
-            });
-          }
-        } else if (e.type === "keyup" && isRecording) {
-          setIsRecording(false);
-          audioManagerRef.current?.stopRecording();
-        }
-        return;
-      }
-
       if (e.type !== "keydown") return;
 
       // A — pickup drop under the player
@@ -263,7 +247,7 @@ export function App() {
       window.removeEventListener("keydown", handleKey);
       window.removeEventListener("keyup", handleKey);
     };
-  }, [phase, isChatOpen, isRecording, selectedItemId, playerState.inventory, dropDialog]);
+  }, [phase, isChatOpen, selectedItemId, playerState.inventory, dropDialog]);
 
   useEffect(() => {
     return () => {
@@ -609,6 +593,7 @@ export function App() {
 
             const gameScene = new GameScene(
               network,
+              audioManagerRef.current!,
               (state: PlayerState) => {
                 setPlayerState(state);
               },
@@ -627,9 +612,8 @@ export function App() {
               () => {
                 setIsLoading(false);
                 setConnecting(false);
-              }, // onReady
+              },
               (message: string) => {
-                // onError
                 toaster.create({
                   title: "Error",
                   description: message,
@@ -638,6 +622,7 @@ export function App() {
                 });
                 setConnecting(false);
               },
+              (recording) => setIsRecording(recording),
             );
 
             const preloaderScene = new PreloaderScene();

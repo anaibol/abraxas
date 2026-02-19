@@ -43,6 +43,7 @@ export class SpriteManager {
 			player.equipShield,
 			player.equipHelmet,
 		);
+		sprite.setMeditating(player.meditating ?? false);
 		this.updateAlpha(sprite, player);
 	}
 

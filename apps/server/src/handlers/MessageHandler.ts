@@ -129,6 +129,8 @@ export class MessageHandler {
 			this.handleBankWithdraw(c, d),
 		);
 		register(ClientMessageType.BankClose, (c) => this.handleBankClose(c));
+
+		register(ClientMessageType.Meditate, (c) => this.handleMeditate(c));
 	}
 
 	// ── Helpers ─────────────────────────────────────────────────────────────
@@ -183,13 +185,25 @@ export class MessageHandler {
 			this.ctx.roomId,
 		);
 
-		if (result.success && result.warp) {
-			client.send(ServerMessageType.Warp, {
-				targetMap: result.warp.targetMap,
-				targetX: result.warp.targetX,
-				targetY: result.warp.targetY,
-			});
+		if (result.success) {
+			if (player.meditating) {
+				player.meditating = false;
+			}
+			if (result.warp) {
+				client.send(ServerMessageType.Warp, {
+					targetMap: result.warp.targetMap,
+					targetX: result.warp.targetX,
+					targetY: result.warp.targetY,
+				});
+			}
 		}
+	}
+
+	handleMeditate(client: Client): void {
+		const player = this.getActivePlayer(client);
+		if (!player) return;
+		if (player.stunned) return;
+		player.meditating = !player.meditating;
 	}
 
 	handleAttack(

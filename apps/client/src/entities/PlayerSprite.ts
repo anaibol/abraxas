@@ -62,6 +62,9 @@ export class PlayerSprite {
   private lastServerTileX = 0;
   private lastServerTileY = 0;
 
+  private meditationEmitter: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
+  private isMeditating: boolean = false;
+
   constructor(
     scene: Phaser.Scene,
     sessionId: string,
@@ -581,6 +584,47 @@ export class PlayerSprite {
     this.updateZOrder();
   }
 
+  private ensureFireTexture(scene: Phaser.Scene) {
+    if (scene.textures.exists("meditation-fire")) return;
+    const gfx = scene.add.graphics();
+    gfx.fillStyle(0xffffff, 1);
+    gfx.fillCircle(6, 6, 6);
+    gfx.generateTexture("meditation-fire", 12, 12);
+    gfx.destroy();
+  }
+
+  setMeditating(meditating: boolean) {
+    const scene = this.container.scene;
+    if (!scene) return;
+    if (meditating === this.isMeditating) return;
+    this.isMeditating = meditating;
+
+    if (meditating) {
+      this.ensureFireTexture(scene);
+      this.meditationEmitter = scene.add.particles(
+        this.renderX,
+        this.renderY,
+        "meditation-fire",
+        {
+          x: { min: -8, max: 8 },
+          y: { min: -TILE_SIZE * 1.1, max: -TILE_SIZE * 0.1 },
+          scale: { start: 0.55, end: 0 },
+          alpha: { start: 0.9, end: 0 },
+          tint: [0xff2200, 0xff6600, 0xffaa00, 0xffdd00],
+          speed: { min: 12, max: 30 },
+          angle: { min: 260, max: 280 },
+          lifespan: { min: 450, max: 850 },
+          quantity: 3,
+          frequency: 45,
+        },
+      );
+      this.meditationEmitter.setDepth(8);
+    } else if (this.meditationEmitter) {
+      this.meditationEmitter.destroy();
+      this.meditationEmitter = null;
+    }
+  }
+
   updateHpMana(hp: number, _mana: number) {
     const hpRatio = Math.max(0, hp / this.maxHp);
     const barWidth = TILE_SIZE - 6;
@@ -621,6 +665,10 @@ export class PlayerSprite {
     }
 
     this.container.setPosition(this.renderX, this.renderY);
+
+    if (this.meditationEmitter) {
+      this.meditationEmitter.setPosition(this.renderX, this.renderY);
+    }
   }
 
   showSpeakingIndicator(visible: boolean) {
@@ -689,6 +737,8 @@ export class PlayerSprite {
 
   destroy() {
     this.chatBubbleText?.destroy();
+    this.meditationEmitter?.destroy();
+    this.meditationEmitter = null;
     this.container.destroy();
   }
 }

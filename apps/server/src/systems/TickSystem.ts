@@ -93,10 +93,21 @@ export class TickSystem {
 		// 4. Drops
 		systems.drops.expireDrops(state.drops, now);
 
-		// 5. Natural Regeneration (Every 20 ticks)
-		if (state.tick % 20 === 0) {
-			for (const player of state.players.values()) {
-				if (player.alive && player.mana < player.maxMana) {
+		// 5. Natural Regeneration
+		// Normal: +1% maxMana every 20 ticks
+		// Meditating: +2% maxMana every 5 ticks (~8x faster)
+		for (const player of state.players.values()) {
+			if (!player.alive) continue;
+
+			if (player.meditating && state.tick % 5 === 0) {
+				if (player.mana < player.maxMana) {
+					player.mana = Math.min(
+						player.maxMana,
+						player.mana + Math.max(1, Math.floor(player.maxMana * 0.02)),
+					);
+				}
+			} else if (!player.meditating && state.tick % 20 === 0) {
+				if (player.mana < player.maxMana) {
 					player.mana = Math.min(
 						player.maxMana,
 						player.mana + Math.max(1, Math.floor(player.maxMana * 0.01)),
