@@ -238,7 +238,7 @@ export function BankWindow({
                   setSelectedItem(null);
                 }}
               >
-                {selectedItem.source === "inventory" ? "DEPOSIT" : "WITHDRAW"}
+                {selectedItem.source === "inventory" ? t("ui.bank.deposit") : t("ui.bank.withdraw")}
               </Button>
             </Flex>
           </Flex>

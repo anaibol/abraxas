@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Box, Flex, Text, Grid, Button, Input, VStack, HStack } from "@chakra-ui/react";
+import { useTranslation } from "react-i18next";
 import { ITEMS } from "@abraxas/shared";
 import type { TradeState } from "@abraxas/shared";
 import type { InventorySlot } from "./Sidebar";
@@ -32,6 +33,7 @@ export function TradeWindow({
   onConfirm,
   onCancel,
 }: TradeWindowProps) {
+  const { t } = useTranslation();
   const isAlice = trade.alice.sessionId === mySessionId;
   const me = isAlice ? trade.alice : trade.bob;
   const them = isAlice ? trade.bob : trade.alice;
@@ -86,7 +88,7 @@ export function TradeWindow({
       <Flex justify="space-between" align="center" mb="2">
         <Text fontSize="12px" letterSpacing="2px" color={T.gold} textTransform="uppercase" fontWeight="700">{label}</Text>
         {confirmed && (
-          <Text fontSize="11px" color="#44ff88" letterSpacing="1px" fontWeight="700">✓ CONFIRMED</Text>
+          <Text fontSize="11px" color="#44ff88" letterSpacing="1px" fontWeight="700">{t("trade.confirmed_badge")}</Text>
         )}
       </Flex>
       <Box minH="100px" bg={T.darkest} border="1px solid" borderColor={T.border} borderRadius="2px" p="2">
@@ -97,7 +99,7 @@ export function TradeWindow({
           </Flex>
         )}
         {items.length === 0 && gold === 0 && (
-          <Text fontSize="12px" color={T.goldDark} textAlign="center" pt="3" fontStyle="italic">Nothing offered</Text>
+          <Text fontSize="12px" color={T.goldDark} textAlign="center" pt="3" fontStyle="italic">{t("trade.nothing_offered")}</Text>
         )}
         {items.map((item) => {
           const def = ITEMS[item.itemId];
@@ -140,7 +142,7 @@ export function TradeWindow({
         {/* Title */}
         <Box px="5" py="3" bg={T.surface} borderBottom="1px solid" borderBottomColor={T.border} textAlign="center">
           <Text fontSize="13px" fontWeight="700" color={T.gold} letterSpacing="3px" textTransform="uppercase">
-            Trade
+            {t("trade.title")}
           </Text>
           <Text fontSize="12px" color={T.goldDark} mt="0.5">
             {me.name} ↔ {them.name}
@@ -149,15 +151,15 @@ export function TradeWindow({
 
         {/* Offer panels */}
         <Flex gap="3" p="4" direction={{ base: "column", sm: "row" }}>
-          {renderOfferSlots(me.offer.items, me.offer.gold, "Your Offer", myConfirmed)}
+          {renderOfferSlots(me.offer.items, me.offer.gold, t("trade.your_offer"), myConfirmed)}
           <Box w={{ base: "100%", sm: "1px" }} h={{ base: "1px", sm: "auto" }} bg={T.border} flexShrink={0} />
-          {renderOfferSlots(them.offer.items, them.offer.gold, `${them.name}'s Offer`, theirConfirmed)}
+          {renderOfferSlots(them.offer.items, them.offer.gold, t("trade.their_offer", { name: them.name }), theirConfirmed)}
         </Flex>
 
         {/* Your gold input */}
         <Box px="4" pb="3" borderTop="1px solid" borderTopColor={T.raised}>
           <Text fontSize="11px" color={T.goldDark} letterSpacing="2px" textTransform="uppercase" mt="3" mb="1.5">
-            Offer Gold (you have {playerGold}g)
+            {t("trade.offer_gold", { gold: playerGold })}
           </Text>
           <HStack gap="2">
             <Input
@@ -175,7 +177,7 @@ export function TradeWindow({
               _focus={{ borderColor: T.gold }}
               disabled={myConfirmed}
             />
-            <Text fontSize="12px" color={T.goldDark}>gold</Text>
+            <Text fontSize="12px" color={T.goldDark}>{t("trade.gold")}</Text>
           </HStack>
         </Box>
 
@@ -183,7 +185,7 @@ export function TradeWindow({
         {!myConfirmed && (
           <Box px="4" pb="3">
             <Text fontSize="11px" color={T.goldDark} letterSpacing="2px" textTransform="uppercase" mb="1.5">
-              Add Items (click to add · click offer to remove)
+              {t("trade.add_items_hint")}
             </Text>
             <Grid templateColumns={{ base: "repeat(6, 1fr)", md: "repeat(8, 1fr)" }} gap="1">
               {playerInventory.map((slot) => {
@@ -222,7 +224,7 @@ export function TradeWindow({
             {/* Click items in offer to remove */}
             {offerItems.length > 0 && (
               <Box mt="2">
-                <Text fontSize="11px" color={T.goldDark} mb="1">Offered items (click to remove):</Text>
+                <Text fontSize="11px" color={T.goldDark} mb="1">{t("trade.offered_items")}</Text>
                 <HStack gap="1" flexWrap="wrap">
                   {offerItems.map((item) => {
                     const def = ITEMS[item.itemId];
@@ -254,7 +256,7 @@ export function TradeWindow({
           {myConfirmed ? (
             <VStack flex="1" gap="1" align="stretch">
               <Text fontSize="12px" color="#44ff88" textAlign="center" fontWeight="700">
-                ✓ You confirmed. Waiting for {them.name}…
+                {t("trade.waiting_for", { name: them.name })}
               </Text>
               <Button
                 size="xs"
@@ -264,7 +266,7 @@ export function TradeWindow({
                 _hover={{ bg: T.blood }}
                 onClick={onCancel}
               >
-                Cancel Trade
+                {t("trade.cancel_trade")}
               </Button>
             </VStack>
           ) : (
@@ -283,7 +285,7 @@ export function TradeWindow({
                 _hover={{ bg: T.gold, color: "#000" }}
                 onClick={onConfirm}
               >
-                Confirm Trade
+                {t("trade.confirm_trade")}
               </Button>
               <Button
                 size="sm"
@@ -295,7 +297,7 @@ export function TradeWindow({
                 _hover={{ bg: T.blood }}
                 onClick={onCancel}
               >
-                Cancel
+                {t("trade.cancel")}
               </Button>
             </>
           )}

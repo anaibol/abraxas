@@ -1,5 +1,6 @@
 import { Box, Text, HStack } from "@chakra-ui/react";
 import { useEffect, useRef, useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { T } from "./tokens";
 
 export interface ConsoleMessage {
@@ -19,15 +20,16 @@ interface ConsoleProps {
 
 type Channel = "all" | "global" | "party" | "whisper" | "system";
 
-const TABS: { id: Channel; label: string; color: string }[] = [
-  { id: "all", label: "ALL", color: "#ccc" },
-  { id: "global", label: "GLOBAL", color: "#fff" },
-  { id: "party", label: "PARTY", color: "#77f" },
-  { id: "whisper", label: "WHISPER", color: "#f7f" },
-  { id: "system", label: "SYSTEM", color: "#ff7" },
+const TABS: { id: Channel; labelKey: string; color: string }[] = [
+  { id: "all", labelKey: "console.tab_all", color: "#ccc" },
+  { id: "global", labelKey: "console.tab_global", color: "#fff" },
+  { id: "party", labelKey: "console.tab_party", color: "#77f" },
+  { id: "whisper", labelKey: "console.tab_whisper", color: "#f7f" },
+  { id: "system", labelKey: "console.tab_system", color: "#ff7" },
 ];
 
 export function Console({ messages, onSendChat, isChatOpen, prefillMessage }: ConsoleProps) {
+  const { t } = useTranslation();
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [inputValue, setInputValue] = useState("");
@@ -130,7 +132,7 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage }: Co
             _hover={{ color: tab.color }}
             flexShrink={0}
           >
-            {tab.label}
+            {t(tab.labelKey)}
           </Box>
         ))}
       </HStack>

@@ -72,6 +72,7 @@
     "gold_picked": "{{name}} picked up {{amount}} gold",
     "class_restricted": "Class restricted",
     "not_enough_mana": "Not enough mana",
+    "not_enough_mana_cost": "Not enough mana ({{cost}} required)",
     "inventory_full": "Inventory full",
     "item_picked_up": "{{name}} picked up {{item}}",
     "too_far": "Too far to interact",
@@ -125,6 +126,7 @@
       "self": "Self",
       "targeting": "Targeting…",
       "spell_click_hint": "Click to target",
+      "pending": "Targeting…",
       "level": "Lv",
       "xp": "xp",
       "gold_abbr": "g"
@@ -483,5 +485,93 @@
       "accept_prompt": "Do you accept this quest?",
       "reward_prompt": "Great job on {{title}}! Here is your reward."
     }
+  },
+  "scoreboard": {
+    "title": "Scoreboard",
+    "hold_tab_hint": "Hold TAB to view",
+    "you": "(you)",
+    "top_npc_hunters": "Top NPC Hunters",
+    "no_kills": "No kills recorded yet",
+    "top_levels": "Top Levels",
+    "level_private": "Level is private — only you can see yours",
+    "top_pvp": "Top PvP Warriors",
+    "no_pvp_kills": "No PvP kills recorded yet",
+    "online_players": "Online Players",
+    "key_bindings": "Key Bindings",
+    "lv_prefix": "Lv.",
+    "keybind_categories": {
+      "movement": "Movement",
+      "combat": "Combat",
+      "items": "Items",
+      "social": "Social",
+      "ui": "UI"
+    },
+    "keybind_labels": {
+      "move": "Move",
+      "melee_attack": "Melee attack",
+      "ranged_attack": "Ranged attack",
+      "cast_spell": "Cast spell",
+      "select_tile": "Select target tile",
+      "pickup": "Pick up item",
+      "drop": "Drop selected item",
+      "open_chat": "Open chat",
+      "close_chat": "Close chat / Cancel",
+      "push_to_talk": "Push to talk (voice)",
+      "scoreboard": "Scoreboard"
+    }
+  },
+  "death": {
+    "you_died": "YOU DIED",
+    "respawning": "Respawning in {{count}}s"
+  },
+  "kill_feed": {
+    "killed": "killed"
+  },
+  "loading": {
+    "connecting": "CONNECTING TO ABRAXAS",
+    "searching": "Searching for portal...",
+    "tips": [
+      "Abraxas was once a floating citadel of the High Magi.",
+      "Ancient runes suggest the Arena was built on a ley line junction.",
+      "Never turn your back on a Rogue in the dark corners of the Arena.",
+      "Warriors favor strength, but a focused mind can pierce any plate.",
+      "Goblins are cowards, but their numbers can overwhelm the unwary.",
+      "The Lich of the Depths has not been seen for centuries... until now.",
+      "Potions are brewed from the essence of fallen elementals."
+    ]
+  },
+  "trade": {
+    "title": "Trade",
+    "confirmed_badge": "✓ CONFIRMED",
+    "nothing_offered": "Nothing offered",
+    "your_offer": "Your Offer",
+    "their_offer": "{{name}}'s Offer",
+    "offer_gold": "Offer Gold (you have {{gold}}g)",
+    "gold": "gold",
+    "add_items_hint": "Add Items (click to add · click offer to remove)",
+    "offered_items": "Offered items (click to remove):",
+    "waiting_for": "✓ You confirmed. Waiting for {{name}}…",
+    "cancel_trade": "Cancel Trade",
+    "confirm_trade": "Confirm Trade",
+    "cancel": "Cancel"
+  },
+  "drop_dialog": {
+    "title": "Drop Item",
+    "quantity": "Quantity (1 – {{max}})",
+    "cancel": "Cancel",
+    "drop": "Drop"
+  },
+  "console": {
+    "tab_all": "ALL",
+    "tab_global": "GLOBAL",
+    "tab_party": "PARTY",
+    "tab_whisper": "WHISPER",
+    "tab_system": "SYSTEM",
+    "placeholder_party": "Message Party...",
+    "placeholder_default": "Type message..."
+  },
+  "quest_status": {
+    "IN_PROGRESS": "In Progress",
+    "COMPLETED": "Completed"
   }
 }

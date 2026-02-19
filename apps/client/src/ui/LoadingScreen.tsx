@@ -1,6 +1,7 @@
 import { Flex, Text, Box } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { T, HEX } from "./tokens";
 
 const pulse = keyframes`
@@ -14,26 +15,17 @@ const spin = keyframes`
   to { transform: rotate(360deg); }
 `;
 
-const LORE_TIPS = [
-  "Abraxas was once a floating citadel of the High Magi.",
-  "Ancient runes suggest the Arena was built on a ley line junction.",
-  "Never turn your back on a Rogue in the dark corners of the Arena.",
-  "Warriors favor strength, but a focused mind can pierce any plate.",
-  "Goblins are cowards, but their numbers can overwhelm the unwary.",
-  "The Lich of the Depths has not been seen for centuries... until now.",
-  "Potions are brewed from the essence of fallen elementals.",
-];
-
 export function LoadingScreen() {
-  const [tip, setTip] = useState("");
+  const { t } = useTranslation();
+  const tips = t("loading.tips", { returnObjects: true }) as string[];
+  const [tipIndex, setTipIndex] = useState(() => Math.floor(Math.random() * 7));
 
   useEffect(() => {
-    setTip(LORE_TIPS[Math.floor(Math.random() * LORE_TIPS.length)]);
     const interval = setInterval(() => {
-      setTip(LORE_TIPS[Math.floor(Math.random() * LORE_TIPS.length)]);
+      setTipIndex(Math.floor(Math.random() * tips.length));
     }, 4000);
     return () => clearInterval(interval);
-  }, []);
+  }, [tips.length]);
 
   return (
     <Flex
@@ -126,7 +118,7 @@ export function LoadingScreen() {
           textShadow={`0 0 20px ${HEX.goldDim}ee`}
           mb="2"
         >
-          CONNECTING TO ABRAXAS
+          {t("loading.connecting")}
         </Text>
         
         <Box 
@@ -145,7 +137,7 @@ export function LoadingScreen() {
             letterSpacing="2px"
             textTransform="uppercase"
           >
-            Searching for portal...
+            {t("loading.searching")}
           </Text>
           <Text 
             fontSize="13px" 
@@ -156,7 +148,7 @@ export function LoadingScreen() {
             minH="40px"
             transition="all 0.5s"
           >
-            "{tip}"
+            "{tips[tipIndex]}"
           </Text>
         </Flex>
       </Box>

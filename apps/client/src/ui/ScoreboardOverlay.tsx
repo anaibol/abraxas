@@ -1,4 +1,5 @@
 import { Box, Flex, Text, Grid } from "@chakra-ui/react";
+import { useTranslation } from "react-i18next";
 import { T, HEX } from "./tokens";
 
 export type KillStats = {
@@ -41,18 +42,18 @@ const CLASS_COLOR: Record<string, string> = {
   RANGER: "#78c8a0",
 };
 
-const KEYBINDS: { key: string; label: string; category: string }[] = [
-  { category: "Movement", key: "↑↓←→", label: "Move" },
-  { category: "Combat", key: "Ctrl", label: "Melee attack" },
-  { category: "Combat", key: "Ctrl + Click", label: "Ranged attack" },
-  { category: "Combat", key: "Q / W / E / R", label: "Cast spell" },
-  { category: "Combat", key: "Click", label: "Select target tile" },
-  { category: "Items", key: "A", label: "Pick up item" },
-  { category: "Items", key: "T", label: "Drop selected item" },
-  { category: "Social", key: "Enter", label: "Open chat" },
-  { category: "Social", key: "Esc", label: "Close chat / Cancel" },
-  { category: "Social", key: "V (hold)", label: "Push to talk (voice)" },
-  { category: "UI", key: "Tab", label: "Scoreboard" },
+const KEYBINDS: { key: string; labelKey: string; categoryKey: string }[] = [
+  { categoryKey: "movement", key: "↑↓←→", labelKey: "move" },
+  { categoryKey: "combat", key: "Ctrl", labelKey: "melee_attack" },
+  { categoryKey: "combat", key: "Ctrl + Click", labelKey: "ranged_attack" },
+  { categoryKey: "combat", key: "Q / W / E / R", labelKey: "cast_spell" },
+  { categoryKey: "combat", key: "Click", labelKey: "select_tile" },
+  { categoryKey: "items", key: "A", labelKey: "pickup" },
+  { categoryKey: "items", key: "T", labelKey: "drop" },
+  { categoryKey: "social", key: "Enter", labelKey: "open_chat" },
+  { categoryKey: "social", key: "Esc", labelKey: "close_chat" },
+  { categoryKey: "social", key: "V (hold)", labelKey: "push_to_talk" },
+  { categoryKey: "ui", key: "Tab", labelKey: "scoreboard" },
 ];
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
@@ -86,6 +87,7 @@ function LeaderboardRow({
   isMe: boolean;
   valueColor?: string;
 }) {
+  const { t } = useTranslation();
   const rankColor = rank === 1 ? T.gold : rank === 2 ? "#c0c0c0" : rank === 3 ? "#cd7f32" : SC.textDim;
   return (
     <Flex
@@ -103,7 +105,7 @@ function LeaderboardRow({
       </Box>
       <Box flex="1" fontSize="13px" color={isMe ? T.gold : SC.text} fontFamily={FONT} overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis">
         {name}
-        {isMe && <Text as="span" color={T.goldDim} fontSize="11px" ml="1">(you)</Text>}
+        {isMe && <Text as="span" color={T.goldDim} fontSize="11px" ml="1">{t("scoreboard.you")}</Text>}
       </Box>
       <Box fontSize="13px" fontWeight="700" color={valueColor ?? SC.text} fontFamily={T.mono} flexShrink={0}>
         {value}
@@ -119,6 +121,7 @@ export function ScoreboardOverlay({
   myName,
   myLevel,
 }: ScoreboardOverlayProps) {
+  const { t } = useTranslation();
   if (!visible) return null;
 
   const npcRanking = Object.entries(killStats)
@@ -134,8 +137,8 @@ export function ScoreboardOverlay({
     .slice(0, 8);
 
   const keybindsByCategory = KEYBINDS.reduce<Record<string, typeof KEYBINDS>>((acc, kb) => {
-    if (!acc[kb.category]) acc[kb.category] = [];
-    acc[kb.category].push(kb);
+    if (!acc[kb.categoryKey]) acc[kb.categoryKey] = [];
+    acc[kb.categoryKey].push(kb);
     return acc;
   }, {});
 
@@ -175,7 +178,7 @@ export function ScoreboardOverlay({
             fontWeight="700"
             fontFamily={FONT}
           >
-            Scoreboard
+            {t("scoreboard.title")}
           </Box>
           <Box
             pos="absolute"
@@ -186,7 +189,7 @@ export function ScoreboardOverlay({
             fontFamily={FONT}
             display={{ base: "none", md: "block" }}
           >
-            Hold TAB to view
+            {t("scoreboard.hold_tab_hint")}
           </Box>
         </Flex>
 
@@ -194,10 +197,10 @@ export function ScoreboardOverlay({
         <Grid templateColumns={{ base: "1fr", md: "1fr 1fr 200px" }} gap="0" maxH="calc(85dvh - 52px)" overflowY={{ base: "auto", md: "hidden" }}>
           {/* NPC Kills */}
           <Box px="4" py="4" borderRight={{ base: "none", md: `1px solid ${HEX.border}` }} borderBottom={{ base: `1px solid ${HEX.border}`, md: "none" }} overflowY="auto">
-            <SectionTitle>Top NPC Hunters</SectionTitle>
+            <SectionTitle>{t("scoreboard.top_npc_hunters")}</SectionTitle>
             {npcRanking.length === 0 ? (
               <Box fontSize="12px" color={SC.textMuted} fontFamily={FONT} textAlign="center" mt="4">
-                No kills recorded yet
+                {t("scoreboard.no_kills")}
               </Box>
             ) : (
               npcRanking.map((entry, i) => (
@@ -214,7 +217,7 @@ export function ScoreboardOverlay({
 
             {/* My level section */}
             <Box mt="5">
-              <SectionTitle>Top Levels</SectionTitle>
+              <SectionTitle>{t("scoreboard.top_levels")}</SectionTitle>
               <Flex
                 align="center"
                 gap="2"
@@ -229,24 +232,24 @@ export function ScoreboardOverlay({
                 </Box>
                 <Box flex="1" fontSize="13px" color={T.gold} fontFamily={FONT} overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis">
                   {myName}
-                  <Text as="span" color={T.goldDim} fontSize="11px" ml="1">(you)</Text>
+                  <Text as="span" color={T.goldDim} fontSize="11px" ml="1">{t("scoreboard.you")}</Text>
                 </Box>
                 <Box fontSize="13px" fontWeight="700" color={T.gold} fontFamily={T.mono}>
-                  Lv.{myLevel}
+                  {t("scoreboard.lv_prefix")}{myLevel}
                 </Box>
               </Flex>
               <Box fontSize="11px" color={SC.textMuted} textAlign="center" mt="2" fontFamily={FONT}>
-                Level is private — only you can see yours
+                {t("scoreboard.level_private")}
               </Box>
             </Box>
           </Box>
 
           {/* PVP Kills + Online Players */}
           <Box px="4" py="4" borderRight={{ base: "none", md: `1px solid ${HEX.border}` }} borderBottom={{ base: `1px solid ${HEX.border}`, md: "none" }} overflowY="auto">
-            <SectionTitle>Top PvP Warriors</SectionTitle>
+            <SectionTitle>{t("scoreboard.top_pvp")}</SectionTitle>
             {pvpRanking.length === 0 ? (
               <Box fontSize="12px" color={SC.textMuted} fontFamily={FONT} textAlign="center" mt="4">
-                No PvP kills recorded yet
+                {t("scoreboard.no_pvp_kills")}
               </Box>
             ) : (
               pvpRanking.map((entry, i) => (
@@ -264,7 +267,7 @@ export function ScoreboardOverlay({
             {/* Online Players */}
             <Box mt="5">
               <SectionTitle>
-                Online Players
+                {t("scoreboard.online_players")}
                 <Text as="span" color={SC.textDim} fontSize="11px" ml="2">({onlinePlayers.length})</Text>
               </SectionTitle>
               {onlinePlayers.map((p) => (
@@ -313,9 +316,9 @@ export function ScoreboardOverlay({
 
           {/* Key Bindings */}
           <Box px="4" py="4" overflowY="auto">
-            <SectionTitle>Key Bindings</SectionTitle>
-            {Object.entries(keybindsByCategory).map(([category, binds]) => (
-              <Box key={category} mb="4">
+            <SectionTitle>{t("scoreboard.key_bindings")}</SectionTitle>
+            {Object.entries(keybindsByCategory).map(([categoryKey, binds]) => (
+              <Box key={categoryKey} mb="4">
                 <Box
                   fontSize="10px"
                   letterSpacing="2px"
@@ -324,7 +327,7 @@ export function ScoreboardOverlay({
                   fontFamily={FONT}
                   mb="1.5"
                 >
-                  {category}
+                  {t(`scoreboard.keybind_categories.${categoryKey}`)}
                 </Box>
                 {binds.map((kb) => (
                   <Flex key={kb.key} align="center" gap="2" mb="1.5">
@@ -344,7 +347,7 @@ export function ScoreboardOverlay({
                       {kb.key}
                     </Box>
                     <Box fontSize="12px" color={SC.textDim} fontFamily={FONT}>
-                      {kb.label}
+                      {t(`scoreboard.keybind_labels.${kb.labelKey}`)}
                     </Box>
                   </Flex>
                 ))}

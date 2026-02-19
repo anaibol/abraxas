@@ -72,6 +72,7 @@
     "gold_picked": "{{name}} recogió {{amount}} de oro",
     "class_restricted": "Clase restringida",
     "not_enough_mana": "No hay suficiente maná",
+    "not_enough_mana_cost": "Maná insuficiente (se requieren {{cost}})",
     "inventory_full": "Inventario lleno",
     "item_picked_up": "{{name}} recogió {{item}}",
     "too_far": "Demasiado lejos para interactuar",
@@ -125,6 +126,7 @@
       "self": "Propio",
       "targeting": "Apuntando…",
       "spell_click_hint": "Clic para apuntar",
+      "pending": "Apuntando…",
       "level": "Nv",
       "xp": "pe",
       "gold_abbr": "g"
@@ -483,5 +485,93 @@
       "accept_prompt": "¿Aceptas esta misión?",
       "reward_prompt": "¡Gran trabajo con {{title}}! Aquí tienes tu recompensa."
     }
+  },
+  "scoreboard": {
+    "title": "Marcador",
+    "hold_tab_hint": "Mantén TAB para ver",
+    "you": "(tú)",
+    "top_npc_hunters": "Mejores Cazadores de NPC",
+    "no_kills": "Sin bajas registradas aún",
+    "top_levels": "Mejores Niveles",
+    "level_private": "El nivel es privado — solo tú puedes ver el tuyo",
+    "top_pvp": "Mejores Guerreros PvP",
+    "no_pvp_kills": "Sin bajas PvP registradas aún",
+    "online_players": "Jugadores En Línea",
+    "key_bindings": "Controles",
+    "lv_prefix": "Nv.",
+    "keybind_categories": {
+      "movement": "Movimiento",
+      "combat": "Combate",
+      "items": "Objetos",
+      "social": "Social",
+      "ui": "UI"
+    },
+    "keybind_labels": {
+      "move": "Moverse",
+      "melee_attack": "Ataque cuerpo a cuerpo",
+      "ranged_attack": "Ataque a distancia",
+      "cast_spell": "Lanzar hechizo",
+      "select_tile": "Seleccionar casilla",
+      "pickup": "Recoger objeto",
+      "drop": "Soltar objeto seleccionado",
+      "open_chat": "Abrir chat",
+      "close_chat": "Cerrar chat / Cancelar",
+      "push_to_talk": "Pulsar para hablar (voz)",
+      "scoreboard": "Marcador"
+    }
+  },
+  "death": {
+    "you_died": "HAS MUERTO",
+    "respawning": "Reapareciendo en {{count}}s"
+  },
+  "kill_feed": {
+    "killed": "mató a"
+  },
+  "loading": {
+    "connecting": "CONECTANDO A ABRAXAS",
+    "searching": "Buscando portal...",
+    "tips": [
+      "Abraxas fue en su día una ciudadela flotante de los Altos Magos.",
+      "Las runas antiguas sugieren que la Arena se construyó sobre un nudo de líneas ley.",
+      "Nunca le des la espalda a un Pícaro en los rincones oscuros de la Arena.",
+      "Los guerreros prefieren la fuerza, pero una mente concentrada puede atravesar cualquier armadura.",
+      "Los goblins son cobardes, pero sus números pueden abrumar al desprevenido.",
+      "El Liche de las Profundidades no se ha visto en siglos... hasta ahora.",
+      "Las pociones se elaboran con la esencia de elementales caídos."
+    ]
+  },
+  "trade": {
+    "title": "Intercambio",
+    "confirmed_badge": "✓ CONFIRMADO",
+    "nothing_offered": "Nada ofrecido",
+    "your_offer": "Tu Oferta",
+    "their_offer": "Oferta de {{name}}",
+    "offer_gold": "Ofrecer Oro (tienes {{gold}}g)",
+    "gold": "oro",
+    "add_items_hint": "Añadir objetos (clic para añadir · clic en oferta para eliminar)",
+    "offered_items": "Objetos ofrecidos (clic para eliminar):",
+    "waiting_for": "✓ Confirmado. Esperando a {{name}}…",
+    "cancel_trade": "Cancelar Intercambio",
+    "confirm_trade": "Confirmar Intercambio",
+    "cancel": "Cancelar"
+  },
+  "drop_dialog": {
+    "title": "Soltar Objeto",
+    "quantity": "Cantidad (1 – {{max}})",
+    "cancel": "Cancelar",
+    "drop": "Soltar"
+  },
+  "console": {
+    "tab_all": "TODO",
+    "tab_global": "GLOBAL",
+    "tab_party": "GRUPO",
+    "tab_whisper": "SUSURRO",
+    "tab_system": "SISTEMA",
+    "placeholder_party": "Mensaje al Grupo...",
+    "placeholder_default": "Escribe un mensaje..."
+  },
+  "quest_status": {
+    "IN_PROGRESS": "En Progreso",
+    "COMPLETED": "Completada"
   }
 }

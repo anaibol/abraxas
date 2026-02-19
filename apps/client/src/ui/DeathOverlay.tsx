@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Flex, Text } from "@chakra-ui/react";
+import { useTranslation } from "react-i18next";
 import { PLAYER_RESPAWN_TIME_MS } from "@abraxas/shared";
 import { T } from "./tokens";
 
@@ -9,6 +10,7 @@ interface DeathOverlayProps {
 }
 
 export function DeathOverlay({ visible, deathTime }: DeathOverlayProps) {
+  const { t } = useTranslation();
   const [countdown, setCountdown] = useState(Math.ceil(PLAYER_RESPAWN_TIME_MS / 1000));
 
   useEffect(() => {
@@ -44,7 +46,7 @@ export function DeathOverlay({ visible, deathTime }: DeathOverlayProps) {
         textAlign="center"
         px="4"
       >
-        YOU DIED
+        {t("death.you_died")}
       </Text>
       <Text
         fontSize={{ base: "14px", md: "18px" }}
@@ -54,7 +56,7 @@ export function DeathOverlay({ visible, deathTime }: DeathOverlayProps) {
         mt="4"
         textAlign="center"
       >
-        Respawning in {countdown}s
+        {t("death.respawning", { count: countdown })}
       </Text>
     </Flex>
   );

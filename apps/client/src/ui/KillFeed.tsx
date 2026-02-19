@@ -1,4 +1,5 @@
 import { Box, Text } from "@chakra-ui/react";
+import { useTranslation } from "react-i18next";
 import { T } from "./tokens";
 
 export interface KillFeedEntry {
@@ -13,6 +14,7 @@ interface KillFeedProps {
 }
 
 export function KillFeed({ entries }: KillFeedProps) {
+  const { t } = useTranslation();
   // Show last 5 kills, newest first
   const visible = entries.slice(-5).reverse();
 
@@ -34,7 +36,7 @@ export function KillFeed({ entries }: KillFeedProps) {
         >
           <Text fontSize="12px" color={T.goldText}>
             <Text as="span" color={T.bloodBright} fontWeight="700">{entry.killerName}</Text>
-            {" killed "}
+            {" "}{t("kill_feed.killed")}{" "}
             <Text as="span" color={T.goldMuted} fontWeight="700">{entry.victimName}</Text>
           </Text>
         </Box>

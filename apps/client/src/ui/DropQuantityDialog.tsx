@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Box, Flex } from "@chakra-ui/react";
+import { useTranslation } from "react-i18next";
 import { T, HEX } from "./tokens";
 
 interface DropQuantityDialogProps {
@@ -15,6 +16,7 @@ export function DropQuantityDialog({
 	onConfirm,
 	onCancel,
 }: DropQuantityDialogProps) {
+	const { t } = useTranslation();
 	const [qty, setQty] = useState(maxQty);
 	const clamp = (n: number) => Math.min(Math.max(1, n), maxQty);
 	const confirm = () => onConfirm(clamp(qty));
@@ -40,17 +42,17 @@ export function DropQuantityDialog({
 				fontFamily={T.display}
 				onClick={(e) => e.stopPropagation()}
 			>
-				<Box textStyle={T.sectionLabel} color={T.gold} mb="1" textAlign="center" fontSize="18px">
-					Drop Item
-				</Box>
-				<Box textStyle={T.bodyText} color={T.goldText} textAlign="center" mb="3">
-					{itemName}
-				</Box>
+			<Box textStyle={T.sectionLabel} color={T.gold} mb="1" textAlign="center" fontSize="18px">
+				{t("drop_dialog.title")}
+			</Box>
+			<Box textStyle={T.bodyText} color={T.goldText} textAlign="center" mb="3">
+				{itemName}
+			</Box>
 
-				<Box mb="3">
-					<Box textStyle={T.statLabel} color={T.goldDark} letterSpacing="2px" mb="1" fontSize="14px">
-						Quantity (1 – {maxQty})
-					</Box>
+			<Box mb="3">
+				<Box textStyle={T.statLabel} color={T.goldDark} letterSpacing="2px" mb="1" fontSize="14px">
+					{t("drop_dialog.quantity", { max: maxQty })}
+				</Box>
 					<input
 						// biome-ignore lint/a11y/noAutofocus: dialog input needs immediate focus for keyboard shortcuts
 						autoFocus
@@ -99,30 +101,30 @@ export function DropQuantityDialog({
 						color={T.goldText}
 						cursor="pointer"
 						fontFamily={T.display}
-						onClick={onCancel}
-						fontSize="14px"
-					>
-						Cancel
-					</Box>
-					<Box
-						as="button"
-						flex="1"
-						py="1.5"
-						textStyle={T.bodyText}
-						fontWeight="700"
-						letterSpacing="1px"
-						bg={T.goldDark}
-						border="1px solid"
-						borderColor={T.gold}
-						borderRadius="2px"
-						color={T.gold}
-						cursor="pointer"
-						fontFamily={T.display}
-						onClick={confirm}
-						fontSize="14px"
-					>
-						Drop
-					</Box>
+					onClick={onCancel}
+					fontSize="14px"
+				>
+					{t("drop_dialog.cancel")}
+				</Box>
+				<Box
+					as="button"
+					flex="1"
+					py="1.5"
+					textStyle={T.bodyText}
+					fontWeight="700"
+					letterSpacing="1px"
+					bg={T.goldDark}
+					border="1px solid"
+					borderColor={T.gold}
+					borderRadius="2px"
+					color={T.gold}
+					cursor="pointer"
+					fontFamily={T.display}
+					onClick={confirm}
+					fontSize="14px"
+				>
+					{t("drop_dialog.drop")}
+				</Box>
 				</Flex>
 			</Box>
 		</Box>
