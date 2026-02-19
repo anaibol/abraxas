@@ -56,6 +56,36 @@ export interface RoomContext {
 export class MessageHandler {
   constructor(private ctx: RoomContext) {}
 
+  /**
+   * Registers all message handlers with the room.
+  /**
+   * Registers all message handlers with the room.
+   * This allows for a clean, declarative setup in the Room class.
+   */
+  registerHandlers(register: <T extends ClientMessageType>(type: T, handler: (client: Client, message: ClientMessages[T]) => void) => void) {
+    register(ClientMessageType.Move, (c, d) => this.handleMove(c, d));
+    register(ClientMessageType.Attack, (c, d) => this.handleAttack(c, d));
+    register(ClientMessageType.Cast, (c, d) => this.handleCast(c, d));
+    register(ClientMessageType.Pickup, (c, d) => this.handlePickup(c, d));
+    register(ClientMessageType.DropItem, (c, d) => this.handleDropItem(c, d));
+    register(ClientMessageType.Equip, (c, d) => this.handleEquip(c, d));
+    register(ClientMessageType.Unequip, (c, d) => this.handleUnequip(c, d));
+    register(ClientMessageType.UseItem, (c, d) => this.handleUseItem(c, d));
+    register(ClientMessageType.Chat, (c, d) => this.handleChat(c, d));
+    register(ClientMessageType.Interact, (c, d) => this.handleInteract(c, d));
+    register(ClientMessageType.BuyItem, (c, d) => this.handleBuyItem(c, d));
+    register(ClientMessageType.SellItem, (c, d) => this.handleSellItem(c, d));
+    register(ClientMessageType.PartyInvite, (c, d) => this.handlePartyInvite(c, d));
+    register(ClientMessageType.PartyAccept, (c, d) => this.handlePartyAccept(c, d));
+    register(ClientMessageType.PartyLeave, (c) => this.handlePartyLeave(c));
+    register(ClientMessageType.PartyKick, (c, d) => this.handlePartyKick(c, d));
+    register(ClientMessageType.FriendRequest, (c, d) => this.handleFriendRequest(c, d));
+    register(ClientMessageType.FriendAccept, (c, d) => this.handleFriendAccept(c, d));
+    register(ClientMessageType.QuestAccept, (c, d) => this.handleQuestAccept(c, d));
+    register(ClientMessageType.QuestComplete, (c, d) => this.handleQuestComplete(c, d));
+    register(ClientMessageType.Audio, (c, d) => this.handleAudio(c, d));
+  }
+
   // ── Helpers ─────────────────────────────────────────────────────────────
 
   /** Returns the player if they exist and are alive, otherwise `null`. */
@@ -86,14 +116,14 @@ export class MessageHandler {
 
   // ── Message Handlers ─────────────────────────────────────────────────────
 
-  handleMove(client: Client, direction: Direction): void {
+  handleMove(client: Client, data: { direction: Direction }): void {
     const player = this.getActivePlayer(client);
     if (!player) return;
     if (player.stunned) return;
 
     const result = this.ctx.systems.movement.tryMove(
       player,
-      direction,
+      data.direction,
       this.ctx.map,
       Date.now(),
       this.ctx.state.tick,

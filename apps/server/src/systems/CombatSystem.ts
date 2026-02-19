@@ -552,7 +552,7 @@ export class CombatSystem {
     });
   }
 
-  boosted(entity: Entity, stat: string, now: number): number {
+  private boosted(entity: Entity, stat: string, now: number): number {
     let base = 0;
     if (stat === "str") base = entity.str;
     else if (stat === "agi") base = entity.agi;

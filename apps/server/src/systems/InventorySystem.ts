@@ -99,7 +99,7 @@ export class InventorySystem {
     return false;
   }
 
-  findItem(player: Player, itemId: string): InventoryItem | undefined {
+  private findItem(player: Player, itemId: string): InventoryItem | undefined {
     for (const item of player.inventory) {
       if (item.itemId === itemId) return item;
     }
@@ -204,7 +204,7 @@ export class InventorySystem {
     return true;
   }
 
-  getEquipmentBonuses(player: Player): StatBonuses {
+  private getEquipmentBonuses(player: Player): StatBonuses {
     const bonuses: StatBonuses = {
       str: 0,
       agi: 0,

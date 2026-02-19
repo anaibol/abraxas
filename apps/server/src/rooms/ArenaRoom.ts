@@ -122,28 +122,10 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         findClientByName,
       });
 
-      // Register message handlers
-      this.onMessage(ClientMessageType.Move, (c, d) => this.messageHandler.handleMove(c, d));
-      this.onMessage(ClientMessageType.Attack, (c, d) => this.messageHandler.handleAttack(c, d));
-      this.onMessage(ClientMessageType.Cast, (c, d) => this.messageHandler.handleCast(c, d));
-      this.onMessage(ClientMessageType.Pickup, (c, d) => this.messageHandler.handlePickup(c, d));
-      this.onMessage(ClientMessageType.DropItem, (c, d) => this.messageHandler.handleDropItem(c, d));
-      this.onMessage(ClientMessageType.Equip, (c, d) => this.messageHandler.handleEquip(c, d));
-      this.onMessage(ClientMessageType.Unequip, (c, d) => this.messageHandler.handleUnequip(c, d));
-      this.onMessage(ClientMessageType.UseItem, (c, d) => this.messageHandler.handleUseItem(c, d));
-      this.onMessage(ClientMessageType.Chat, (c, d) => this.messageHandler.handleChat(c, d));
-      this.onMessage(ClientMessageType.Interact, (c, d) => this.messageHandler.handleInteract(c, d));
-      this.onMessage(ClientMessageType.BuyItem, (c, d) => this.messageHandler.handleBuyItem(c, d));
-      this.onMessage(ClientMessageType.SellItem, (c, d) => this.messageHandler.handleSellItem(c, d));
-      this.onMessage(ClientMessageType.PartyInvite, (c, d) => this.messageHandler.handlePartyInvite(c, d));
-      this.onMessage(ClientMessageType.PartyAccept, (c, d) => this.messageHandler.handlePartyAccept(c, d));
-      this.onMessage(ClientMessageType.PartyLeave, (c) => this.messageHandler.handlePartyLeave(c));
-      this.onMessage(ClientMessageType.PartyKick, (c, d) => this.messageHandler.handlePartyKick(c, d));
-      this.onMessage(ClientMessageType.FriendRequest, (c, d) => this.messageHandler.handleFriendRequest(c, d));
-      this.onMessage(ClientMessageType.FriendAccept, (c, d) => this.messageHandler.handleFriendAccept(c, d));
-      this.onMessage(ClientMessageType.QuestAccept, (c, d) => this.messageHandler.handleQuestAccept(c, d));
-      this.onMessage(ClientMessageType.QuestComplete, (c, d) => this.messageHandler.handleQuestComplete(c, d));
-      this.onMessage(ClientMessageType.Audio, (c, d: ArrayBuffer) => this.messageHandler.handleAudio(c, d));
+      // Register message handlers declaratively from MessageHandler
+      this.messageHandler.registerHandlers(<T extends ClientMessageType>(type: T, handler: (client: Client, message: any) => void) => {
+        this.onMessage(type, handler);
+      });
 
       this.tickSystem = new TickSystem({
         state: this.state,

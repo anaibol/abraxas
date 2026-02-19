@@ -10,12 +10,7 @@ export type ClassType = "WARRIOR" | "MAGE" | "ROGUE" | "CLERIC" | "RANGER";
 export type NpcType =
   | "orc"
   | "skeleton"
-  | "goblin"
-  | "wolf"
-  | "merchant"
-  | "spider"
-  | "ghost"
-  | "lich";
+  | "merchant";
 
 export enum NpcState {
   IDLE = "idle",
@@ -64,7 +59,6 @@ export interface PlayerQuestState {
   status: QuestStatus;
   progress: Record<string, number>; // Maps requirement target to current count
 }
-
 export interface Warp {
   x: number;
   y: number;
