@@ -29,6 +29,8 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		// Berserker self-buff when health is low
 		spells: ["enrage"],
 		expReward: 80,
+		// Uses enrage tactically rather than on every opportunity
+		spellCastChance: 0.6,
 	},
 	skeleton: {
 		hp: 60,
@@ -43,6 +45,8 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		// Skeleton mage variant: fires shadow bolts at range
 		spells: ["shadow_bolt"],
 		expReward: 40,
+		// Regularly uses shadow bolt but still mixes in melee
+		spellCastChance: 0.55,
 	},
 	goblin: {
 		hp: 40,
@@ -58,6 +62,8 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		spells: ["fire_breath"],
 		expReward: 20,
 		fleesWhenLow: true,
+		// Fire breath is an occasional trick, not a primary attack
+		spellCastChance: 0.45,
 	},
 	wolf: {
 		hp: 80,
@@ -100,6 +106,8 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		spells: ["poison_bite", "web_shot"],
 		expReward: 35,
 		fleesWhenLow: true,
+		// Spells are occasional — relies mostly on quick melee
+		spellCastChance: 0.4,
 	},
 	ghost: {
 		hp: 70,
@@ -114,6 +122,8 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		// Life drain (leech) + wail to weaken nearby enemies
 		spells: ["soul_drain", "banshee_wail"],
 		expReward: 55,
+		// Heavily spell-focused fighter
+		spellCastChance: 0.55,
 	},
 	lich: {
 		hp: 500,
@@ -128,6 +138,8 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		// Full boss toolkit: ranged nuke, AoE bolt, frost slow, summons
 		spells: ["shadow_bolt", "frost_breath", "banshee_wail", "summon_skeleton"],
 		expReward: 500,
+		// Boss aggressively rotates its full spell kit
+		spellCastChance: 0.7,
 	},
 	banker: {
 		hp: 100,

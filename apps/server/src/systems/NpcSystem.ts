@@ -316,12 +316,26 @@ export class NpcSystem {
     const target = this.spatial.findEntityBySessionId(npc.targetId);
     if (!target || !target.alive) return false;
 
+    // Emergency heal takes priority regardless of the cast-chance roll.
     if (npc.hp / npc.maxHp < 0.3) {
       const healId = stats.spells.find((id) => SPELLS[id]?.effect === "heal");
       if (healId) return this.combatSystem.tryCast(npc, healId, npc.tileX, npc.tileY, broadcast, now);
     }
 
-    const spellId = stats.spells[Math.floor(Math.random() * stats.spells.length)];
+    // Probability gate: only attempt a spell a fraction of eligible ticks so
+    // NPCs mix in melee rather than spamming abilities at maximum cooldown rate.
+    const spellCastChance = stats.spellCastChance ?? 0.4;
+    if (Math.random() > spellCastChance) return false;
+
+    // Only pick from spells that are currently off cooldown; ignore ones still
+    // on cooldown rather than wasting the roll and falling through to melee.
+    const available = stats.spells.filter((id) => {
+      const cd = npc.spellCooldowns.get(id) ?? 0;
+      return now >= cd;
+    });
+    if (!available.length) return false;
+
+    const spellId = available[Math.floor(Math.random() * available.length)];
     return this.combatSystem.tryCast(npc, spellId, target.tileX, target.tileY, broadcast, now);
   }
 

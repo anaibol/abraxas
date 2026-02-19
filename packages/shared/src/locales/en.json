@@ -607,6 +607,7 @@
     "tab_party": "PARTY",
     "tab_whisper": "WHISPER",
     "tab_system": "SYSTEM",
+    "tab_combat": "COMBAT",
     "placeholder_party": "Message Party...",
     "placeholder_default": "Type message..."
   },

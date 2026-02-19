@@ -607,6 +607,7 @@
     "tab_party": "GROUPE",
     "tab_whisper": "MURMURE",
     "tab_system": "SYSTÈME",
+    "tab_combat": "COMBAT",
     "placeholder_party": "Message au Groupe...",
     "placeholder_default": "Tapez un message..."
   },

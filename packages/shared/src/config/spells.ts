@@ -536,7 +536,9 @@ export const SPELLS: Record<string, Spell> = {
     baseDamage: 5,
     scalingStat: "agi",
     scalingRatio: 0.2,
-    cooldownMs: 2000,
+    // Cooldown must exceed dotDurationMs (5000ms) so the DoT expires before
+    // it can be reapplied, preventing effectively permanent poison.
+    cooldownMs: 8000,
     windupMs: 100,
     effect: "dot",
     key: "",

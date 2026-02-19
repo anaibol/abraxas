@@ -607,6 +607,7 @@
     "tab_party": "GRUPPO",
     "tab_whisper": "SUSSURRO",
     "tab_system": "SISTEMA",
+    "tab_combat": "COMBATTIMENTO",
     "placeholder_party": "Messaggio al Gruppo...",
     "placeholder_default": "Scrivi un messaggio..."
   },
