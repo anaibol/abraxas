@@ -365,7 +365,7 @@ export type ServerMessages = {
 	[ServerMessageType.OpenShop]: { npcId: string; inventory: string[] };
 	[ServerMessageType.BuyItem]: { itemId: string; quantity: number };
 	[ServerMessageType.SellItem]: { itemId: string; quantity: number };
-	[ServerMessageType.Error]: { message: string; templateData?: Record<string, any> };
+	[ServerMessageType.Error]: { message: string; templateData?: Record<string, any>; silent?: boolean };
 	[ServerMessageType.FriendRequest]: { targetName: string };
 	[ServerMessageType.FriendInvited]: {
 		requesterId: string;

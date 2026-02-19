@@ -434,7 +434,7 @@ export class PlayerSprite {
           frequency: 45,
         },
       );
-      this.meditationEmitter.setDepth(8);
+      this.meditationEmitter.setDepth(this.container.depth + 2);
     } else if (this.meditationEmitter) {
       this.meditationEmitter.destroy();
       this.meditationEmitter = null;

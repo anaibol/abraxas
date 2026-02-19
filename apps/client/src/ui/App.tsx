@@ -197,11 +197,13 @@ function setupRoomListeners(
 
   room.onMessage(ServerMessageType.Error, (data: ServerMessages[ServerMessageType.Error]) => {
     addConsoleMessage(t(data.message, data.templateData), "#ffaaaa");
-    toaster.create({
-      title: t("lobby.error.title"),
-      description: t(data.message, data.templateData),
-      type: "error",
-    });
+    if (!data.silent) {
+      toaster.create({
+        title: t("lobby.error.title"),
+        description: t(data.message, data.templateData),
+        type: "error",
+      });
+    }
   });
 
   room.onMessage(ServerMessageType.InvalidTarget, () => {

@@ -126,6 +126,11 @@ export class MessageHandler {
 		client.send(ServerMessageType.Error, { message });
 	}
 
+	/** Sends a silent hint to the client (console-only, no toast). */
+	private sendHint(client: Client, message: string): void {
+		client.send(ServerMessageType.Error, { message, silent: true });
+	}
+
 	/** Resolves the target tile from explicit coords or falls back to the tile in front of the player. */
 	private resolveTarget(
 		player: Player,
@@ -154,7 +159,7 @@ export class MessageHandler {
 			{ x: b.tileX, y: b.tileY },
 		);
 		if (dist > range) {
-			this.sendError(client, errorKey);
+			this.sendHint(client, errorKey);
 			return false;
 		}
 		return true;
@@ -445,7 +450,7 @@ export class MessageHandler {
 		// Require player to be near the quest's NPC to turn in
 		const questDef = QUESTS[data.questId];
 		if (questDef && !this.isNearNpcType(player, questDef.npcId)) {
-			this.sendError(client, "game.quest_near_npc");
+			this.sendHint(client, "game.quest_near_npc");
 			return;
 		}
 
@@ -518,7 +523,7 @@ export class MessageHandler {
 		if (!player) return;
 
 		if (!this.isNearNpcType(player, "merchant")) {
-			this.sendError(client, "game.too_far_merchant");
+			this.sendHint(client, "game.too_far_merchant");
 			return;
 		}
 
@@ -567,7 +572,7 @@ export class MessageHandler {
 		if (!player) return;
 
 		if (!this.isNearNpcType(player, "merchant")) {
-			this.sendError(client, "game.too_far_merchant");
+			this.sendHint(client, "game.too_far_merchant");
 			return;
 		}
 

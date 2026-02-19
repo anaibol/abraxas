@@ -253,10 +253,10 @@ export function Sidebar({
 				borderBottom="1px solid"
 				borderBottomColor={P.border}
 			>
-				<Text fontSize="11px" color={P.gold} fontWeight="700">
-					{state.gold ?? 0}
-					{t("sidebar.inventory.gold_abbr")}
-				</Text>
+		<Text fontSize="13px" color={P.gold} fontWeight="700">
+				{state.gold ?? 0}
+				{t("sidebar.inventory.gold_abbr")}
+			</Text>
 			</Flex>
 
 			{/* Tabs */}
@@ -272,15 +272,15 @@ export function Sidebar({
 						borderBottom="2px solid"
 						borderBottomColor={tab === key ? P.gold : "transparent"}
 						mb="-2px"
-						fontSize="10px"
-						fontWeight="700"
-						fontFamily={P.font}
-						letterSpacing="1px"
-						textTransform="uppercase"
-						cursor="pointer"
-						transition="all 0.12s"
-						_hover={{ color: P.goldText, bg: P.surface }}
-						onClick={() => setTab(key)}
+					fontSize="12px"
+					fontWeight="700"
+					fontFamily={P.font}
+					letterSpacing="1px"
+					textTransform="uppercase"
+					cursor="pointer"
+					transition="all 0.12s"
+					_hover={{ color: P.goldText, bg: P.surface }}
+					onClick={() => setTab(key)}
 					>
 						{t(`sidebar.tabs.${key}`)}
 					</Box>
@@ -390,14 +390,14 @@ function CharacterHeader({
 			>
 				{state.name}
 			</Text>
-			<Text
-				fontSize="9px"
-				color={P.goldDark}
-				letterSpacing="4px"
-				textTransform="uppercase"
-				mt="0.5"
-			>
-				{t(`classes.${state.classType}.name`)}
+		<Text
+			fontSize="11px"
+			color={P.goldDark}
+			letterSpacing="4px"
+			textTransform="uppercase"
+			mt="0.5"
+		>
+			{t(`classes.${state.classType}.name`)}
 			</Text>
 			<HStack gap="2" justify="center" mt="1" flexWrap="wrap">
 				{!state.alive && (
@@ -410,36 +410,36 @@ function CharacterHeader({
 						{t("status.dead")}
 					</Text>
 				)}
-				{state.stunned && (
-					<Text
-						fontSize="10px"
-						color="#cccc33"
-						fontWeight="700"
-						letterSpacing="2px"
-					>
-						{t("status.stunned")}
-					</Text>
-				)}
-				{state.stealthed && (
-					<Text
-						fontSize="10px"
-						color="#9944cc"
-						fontWeight="700"
-						letterSpacing="2px"
-					>
-						{t("status.stealthed")}
-					</Text>
-				)}
-				{state.meditating && (
-					<Text
-						fontSize="10px"
-						color="#44aacc"
-						fontWeight="700"
-						letterSpacing="2px"
-					>
-						{t("status.meditating")}
-					</Text>
-				)}
+			{state.stunned && (
+				<Text
+					fontSize="12px"
+					color="#cccc33"
+					fontWeight="700"
+					letterSpacing="2px"
+				>
+					{t("status.stunned")}
+				</Text>
+			)}
+			{state.stealthed && (
+				<Text
+					fontSize="12px"
+					color="#9944cc"
+					fontWeight="700"
+					letterSpacing="2px"
+				>
+					{t("status.stealthed")}
+				</Text>
+			)}
+			{state.meditating && (
+				<Text
+					fontSize="12px"
+					color="#44aacc"
+					fontWeight="700"
+					letterSpacing="2px"
+				>
+					{t("status.meditating")}
+				</Text>
+			)}
 			</HStack>
 			{isRecording && (
 				<Flex align="center" justify="center" gap="2" mt="1.5">
@@ -450,28 +450,28 @@ function CharacterHeader({
 						borderRadius="full"
 						animation="pulse 1s infinite"
 					/>
-					<Text
-						fontSize="10px"
-						color="#ff4444"
-						fontWeight="700"
-						letterSpacing="2px"
-					>
-						{t("status.transmitting")}
+				<Text
+					fontSize="12px"
+					color="#ff4444"
+					fontWeight="700"
+					letterSpacing="2px"
+				>
+					{t("status.transmitting")}
 					</Text>
 				</Flex>
 			)}
 			{/* Level + XP bar */}
 			<Flex align="center" justify="space-between" mt="2" px="0.5">
-				<Text
-					fontSize="9px"
-					color={P.goldDark}
-					letterSpacing="2px"
-					textTransform="uppercase"
-				>
-					{t("sidebar.inventory.level")} {state.level ?? 1}
-				</Text>
-				<Text fontSize="9px" color={P.goldDark} fontFamily={P.mono}>
-					{state.xp ?? 0} / {state.maxXp ?? 100} {t("sidebar.inventory.xp")}
+			<Text
+				fontSize="11px"
+				color={P.goldDark}
+				letterSpacing="2px"
+				textTransform="uppercase"
+			>
+				{t("sidebar.inventory.level")} {state.level ?? 1}
+			</Text>
+			<Text fontSize="11px" color={P.goldDark} fontFamily={P.mono}>
+				{state.xp ?? 0} / {state.maxXp ?? 100} {t("sidebar.inventory.xp")}
 				</Text>
 			</Flex>
 			<Box
@@ -547,15 +547,15 @@ function SidebarFooter({
 
 			{/* HP bar */}
 			<Box px="3.5" pt="2.5" pb="1">
-				<Text
-					fontSize="8px"
-					letterSpacing="3px"
-					color={P.goldDark}
-					textAlign="center"
-					textTransform="uppercase"
-					mb="0.5"
-				>
-					{t("status.health")}
+			<Text
+				fontSize="11px"
+				letterSpacing="3px"
+				color={P.goldDark}
+				textAlign="center"
+				textTransform="uppercase"
+				mb="0.5"
+			>
+				{t("status.health")}
 				</Text>
 				<Box
 					pos="relative"
@@ -567,33 +567,33 @@ function SidebarFooter({
 					overflow="hidden"
 				>
 					<Box h="100%" w={`${hpPct}%`} bg={hpColor} transition="width 0.2s" />
-					<Flex
-						pos="absolute"
-						inset="0"
-						align="center"
-						justify="center"
-						fontSize="10px"
-						fontWeight="700"
-						color="#fff"
-						textShadow="1px 1px 3px #000"
-						fontFamily={P.mono}
-					>
-						{state.hp}/{state.maxHp}
+				<Flex
+					pos="absolute"
+					inset="0"
+					align="center"
+					justify="center"
+					fontSize="12px"
+					fontWeight="700"
+					color="#fff"
+					textShadow="1px 1px 3px #000"
+					fontFamily={P.mono}
+				>
+					{state.hp}/{state.maxHp}
 					</Flex>
 				</Box>
 			</Box>
 
 			{/* Mana bar */}
 			<Box px="3.5" pt="1.5" pb="2.5">
-				<Text
-					fontSize="8px"
-					letterSpacing="3px"
-					color={P.goldDark}
-					textAlign="center"
-					textTransform="uppercase"
-					mb="0.5"
-				>
-					{t("status.mana")}
+		<Text
+			fontSize="11px"
+			letterSpacing="3px"
+			color={P.goldDark}
+			textAlign="center"
+			textTransform="uppercase"
+			mb="0.5"
+		>
+			{t("status.mana")}
 				</Text>
 				<Box
 					pos="relative"
@@ -610,18 +610,18 @@ function SidebarFooter({
 						bg={P.arcane}
 						transition="width 0.2s"
 					/>
-					<Flex
-						pos="absolute"
-						inset="0"
-						align="center"
-						justify="center"
-						fontSize="10px"
-						fontWeight="700"
-						color="#fff"
-						textShadow="1px 1px 3px #000"
-						fontFamily={P.mono}
-					>
-						{state.mana}/{state.maxMana}
+				<Flex
+					pos="absolute"
+					inset="0"
+					align="center"
+					justify="center"
+					fontSize="12px"
+					fontWeight="700"
+					color="#fff"
+					textShadow="1px 1px 3px #000"
+					fontFamily={P.mono}
+				>
+					{state.mana}/{state.maxMana}
 					</Flex>
 				</Box>
 			</Box>
@@ -707,16 +707,16 @@ function InventoryTab({
 								<Text fontSize="16px">
 									{def ? ITEM_ICONS[def.slot] || "\u2728" : ""}
 								</Text>
-								{!def && (
-									<Text
-										fontSize="7px"
-										color={P.goldDark}
-										position="absolute"
-										bottom="1px"
-									>
-										{slot.slice(0, 3).toUpperCase()}
-									</Text>
-								)}
+							{!def && (
+								<Text
+									fontSize="9px"
+									color={P.goldDark}
+									position="absolute"
+									bottom="1px"
+								>
+									{slot.slice(0, 3).toUpperCase()}
+								</Text>
+							)}
 							</Box>
 						);
 					})}
@@ -778,16 +778,16 @@ function InventoryTab({
 							{def && (
 								<Text fontSize="16px">{ITEM_ICONS[def.slot] || "\u2728"}</Text>
 							)}
-							{invItem && invItem.quantity > 1 && (
-								<Text
-									fontSize="8px"
-									color="#fff"
-									position="absolute"
-									bottom="0"
-									right="1px"
-									fontFamily={P.mono}
-								>
-									{invItem.quantity}
+						{invItem && invItem.quantity > 1 && (
+							<Text
+								fontSize="10px"
+								color="#fff"
+								position="absolute"
+								bottom="0"
+								right="1px"
+								fontFamily={P.mono}
+							>
+								{invItem.quantity}
 								</Text>
 							)}
 							{isSelected && (
@@ -930,127 +930,127 @@ function SpellsTab({
 								{/* Text block */}
 								<Box flex="1" minW="0">
 									<Flex align="center" gap="1.5" mb="0.5">
-										<Text
-											fontSize="12px"
-											fontWeight="700"
-											color={
-												isPending
-													? P.gold
-													: isDisabled
-														? P.goldDark
-														: P.goldText
-											}
-											overflow="hidden"
-											textOverflow="ellipsis"
-											whiteSpace="nowrap"
-										>
-											{t(`spells.${spell.id}.name`)}
+								<Text
+										fontSize="13px"
+										fontWeight="700"
+										color={
+											isPending
+												? P.gold
+												: isDisabled
+													? P.goldDark
+													: P.goldText
+										}
+										overflow="hidden"
+										textOverflow="ellipsis"
+										whiteSpace="nowrap"
+									>
+										{t(`spells.${spell.id}.name`)}
 										</Text>
 										{/* Effect type badge */}
-										{effectMeta && (
-											<Box
-												px="1"
-												py="0.5"
-												bg="#0e0c0a"
-												border="1px solid"
-												borderColor={effectMeta.color}
-												borderRadius="2px"
-												fontSize="7px"
-												fontWeight="700"
-												letterSpacing="0.5px"
-												color={effectMeta.color}
-												flexShrink={0}
-											>
-												{effectMeta.label}
-											</Box>
-										)}
+									{effectMeta && (
+										<Box
+											px="1"
+											py="0.5"
+											bg="#0e0c0a"
+											border="1px solid"
+											borderColor={effectMeta.color}
+											borderRadius="2px"
+											fontSize="10px"
+											fontWeight="700"
+											letterSpacing="0.5px"
+											color={effectMeta.color}
+											flexShrink={0}
+										>
+											{effectMeta.label}
+										</Box>
+									)}
 									</Flex>
 									{/* Description */}
-									<Text
-										fontSize="9px"
-										color={P.goldDark}
-										lineHeight="1.3"
-										overflow="hidden"
-										style={
-											{
-												display: "-webkit-box",
-												WebkitLineClamp: 2,
-												WebkitBoxOrient: "vertical",
-											} as CSSProperties
-										}
-									>
-										{t(`spells.${spell.id}.desc`, { defaultValue: "" })}
+								<Text
+									fontSize="11px"
+									color={P.goldDark}
+									lineHeight="1.3"
+									overflow="hidden"
+									style={
+										{
+											display: "-webkit-box",
+											WebkitLineClamp: 2,
+											WebkitBoxOrient: "vertical",
+										} as CSSProperties
+									}
+								>
+									{t(`spells.${spell.id}.desc`, { defaultValue: "" })}
 									</Text>
 									{/* Stats row */}
-									<Flex align="center" gap="2" mt="1">
-										<Text
-											fontSize="8px"
-											color={noMana ? "#882222" : P.arcane}
-											fontFamily="'Consolas', monospace"
-											fontWeight="700"
-										>
-											{spell.manaCost}mp
-										</Text>
-										<Text
-											fontSize="8px"
-											color={P.goldDark}
-											fontFamily="'Consolas', monospace"
-										>
-											·
-										</Text>
-										<Text
-											fontSize="8px"
-											color={P.goldDark}
-											fontFamily="'Consolas', monospace"
-										>
-											{rangeLabel}
-										</Text>
-										{spell.cooldownMs >= 1000 && (
-											<>
-												<Text
-													fontSize="8px"
-													color={P.goldDark}
-													fontFamily="'Consolas', monospace"
-												>
-													·
-												</Text>
-												<Text
-													fontSize="8px"
-													color={P.goldDark}
-													fontFamily="'Consolas', monospace"
-												>
-													{spell.cooldownMs / 1000}s cd
-												</Text>
-											</>
-										)}
-									</Flex>
+								<Flex align="center" gap="2" mt="1">
+									<Text
+										fontSize="10px"
+										color={noMana ? "#882222" : P.arcane}
+										fontFamily="'Consolas', monospace"
+										fontWeight="700"
+									>
+										{spell.manaCost}mp
+									</Text>
+									<Text
+										fontSize="10px"
+										color={P.goldDark}
+										fontFamily="'Consolas', monospace"
+									>
+										·
+									</Text>
+									<Text
+										fontSize="10px"
+										color={P.goldDark}
+										fontFamily="'Consolas', monospace"
+									>
+										{rangeLabel}
+									</Text>
+									{spell.cooldownMs >= 1000 && (
+										<>
+											<Text
+												fontSize="10px"
+												color={P.goldDark}
+												fontFamily="'Consolas', monospace"
+											>
+												·
+											</Text>
+											<Text
+												fontSize="10px"
+												color={P.goldDark}
+												fontFamily="'Consolas', monospace"
+											>
+												{spell.cooldownMs / 1000}s cd
+											</Text>
+										</>
+									)}
+								</Flex>
 								</Box>
 
 								{/* Right badge */}
-								{isPending && (
-									<Text
-										fontSize="8px"
-										color={P.gold}
-										fontWeight="700"
-										letterSpacing="1px"
-										textTransform="uppercase"
-										flexShrink={0}
-									>
-										{t("sidebar.inventory.targeting")}
-									</Text>
-								)}
-								{noMana && !isPending && (
-									<Text
-										fontSize="8px"
-										color="#882222"
-										fontWeight="700"
-										letterSpacing="1px"
-										textTransform="uppercase"
-										flexShrink={0}
-									>
-										OOM
-									</Text>
-								)}
+							{isPending && (
+								<Text
+									fontSize="10px"
+									color={P.gold}
+									fontWeight="700"
+									letterSpacing="1px"
+									textTransform="uppercase"
+									flexShrink={0}
+								>
+									{t("sidebar.inventory.targeting")}
+								</Text>
+							)}
+							{noMana && !isPending && (
+								<Text
+									fontSize="10px"
+									color="#882222"
+									fontWeight="700"
+									letterSpacing="1px"
+									textTransform="uppercase"
+									flexShrink={0}
+								>
+									OOM
+								</Text>
+							)}
 							</Flex>
 						);
 					})}
@@ -1394,7 +1394,7 @@ function StatChip({ label, value }: { label: string; value: number }) {
 	return (
 		<Box textAlign="center">
 			<Text
-				fontSize="8px"
+				fontSize="11px"
 				color={P.goldDark}
 				letterSpacing="1px"
 				textTransform="uppercase"
@@ -1410,7 +1410,7 @@ function StatChip({ label, value }: { label: string; value: number }) {
 
 function KeyHint({ keys, action }: { keys: string; action: string }) {
 	return (
-		<Flex align="center" gap="1" fontSize="9px" color={P.goldDark}>
+		<Flex align="center" gap="1" fontSize="11px" color={P.goldDark}>
 			<Box
 				bg={P.surface}
 				border="1px solid"
@@ -1418,7 +1418,7 @@ function KeyHint({ keys, action }: { keys: string; action: string }) {
 				borderRadius="2px"
 				px="1.5"
 				py="0.5"
-				fontSize="8px"
+				fontSize="10px"
 				fontFamily="'Consolas', monospace"
 				color={P.goldMuted}
 			>

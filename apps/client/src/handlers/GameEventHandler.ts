@@ -80,6 +80,7 @@ export class GameEventHandler {
 	private onAttackHit(data: ServerMessages["attack_hit"]) {
 		if (data.targetSessionId) {
 			this.spriteManager.flashSprite(data.targetSessionId);
+			this.effectManager.playMeleeHit(data.targetSessionId);
 		}
 	}
 
@@ -94,11 +95,7 @@ export class GameEventHandler {
 	}
 
 	private onCastHit(data: ServerMessages["cast_hit"]) {
-		this.effectManager.playEffect(
-			data.fxId,
-			data.targetTileX,
-			data.targetTileY,
-		);
+		this.effectManager.playSpellEffect(data.spellId, data.targetTileX, data.targetTileY);
 	}
 
 	private onDamage(data: ServerMessages["damage"]) {
