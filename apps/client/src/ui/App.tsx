@@ -530,8 +530,8 @@ export function App() {
               h="100%"
               minW="0"
               overflow="hidden"
-            />
-            <Box pos="absolute" top="20px" right="20px" zIndex={90}>
+              pos="relative"
+            >
               {roomRef.current && (
                 <Minimap
                   map={mapData}
