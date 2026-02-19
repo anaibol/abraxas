@@ -1,5 +1,5 @@
 import { Box, Text } from "@chakra-ui/react";
-import { T, HEX } from "./tokens";
+import { T } from "./tokens";
 
 export interface KillFeedEntry {
   id: number;
@@ -32,10 +32,10 @@ export function KillFeed({ entries }: KillFeedProps) {
           borderRadius="2px"
           fontFamily={T.display}
         >
-          <Text fontSize="12px" color=T.goldText>
-            <Text as="span" color=T.bloodBright fontWeight="700">{entry.killerName}</Text>
+          <Text fontSize="12px" color={T.goldText}>
+            <Text as="span" color={T.bloodBright} fontWeight="700">{entry.killerName}</Text>
             {" killed "}
-            <Text as="span" color=T.goldMuted fontWeight="700">{entry.victimName}</Text>
+            <Text as="span" color={T.goldMuted} fontWeight="700">{entry.victimName}</Text>
           </Text>
         </Box>
       ))}

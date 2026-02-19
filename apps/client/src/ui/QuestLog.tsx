@@ -1,6 +1,6 @@
 import { Box, Flex, Text, VStack, Progress } from "@chakra-ui/react";
 import { QUESTS, type PlayerQuestState } from "@abraxas/shared";
-import { T, HEX } from "./tokens";
+import { T } from "./tokens";
 import { useTranslation } from "react-i18next";
 
 interface QuestLogProps {

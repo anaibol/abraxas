@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { TILE_SIZE } from "@abraxas/shared";
 import type { SpriteManager } from "./SpriteManager";
+import { FONTS } from "../ui/tokens";
 
 // ── Particle burst configuration ─────────────────────────────────────────────
 
@@ -806,7 +807,7 @@ export class EffectManager {
     const text = this.scene.add
       .text(x, y, content, {
         fontSize, color,
-        fontFamily: "'Friz Quadrata', Georgia, serif",
+        fontFamily: FONTS.display,
         fontStyle: "bold",
         stroke: "#000000",
         strokeThickness: 3,

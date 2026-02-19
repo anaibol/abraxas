@@ -379,7 +379,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
               w="100%"
               h="50px"
               bg={T.goldDim}
-              color="#08080c"
+              color={T.darkest}
               type="submit"
               fontFamily={T.display}
               fontWeight="900"
@@ -659,7 +659,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
               w="100%"
               h="50px"
               bg={creating ? T.goldDark : T.goldDim}
-              color="#08080c"
+              color={T.darkest}
               loading={creating}
               onClick={handleCreateCharacter}
               fontFamily={T.display}

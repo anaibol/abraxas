@@ -111,7 +111,7 @@ export function LoadingScreen() {
               strokeLinecap="round" 
             />
             {/* Outer Circular Accents */}
-            <circle cx="50" cy="50" r="45" stroke="#d4a843" strokeWidth="0.5" strokeDasharray="4 8" opacity="0.5" />
+            <circle cx="50" cy="50" r="45" stroke={HEX.gold} strokeWidth="0.5" strokeDasharray="4 8" opacity="0.5" />
           </svg>
         </Box>
       </Box>

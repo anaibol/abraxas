@@ -2,7 +2,7 @@ import { Box } from "@chakra-ui/react";
 import { useCallback, useRef } from "react";
 import { Direction } from "@abraxas/shared";
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Swords } from "lucide-react";
-import { T, HEX } from "./tokens";
+import { T } from "./tokens";
 
 type SpellSlot = {
   key: string;

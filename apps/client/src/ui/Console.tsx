@@ -1,6 +1,6 @@
 import { Box, Text, HStack } from "@chakra-ui/react";
 import { useEffect, useRef, useState, useMemo } from "react";
-import { T, HEX } from "./tokens";
+import { T } from "./tokens";
 
 export interface ConsoleMessage {
   id: number;

@@ -3,7 +3,7 @@ import { Box, Flex, Text, Grid, Button, Input, VStack, HStack } from "@chakra-ui
 import { ITEMS } from "@abraxas/shared";
 import type { TradeState } from "@abraxas/shared";
 import type { InventorySlot } from "./Sidebar";
-import { T, HEX } from "./tokens";
+import { T } from "./tokens";
 
 
 const ITEM_ICONS: Record<string, string> = {

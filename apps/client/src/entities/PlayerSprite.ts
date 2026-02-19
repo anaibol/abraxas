@@ -23,7 +23,7 @@ const DIR_NAME_MAP: Record<number, "down" | "up" | "left" | "right"> = {
 };
 
 const GAME_TEXT_STYLE = {
-  fontFamily: "'Friz Quadrata', Georgia, serif",
+  fontFamily: FONTS.display,
   fontSize: "13px",
   shadow: { offsetX: 1, offsetY: 1, color: "#000000", blur: 3, fill: true },
 };

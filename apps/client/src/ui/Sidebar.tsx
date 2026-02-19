@@ -132,7 +132,7 @@ interface SidebarProps {
 }
 
 const RARITY_COLORS: Record<string, string> = {
-	common: "#8a7a60",
+	common: HEX.goldMuted,
 	uncommon: "#33aa44",
 	rare: "#3355cc",
 };

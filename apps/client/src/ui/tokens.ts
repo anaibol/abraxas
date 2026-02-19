@@ -48,6 +48,12 @@ export const T = {
   goldBadge:    "goldBadge",
 } as const;
 
+// Raw font family strings — for Phaser text styles and inline `style` objects
+export const FONTS = {
+  display: "'Friz Quadrata', Georgia, serif",
+  mono:    "'Consolas', monospace",
+} as const;
+
 // Raw hex values — only for string interpolation and non-Chakra CSS contexts
 export const HEX = {
   bg:          "#0e0c14",
