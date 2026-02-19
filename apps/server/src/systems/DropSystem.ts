@@ -21,8 +21,8 @@ export class DropSystem {
     const drop = new Drop();
     drop.id = id;
     drop.itemType = itemType;
-    drop.tileX = Math.floor(tileX);
-    drop.tileY = Math.floor(tileY);
+    drop.tileX = tileX;
+    drop.tileY = tileY;
     drop.spawnedAt = Date.now();
     drops.set(id, drop);
     return drop;
@@ -63,7 +63,7 @@ export class DropSystem {
     const drop = drops.get(dropId);
     if (!drop) return false;
 
-    if (Math.floor(drop.tileX) !== player.tileX || Math.floor(drop.tileY) !== player.tileY) {
+    if (drop.tileX !== player.tileX || drop.tileY !== player.tileY) {
       onError?.("You must be standing on the item to pick it up");
       return false;
     }

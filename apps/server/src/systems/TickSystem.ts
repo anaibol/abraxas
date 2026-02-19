@@ -152,20 +152,23 @@ export class TickSystem {
 				if (Math.random() < entry.chance) {
 					const qty =
 						Math.floor(Math.random() * (entry.max - entry.min + 1)) + entry.min;
-					const ox = (Math.random() - 0.5) * 1.5;
-					const oy = (Math.random() - 0.5) * 1.5;
+					const ox = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
+					const oy = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
+					const tx = Math.max(0, Math.min(this.opts.map.width - 1, npc.tileX + ox));
+					const ty = Math.max(0, Math.min(this.opts.map.height - 1, npc.tileY + oy));
+
 					if (entry.itemId === "gold") {
 						systems.drops.spawnGoldDrop(
 							this.opts.state.drops,
-							npc.tileX + ox,
-							npc.tileY + oy,
+							tx,
+							ty,
 							qty,
 						);
 					} else {
 						systems.drops.spawnItemDrop(
 							this.opts.state.drops,
-							npc.tileX + ox,
-							npc.tileY + oy,
+							tx,
+							ty,
 							entry.itemId,
 							qty,
 						);

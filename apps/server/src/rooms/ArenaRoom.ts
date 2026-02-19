@@ -1,40 +1,37 @@
 import {
-	Room,
-	type Client,
-	type AuthContext,
-} from "@colyseus/core";
-import { StateView } from "@colyseus/schema";
-import { GameState } from "../schema/GameState";
-import { Player } from "../schema/Player";
-import { MovementSystem } from "../systems/MovementSystem";
-import { CombatSystem } from "../systems/CombatSystem";
-import { DropSystem } from "../systems/DropSystem";
-import { BuffSystem } from "../systems/BuffSystem";
-import { InventorySystem } from "../systems/InventorySystem";
-import { RespawnSystem } from "../systems/RespawnSystem";
-import { NpcSystem } from "../systems/NpcSystem";
-import {
+	type ClientMessageType,
+	type JoinOptions,
+	ServerMessageType,
 	TICK_MS,
 	type TileMap,
-	type ClientMessageType,
-	ServerMessageType,
-	type JoinOptions,
 } from "@abraxas/shared";
-import { logger } from "../logger";
-import { MapService } from "../services/MapService";
-import { PersistenceService } from "../services/PersistenceService";
+import { type AuthContext, type Client, Room } from "@colyseus/core";
+import { StateView } from "@colyseus/schema";
 import { AuthService } from "../database/auth";
 import { prisma } from "../database/db";
 import type { Account } from "../generated/prisma";
 import { MessageHandler } from "../handlers/MessageHandler";
-import { SocialSystem } from "../systems/SocialSystem";
-import { FriendsSystem } from "../systems/FriendsSystem";
-import { SpatialLookup, type Entity } from "../utils/SpatialLookup";
-import { QuestSystem } from "../systems/QuestSystem";
+import { logger } from "../logger";
+import { GameState } from "../schema/GameState";
+import { Player } from "../schema/Player";
 import { ChatService } from "../services/ChatService";
-import { PlayerService } from "../services/PlayerService";
-import { TickSystem } from "../systems/TickSystem";
 import { LevelService } from "../services/LevelService";
+import { MapService } from "../services/MapService";
+import { PersistenceService } from "../services/PersistenceService";
+import { PlayerService } from "../services/PlayerService";
+import { BuffSystem } from "../systems/BuffSystem";
+import { CombatSystem } from "../systems/CombatSystem";
+import { DropSystem } from "../systems/DropSystem";
+import { FriendsSystem } from "../systems/FriendsSystem";
+import { InventorySystem } from "../systems/InventorySystem";
+import { MovementSystem } from "../systems/MovementSystem";
+import { NpcSystem } from "../systems/NpcSystem";
+import { QuestSystem } from "../systems/QuestSystem";
+import { RespawnSystem } from "../systems/RespawnSystem";
+import { SocialSystem } from "../systems/SocialSystem";
+import { TickSystem } from "../systems/TickSystem";
+import { TradeSystem } from "../systems/TradeSystem";
+import { type Entity, SpatialLookup } from "../utils/SpatialLookup";
 
 export class ArenaRoom extends Room<{ state: GameState }> {
 	autoDispose = false;
@@ -60,10 +57,10 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 	private levelService!: LevelService;
 	private spatial!: SpatialLookup;
 	private quests = new QuestSystem();
+	private trade!: TradeSystem;
 
 	async onCreate(options: JoinOptions & { mapName?: string }) {
 		try {
-
 			this.roomMapName = options.mapName || "arena.test";
 			const loadedMap = await MapService.getMap(this.roomMapName);
 			if (!loadedMap)
@@ -85,6 +82,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 			this.friends = new FriendsSystem(this.state, (sid) =>
 				this.findClient(sid),
 			);
+			this.trade = new TradeSystem(this.inventorySystem);
 
 			this.playerService = new PlayerService(
 				this.state,
@@ -121,6 +119,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 					social: this.social,
 					friends: this.friends,
 					quests: this.quests,
+					trade: this.trade,
 				},
 				services: {
 					chat: chatService,
@@ -129,14 +128,14 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 				broadcast: this.broadcast.bind(this),
 				isTileOccupied: this.spatial.isTileOccupied.bind(this.spatial),
 				findClientByName,
+				findClientBySessionId: (sid) => this.findClient(sid),
 			});
 
-			// Register message handlers declaratively from MessageHandler
 			this.messageHandler.registerHandlers(
 				<T extends ClientMessageType>(
 					type: T,
 					// biome-ignore lint/suspicious/noExplicitAny: Colyseus onMessage is typed as any
-			handler: (client: Client, message: any) => void,
+					handler: (client: Client, message: any) => void,
 				) => {
 					this.onMessage(type, handler);
 				},
@@ -172,7 +171,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 			const npcCount = this.map.npcCount ?? 20;
 			if (npcCount > 0) this.npcSystem.spawnNpcs(npcCount, this.map);
 
-		this.setSimulationInterval((dt) => this.tickSystem.tick(dt), TICK_MS);
+			this.setSimulationInterval((dt) => this.tickSystem.tick(dt), TICK_MS);
 
 			logger.info({
 				room: this.roomId,
@@ -301,6 +300,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 		this.combat.removeEntity(client.sessionId);
 		this.buffSystem.removePlayer(client.sessionId);
 		this.respawnSystem.removePlayer(client.sessionId);
+		this.trade.cancel(client.sessionId);
 	}
 
 	private onEntityDeath(entity: Entity, killerSessionId?: string) {
