@@ -127,9 +127,15 @@ export type SpellEffect =
 	| "heal"
 	| "dot"
 	| "buff"
+	/** Negative stat modifier applied to an enemy (slow, weaken, vulnerability). */
+	| "debuff"
 	| "stun"
 	| "stealth"
 	| "aoe"
+	/** Deals damage AND heals the caster for a portion of that damage. */
+	| "leech"
+	/** Heals all same-faction entities within aoeRadius of the target tile. */
+	| "aoe_heal"
 	| "summon";
 
 export type Spell = {
@@ -151,6 +157,8 @@ export type Spell = {
 	dotDamage?: number;
 	dotIntervalMs?: number;
 	dotDurationMs?: number;
+	/** Fraction of damage returned as healing to the caster (used by "leech" effect). */
+	leechRatio?: number;
 };
 
 export interface InventoryEntry {

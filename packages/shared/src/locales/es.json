@@ -84,7 +84,8 @@
     "trade_cancelled": "Intercambio cancelado: {{reason}}",
     "item_used": "Usado: {{item}}",
     "invalid_target": "Objetivo inválido",
-    "trade_cancelled_by_player": "El jugador canceló el intercambio"
+    "trade_cancelled_by_player": "El jugador canceló el intercambio",
+    "pong": "¡Pong! {{rtt}}ms"
   },
   "social": {
     "already_in_party": "El jugador ya está en un grupo",
@@ -114,7 +115,10 @@
       "range": "Rango",
       "self": "Propio",
       "targeting": "Apuntando…",
-      "spell_click_hint": "Clic para apuntar"
+      "spell_click_hint": "Clic para apuntar",
+      "level": "Nv",
+      "xp": "pe",
+      "gold_abbr": "g"
     },
     "party": {
       "not_in_party": "No estás en un grupo. Invita a alguien para empezar uno.",
@@ -135,12 +139,24 @@
       "trade_tag": "[Comerciar]",
       "pending_requests": "Peticiones Pendientes",
       "accept": "[Aceptar]"
+    },
+    "social": {
+      "trade": "[Comerciar]",
+      "kick": "[Echar]",
+      "whisper": "[S]",
+      "party_invite": "[G]"
+    },
+    "stats": {
+      "str": "FOR",
+      "agi": "AGI",
+      "int": "INT"
     }
   },
   "status": {
     "dead": "MUERTO",
     "stunned": "ATURDIDO",
     "stealthed": "SIGILO",
+    "meditating": "MEDITANDO",
     "transmitting": "TRANSMITIENDO",
     "health": "Salud",
     "mana": "Maná"
@@ -151,7 +167,8 @@
     "pickup": "Recoger",
     "drop": "Soltar",
     "use": "Usar",
-    "equip": "Equipar"
+    "equip": "Equipar",
+    "meditate": "Meditar"
   },
   "npcs": {
     "orc": "Orco",

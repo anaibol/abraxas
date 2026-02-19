@@ -26,7 +26,8 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		meleeCooldownMs: 800,
 		meleeWindupMs: 200,
 		armor: 15,
-		spells: [],
+		// Berserker self-buff when health is low
+		spells: ["enrage"],
 		expReward: 80,
 	},
 	skeleton: {
@@ -52,7 +53,8 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		meleeCooldownMs: 700,
 		meleeWindupMs: 120,
 		armor: 5,
-		spells: [],
+		// Throws a small fire splash
+		spells: ["fire_breath"],
 		expReward: 20,
 		fleesWhenLow: true,
 	},
@@ -93,7 +95,8 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		meleeCooldownMs: 700,
 		meleeWindupMs: 100,
 		armor: 2,
-		spells: ["poison_bite"],
+		// Poison bite (DoT) + web shot (stun)
+		spells: ["poison_bite", "web_shot"],
 		expReward: 35,
 		fleesWhenLow: true,
 	},
@@ -107,7 +110,8 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		meleeCooldownMs: 1000,
 		meleeWindupMs: 200,
 		armor: 0,
-		spells: ["soul_drain"],
+		// Life drain (leech) + wail to weaken nearby enemies
+		spells: ["soul_drain", "banshee_wail"],
 		expReward: 55,
 	},
 	lich: {
@@ -120,7 +124,8 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		meleeCooldownMs: 1500,
 		meleeWindupMs: 500,
 		armor: 25,
-		spells: ["fireball", "shadow_bolt"],
+		// Full boss toolkit: ranged nuke, AoE bolt, frost slow, summons
+		spells: ["shadow_bolt", "frost_breath", "banshee_wail", "summon_skeleton"],
 		expReward: 500,
 	},
 	banker: {

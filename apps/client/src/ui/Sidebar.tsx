@@ -34,6 +34,7 @@ export type PlayerState = {
   gold?: number;
   stealthed?: boolean;
   stunned?: boolean;
+  meditating?: boolean;
   level?: number;
   xp?: number;
   maxXp?: number;
@@ -178,41 +179,13 @@ export function Sidebar({
         </Box>
       )}
       {/* Header */}
-      <Box px="4" pt="3.5" pb="2.5" bg={P.surface} borderBottom="1px solid" borderBottomColor={P.border} textAlign="center">
-        <Text fontSize="16px" fontWeight="700" color={P.gold} letterSpacing="2px" textShadow="0 0 12px rgba(180,140,50,0.25)">
-          {state.name}
-        </Text>
-        <Text fontSize="9px" color={P.goldDark} letterSpacing="4px" textTransform="uppercase" mt="0.5">
-          {t(`classes.${state.classType}.name`)}
-        </Text>
-        {!state.alive && <Text fontSize="12px" color={P.bloodBright} fontWeight="700" mt="1" letterSpacing="3px">{t("status.dead")}</Text>}
-        {state.stunned && <Text fontSize="10px" color="#cccc33" fontWeight="700" mt="0.5" letterSpacing="2px">{t("status.stunned")}</Text>}
-        {state.stealthed && <Text fontSize="10px" color="#9944cc" fontWeight="700" mt="0.5" letterSpacing="2px">{t("status.stealthed")}</Text>}
-        {isRecording && (
-            <Flex align="center" justify="center" gap="2" mt="1.5">
-                <Box w="8px" h="8px" bg="#ff0000" borderRadius="full" animation="pulse 1s infinite" />
-                <Text fontSize="10px" color="#ff4444" fontWeight="700" letterSpacing="2px">{t("status.transmitting")}</Text>
-            </Flex>
-        )}
-        {/* Level + XP bar */}
-        <Flex align="center" justify="space-between" mt="2" px="0.5">
-          <Text fontSize="9px" color={P.goldDark} letterSpacing="2px" textTransform="uppercase">Lv {state.level ?? 1}</Text>
-          <Text fontSize="9px" color={P.goldDark} fontFamily={P.mono}>{state.xp ?? 0} / {state.maxXp ?? 100} xp</Text>
-        </Flex>
-        <Box pos="relative" h="6px" bg={P.darkest} border="1px solid" borderColor={P.border} borderRadius="full" overflow="hidden" mt="0.5">
-          <Box
-            h="100%"
-            w={`${state.maxXp ? Math.min(100, ((state.xp ?? 0) / state.maxXp) * 100) : 0}%`}
-            bg={`linear-gradient(90deg, ${P.goldDark}, ${P.gold})`}
-            transition="width 0.3s"
-          />
-        </Box>
-      </Box>
+      <CharacterHeader state={state} isRecording={isRecording} />
+
       <Box h="1px" bg={`linear-gradient(90deg, transparent, ${P.gold}, transparent)`} />
 
-      {/* Gold display */}
+      {/* Gold display - Moved into Header or kept separate? Let's keep separate for now but localized */}
       <Flex justify="center" py="1.5" bg={P.darkest} borderBottom="1px solid" borderBottomColor={P.border}>
-        <Text fontSize="11px" color={P.gold} fontWeight="700">{state.gold ?? 0}g</Text>
+        <Text fontSize="11px" color={P.gold} fontWeight="700">{state.gold ?? 0}{t("sidebar.inventory.gold_abbr")}</Text>
       </Flex>
 
       {/* Tabs */}
@@ -243,368 +216,56 @@ export function Sidebar({
         ))}
       </Flex>
 
-      {/* Inventory */}
-      {tab === "inv" && (
-        <Box flex="1" overflow="auto" p="2.5">
-          {/* Equipment slots */}
-          {state.equipment && (
-            <Flex gap="1" mb="2" justify="center">
-              {EQUIPMENT_SLOTS.map((slot) => {
-                const equipped = state.equipment![slot];
-                const def = equipped ? ITEMS[equipped] : null;
-                return (
-                  <Box
-                    key={slot}
-                    w="42px" h="42px"
-                    bg={P.darkest}
-                    border="1px solid"
-                    borderColor={def ? (RARITY_COLORS[def.rarity] || P.border) : P.border}
-                    borderRadius="2px"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                    cursor={def ? "pointer" : "default"}
-                    title={def ? t("sidebar.inventory.unequip_hint", { name: t(def.name) }) : slot}
-                    onClick={() => def && onUnequip?.(slot)}
-                    _hover={def ? { borderColor: P.gold } : {}}
-                    position="relative"
-                  >
-                    <Text fontSize="16px">{def ? (ITEM_ICONS[def.slot] || "\u2728") : ""}</Text>
-                    {!def && <Text fontSize="7px" color={P.goldDark} position="absolute" bottom="1px">{slot.slice(0, 3)}</Text>}
-                  </Box>
-                );
-              })}
-            </Flex>
-          )}
-          <Grid templateColumns="repeat(4, 1fr)" gap="1">
-            {Array.from({ length: 24 }, (_, i) => {
-              const invItem = state.inventory?.find((it) => it.slotIndex === i);
-              const def = invItem ? ITEMS[invItem.itemId] : null;
-              const isSelected = !!invItem && invItem.itemId === selectedItemId;
-              return (
-                <Box
-                  key={i}
-                  aspectRatio="1"
-                  bg={isSelected ? P.surface : P.darkest}
-                  border="2px solid"
-                  borderColor={
-                    isSelected
-                      ? P.gold
-                      : def
-                        ? (RARITY_COLORS[def.rarity] || P.border)
-                        : P.border
-                  }
-                  borderRadius="2px"
-                  transition="all 0.1s"
-                  cursor={def ? "pointer" : "default"}
-                    title={
-                      def
-                        ? t("sidebar.inventory.interactions_hint", {
-                            name: t(def.name),
-                            qty: invItem && invItem.quantity > 1 ? ` x${invItem.quantity}` : "",
-                            action: def.consumeEffect ? t("controls.use") : t("controls.equip")
-                          })
-                        : ""
-                    }
-                  _hover={def ? { borderColor: P.gold, bg: P.surface } : {}}
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
-                  position="relative"
-                  onClick={() => {
-                    if (!def || !invItem) return;
-                    // Toggle selection: clicking again deselects
-                    onSelectItem?.(isSelected ? null : invItem.itemId);
-                  }}
-                  onDoubleClick={() => {
-                    if (!def || !invItem) return;
-                    if (def.consumeEffect) {
-                      onUseItem?.(invItem.itemId);
-                    } else if (def.slot !== "consumable") {
-                      onEquip?.(invItem.itemId);
-                    }
-                  }}
-                >
-                  {def && <Text fontSize="16px">{ITEM_ICONS[def.slot] || "\u2728"}</Text>}
-                  {invItem && invItem.quantity > 1 && (
-                    <Text fontSize="8px" color="#fff" position="absolute" bottom="0" right="1px" fontFamily={P.mono}>{invItem.quantity}</Text>
-                  )}
-                  {isSelected && (
-                    <Box
-                      position="absolute"
-                      bottom="0" left="0" right="0"
-                      h="2px"
-                      bg={P.gold}
-                      borderRadius="0 0 2px 2px"
-                    />
-                  )}
-                </Box>
-              );
-            })}
-          </Grid>
-        </Box>
-      )}
-
-      {/* Spells */}
-      {tab === "spells" && (
-        <Box flex="1" overflow="auto" p="2.5">
-          {classSpells.length === 0 ? (
-            <Text textAlign="center" color={P.borderLight} fontSize="11px" py="8" fontStyle="italic">{t("sidebar.inventory.empty_spells")}</Text>
-          ) : (
-            <Flex direction="column" gap="1.5">
-              {classSpells.map((spell) => {
-                const isPending = pendingSpellId === spell.id;
-                return (
-                  <Flex
-                    key={spell.id}
-                    align="center"
-                    gap="3"
-                    p="2.5"
-                    bg={isPending ? P.surface : P.darkest}
-                    border="1px solid"
-                    borderColor={isPending ? P.gold : P.border}
-                    borderRadius="2px"
-                    cursor="pointer"
-                    transition="all 0.12s"
-                    _hover={{ bg: P.surface, borderColor: P.gold }}
-                    onClick={() => onSpellClick?.(spell.id, spell.rangeTiles)}
-                    title={spell.rangeTiles > 0 ? t("sidebar.inventory.spell_click_hint") : undefined}
-                  >
-                    <Flex
-                      w="36px" h="36px" align="center" justify="center"
-                      bg={isPending ? P.raised : P.surface}
-                      border="1px solid"
-                      borderColor={isPending ? P.gold : P.border}
-                      borderRadius="2px"
-                      fontSize="20px"
-                      flexShrink={0}
-                    >
-                      {SPELL_ICONS[spell.id] || "\u2728"}
-                    </Flex>
-                    <Box flex="1">
-                      <Text fontSize="12px" fontWeight="700" color={isPending ? P.gold : P.gold}>
-                        {t(`spells.${spell.id}.name`)}
-                      </Text>
-                      <Text fontSize="9px" color={P.goldDark} mt="0.5">
-                        {t("sidebar.inventory.mana")}: {spell.manaCost} · {spell.rangeTiles > 0 ? `${t("sidebar.inventory.range")}: ${spell.rangeTiles}` : t("sidebar.inventory.self")} · [{spell.key}]
-                      </Text>
-                    </Box>
-                    {isPending && (
-                      <Text fontSize="9px" color={P.gold} fontWeight="700" letterSpacing="1px" textTransform="uppercase" flexShrink={0}>
-                        {t("sidebar.inventory.targeting")}
-                      </Text>
-                    )}
-                  </Flex>
-                );
-              })}
-            </Flex>
-          )}
-        </Box>
-      )}
-      {/* Quests */}
-      {tab === "quests" && <QuestLog quests={quests} />}
-
-      {/* Party */}
-      {tab === "party" && (
-        <Box flex="1" overflow="auto" p="3">
-          {!partyId ? (
-            <VStack align="stretch" gap="3">
-              <Text fontSize="11px" color={P.goldDark} fontStyle="italic">{t("sidebar.party.not_in_party")}</Text>
-              <HStack gap="2">
-                <Input
-                  placeholder={t("sidebar.party.session_id")}
-                  size="xs"
-                  value={inviteId}
-                  onChange={(e) => setInviteId(e.target.value)}
-                  bg={P.darkest}
-                  borderColor={P.border}
-                  color={P.goldText}
-                  fontSize="11px"
-                  fontFamily={P.mono}
-                  _focus={{ borderColor: P.gold }}
-                />
-                <Button
-                  size="xs"
-                  bg={P.raised}
-                  color={P.gold}
-                  borderColor={P.border}
-                  border="1px solid"
-                  _hover={{ bg: P.surface, borderColor: P.gold }}
-                  onClick={() => { onPartyInvite?.(inviteId); setInviteId(""); }}
-                >
-                  {t("sidebar.party.invite")}
-                </Button>
-              </HStack>
-            </VStack>
-          ) : (
-            <VStack align="stretch" gap="2">
-              <Text fontSize="9px" color={P.goldDark} letterSpacing="2px" textTransform="uppercase">{t("sidebar.party.party_id", { id: partyId })}</Text>
-              {partyMembers.map((member) => (
-                <Flex key={member.sessionId} justify="space-between" align="center" p="2" bg={P.darkest} border="1px solid" borderColor={P.border} borderRadius="2px">
-                  <HStack gap="2">
-                    <Box w="6px" h="6px" borderRadius="full" bg="green.400" flexShrink={0} />
-                    <Text fontSize="12px" color={member.sessionId === leaderId ? P.gold : P.goldText} fontWeight={member.sessionId === leaderId ? "700" : "400"}>
-                      {member.name}{member.sessionId === leaderId ? ` ${t("sidebar.party.leader_tag")}` : ""}
-                    </Text>
-                  </HStack>
-                  <HStack gap="1">
-                    {member.sessionId !== leaderId && (
-                      <Button size="xs" variant="ghost" p="0" h="auto" minW="auto" color={P.gold} fontSize="10px" onClick={() => onTradeRequest?.(member.sessionId)}>
-                        [Trade]
-                      </Button>
-                    )}
-                    {leaderId === partyMembers[0]?.sessionId && member.sessionId !== leaderId && (
-                      <Button size="xs" variant="ghost" p="0" h="auto" minW="auto" color="red.400" fontSize="10px" onClick={() => onPartyKick?.(member.sessionId)}>
-                        {t("sidebar.party.kick")}
-                      </Button>
-                    )}
-                  </HStack>
-                </Flex>
-              ))}
-              <Button
-                mt="1"
-                size="xs"
-                variant="outline"
-                borderColor={P.blood}
-                color="red.400"
-                _hover={{ bg: P.blood }}
-                fontSize="10px"
-                onClick={onPartyLeave}
-              >
-                {t("sidebar.party.leave")}
-              </Button>
-            </VStack>
-          )}
-        </Box>
-      )}
-
-      {/* Friends */}
-      {tab === "friends" && (
-        <Box flex="1" overflow="auto" p="3">
-          <VStack align="stretch" gap="3">
-            <HStack gap="2">
-              <Input
-                placeholder={t("sidebar.friends.friend_name")}
-                size="xs"
-                value={friendName}
-                onChange={(e) => setFriendName(e.target.value)}
-                bg={P.darkest}
-                borderColor={P.border}
-                color={P.goldText}
-                fontSize="11px"
-                fontFamily={P.mono}
-                _focus={{ borderColor: P.gold }}
-              />
-              <Button
-                size="xs"
-                bg={P.raised}
-                color={P.gold}
-                borderColor={P.border}
-                border="1px solid"
-                _hover={{ bg: P.surface, borderColor: P.gold }}
-                onClick={() => { onFriendRequest?.(friendName); setFriendName(""); }}
-              >
-                {t("sidebar.friends.add")}
-              </Button>
-            </HStack>
-            <VStack align="stretch" gap="1">
-              {friends.length === 0 && (
-                <Text fontSize="11px" color={P.goldDark} textAlign="center" fontStyle="italic" py="4">{t("sidebar.friends.no_friends")}</Text>
-              )}
-              {friends.map((friend) => (
-                <Flex key={friend.id} justify="space-between" align="center" p="2" bg={P.darkest} border="1px solid" borderColor={P.border} borderRadius="2px">
-                  <HStack gap="2">
-                    <Box w="6px" h="6px" borderRadius="full" bg={friend.online ? "green.400" : "gray.600"} flexShrink={0} />
-                    <Text fontSize="12px" color={friend.online ? P.goldText : P.goldDark}>{friend.name}</Text>
-                  </HStack>
-                  <HStack gap="1">
-                    <Button size="xs" variant="ghost" p="0" h="auto" minW="auto" color={P.gold} fontSize="10px" onClick={() => onWhisper?.(friend.name)}>
-                      {t("sidebar.friends.whisper_tag")}
-                    </Button>
-                    {friend.online && (
-                      <Button size="xs" variant="ghost" p="0" h="auto" minW="auto" color="blue.400" fontSize="10px" onClick={() => onPartyInvite?.(friend.id)}>
-                        {t("sidebar.friends.party_invite_tag")}
-                      </Button>
-                    )}
-                    {friend.online && (
-                      <Button size="xs" variant="ghost" p="0" h="auto" minW="auto" color={P.gold} fontSize="10px" onClick={() => onTradeRequest?.(friend.id)}>
-                        [Trade]
-                      </Button>
-                    )}
-                  </HStack>
-                </Flex>
-              ))}
-            </VStack>
-            {pendingFriendRequests.length > 0 && (
-              <VStack align="stretch" gap="1">
-                <Text fontSize="9px" letterSpacing="2px" color={P.goldDark} textTransform="uppercase">{t("sidebar.friends.pending_requests")}</Text>
-                {pendingFriendRequests.map((req) => (
-                  <Flex key={req.id} justify="space-between" align="center" p="2" bg={P.darkest} border="1px solid" borderColor={P.border} borderRadius="2px">
-                    <Text fontSize="12px" color={P.goldText}>{req.name}</Text>
-                    <Button
-                      size="xs"
-                      variant="ghost"
-                      p="0"
-                      h="auto"
-                      minW="auto"
-                      color="green.400"
-                      fontSize="10px"
-                      onClick={() => onFriendAccept?.(req.id)}
-                    >
-                      {t("sidebar.friends.accept")}
-                    </Button>
-                  </Flex>
-                ))}
-              </VStack>
-            )}
-          </VStack>
-        </Box>
-      )}
-
-      {/* Stats — pinned to bottom */}
-      <Box mt="auto" flexShrink={0} borderTop="2px solid" borderTopColor={P.border} bg={P.darkest}>
-        <Box h="1px" bg={`linear-gradient(90deg, transparent, ${P.gold}, transparent)`} />
-        <Flex justify="space-around" py="2.5" px="3" borderBottom="1px solid" borderBottomColor={P.raised}>
-          <StatChip label="STR" value={state.str ?? stats?.str ?? 0} />
-          <StatChip label="AGI" value={state.agi ?? stats?.agi ?? 0} />
-          <StatChip label="INT" value={state.intStat ?? stats?.int ?? 0} />
-        </Flex>
-
-        {/* HP bar */}
-        <Box px="3.5" pt="2.5" pb="1">
-          <Text fontSize="8px" letterSpacing="3px" color={P.goldDark} textAlign="center" textTransform="uppercase" mb="0.5">{t("status.health")}</Text>
-          <Box pos="relative" h="22px" bg="#0a0810" border="1px solid" borderColor={P.border} borderRadius="2px" overflow="hidden">
-            <Box h="100%" w={`${hpPct}%`} bg={hpColor} transition="width 0.2s" />
-            <Flex pos="absolute" inset="0" align="center" justify="center" fontSize="10px" fontWeight="700" color="#fff" textShadow="1px 1px 3px #000" fontFamily={P.mono}>
-              {state.hp}/{state.maxHp}
-            </Flex>
-          </Box>
-        </Box>
-
-        {/* Mana bar */}
-        <Box px="3.5" pt="1.5" pb="2.5">
-          <Text fontSize="8px" letterSpacing="3px" color={P.goldDark} textAlign="center" textTransform="uppercase" mb="0.5">{t("status.mana")}</Text>
-          <Box pos="relative" h="22px" bg="#080818" border="1px solid" borderColor={P.border} borderRadius="2px" overflow="hidden">
-            <Box h="100%" w={`${manaPct}%`} bg={P.arcane} transition="width 0.2s" />
-            <Flex pos="absolute" inset="0" align="center" justify="center" fontSize="10px" fontWeight="700" color="#fff" textShadow="1px 1px 3px #000" fontFamily={P.mono}>
-              {state.mana}/{state.maxMana}
-            </Flex>
-          </Box>
-        </Box>
+      {/* Tab Content */}
+      <Box flex="1" overflow="auto">
+        {tab === "inv" && (
+          <InventoryTab
+            state={state}
+            selectedItemId={selectedItemId}
+            onSelectItem={onSelectItem}
+            onEquip={onEquip}
+            onUnequip={onUnequip}
+            onUseItem={onUseItem}
+          />
+        )}
+        {tab === "spells" && (
+          <SpellsTab
+            classSpells={classSpells}
+            pendingSpellId={pendingSpellId}
+            onSpellClick={onSpellClick}
+          />
+        )}
+        {tab === "quests" && <QuestLog quests={quests} />}
+        {tab === "party" && (
+          <PartyTab
+            partyId={partyId}
+            leaderId={leaderId}
+            partyMembers={partyMembers}
+            inviteId={inviteId}
+            setInviteId={setInviteId}
+            onPartyInvite={onPartyInvite}
+            onPartyLeave={onPartyLeave}
+            onPartyKick={onPartyKick}
+            onTradeRequest={onTradeRequest}
+          />
+        )}
+        {tab === "friends" && (
+          <FriendsTab
+            friends={friends}
+            pendingFriendRequests={pendingFriendRequests}
+            friendName={friendName}
+            setFriendName={setFriendName}
+            onFriendRequest={onFriendRequest}
+            onFriendAccept={onFriendAccept}
+            onWhisper={onWhisper}
+            onTradeRequest={onTradeRequest}
+            onPartyInvite={onPartyInvite}
+          />
+        )}
       </Box>
 
-      {/* Keybinds — hide on mobile since controls are on-screen */}
-      {!isMobile && (
-        <Flex px="3" py="2" gap="2" justify="center" flexWrap="wrap" borderTop="1px solid" borderTopColor={P.raised} bg={P.bg}>
-          <KeyHint keys="Arrows" action={t("controls.move")} />
-          <KeyHint keys="Ctrl" action={t("controls.melee")} />
-          <KeyHint keys="A" action={t("controls.pickup")} />
-          <KeyHint keys="T" action={t("controls.drop")} />
-          {classSpells.map((spell) => (
-            <KeyHint key={spell.id} keys={`${spell.key}${spell.rangeTiles > 0 ? "+Click" : ""}`} action={t(`spells.${spell.id}.name`)} />
-          ))}
-        </Flex>
-      )}
+      {/* Footer */}
+      <SidebarFooter state={state} isMobile={isMobile} classSpells={classSpells} />
     </Flex>
   );
 
@@ -626,6 +287,100 @@ export function Sidebar({
   }
 
   return sidebarPanel;
+}
+
+function CharacterHeader({ state, isRecording }: { state: PlayerState; isRecording?: boolean }) {
+  const { t } = useTranslation();
+  return (
+    <Box px="4" pt="3.5" pb="2.5" bg={P.surface} borderBottom="1px solid" borderBottomColor={P.border} textAlign="center">
+      <Text fontSize="16px" fontWeight="700" color={P.gold} letterSpacing="2px" textShadow="0 0 12px rgba(180,140,50,0.25)">
+        {state.name}
+      </Text>
+      <Text fontSize="9px" color={P.goldDark} letterSpacing="4px" textTransform="uppercase" mt="0.5">
+        {t(`classes.${state.classType}.name`)}
+      </Text>
+      <HStack gap="2" justify="center" mt="1" flexWrap="wrap">
+        {!state.alive && <Text fontSize="12px" color={P.bloodBright} fontWeight="700" letterSpacing="3px">{t("status.dead")}</Text>}
+        {state.stunned && <Text fontSize="10px" color="#cccc33" fontWeight="700" letterSpacing="2px">{t("status.stunned")}</Text>}
+        {state.stealthed && <Text fontSize="10px" color="#9944cc" fontWeight="700" letterSpacing="2px">{t("status.stealthed")}</Text>}
+        {state.meditating && <Text fontSize="10px" color="#44aacc" fontWeight="700" letterSpacing="2px">{t("status.meditating")}</Text>}
+      </HStack>
+      {isRecording && (
+          <Flex align="center" justify="center" gap="2" mt="1.5">
+              <Box w="8px" h="8px" bg="#ff0000" borderRadius="full" animation="pulse 1s infinite" />
+              <Text fontSize="10px" color="#ff4444" fontWeight="700" letterSpacing="2px">{t("status.transmitting")}</Text>
+          </Flex>
+      )}
+      {/* Level + XP bar */}
+      <Flex align="center" justify="space-between" mt="2" px="0.5">
+        <Text fontSize="9px" color={P.goldDark} letterSpacing="2px" textTransform="uppercase">{t("sidebar.inventory.level")} {state.level ?? 1}</Text>
+        <Text fontSize="9px" color={P.goldDark} fontFamily={P.mono}>{state.xp ?? 0} / {state.maxXp ?? 100} {t("sidebar.inventory.xp")}</Text>
+      </Flex>
+      <Box pos="relative" h="6px" bg={P.darkest} border="1px solid" borderColor={P.border} borderRadius="full" overflow="hidden" mt="0.5">
+        <Box
+          h="100%"
+          w={`${state.maxXp ? Math.min(100, ((state.xp ?? 0) / state.maxXp) * 100) : 0}%`}
+          bg={`linear-gradient(90deg, ${P.goldDark}, ${P.gold})`}
+          transition="width 0.3s"
+        />
+      </Box>
+    </Box>
+  );
+}
+
+function SidebarFooter({ state, isMobile, classSpells }: { state: PlayerState; isMobile?: boolean; classSpells: any[] }) {
+  const { t } = useTranslation();
+  const hpPct = state.maxHp > 0 ? Math.max(0, (state.hp / state.maxHp) * 100) : 0;
+  const manaPct = state.maxMana > 0 ? Math.max(0, (state.mana / state.maxMana) * 100) : 0;
+  const hpColor = hpPct > 50 ? P.blood : hpPct > 25 ? "#8b5a1a" : "#5a0e0e";
+  const stats = CLASS_STATS[state.classType];
+
+  return (
+    <Box mt="auto" flexShrink={0} borderTop="2px solid" borderTopColor={P.border} bg={P.darkest}>
+      <Box h="1px" bg={`linear-gradient(90deg, transparent, ${P.gold}, transparent)`} />
+      <Flex justify="space-around" py="2.5" px="3" borderBottom="1px solid" borderBottomColor={P.raised}>
+        <StatChip label={t("sidebar.stats.str")} value={state.str ?? stats?.str ?? 0} />
+        <StatChip label={t("sidebar.stats.agi")} value={state.agi ?? stats?.agi ?? 0} />
+        <StatChip label={t("sidebar.stats.int")} value={state.intStat ?? stats?.int ?? 0} />
+      </Flex>
+
+      {/* HP bar */}
+      <Box px="3.5" pt="2.5" pb="1">
+        <Text fontSize="8px" letterSpacing="3px" color={P.goldDark} textAlign="center" textTransform="uppercase" mb="0.5">{t("status.health")}</Text>
+        <Box pos="relative" h="22px" bg="#0a0810" border="1px solid" borderColor={P.border} borderRadius="2px" overflow="hidden">
+          <Box h="100%" w={`${hpPct}%`} bg={hpColor} transition="width 0.2s" />
+          <Flex pos="absolute" inset="0" align="center" justify="center" fontSize="10px" fontWeight="700" color="#fff" textShadow="1px 1px 3px #000" fontFamily={P.mono}>
+            {state.hp}/{state.maxHp}
+          </Flex>
+        </Box>
+      </Box>
+
+      {/* Mana bar */}
+      <Box px="3.5" pt="1.5" pb="2.5">
+        <Text fontSize="8px" letterSpacing="3px" color={P.goldDark} textAlign="center" textTransform="uppercase" mb="0.5">{t("status.mana")}</Text>
+        <Box pos="relative" h="22px" bg="#080818" border="1px solid" borderColor={P.border} borderRadius="2px" overflow="hidden">
+          <Box h="100%" w={`${manaPct}%`} bg={P.arcane} transition="width 0.2s" />
+          <Flex pos="absolute" inset="0" align="center" justify="center" fontSize="10px" fontWeight="700" color="#fff" textShadow="1px 1px 3px #000" fontFamily={P.mono}>
+            {state.mana}/{state.maxMana}
+          </Flex>
+        </Box>
+      </Box>
+
+      {/* Keybinds — hide on mobile since controls are on-screen */}
+      {!isMobile && (
+        <Flex px="3" py="2" gap="2" justify="center" flexWrap="wrap" borderTop="1px solid" borderTopColor={P.raised} bg={P.bg}>
+          <KeyHint keys="Arrows" action={t("controls.move")} />
+          <KeyHint keys="Ctrl" action={t("controls.melee")} />
+          <KeyHint keys="A" action={t("controls.pickup")} />
+          <KeyHint keys="T" action={t("controls.drop")} />
+          <KeyHint keys="M" action={t("controls.meditate")} />
+          {classSpells.map((spell) => (
+            <KeyHint key={spell.id} keys={`${spell.key}${spell.rangeTiles > 0 ? "+Click" : ""}`} action={t(`spells.${spell.id}.name`)} />
+          ))}
+        </Flex>
+      )}
+    </Box>
+  );
 }
 
 function StatChip({ label, value }: { label: string; value: number }) {

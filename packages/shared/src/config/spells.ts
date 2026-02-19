@@ -5,7 +5,9 @@ import { VIEWPORT_TILES_X } from "./constants";
 const FULL_VIEWPORT_RANGE = Math.floor(VIEWPORT_TILES_X / 2);
 
 export const SPELLS: Record<string, Spell> = {
-  // Warrior
+  // ── WARRIOR ──────────────────────────────────────────────────────────────
+
+  /** Q — Self-buff: +STR for burst window */
   war_cry: {
     id: "war_cry",
     rangeTiles: 0,
@@ -22,6 +24,8 @@ export const SPELLS: Record<string, Spell> = {
     buffAmount: 10,
     fxId: 16,
   },
+
+  /** W — Melee stun: close-range bash that interrupts */
   shield_bash: {
     id: "shield_bash",
     rangeTiles: 1,
@@ -36,7 +40,45 @@ export const SPELLS: Record<string, Spell> = {
     durationMs: 2000,
     fxId: 17,
   },
-  // Mage
+
+  /** E — AoE spin attack: damages all enemies adjacent to caster */
+  whirlwind: {
+    id: "whirlwind",
+    rangeTiles: 0,
+    manaCost: 30,
+    baseDamage: 20,
+    scalingStat: "str",
+    scalingRatio: 0.7,
+    cooldownMs: 7000,
+    windupMs: 200,
+    effect: "aoe",
+    key: "E",
+    aoeRadius: 1,
+    fxId: 14,
+  },
+
+  /** R — AoE debuff: warcry that lowers enemy armor + STR in a wide radius */
+  battle_shout: {
+    id: "battle_shout",
+    rangeTiles: 0,
+    manaCost: 25,
+    baseDamage: 0,
+    scalingStat: "str",
+    scalingRatio: 0,
+    cooldownMs: 18000,
+    windupMs: 160,
+    effect: "debuff",
+    key: "R",
+    durationMs: 6000,
+    aoeRadius: 3,
+    buffStat: "armor",
+    buffAmount: 12,
+    fxId: 16,
+  },
+
+  // ── MAGE ─────────────────────────────────────────────────────────────────
+
+  /** Q — Ranged single-target: fast projectile, full screen range */
   fireball: {
     id: "fireball",
     rangeTiles: FULL_VIEWPORT_RANGE,
@@ -50,9 +92,11 @@ export const SPELLS: Record<string, Spell> = {
     key: "Q",
     fxId: 3,
   },
+
+  /** W — Ranged single-target: applies a slow (debuff AGI) on top of damage */
   ice_bolt: {
     id: "ice_bolt",
-    rangeTiles: 5,
+    rangeTiles: 8,
     manaCost: 20,
     baseDamage: 20,
     scalingStat: "int",
@@ -63,9 +107,11 @@ export const SPELLS: Record<string, Spell> = {
     key: "W",
     fxId: 22,
   },
+
+  /** E — AoE lightning at target tile */
   thunderstorm: {
     id: "thunderstorm",
-    rangeTiles: 5,
+    rangeTiles: 8,
     manaCost: 45,
     baseDamage: 25,
     scalingStat: "int",
@@ -77,6 +123,8 @@ export const SPELLS: Record<string, Spell> = {
     aoeRadius: 2,
     fxId: 14,
   },
+
+  /** R — Self-buff: temporary magic-armor shell */
   mana_shield: {
     id: "mana_shield",
     rangeTiles: 0,
@@ -93,7 +141,41 @@ export const SPELLS: Record<string, Spell> = {
     buffAmount: 15,
     fxId: 18,
   },
-  // Ranger
+
+  /** T — AoE stun burst around the caster: short duration but wide radius */
+  frost_nova: {
+    id: "frost_nova",
+    rangeTiles: 0,
+    manaCost: 40,
+    baseDamage: 10,
+    scalingStat: "int",
+    scalingRatio: 0.3,
+    cooldownMs: 10000,
+    windupMs: 180,
+    effect: "aoe",
+    key: "T",
+    aoeRadius: 3,
+    fxId: 22,
+  },
+
+  /** Y — Heavy single-target nuke: long cast, huge damage */
+  arcane_surge: {
+    id: "arcane_surge",
+    rangeTiles: FULL_VIEWPORT_RANGE,
+    manaCost: 60,
+    baseDamage: 70,
+    scalingStat: "int",
+    scalingRatio: 1.5,
+    cooldownMs: 12000,
+    windupMs: 500,
+    effect: "damage",
+    key: "Y",
+    fxId: 3,
+  },
+
+  // ── RANGER ───────────────────────────────────────────────────────────────
+
+  /** Q — AoE volley: hits all enemies in a small radius at range */
   multi_shot: {
     id: "multi_shot",
     rangeTiles: 5,
@@ -108,9 +190,11 @@ export const SPELLS: Record<string, Spell> = {
     aoeRadius: 2,
     fxId: 14,
   },
+
+  /** W — DoT: poisons a single enemy over several seconds */
   poison_arrow: {
     id: "poison_arrow",
-    rangeTiles: 6,
+    rangeTiles: 8,
     manaCost: 20,
     baseDamage: 10,
     scalingStat: "agi",
@@ -124,6 +208,8 @@ export const SPELLS: Record<string, Spell> = {
     dotDurationMs: 5000,
     fxId: 19,
   },
+
+  /** E — Self-buff: temporarily massively boosts AGI (dodge + speed) */
   evasion: {
     id: "evasion",
     rangeTiles: 0,
@@ -140,7 +226,43 @@ export const SPELLS: Record<string, Spell> = {
     buffAmount: 15,
     fxId: 18,
   },
-  // Assassin (Rogue)
+
+  /** R — Precision shot: full viewport range, high damage, long cooldown */
+  aimed_shot: {
+    id: "aimed_shot",
+    rangeTiles: FULL_VIEWPORT_RANGE,
+    manaCost: 35,
+    baseDamage: 45,
+    scalingStat: "agi",
+    scalingRatio: 1.2,
+    cooldownMs: 8000,
+    windupMs: 400,
+    effect: "damage",
+    key: "R",
+    fxId: 3,
+  },
+
+  /** T — Debuff: marks target, reducing their armor so all attacks deal more */
+  mark_target: {
+    id: "mark_target",
+    rangeTiles: 8,
+    manaCost: 15,
+    baseDamage: 0,
+    scalingStat: "agi",
+    scalingRatio: 0,
+    cooldownMs: 5000,
+    windupMs: 80,
+    effect: "debuff",
+    key: "T",
+    durationMs: 8000,
+    buffStat: "armor",
+    buffAmount: 10,
+    fxId: 19,
+  },
+
+  // ── ROGUE ─────────────────────────────────────────────────────────────────
+
+  /** Q — Melee nuke: massive burst from stealth */
   backstab: {
     id: "backstab",
     rangeTiles: 1,
@@ -154,6 +276,8 @@ export const SPELLS: Record<string, Spell> = {
     key: "Q",
     fxId: 2,
   },
+
+  /** W — Vanish: disappear from enemy detection for a duration */
   stealth: {
     id: "stealth",
     rangeTiles: 0,
@@ -168,6 +292,8 @@ export const SPELLS: Record<string, Spell> = {
     durationMs: 6000,
     fxId: 10,
   },
+
+  /** E — DoT: coats the weapon with venom for sustained damage */
   envenom: {
     id: "envenom",
     rangeTiles: 1,
@@ -184,7 +310,44 @@ export const SPELLS: Record<string, Spell> = {
     dotDurationMs: 6000,
     fxId: 19,
   },
-  // Paladin (Cleric)
+
+  /** R — AoE stun: throws a smoke bomb stunning nearby enemies */
+  smoke_bomb: {
+    id: "smoke_bomb",
+    rangeTiles: 0,
+    manaCost: 35,
+    baseDamage: 0,
+    scalingStat: "agi",
+    scalingRatio: 0,
+    cooldownMs: 12000,
+    windupMs: 100,
+    effect: "aoe",
+    key: "R",
+    aoeRadius: 2,
+    durationMs: 1500,
+    buffStat: "stun",
+    fxId: 10,
+  },
+
+  /** T — Leech strike: saps life force from the target into the caster */
+  hemorrhage: {
+    id: "hemorrhage",
+    rangeTiles: 1,
+    manaCost: 25,
+    baseDamage: 20,
+    scalingStat: "agi",
+    scalingRatio: 0.6,
+    cooldownMs: 6000,
+    windupMs: 120,
+    effect: "leech",
+    key: "T",
+    leechRatio: 0.5,
+    fxId: 2,
+  },
+
+  // ── CLERIC ────────────────────────────────────────────────────────────────
+
+  /** Q — Melee holy strike: smites a single foe */
   holy_strike: {
     id: "holy_strike",
     rangeTiles: 1,
@@ -198,6 +361,8 @@ export const SPELLS: Record<string, Spell> = {
     key: "Q",
     fxId: 23,
   },
+
+  /** W — Self-heal: restores a chunk of HP */
   heal: {
     id: "heal",
     rangeTiles: 0,
@@ -211,6 +376,8 @@ export const SPELLS: Record<string, Spell> = {
     key: "W",
     fxId: 1,
   },
+
+  /** E — Invulnerability bubble: brief window of immunity */
   divine_shield: {
     id: "divine_shield",
     rangeTiles: 0,
@@ -228,7 +395,58 @@ export const SPELLS: Record<string, Spell> = {
     fxId: 34,
   },
 
-  // NPC Spells
+  /** R — AoE heal: pulse of holy light restores HP for all nearby allies */
+  holy_nova: {
+    id: "holy_nova",
+    rangeTiles: 0,
+    manaCost: 50,
+    baseDamage: 30,
+    scalingStat: "int",
+    scalingRatio: 0.9,
+    cooldownMs: 8000,
+    windupMs: 300,
+    effect: "aoe_heal",
+    key: "R",
+    aoeRadius: 3,
+    fxId: 1,
+  },
+
+  /** T — Curse: debuffs an enemy INT + armor, increasing all damage they take */
+  curse: {
+    id: "curse",
+    rangeTiles: 6,
+    manaCost: 25,
+    baseDamage: 0,
+    scalingStat: "int",
+    scalingRatio: 0,
+    cooldownMs: 8000,
+    windupMs: 200,
+    effect: "debuff",
+    key: "T",
+    durationMs: 10000,
+    buffStat: "int",
+    buffAmount: 15,
+    fxId: 10,
+  },
+
+  /** Y — Ranged smite: holy bolt that damages undead and unholy targets */
+  smite: {
+    id: "smite",
+    rangeTiles: 6,
+    manaCost: 30,
+    baseDamage: 35,
+    scalingStat: "int",
+    scalingRatio: 0.9,
+    cooldownMs: 5000,
+    windupMs: 200,
+    effect: "damage",
+    key: "Y",
+    fxId: 23,
+  },
+
+  // ── NPC SPELLS ────────────────────────────────────────────────────────────
+
+  /** Spider: DoT bite */
   poison_bite: {
     id: "poison_bite",
     rangeTiles: 1,
@@ -245,6 +463,24 @@ export const SPELLS: Record<string, Spell> = {
     dotDurationMs: 5000,
     fxId: 19,
   },
+
+  /** Spider: stuns target in web */
+  web_shot: {
+    id: "web_shot",
+    rangeTiles: 4,
+    manaCost: 0,
+    baseDamage: 0,
+    scalingStat: "agi",
+    scalingRatio: 0,
+    cooldownMs: 6000,
+    windupMs: 150,
+    effect: "stun",
+    key: "",
+    durationMs: 2500,
+    fxId: 19,
+  },
+
+  /** Ghost: close-range life drain */
   soul_drain: {
     id: "soul_drain",
     rangeTiles: 1,
@@ -254,10 +490,13 @@ export const SPELLS: Record<string, Spell> = {
     scalingRatio: 0.5,
     cooldownMs: 3000,
     windupMs: 200,
-    effect: "damage",
+    effect: "leech",
     key: "",
+    leechRatio: 0.6,
     fxId: 22,
   },
+
+  /** Lich/Boss: long-range dark magic bolt */
   shadow_bolt: {
     id: "shadow_bolt",
     rangeTiles: FULL_VIEWPORT_RANGE,
@@ -271,6 +510,80 @@ export const SPELLS: Record<string, Spell> = {
     key: "",
     fxId: 3,
   },
+
+  /** Lich/Ghost: AoE debuff that weakens all nearby enemies' INT + armor */
+  banshee_wail: {
+    id: "banshee_wail",
+    rangeTiles: 0,
+    manaCost: 0,
+    baseDamage: 0,
+    scalingStat: "int",
+    scalingRatio: 0,
+    cooldownMs: 8000,
+    windupMs: 400,
+    effect: "debuff",
+    key: "",
+    durationMs: 6000,
+    aoeRadius: 4,
+    buffStat: "armor",
+    buffAmount: 8,
+    fxId: 16,
+  },
+
+  /** Orc/Boss: self-buff that spikes STR for a berserker window */
+  enrage: {
+    id: "enrage",
+    rangeTiles: 0,
+    manaCost: 0,
+    baseDamage: 0,
+    scalingStat: "str",
+    scalingRatio: 0,
+    cooldownMs: 20000,
+    windupMs: 200,
+    effect: "buff",
+    key: "",
+    durationMs: 6000,
+    buffStat: "str",
+    buffAmount: 20,
+    fxId: 16,
+  },
+
+  /** Dragon/Goblin shaman: wide AoE fire damage around the caster */
+  fire_breath: {
+    id: "fire_breath",
+    rangeTiles: 0,
+    manaCost: 0,
+    baseDamage: 30,
+    scalingStat: "int",
+    scalingRatio: 0.6,
+    cooldownMs: 5000,
+    windupMs: 350,
+    effect: "aoe",
+    key: "",
+    aoeRadius: 3,
+    fxId: 3,
+  },
+
+  /** Ice/Undead: AoE debuff that slows (reduces AGI) all nearby enemies */
+  frost_breath: {
+    id: "frost_breath",
+    rangeTiles: 0,
+    manaCost: 0,
+    baseDamage: 10,
+    scalingStat: "int",
+    scalingRatio: 0.2,
+    cooldownMs: 6000,
+    windupMs: 300,
+    effect: "debuff",
+    key: "",
+    durationMs: 4000,
+    aoeRadius: 3,
+    buffStat: "agi",
+    buffAmount: 10,
+    fxId: 22,
+  },
+
+  /** Lich: summons skeleton minions */
   summon_skeleton: {
     id: "summon_skeleton",
     rangeTiles: 0,

@@ -84,7 +84,8 @@
     "trade_cancelled": "Scambio annullato: {{reason}}",
     "item_used": "Usato: {{item}}",
     "invalid_target": "Obiettivo non valido",
-    "trade_cancelled_by_player": "Il giocatore ha annullato lo scambio"
+    "trade_cancelled_by_player": "Il giocatore ha annullato lo scambio",
+    "pong": "Pong! {{rtt}}ms"
   },
   "social": {
     "already_in_party": "Il giocatore è già in un gruppo",
@@ -114,7 +115,10 @@
       "range": "Portata",
       "self": "Sé",
       "targeting": "In mirino…",
-      "spell_click_hint": "Clicca per mirare"
+      "spell_click_hint": "Clicca per mirare",
+      "level": "Liv",
+      "xp": "pe",
+      "gold_abbr": "o"
     },
     "party": {
       "not_in_party": "Non sei in un gruppo. Invita qualcuno per iniziarne uno.",
@@ -135,12 +139,24 @@
       "trade_tag": "[Scambia]",
       "pending_requests": "Richieste in Sospeso",
       "accept": "[Accetta]"
+    },
+    "social": {
+      "trade": "[Scambia]",
+      "kick": "[Caccia]",
+      "whisper": "[S]",
+      "party_invite": "[G]"
+    },
+    "stats": {
+      "str": "FOR",
+      "agi": "AGI",
+      "int": "INT"
     }
   },
   "status": {
     "dead": "MORTO",
     "stunned": "STORDITO",
     "stealthed": "OCCULTATO",
+    "meditating": "MEDITAZIONE",
     "transmitting": "TRASMISSIONE",
     "health": "Salute",
     "mana": "Mana"
@@ -151,7 +167,8 @@
     "pickup": "Raccogli",
     "drop": "Lascia",
     "use": "Usa",
-    "equip": "Equip"
+    "equip": "Equip",
+    "meditate": "Medita"
   },
   "npcs": {
     "orc": "Orco",

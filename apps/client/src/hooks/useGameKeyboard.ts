@@ -88,6 +88,10 @@ export function useGameKeyboard({
           setSelectedItemId(null);
         }
       }
+
+      if (key === "m") {
+        networkRef.current?.sendMeditate();
+      }
     };
 
     window.addEventListener("keydown", handler);

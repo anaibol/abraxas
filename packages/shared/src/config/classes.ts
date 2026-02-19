@@ -11,7 +11,7 @@ export const CLASS_APPEARANCE: Record<string, { bodyId: number; headId: number }
 export const CLASS_STATS: Record<string, ClassStats> = {
   WARRIOR: {
     hp: 240,
-    mana: 40,
+    mana: 60,
     str: 25,
     agi: 12,
     int: 6,
@@ -20,11 +20,12 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     meleeCooldownMs: 450,
     meleeWindupMs: 120,
     armor: 10,
-    spells: ["war_cry", "shield_bash"],
+    // Q: war_cry (self STR buff) | W: shield_bash (stun) | E: whirlwind (AoE dmg) | R: battle_shout (AoE debuff)
+    spells: ["war_cry", "shield_bash", "whirlwind", "battle_shout"],
   },
   MAGE: {
     hp: 140,
-    mana: 150,
+    mana: 160,
     str: 6,
     agi: 10,
     int: 28,
@@ -33,11 +34,12 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     meleeCooldownMs: 650,
     meleeWindupMs: 120,
     armor: 2,
-    spells: ["fireball", "ice_bolt", "thunderstorm", "mana_shield"],
+    // Q: fireball | W: ice_bolt | E: thunderstorm (AoE) | R: mana_shield | T: frost_nova (AoE stun) | Y: arcane_surge (nuke)
+    spells: ["fireball", "ice_bolt", "thunderstorm", "mana_shield", "frost_nova", "arcane_surge"],
   },
   RANGER: {
     hp: 160,
-    mana: 80,
+    mana: 90,
     str: 10,
     agi: 26,
     int: 10,
@@ -46,11 +48,12 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     meleeCooldownMs: 500,
     meleeWindupMs: 100,
     armor: 5,
-    spells: ["multi_shot", "poison_arrow", "evasion"],
+    // Q: multi_shot (AoE) | W: poison_arrow (DoT) | E: evasion (buff) | R: aimed_shot (nuke) | T: mark_target (debuff)
+    spells: ["multi_shot", "poison_arrow", "evasion", "aimed_shot", "mark_target"],
   },
   ROGUE: {
     hp: 150,
-    mana: 60,
+    mana: 80,
     str: 14,
     agi: 24,
     int: 8,
@@ -59,11 +62,12 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     meleeCooldownMs: 350,
     meleeWindupMs: 80,
     armor: 4,
-    spells: ["backstab", "stealth", "envenom"],
+    // Q: backstab (nuke) | W: stealth | E: envenom (DoT) | R: smoke_bomb (AoE stun) | T: hemorrhage (leech)
+    spells: ["backstab", "stealth", "envenom", "smoke_bomb", "hemorrhage"],
   },
   CLERIC: {
     hp: 220,
-    mana: 100,
+    mana: 120,
     str: 20,
     agi: 10,
     int: 16,
@@ -72,7 +76,8 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     meleeCooldownMs: 500,
     meleeWindupMs: 140,
     armor: 8,
-    spells: ["holy_strike", "heal", "divine_shield"],
+    // Q: holy_strike (dmg) | W: heal (self heal) | E: divine_shield (invuln) | R: holy_nova (AoE heal) | T: curse (debuff) | Y: smite (ranged dmg)
+    spells: ["holy_strike", "heal", "divine_shield", "holy_nova", "curse", "smite"],
   },
 };
 

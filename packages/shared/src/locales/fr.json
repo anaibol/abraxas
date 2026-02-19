@@ -84,7 +84,8 @@
     "trade_cancelled": "Échange annulé : {{reason}}",
     "item_used": "Utilisé : {{item}}",
     "invalid_target": "Cible invalide",
-    "trade_cancelled_by_player": "Le joueur a annulé l'échange"
+    "trade_cancelled_by_player": "Le joueur a annulé l'échange",
+    "pong": "Pong ! {{rtt}}ms"
   },
   "social": {
     "already_in_party": "Le joueur est déjà dans un groupe",
@@ -114,7 +115,10 @@
       "range": "Portée",
       "self": "Soi",
       "targeting": "En ciblage…",
-      "spell_click_hint": "Cliquer pour cibler"
+      "spell_click_hint": "Cliquer pour cibler",
+      "level": "Niv",
+      "xp": "xp",
+      "gold_abbr": "o"
     },
     "party": {
       "not_in_party": "Pas dans un groupe. Invitez quelqu'un pour en commencer un.",
@@ -135,12 +139,24 @@
       "trade_tag": "[Échanger]",
       "pending_requests": "Demandes en attente",
       "accept": "[Accepter]"
+    },
+    "social": {
+      "trade": "[Échanger]",
+      "kick": "[Exclure]",
+      "whisper": "[M]",
+      "party_invite": "[G]"
+    },
+    "stats": {
+      "str": "FOR",
+      "agi": "AGI",
+      "int": "INT"
     }
   },
   "status": {
     "dead": "MORT",
     "stunned": "ÉTOURDI",
     "stealthed": "CAMOUFLÉ",
+    "meditating": "MÉDITATION",
     "transmitting": "TRANSMISSION",
     "health": "Santé",
     "mana": "Mana"
@@ -151,7 +167,8 @@
     "pickup": "Ramasser",
     "drop": "Jeter",
     "use": "Utiliser",
-    "equip": "Équiper"
+    "equip": "Équiper",
+    "meditate": "Méditer"
   },
   "npcs": {
     "orc": "Orc",

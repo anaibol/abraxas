@@ -84,7 +84,8 @@
     "trade_cancelled": "Trade cancelled: {{reason}}",
     "item_used": "Used: {{item}}",
     "invalid_target": "Invalid target",
-    "trade_cancelled_by_player": "Player cancelled the trade"
+    "trade_cancelled_by_player": "Player cancelled the trade",
+    "pong": "Pong! {{rtt}}ms"
   },
   "social": {
     "already_in_party": "Player is already in a party",
@@ -114,7 +115,10 @@
       "range": "Range",
       "self": "Self",
       "targeting": "Targeting…",
-      "spell_click_hint": "Click to target"
+      "spell_click_hint": "Click to target",
+      "level": "Lv",
+      "xp": "xp",
+      "gold_abbr": "g"
     },
     "party": {
       "not_in_party": "Not in a party. Invite someone to start one.",
@@ -135,12 +139,24 @@
       "trade_tag": "[Trade]",
       "pending_requests": "Pending Requests",
       "accept": "[Accept]"
+    },
+    "social": {
+      "trade": "[Trade]",
+      "kick": "[Kick]",
+      "whisper": "[W]",
+      "party_invite": "[P]"
+    },
+    "stats": {
+      "str": "STR",
+      "agi": "AGI",
+      "int": "INT"
     }
   },
   "status": {
     "dead": "DEAD",
     "stunned": "STUNNED",
     "stealthed": "STEALTHED",
+    "meditating": "MEDITATING",
     "transmitting": "TRANSMITTING",
     "health": "Health",
     "mana": "Mana"
@@ -151,7 +167,8 @@
     "pickup": "Pickup",
     "drop": "Drop",
     "use": "Use",
-    "equip": "Equip"
+    "equip": "Equip",
+    "meditate": "Meditate"
   },
   "npcs": {
     "orc": "Orc",

@@ -549,7 +549,7 @@ export function App() {
 
     if (trimmed === "/ping") {
       networkRef.current?.ping((rtt) => {
-        addConsoleMessage(`Pong! ${rtt}ms`, "#00ffff");
+        addConsoleMessage(t("game.pong", { rtt }), "#00ffff");
       });
       return;
     }
