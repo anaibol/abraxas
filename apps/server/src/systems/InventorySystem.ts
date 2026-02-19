@@ -242,6 +242,7 @@ export class InventorySystem {
     player.str = base.str + equip.str + lvl * levelBonus.str;
     player.agi = base.agi + equip.agi + lvl * levelBonus.agi;
     player.intStat = base.int + equip.int + lvl * levelBonus.int;
+    player.armor = base.armor + equip.armor;
     player.maxHp = base.hp + equip.hp + lvl * levelBonus.hp;
     player.maxMana = base.mana + equip.mana + lvl * levelBonus.mp;
     player.hp = Math.min(player.hp, player.maxHp);

@@ -19,6 +19,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     meleeRange: 1,
     meleeCooldownMs: 450,
     meleeWindupMs: 120,
+    armor: 10,
     spells: ["war_cry", "shield_bash"],
   },
   MAGE: {
@@ -31,6 +32,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     meleeRange: 1,
     meleeCooldownMs: 650,
     meleeWindupMs: 120,
+    armor: 2,
     spells: ["fireball", "ice_bolt", "thunderstorm", "mana_shield"],
   },
   RANGER: {
@@ -43,6 +45,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     meleeRange: 5,
     meleeCooldownMs: 500,
     meleeWindupMs: 100,
+    armor: 5,
     spells: ["multi_shot", "poison_arrow", "evasion"],
   },
   ROGUE: {
@@ -55,6 +58,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     meleeRange: 1,
     meleeCooldownMs: 350,
     meleeWindupMs: 80,
+    armor: 4,
     spells: ["backstab", "stealth", "envenom"],
   },
   CLERIC: {
@@ -67,6 +71,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     meleeRange: 1,
     meleeCooldownMs: 500,
     meleeWindupMs: 140,
+    armor: 8,
     spells: ["holy_strike", "heal", "divine_shield"],
   },
 };

@@ -25,6 +25,7 @@ export abstract class Char extends Schema {
   @type("uint8") str: number = 0;
   @type("uint8") agi: number = 0;
   @type("uint8") intStat: number = 0;
+  @type("uint16") armor: number = 0;
 
   // hp is the Colyseus-tracked field; `alive` is kept in sync by the setter.
   // _hp is a plain backing field — NOT decorated — to avoid double-registration.

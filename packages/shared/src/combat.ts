@@ -28,7 +28,7 @@ export interface EntityCombatState {
 /** Melee physical damage: STR scaling, armor reduction, AGI dodge chance */
 export function calcMeleeDamage(
   attackerStr: number,
-  defenderStr: number,
+  defenderArmor: number,
   defenderAgi: number
 ): { damage: number; dodged: boolean } {
   // Dodge: ~1% per AGI point above 10
@@ -38,17 +38,17 @@ export function calcMeleeDamage(
   }
 
   // Base damage scales with attacker STR
-  const raw = attackerStr * 1.2;
-  // Armor reduction from defender STR (diminishing returns)
-  const reduction = defenderStr * 0.3;
-  const damage = Math.max(1, Math.round(raw - reduction));
+  const raw = attackerStr * 1.5;
+  // Armor reduction: armor / (armor + 50) formula for diminishing returns
+  const reductionMult = 1 - (defenderArmor / (defenderArmor + 50));
+  const damage = Math.max(1, Math.round(raw * reductionMult));
   return { damage, dodged: false };
 }
 
 /** Ranged physical damage: AGI scaling for archer class */
 export function calcRangedDamage(
   attackerAgi: number,
-  defenderStr: number,
+  defenderArmor: number,
   defenderAgi: number
 ): { damage: number; dodged: boolean } {
   // Reduced dodge chance vs ranged
@@ -57,9 +57,9 @@ export function calcRangedDamage(
     return { damage: 0, dodged: true };
   }
 
-  const raw = attackerAgi * 1.1;
-  const reduction = defenderStr * 0.2;
-  const damage = Math.max(1, Math.round(raw - reduction));
+  const raw = attackerAgi * 1.3;
+  const reductionMult = 1 - (defenderArmor / (defenderArmor + 60)); // Ranged penetrates slightly more
+  const damage = Math.max(1, Math.round(raw * reductionMult));
   return { damage, dodged: false };
 }
 

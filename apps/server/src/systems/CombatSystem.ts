@@ -18,6 +18,7 @@ import type {
 import type { BuffSystem } from "./BuffSystem";
 import { SpatialLookup, Entity } from "../utils/SpatialLookup";
 import { Player } from "../schema/Player";
+import { GameState } from "../schema/GameState";
 
 type SendToClientFn = <T extends ServerMessageType>(
   type: T,
@@ -28,6 +29,7 @@ export class CombatSystem {
   private activeWindups = new Map<string, WindupAction>();
 
   constructor(
+    private state: GameState,
     private spatial: SpatialLookup,
     private buffSystem: BuffSystem,
     private map: TileMap,
@@ -72,12 +74,16 @@ export class CombatSystem {
     onDeath: (entity: Entity, killerSessionId?: string) => void,
     onSummon?: (caster: Entity, spellId: string, x: number, y: number) => void,
   ) {
-    for (const sessionId of this.activeWindups.keys()) {
-      const entity = this.spatial.findEntityBySessionId(sessionId);
-      if (!entity || !entity.alive || !entity.bufferedAction) {
-        if (entity) entity.bufferedAction = null;
+    const entities = [...this.state.players.values(), ...this.state.npcs.values()];
+    for (const entity of entities) {
+      if (!entity.alive || !entity.bufferedAction) {
         continue;
       }
+
+      const sessionId = entity.sessionId;
+
+      // Skip if still in windup (unless we want to allow overwriting, but current logic is wait)
+      if (this.activeWindups.has(sessionId)) continue;
 
       // Buffer expires if too old
       if (now - entity.bufferedAction.bufferedAt > 500) {
@@ -337,13 +343,13 @@ export class CombatSystem {
 
       const attackerStr = this.boosted(attacker, "str", now);
       const attackerAgi = this.boosted(attacker, "agi", now);
-      const defenderStr = this.boosted(target, "str", now);
+      const defenderArmor = this.boosted(target, "armor", now);
       const defenderAgi = this.boosted(target, "agi", now);
 
       const result =
         stats.meleeRange > 1
-          ? calcRangedDamage(attackerAgi, defenderStr, defenderAgi)
-          : calcMeleeDamage(attackerStr, defenderStr, defenderAgi);
+          ? calcRangedDamage(attackerAgi, defenderArmor, defenderAgi)
+          : calcMeleeDamage(attackerStr, defenderArmor, defenderAgi);
 
       if (result.dodged) {
         broadcast(ServerMessageType.AttackHit, {
@@ -411,6 +417,12 @@ export class CombatSystem {
         if (victim.sessionId === attacker.sessionId) continue;
         // Skip same-faction targets (player vs player AOE ok, but NPC won't hit NPC)
         if (this.sameFaction(attacker, victim)) continue;
+
+        // LOS check for AOE
+        if (!this.hasLineOfSight({ x: windup.targetTileX, y: windup.targetTileY }, { x: victim.tileX, y: victim.tileY })) {
+          continue;
+        }
+
         this.applySpellToTarget(attacker, victim, spell, broadcast, onDeath, now);
       }
     } else {
@@ -538,6 +550,7 @@ export class CombatSystem {
     if (stat === "str") base = entity.str;
     else if (stat === "agi") base = entity.agi;
     else if (stat === "int" || stat === "intStat") base = entity.intStat;
+    else if (stat === "armor") base = entity.armor;
 
     const bonus = this.buffSystem.getBuffBonus(entity.sessionId, stat, now);
     return base + bonus;

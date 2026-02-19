@@ -79,6 +79,7 @@ export class NpcSystem {
     npc.str = stats.str;
     npc.agi = stats.agi;
     npc.intStat = stats.int;
+    npc.armor = stats.armor;
     npc.alive = true;
     npc.state = NpcState.IDLE;
     npc.targetId = "";

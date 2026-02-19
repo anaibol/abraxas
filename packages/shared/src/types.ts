@@ -102,6 +102,7 @@ export interface NpcStats {
   meleeRange: number;
   meleeCooldownMs: number;
   meleeWindupMs: number;
+  armor: number;
   spells: string[];
   expReward?: number;
   /** NPC will not aggro players and does not move (e.g. merchants). */
