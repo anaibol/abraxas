@@ -20,9 +20,6 @@ import type { BuffSystem } from "./BuffSystem";
 import { SpatialLookup, Entity } from "../utils/SpatialLookup";
 import { Player } from "../schema/Player";
 import { GameState } from "../schema/GameState";
-import { createCategoryLogger } from "../logger";
-
-const combatLog = createCategoryLogger("combat");
 
 type SendToClientFn = <T extends ServerMessageType>(
 	type: T,
@@ -169,13 +166,6 @@ export class CombatSystem {
 		const gcdReady = now >= attacker.lastGcdMs + GCD_MS;
 
 		if (!meleeReady || !gcdReady || this.activeWindups.has(attacker.sessionId)) {
-			combatLog.debug({
-				message: "attack buffered",
-				attackerId: attacker.sessionId,
-				targetTileX,
-				targetTileY,
-				reason: !meleeReady ? "melee_cooldown" : !gcdReady ? "gcd" : "windup_active",
-			});
 			return this.bufferAction(attacker, {
 				type: "attack",
 				targetTileX,
@@ -189,7 +179,6 @@ export class CombatSystem {
 		if (stats.meleeRange > 1) {
 			const target = this.spatial.findEntityAtTile(targetTileX, targetTileY);
 			if (!target || !target.alive || target.sessionId === attacker.sessionId) {
-				combatLog.debug({ message: "attack invalid target", attackerId: attacker.sessionId, targetTileX, targetTileY });
 				sendToClient?.(ServerMessageType.InvalidTarget);
 				return false;
 			}
@@ -198,7 +187,6 @@ export class CombatSystem {
 				y: target.tileY,
 			});
 			if (dist > stats.meleeRange) {
-				combatLog.debug({ message: "attack out of range", attackerId: attacker.sessionId, dist, meleeRange: stats.meleeRange });
 				sendToClient?.(ServerMessageType.InvalidTarget);
 				return false;
 			}
@@ -209,7 +197,6 @@ export class CombatSystem {
 					y: targetTileY,
 				})
 			) {
-				combatLog.debug({ message: "attack blocked by LoS", attackerId: attacker.sessionId, targetTileX, targetTileY });
 				sendToClient?.(ServerMessageType.InvalidTarget);
 				return false;
 			}
@@ -226,13 +213,6 @@ export class CombatSystem {
 		attacker.lastGcdMs = now;
 		this.lastMeleeMs.set(attacker.sessionId, now);
 		this.activeWindups.set(attacker.sessionId, windup);
-		combatLog.debug({
-			message: "melee windup started",
-			attackerId: attacker.sessionId,
-			targetTileX,
-			targetTileY,
-			windupMs: stats.meleeWindupMs,
-		});
 		broadcast(ServerMessageType.AttackStart, {
 			sessionId: attacker.sessionId,
 			facing: attacker.facing,
