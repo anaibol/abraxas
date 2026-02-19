@@ -337,7 +337,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
             </Box>
 
             {error && (
-              <Text color={P.blood} fontSize="12px" textAlign="center" py="2" fontWeight="600">
+              <Text color={P.bloodBright} fontSize="12px" textAlign="center" py="2" fontWeight="600">
                 {error}
               </Text>
             )}
@@ -618,7 +618,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
             </Grid>
 
             {error && (
-              <Text color={P.blood} fontSize="12px" textAlign="center" py="2" fontWeight="600" mb="2">
+              <Text color={P.bloodBright} fontSize="12px" textAlign="center" py="2" fontWeight="600" mb="2">
                 {error}
               </Text>
             )}

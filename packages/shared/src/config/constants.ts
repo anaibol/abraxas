@@ -13,3 +13,7 @@ export const DROP_EXPIRY_MS = 60000;
 export const AGGRO_RANGE = 5;
 export const VOICE_RANGE = 20;
 export const KILL_GOLD_BONUS = 25; // Added from ArenaRoom context
+
+/** Canonical viewport dimensions in tiles — same for every player regardless of screen size. */
+export const VIEWPORT_TILES_X = 20;
+export const VIEWPORT_TILES_Y = 14;

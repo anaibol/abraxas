@@ -1,4 +1,8 @@
 import type { Spell } from "../types";
+import { VIEWPORT_TILES_X } from "./constants";
+
+/** Range that covers the entire visible viewport (half the canonical width). */
+const FULL_VIEWPORT_RANGE = Math.floor(VIEWPORT_TILES_X / 2);
 
 export const SPELLS: Record<string, Spell> = {
   // Warrior
@@ -35,7 +39,7 @@ export const SPELLS: Record<string, Spell> = {
   // Mage
   fireball: {
     id: "fireball",
-    rangeTiles: 6,
+    rangeTiles: FULL_VIEWPORT_RANGE,
     manaCost: 25,
     baseDamage: 30,
     scalingStat: "int",
@@ -256,7 +260,7 @@ export const SPELLS: Record<string, Spell> = {
   },
   shadow_bolt: {
     id: "shadow_bolt",
-    rangeTiles: 6,
+    rangeTiles: FULL_VIEWPORT_RANGE,
     manaCost: 0,
     baseDamage: 40,
     scalingStat: "int",

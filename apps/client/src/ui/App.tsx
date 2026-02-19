@@ -409,246 +409,17 @@ export function App() {
           timestamp: Date.now(),
         });
 
-        network
-          .getRoom()
-          .onMessage(
-            ServerMessageType.KillFeed,
-            (data: ServerMessages[ServerMessageType.KillFeed]) => {
-              const room = network.getRoom();
-              const isPvp = room.state.players.has(data.victimSessionId);
-              if (data.killerName) {
-                setKillStats((prev) => {
-                  const cur = prev[data.killerName] ?? { npcKills: 0, pvpKills: 0 };
-                  return {
-                    ...prev,
-                    [data.killerName]: {
-                      npcKills: cur.npcKills + (isPvp ? 0 : 1),
-                      pvpKills: cur.pvpKills + (isPvp ? 1 : 0),
-                    },
-                  };
-                });
-              }
-            },
-          );
-
-        network
-          .getRoom()
-          .onMessage(
-            ServerMessageType.Chat,
-            (data: ServerMessages[ServerMessageType.Chat]) => {
-              const color =
-                data.channel === "party" ? "#aaaaff"
-                : data.channel === "whisper" ? "#ff88ff"
-                : "#ffffff";
-              addConsoleMessage(`${data.senderName}: ${data.message}`, color);
-            },
-          );
-
-        network
-          .getRoom()
-          .onMessage(
-            ServerMessageType.OpenShop,
-            (data: ServerMessages[ServerMessageType.OpenShop]) => {
-              setShopData(data);
-            },
-          );
-
-        network
-          .getRoom()
-          .onMessage(
-            ServerMessageType.OpenDialogue,
-            (data: ServerMessages[ServerMessageType.OpenDialogue]) => {
-              const localizedOptions = data.options.map((opt) => ({
-                ...opt,
-                text: t(opt.text),
-              }));
-              setDialogueData({
-                ...data,
-                text: t(data.text), // Key or literal (t returns literal if key not found)
-                options: localizedOptions,
-              });
-            },
-          );
-
-        network
-          .getRoom()
-          .onMessage(
-            ServerMessageType.QuestUpdate,
-            (data: ServerMessages[ServerMessageType.QuestUpdate]) => {
-              setQuests((prev) => {
-                const idx = prev.findIndex(
-                  (q) => q.questId === data.quest.questId,
-                );
-                if (idx >= 0) {
-                  const next = [...prev];
-                  next[idx] = data.quest;
-                  return next;
-                }
-                return [...prev, data.quest];
-              });
-            },
-          );
-
-        network
-          .getRoom()
-          .onMessage(
-            ServerMessageType.PartyInvited,
-            (data: ServerMessages[ServerMessageType.PartyInvited]) => {
-              toaster.create({
-                title: t("sidebar.party.tabs.party"),
-                description: t("social.invited_to_party", {
-                  name: data.inviterName,
-                }),
-                action: {
-                  label: t("sidebar.friends.accept"),
-                  onClick: () => network.sendPartyAccept(data.partyId),
-                },
-              });
-            },
-          );
-
-        network
-          .getRoom()
-          .onMessage(
-            ServerMessageType.PartyUpdate,
-            (data: ServerMessages[ServerMessageType.PartyUpdate]) => {
-              setPartyData(data.partyId ? data : null);
-            },
-          );
-
-        network
-          .getRoom()
-          .onMessage(
-            ServerMessageType.FriendInvited,
-            (data: ServerMessages[ServerMessageType.FriendInvited]) => {
-              toaster.create({
-                title: t("sidebar.tabs.friends"),
-                description: t("social.friend_request", {
-                  targetName: data.requesterName,
-                }),
-                type: "info",
-                action: {
-                  label: t("sidebar.friends.accept"),
-                  onClick: () =>
-                    networkRef.current?.sendFriendAccept(data.requesterId),
-                },
-              });
-            },
-          );
-
-        network
-          .getRoom()
-          .onMessage(
-            ServerMessageType.BankOpened,
-            () => {
-              setBankData({ items: [] });
-            },
-          );
-
-        network
-          .getRoom()
-          .onMessage(
-            ServerMessageType.BankSync,
-            (data: ServerMessages[ServerMessageType.BankSync]) => {
-              setBankData({ items: data.items });
-            },
-          );
-
-        network
-          .getRoom()
-          .onMessage(
-            ServerMessageType.TradeRequested,
-            (data: ServerMessages[ServerMessageType.TradeRequested]) => {
-              toaster.create({
-                title: t("sidebar.party.trade"),
-                description: t("social.trade_requested", {
-                  name: data.requesterName,
-                }),
-                type: "info",
-                action: {
-                  label: t("sidebar.friends.accept"),
-                  onClick: () =>
-                    networkRef.current?.sendTradeAccept(
-                      data.requesterSessionId,
-                    ),
-                },
-              });
-            },
-          );
-
-        network
-          .getRoom()
-          .onMessage(
-            ServerMessageType.TradeStarted,
-            (_data: ServerMessages[ServerMessageType.TradeStarted]) => {
-              // TradeStateUpdate will immediately follow with the initial state
-            },
-          );
-
-        network
-          .getRoom()
-          .onMessage(
-            ServerMessageType.TradeStateUpdate,
-            (data: ServerMessages[ServerMessageType.TradeStateUpdate]) => {
-              setTradeData(data);
-            },
-          );
-
-        network
-          .getRoom()
-          .onMessage(ServerMessageType.TradeCompleted, () => {
-            setTradeData(null);
-            addConsoleMessage(t("game.trade_completed"), "#44ff88");
-          });
-
-        network
-          .getRoom()
-          .onMessage(
-            ServerMessageType.TradeCancelled,
-            (data: ServerMessages[ServerMessageType.TradeCancelled]) => {
-              setTradeData(null);
-              addConsoleMessage(
-                t("game.trade_cancelled", { reason: t(data.reason) }),
-                "#ff8844",
-              );
-            },
-          );
-
-        network
-          .getRoom()
-          .onMessage(
-            ServerMessageType.ItemUsed,
-            (data: ServerMessages[ServerMessageType.ItemUsed]) => {
-              const itemName = ITEMS[data.itemId]?.name ?? data.itemId;
-              addConsoleMessage(
-                t("game.item_used", { item: itemName }),
-                "#aaffcc",
-              );
-            },
-          );
-        network
-          .getRoom()
-          .onMessage(
-            ServerMessageType.Notification,
-            (data: ServerMessages[ServerMessageType.Notification]) => {
-              addConsoleMessage(t(data.message, data.templateData), "#ffffaa");
-            },
-          );
-        network
-          .getRoom()
-          .onMessage(
-            ServerMessageType.Error,
-            (data: ServerMessages[ServerMessageType.Error]) => {
-              addConsoleMessage(t(data.message, data.templateData), "#ffaaaa");
-              toaster.create({
-                title: t("lobby.error.title"),
-                description: t(data.message, data.templateData),
-                type: "error",
-              });
-            },
-          );
-        network.getRoom().onMessage(ServerMessageType.InvalidTarget, () => {
-          addConsoleMessage(t("game.invalid_target"), "#ff8888");
+        setupRoomListeners(network.getRoom(), network, {
+          t,
+          addConsoleMessage,
+          setShopData,
+          setDialogueData,
+          setQuests,
+          setPartyData,
+          setBankData,
+          setTradeData,
+          setKillStats,
+          networkRef,
         });
 
         requestAnimationFrame(() => {
@@ -658,7 +429,7 @@ export function App() {
 
             const gameScene = new GameScene(
               network,
-              audioManagerRef.current!,
+              audioManagerRef.current ?? new AudioManager(),
               (state: PlayerState) => {
                 setPlayerState(state);
               },
@@ -718,7 +489,7 @@ export function App() {
         });
       }
     },
-    [addConsoleMessage, t],
+    [addConsoleMessage, resetConsoleMessages, t],
   );
 
   const handleSpellClick = useCallback((spellId: string, rangeTiles: number) => {

@@ -148,6 +148,28 @@ export class MessageHandler {
 		client.send(ServerMessageType.Error, { message });
 	}
 
+	/**
+	 * Returns true if `a` is within `range` tiles of `b` (Manhattan distance).
+	 * Sends an error to the client and returns false if not.
+	 */
+	private assertInRange(
+		client: Client,
+		a: { tileX: number; tileY: number },
+		b: { tileX: number; tileY: number },
+		range: number,
+		errorKey: string,
+	): boolean {
+		const dist = MathUtils.manhattanDist(
+			{ x: a.tileX, y: a.tileY },
+			{ x: b.tileX, y: b.tileY },
+		);
+		if (dist > range) {
+			this.sendError(client, errorKey);
+			return false;
+		}
+		return true;
+	}
+
 	/** Sends quest update notifications for a set of updated quest states. */
 	sendQuestUpdates(client: Client, updatedQuests: PlayerQuestState[]): void {
 		for (const quest of updatedQuests) {
@@ -383,12 +405,7 @@ export class MessageHandler {
 		const npc = this.ctx.state.npcs.get(data.npcId);
 		if (!npc) return;
 
-		const dist =
-			Math.abs(player.tileX - npc.tileX) + Math.abs(player.tileY - npc.tileY);
-		if (dist > 3) {
-			this.sendError(client, "game.too_far");
-			return;
-		}
+		if (!this.assertInRange(client, player, npc, 3, "game.too_far")) return;
 
 		this.ctx.systems.quests
 			.updateProgress(player.dbId, "talk", npc.type, 1)
@@ -412,53 +429,12 @@ export class MessageHandler {
 		const player = this.getActivePlayer(client);
 		if (!player) return;
 
-		const availableQuests = this.ctx.systems.quests.getAvailableQuests(
+		const dialogue = this.ctx.systems.quests.getDialogueOptions(
 			player.dbId,
+			npc.sessionId,
 			npc.type,
 		);
-		if (availableQuests.length > 0) {
-			const questId = availableQuests[0];
-			client.send(ServerMessageType.OpenDialogue, {
-				npcId: npc.sessionId,
-				text: "dialogue.accept_prompt",
-				options: [
-					{
-						text: "dialogue.accept_quest",
-						action: "quest_accept",
-						data: { questId },
-					},
-					{ text: "dialogue.maybe_later", action: "close" },
-				],
-			});
-			return;
-		}
-
-		for (const state of this.ctx.systems.quests.getCharQuestStates(
-			player.dbId,
-		)) {
-			if (state.status !== "COMPLETED") continue;
-			const questDef = QUESTS[state.questId];
-			if (questDef?.npcId === npc.type) {
-				client.send(ServerMessageType.OpenDialogue, {
-					npcId: npc.sessionId,
-					text: "dialogue.reward_prompt",
-					options: [
-						{
-							text: "dialogue.complete_quest",
-							action: "quest_complete",
-							data: { questId: state.questId },
-						},
-					],
-				});
-				return;
-			}
-		}
-
-		client.send(ServerMessageType.OpenDialogue, {
-			npcId: npc.sessionId,
-			text: "dialogue.hello_traveler",
-			options: [{ text: "dialogue.goodbye", action: "close" }],
-		});
+		client.send(ServerMessageType.OpenDialogue, { npcId: npc.sessionId, ...dialogue });
 	}
 
 	handleQuestAccept(
@@ -729,13 +705,7 @@ export class MessageHandler {
 		const target = this.ctx.state.players.get(data.targetSessionId);
 		if (!player || !target || !target.alive) return;
 
-		const dist =
-			Math.abs(player.tileX - target.tileX) +
-			Math.abs(player.tileY - target.tileY);
-		if (dist > 3) {
-			this.sendError(client, "game.too_far_trade");
-			return;
-		}
+		if (!this.assertInRange(client, player, target, 3, "game.too_far_trade")) return;
 
 		this.ctx.systems.trade.handleRequest(player, target, (sid, type, msg) => {
 			this.ctx.findClientBySessionId(sid)?.send(type, msg);

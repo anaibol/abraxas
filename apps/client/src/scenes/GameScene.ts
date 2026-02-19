@@ -54,6 +54,14 @@ export class GameScene extends Phaser.Scene {
 	private muteKey?: Phaser.Input.Keyboard.Key;
 	private debugText?: Phaser.GameObjects.Text;
 	private dropGraphics = new Map<string, Phaser.GameObjects.Arc>();
+	private handleVisibilityChange = () => {
+		if (document.visibilityState === "visible") {
+			const webAudio = this.sound as Phaser.Sound.WebAudioSoundManager;
+			if (webAudio.context?.state === "suspended") {
+				webAudio.context.resume();
+			}
+		}
+	};
 
 	constructor(
 		network: NetworkManager,
@@ -87,6 +95,8 @@ export class GameScene extends Phaser.Scene {
 		this.collisionGrid = this.welcome.collision;
 		this.drawMap();
 
+		this.sound.pauseOnBlur = false;
+
 		this.soundManager = new SoundManager(this);
 		this.soundManager.startMusic();
 
@@ -103,6 +113,8 @@ export class GameScene extends Phaser.Scene {
 		this.input.mouse?.disableContextMenu();
 
 		this.cameraController = new CameraController(this.cameras.main);
+		this.cameraController.applyFixedZoom();
+		this.scale.on("resize", () => this.cameraController.applyFixedZoom());
 
 		this.spriteManager = new SpriteManager(
 			this,
@@ -212,6 +224,8 @@ export class GameScene extends Phaser.Scene {
 			this.debugText.setDepth(100);
 		}
 
+		document.addEventListener("visibilitychange", this.handleVisibilityChange);
+
 		this.onReady?.();
 	}
 
@@ -234,6 +248,7 @@ export class GameScene extends Phaser.Scene {
 	}
 
 	shutdown() {
+		document.removeEventListener("visibilitychange", this.handleVisibilityChange);
 		this.gameEventHandler.destroy();
 		for (const unsub of this.stateUnsubscribers) unsub();
 		this.stateUnsubscribers = [];

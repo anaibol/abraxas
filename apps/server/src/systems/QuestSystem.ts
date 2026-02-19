@@ -1,8 +1,8 @@
 import {
   QUESTS,
-  Quest,
-  PlayerQuestState,
-  QuestType,
+  type Quest,
+  type PlayerQuestState,
+  type QuestType,
 } from "@abraxas/shared";
 import { prisma } from "../database/db";
 
@@ -142,5 +142,45 @@ export class QuestSystem {
     return Object.values(QUESTS)
       .filter((q) => q.npcId === npcId && !quests.has(q.id))
       .map((q) => q.id);
+  }
+
+  /**
+   * Returns the dialogue payload for a player interacting with an NPC.
+   * Priority: offer a new quest → turn in a completed quest → generic greeting.
+   */
+  getDialogueOptions(
+    charId: string,
+    _npcSessionId: string,
+    npcType: string,
+  ): { text: string; options: { text: string; action: string; data?: unknown }[] } {
+    const availableQuests = this.getAvailableQuests(charId, npcType);
+    if (availableQuests.length > 0) {
+      const questId = availableQuests[0];
+      return {
+        text: "dialogue.accept_prompt",
+        options: [
+          { text: "dialogue.accept_quest", action: "quest_accept", data: { questId } },
+          { text: "dialogue.maybe_later", action: "close" },
+        ],
+      };
+    }
+
+    for (const state of this.getCharQuestStates(charId)) {
+      if (state.status !== "COMPLETED") continue;
+      const questDef = QUESTS[state.questId];
+      if (questDef?.npcId === npcType) {
+        return {
+          text: "dialogue.reward_prompt",
+          options: [
+            { text: "dialogue.complete_quest", action: "quest_complete", data: { questId: state.questId } },
+          ],
+        };
+      }
+    }
+
+    return {
+      text: "dialogue.hello_traveler",
+      options: [{ text: "dialogue.goodbye", action: "close" }],
+    };
   }
 }
