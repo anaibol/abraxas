@@ -124,21 +124,44 @@ describe("Arena multiplayer smoke test", () => {
       throw lastErr;
     }
 
+    // Create characters for the users
+    const charA = await prisma.character.create({
+      data: {
+        accountId: userA.id,
+        name: nameA,
+        class: "WARRIOR",
+        stats: { create: { hp: 100, maxHp: 100, mp: 50, maxMp: 50, str: 10, agi: 10, int: 10 } },
+        inventory: { create: { size: 40 } },
+      }
+    });
+
+    const charB = await prisma.character.create({
+      data: {
+        accountId: userB.id,
+        name: nameB,
+        class: "MAGE",
+        stats: { create: { hp: 80, maxHp: 80, mp: 100, maxMp: 100, str: 5, agi: 8, int: 15 } },
+        inventory: { create: { size: 40 } },
+      }
+    });
+
+    console.log("Step 1: Joining rooms...");
     const roomA: Room<GameState> = await joinWithRetry(clientA, tokenA, {
-      name: nameA,
-      classType: "warrior",
+      charId: charA.id,
+      classType: "WARRIOR",
       mapName: "arena.test",
     });
 
     const roomB: Room<GameState> = await joinWithRetry(clientB, tokenB, {
-      name: nameB,
-      classType: "wizard",
+      charId: charB.id,
+      classType: "MAGE",
       mapName: "arena.test",
     });
     // Wait until both rooms see 2 players
     await waitForState(roomA, (state) => state.players.size >= 2);
     await waitForState(roomB, (state) => state.players.size >= 2);
 
+    console.log("Step 2: Checking spawn positions...");
     expect(roomA.state.players.size).toBe(2);
     expect(roomB.state.players.size).toBe(2);
 
@@ -160,6 +183,7 @@ describe("Arena multiplayer smoke test", () => {
     expect(pA.alive).toBe(true);
     expect(pB.intStat).toBeGreaterThan(0);
 
+    console.log("Step 3: Moving Player A...");
     // ---- Step 2: Move A right -> (3,4) ----
     roomA.send("move", { direction: Direction.RIGHT });
     await waitForState(roomA, (state) => {
@@ -173,6 +197,7 @@ describe("Arena multiplayer smoke test", () => {
     expect(pA2.tileY).toBe(4);
     expect(pA2.facing).toBe(Direction.RIGHT);
 
+    console.log("Step 4: Moving into blocked tile...");
     // ---- Step 3: Move A up -> (3,3) is blocked ----
     await wait(300);
     roomA.send("move", { direction: Direction.UP });
@@ -184,6 +209,7 @@ describe("Arena multiplayer smoke test", () => {
     expect(pA3.tileY).toBe(4);
     expect(pA3.facing).toBe(Direction.UP);
 
+    console.log("Step 5: Facing B...");
     // ---- Step 4: Face A right (toward B) by attempting move into occupied tile ----
     await wait(300);
     roomA.send("move", { direction: Direction.RIGHT });
@@ -194,6 +220,7 @@ describe("Arena multiplayer smoke test", () => {
     expect(pA4.tileY).toBe(4);
     expect(pA4.facing).toBe(Direction.RIGHT);
 
+    console.log("Step 6: Melee attack...");
     // ---- Step 5: A attacks with melee (CTRL) -> hits B at (4,4) ----
     const initialHpB = expectPlayer(roomA, roomB.sessionId).hp;
     expect(initialHpB).toBeGreaterThan(0);
@@ -210,6 +237,7 @@ describe("Arena multiplayer smoke test", () => {
     const newHpB = expectPlayer(roomA, roomB.sessionId).hp;
     expect(newHpB).toBeLessThan(initialHpB);
 
+    console.log("Step 7: Spell cast...");
     // ---- Step 6: Wizard casts fireball at A's tile (3,4) ----
     await wait(500);
 
@@ -239,6 +267,7 @@ describe("Arena multiplayer smoke test", () => {
     const newHpA = expectPlayer(roomB, roomA.sessionId).hp;
     expect(newHpA).toBeLessThan(initialHpA);
 
+    console.log("Step 8: Leaving...");
     // ---- Step 7: Disconnect cleanly ----
     roomA.leave();
     roomB.leave();

@@ -98,16 +98,21 @@ export class QuestSystem {
       const current = state.progress[target] || 0;
       if (current >= relevantReq.count) continue;
 
+      const reachedCount = (state.progress[relevantReq.target] || 0) >= relevantReq.count;
       state.progress[target] = Math.min(relevantReq.count, current + amount);
+      const nowReachedCount = (state.progress[relevantReq.target] || 0) >= relevantReq.count;
 
       if (questDef.requirements.every((req) => (state.progress[req.target] || 0) >= req.count)) {
         state.status = "COMPLETED";
       }
 
-      await prisma.characterQuest.updateMany({
-        where: { characterId: charId, quest: { code: state.questId } },
-        data: { status: state.status, progressJson: state.progress },
-      });
+      // Only sync to DB if quest completed or if we hit a target goal
+      if (state.status === "COMPLETED" || nowReachedCount !== reachedCount) {
+        await prisma.characterQuest.updateMany({
+          where: { characterId: charId, quest: { code: state.questId } },
+          data: { status: state.status, progressJson: state.progress },
+        });
+      }
 
       updatedQuests.push(state);
     }

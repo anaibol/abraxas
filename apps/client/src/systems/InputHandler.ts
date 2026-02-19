@@ -16,11 +16,9 @@ const SPELL_KEY_CODES: Record<string, number> = {
   R: Phaser.Input.Keyboard.KeyCodes.R,
 };
 
-interface TargetingState {
-  mode: "spell" | "attack";
-  spellId?: string;
-  rangeTiles: number;
-}
+type TargetingState =
+  | { mode: "spell"; spellId: string; rangeTiles: number }
+  | { mode: "attack"; rangeTiles: number };
 
 export class InputHandler {
   private scene: Phaser.Scene;
@@ -46,15 +44,19 @@ export class InputHandler {
 
   targeting: TargetingState | null = null;
 
-  // Click events queued by Phaser's pointer event system, consumed in update()
   private pendingLeftClick = false;
   private pendingRightClick = false;
+
+  private readonly onPointerDown = (pointer: Phaser.Input.Pointer) => {
+    if (pointer.leftButtonDown()) this.pendingLeftClick = true;
+    if (pointer.rightButtonDown()) this.pendingRightClick = true;
+  };
 
   constructor(
     scene: Phaser.Scene,
     network: NetworkManager,
     classType: string,
-    tileSize: number,
+    _tileSize: number,
     onLocalMove?: (direction: Direction) => void,
     onEnterTargeting?: (rangeTiles: number) => void,
     onExitTargeting?: () => void,
@@ -76,18 +78,9 @@ export class InputHandler {
     this.moveIntervalMs = 1000 / speed;
     this.meleeRange = stats.meleeRange;
 
-    // Listen for pointer clicks via Phaser's event system
-    scene.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
-      if (pointer.leftButtonDown()) {
-        this.pendingLeftClick = true;
-      }
-      if (pointer.rightButtonDown()) {
-        this.pendingRightClick = true;
-      }
-    });
+    scene.input.on("pointerdown", this.onPointerDown);
 
     if (scene.input.keyboard) {
-      // Arrow keys
       for (const keyCode of [
         Phaser.Input.Keyboard.KeyCodes.UP,
         Phaser.Input.Keyboard.KeyCodes.DOWN,
@@ -97,19 +90,10 @@ export class InputHandler {
         this.moveKeys[keyCode] = scene.input.keyboard.addKey(keyCode);
       }
 
-      this.ctrlKey = scene.input.keyboard.addKey(
-        Phaser.Input.Keyboard.KeyCodes.CTRL,
-      );
+      this.ctrlKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.CTRL);
+      this.escKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+      this.pttKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.V);
 
-      this.escKey = scene.input.keyboard.addKey(
-        Phaser.Input.Keyboard.KeyCodes.ESC,
-      );
-
-      this.pttKey = scene.input.keyboard.addKey(
-        Phaser.Input.Keyboard.KeyCodes.V,
-      );
-
-      // Dynamic spell keybinds from class config
       for (const spellId of stats.spells) {
         const spell = SPELLS[spellId];
         if (!spell) continue;
@@ -138,15 +122,11 @@ export class InputHandler {
   }
 
   update(time: number, getMouseTile: () => { x: number; y: number }) {
-    const now = time;
-
-    // Consume queued click events
     const leftClicked = this.pendingLeftClick;
     const rightClicked = this.pendingRightClick;
     this.pendingLeftClick = false;
     this.pendingRightClick = false;
 
-    // Push-to-Talk
     if (this.pttKey) {
       if (Phaser.Input.Keyboard.JustDown(this.pttKey)) {
         this.onPttStart?.();
@@ -155,72 +135,57 @@ export class InputHandler {
       }
     }
 
-    // Movement: check held keys and repeat at interval (works in both idle and targeting)
     for (const [keyCode, key] of Object.entries(this.moveKeys)) {
       if (key.isDown) {
-        if (now - this.lastMoveSentMs >= this.moveIntervalMs) {
+        if (time - this.lastMoveSentMs >= this.moveIntervalMs) {
           const direction = KEY_TO_DIRECTION[Number(keyCode)];
           if (direction) {
             this.network.sendMove(direction);
             this.onLocalMove?.(direction);
             this.lastMoveSentMs += this.moveIntervalMs;
-            if (now - this.lastMoveSentMs > this.moveIntervalMs) {
-              this.lastMoveSentMs = now;
+            if (time - this.lastMoveSentMs > this.moveIntervalMs) {
+              this.lastMoveSentMs = time;
             }
           }
         }
-        break; // Only one direction at a time, first held wins
+        break;
       }
     }
 
-    // --- Targeting mode ---
     if (this.targeting) {
-      // ESC or right-click: cancel targeting
       if (Phaser.Input.Keyboard.JustDown(this.escKey) || rightClicked) {
         this.cancelTargeting();
         return;
       }
 
-      // Left-click: confirm target
       if (leftClicked) {
         const mouseTile = getMouseTile();
         if (this.targeting.mode === "spell") {
-          this.network.sendCast(
-            this.targeting.spellId!,
-            mouseTile.x,
-            mouseTile.y,
-          );
+          this.network.sendCast(this.targeting.spellId, mouseTile.x, mouseTile.y);
         } else {
-          // attack mode (ranged attack)
           this.network.sendAttack(mouseTile.x, mouseTile.y);
         }
         this.cancelTargeting();
         return;
       }
 
-      // Spell keys while targeting: switch to that spell (or cast immediately if self-target)
       for (const { key, spellId, rangeTiles } of this.spellKeys) {
         if (Phaser.Input.Keyboard.JustDown(key)) {
+          this.cancelTargeting();
           if (rangeTiles > 0) {
-            // Switch targeting to this spell
-            this.cancelTargeting();
             this.enterTargeting({ mode: "spell", spellId, rangeTiles });
           } else {
-            // Self-target spell: cast immediately, exit targeting
-            this.cancelTargeting();
             this.network.sendCast(spellId, 0, 0);
           }
           return;
         }
       }
 
-      // CTRL while targeting: switch to attack targeting if ranged, or do melee attack
       if (Phaser.Input.Keyboard.JustDown(this.ctrlKey)) {
+        this.cancelTargeting();
         if (this.meleeRange > 1) {
-          this.cancelTargeting();
           this.enterTargeting({ mode: "attack", rangeTiles: this.meleeRange });
         } else {
-          this.cancelTargeting();
           this.network.sendAttack();
         }
         return;
@@ -229,32 +194,23 @@ export class InputHandler {
       return;
     }
 
-    // --- Idle mode ---
-
-    // Attack (CTRL)
     if (Phaser.Input.Keyboard.JustDown(this.ctrlKey)) {
       if (this.meleeRange > 1) {
-        // Ranged class (archer): enter targeting mode
         this.enterTargeting({ mode: "attack", rangeTiles: this.meleeRange });
       } else {
-        // Melee class: attack immediately
         this.network.sendAttack();
       }
     }
 
-    // Left-click: interact or select target
     if (leftClicked) {
       this.onInteract?.(getMouseTile().x, getMouseTile().y);
     }
 
-    // Spell keys (Q/W/E/R)
     for (const { key, spellId, rangeTiles } of this.spellKeys) {
       if (Phaser.Input.Keyboard.JustDown(key)) {
         if (rangeTiles > 0) {
-          // Targeted spell: enter targeting mode
           this.enterTargeting({ mode: "spell", spellId, rangeTiles });
         } else {
-          // Self-target spell: cast immediately
           this.network.sendCast(spellId, 0, 0);
         }
       }
@@ -267,6 +223,6 @@ export class InputHandler {
   }
 
   destroy() {
-    this.scene.input.off("pointerdown");
+    this.scene.input.off("pointerdown", this.onPointerDown);
   }
 }

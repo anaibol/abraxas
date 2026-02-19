@@ -1,12 +1,8 @@
 import {
 	Room,
-	Client,
-	validate,
-	type Messages,
-	CloseCode,
+	type Client,
 	type AuthContext,
 } from "@colyseus/core";
-import { z } from "zod";
 import { StateView } from "@colyseus/schema";
 import { GameState } from "../schema/GameState";
 import { Player } from "../schema/Player";
@@ -19,10 +15,9 @@ import { RespawnSystem } from "../systems/RespawnSystem";
 import { NpcSystem } from "../systems/NpcSystem";
 import {
 	TICK_MS,
-	TileMap,
-	ClientMessageType,
+	type TileMap,
+	type ClientMessageType,
 	ServerMessageType,
-	EQUIPMENT_SLOTS,
 	type JoinOptions,
 } from "@abraxas/shared";
 import { logger } from "../logger";
@@ -34,7 +29,7 @@ import type { Account } from "../generated/prisma";
 import { MessageHandler } from "../handlers/MessageHandler";
 import { SocialSystem } from "../systems/SocialSystem";
 import { FriendsSystem } from "../systems/FriendsSystem";
-import { SpatialLookup, Entity } from "../utils/SpatialLookup";
+import { SpatialLookup, type Entity } from "../utils/SpatialLookup";
 import { QuestSystem } from "../systems/QuestSystem";
 import { ChatService } from "../services/ChatService";
 import { PlayerService } from "../services/PlayerService";
@@ -42,10 +37,11 @@ import { TickSystem } from "../systems/TickSystem";
 import { LevelService } from "../services/LevelService";
 
 export class ArenaRoom extends Room<{ state: GameState }> {
-	constructor() {
-		super();
-		logger.info({ message: "[ArenaRoom] Constructor called" });
-	}
+	autoDispose = false;
+	seatReservationTimeout = 60;
+	maxMessagesPerSecond = 20;
+	patchRate = TICK_MS;
+	state = new GameState();
 
 	private map!: TileMap;
 	private roomMapName!: string;
@@ -65,14 +61,8 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 	private spatial!: SpatialLookup;
 	private quests = new QuestSystem();
 
-	// ── Message Handlers ───────────────────────────────────────────────────
-
 	async onCreate(options: JoinOptions & { mapName?: string }) {
 		try {
-			this.autoDispose = false;
-			this.seatReservationTimeout = 60;
-			this.maxMessagesPerSecond = 20;
-			this.setState(new GameState());
 
 			this.roomMapName = options.mapName || "arena.test";
 			const loadedMap = await MapService.getMap(this.roomMapName);
@@ -145,7 +135,8 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 			this.messageHandler.registerHandlers(
 				<T extends ClientMessageType>(
 					type: T,
-					handler: (client: Client, message: any) => void,
+					// biome-ignore lint/suspicious/noExplicitAny: Colyseus onMessage is typed as any
+			handler: (client: Client, message: any) => void,
 				) => {
 					this.onMessage(type, handler);
 				},
@@ -181,8 +172,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 			const npcCount = this.map.npcCount ?? 20;
 			if (npcCount > 0) this.npcSystem.spawnNpcs(npcCount, this.map);
 
-			this.setSimulationInterval((dt) => this.tickSystem.tick(dt), TICK_MS);
-			this.setPatchRate(TICK_MS);
+		this.setSimulationInterval((dt) => this.tickSystem.tick(dt), TICK_MS);
 
 			logger.info({
 				room: this.roomId,
@@ -205,17 +195,13 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 			(typeof options?.token === "string" ? options.token : undefined);
 		if (!actualToken || typeof actualToken !== "string")
 			throw new Error("Authentication token required");
-		try {
-			const payload = AuthService.verifyToken(actualToken);
-			if (!payload) throw new Error("Invalid token");
-			const dbUser = await prisma.account.findUnique({
-				where: { id: payload.userId },
-			});
-			if (!dbUser) throw new Error("User not found");
-			return dbUser;
-		} catch (e: unknown) {
-			throw e;
-		}
+		const payload = AuthService.verifyToken(actualToken);
+		if (!payload) throw new Error("Invalid token");
+		const dbUser = await prisma.account.findUnique({
+			where: { id: payload.userId },
+		});
+		if (!dbUser) throw new Error("User not found");
+		return dbUser;
 	}
 
 	async onJoin(
@@ -255,6 +241,11 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 				tileSize: this.map.tileSize,
 				collision: this.map.collision,
 			});
+			logger.info({
+				room: this.roomId,
+				sessionId: client.sessionId,
+				message: `Player ${player.name} joined at ${player.tileX},${player.tileY}`,
+			});
 		} catch (e: unknown) {
 			logger.error({ message: `[ArenaRoom] onJoin error: ${e}` });
 
@@ -262,15 +253,19 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 		}
 	}
 
-	async onLeave(client: Client, code?: number) {
-		const playerInGame = this.state.players.has(client.sessionId);
-
-		if (code !== CloseCode.CONSENTED && playerInGame) {
-			try {
-				await this.allowReconnection(client, 30);
-				return;
-			} catch {}
+	async onDrop(client: Client) {
+		if (!this.state.players.has(client.sessionId)) {
+			await this.removePlayer(client);
+			return;
 		}
+		try {
+			await this.allowReconnection(client, 30);
+		} catch {
+			await this.removePlayer(client);
+		}
+	}
+
+	async onLeave(client: Client) {
 		await this.removePlayer(client);
 	}
 
@@ -344,6 +339,6 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 	}
 
 	private findClient(sid: string): Client | undefined {
-		return this.clients.find((c) => c.sessionId === sid);
+		return this.clients.getById(sid);
 	}
 }

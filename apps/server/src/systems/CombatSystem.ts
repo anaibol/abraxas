@@ -40,8 +40,8 @@ export class CombatSystem {
 
   hasLineOfSight(p1: { x: number; y: number }, p2: { x: number; y: number }): boolean {
     const line = MathUtils.getLine(p1, p2);
-    // Skip first and last tiles (attacker and target)
-    for (let i = 1; i < line.length - 1; i++) {
+    // Skip first tile (attacker). We check the target tile and everything in between.
+    for (let i = 1; i < line.length; i++) {
         const tile = line[i];
         if (this.map.collision[tile.y]?.[tile.x] === 1) {
             return false;
