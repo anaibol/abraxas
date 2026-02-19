@@ -28,6 +28,7 @@ export class RespawnSystem {
     map: TileMap,
     broadcast: BroadcastFn,
     onRespawn?: (player: Player) => void,
+    findSpawn?: (x: number, y: number) => { x: number; y: number } | null,
   ): void {
     const remaining: PendingRespawn[] = [];
 
@@ -41,10 +42,16 @@ export class RespawnSystem {
       if (!player) continue;
 
       if (!map.spawns || map.spawns.length === 0) continue;
-      const spawn = map.spawns[Math.floor(Math.random() * map.spawns.length)];
+      const candidate = map.spawns[Math.floor(Math.random() * map.spawns.length)];
 
-      player.tileX = spawn.x;
-      player.tileY = spawn.y;
+      const safe = findSpawn
+        ? findSpawn(candidate.x, candidate.y)
+        : { x: candidate.x, y: candidate.y };
+
+      if (!safe) continue; // No free tile found — retry next tick
+
+      player.tileX = safe.x;
+      player.tileY = safe.y;
       player.hp = player.maxHp;
       player.mana = player.maxMana;
       player.alive = true;
@@ -55,8 +62,8 @@ export class RespawnSystem {
 
       broadcast(ServerMessageType.Respawn, {
         sessionId: player.sessionId,
-        tileX: spawn.x,
-        tileY: spawn.y,
+        tileX: safe.x,
+        tileY: safe.y,
       });
     }
 

@@ -1,18 +1,27 @@
 import { useState } from "react";
-import { 
-  Box, Flex, Text, Input, Button, Grid, 
-  IconButton, 
+import {
+  Box, Flex, Text, Input, Button, Grid,
+  IconButton, Badge,
 } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import { type ClassType, getRandomName } from "@abraxas/shared";
 
-interface LobbyProps {
+type LobbyProps = {
   onJoin: (charId: string, classType: ClassType, token: string) => void;
   connecting: boolean;
-}
+};
+
+type CharacterSummary = {
+  id: string;
+  name: string;
+  class: ClassType;
+  level: number;
+};
+
+type Mode = "login" | "register" | "character_select" | "character_create";
 
 const P = {
-  bg: "#0e0c14dd", // Semitransparent for glassmorphism
+  bg: "#0e0c14dd",
   surface: "#14111ecc",
   raised: "#1a1628",
   border: "#2e2840",
@@ -37,35 +46,35 @@ const CLASS_INFO: Record<
   ClassType,
   { icon: string; color: string; desc: string; longDesc: string }
 > = {
-  WARRIOR: { 
-    icon: "\u2694\uFE0F", 
-    color: "#e63946", 
-    desc: "HP:180 STR:25", 
-    longDesc: "A master of close-quarters combat with high survivability." 
+  WARRIOR: {
+    icon: "\u2694\uFE0F",
+    color: "#e63946",
+    desc: "HP:180 STR:25",
+    longDesc: "A master of close-quarters combat with high survivability.",
   },
-  MAGE: { 
-    icon: "\u2728", 
-    color: "#4895ef", 
-    desc: "INT:28 Mana:150", 
-    longDesc: "Wields destructive arcane power from a distance." 
+  MAGE: {
+    icon: "\u2728",
+    color: "#4895ef",
+    desc: "INT:28 Mana:150",
+    longDesc: "Wields destructive arcane power from a distance.",
   },
-  RANGER: { 
-    icon: "\uD83C\uDFF9", 
-    color: "#4caf50", 
-    desc: "AGI:26 Range:5", 
-    longDesc: "Swift and precise, striking foes before they can react." 
+  RANGER: {
+    icon: "\uD83C\uDFF9",
+    color: "#4caf50",
+    desc: "AGI:26 Range:5",
+    longDesc: "Swift and precise, striking foes before they can react.",
   },
-  ROGUE: { 
-    icon: "\uD83D\uDDE1\uFE0F", 
-    color: "#9d4edd", 
-    desc: "AGI:24 SPD:8", 
-    longDesc: "A shadowy assassin specializing in speed and critical strikes." 
+  ROGUE: {
+    icon: "\uD83D\uDDE1\uFE0F",
+    color: "#9d4edd",
+    desc: "AGI:24 SPD:8",
+    longDesc: "A shadowy assassin specializing in speed and critical strikes.",
   },
-  CLERIC: { 
-    icon: "\uD83D\uDEE1\uFE0F", 
-    color: "#ffca3a", 
-    desc: "HP:160 STR:20", 
-    longDesc: "A holy defender who blends combat with divine protection." 
+  CLERIC: {
+    icon: "\uD83D\uDEE1\uFE0F",
+    color: "#ffca3a",
+    desc: "HP:160 STR:20",
+    longDesc: "A holy defender who blends combat with divine protection.",
   },
 };
 
@@ -113,46 +122,35 @@ function formatCharName(raw: string): string {
     .join(" ");
 }
 
+const MAX_CHARACTERS = 5;
+
 export function Lobby({ onJoin, connecting }: LobbyProps) {
-  const [mode, setMode] = useState<"login" | "register" | "class_select">(
-    "login",
-  );
+  const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [charName, setCharName] = useState("");
   const [classType, setClassType] = useState<ClassType>("WARRIOR");
   const [error, setError] = useState("");
+  const [creating, setCreating] = useState(false);
 
-  const [resolvedCharName, setResolvedCharName] = useState("");
-  const [resolvedCharId, setResolvedCharId] = useState("");
   const [token, setToken] = useState("");
+  const [characters, setCharacters] = useState<CharacterSummary[]>([]);
+
+  const labelStyle = {
+    fontSize: "10px",
+    color: P.goldMuted,
+    letterSpacing: "2px",
+    textTransform: "uppercase" as const,
+    mb: "1.5",
+    fontWeight: "600",
+  };
 
   const handleAuth = async () => {
     setError("");
-
-    if (mode === "register") {
-      const trimmed = charName.trim();
-      if (!trimmed) {
-        setError("Character name is required");
-        return;
-      }
-      if (!CHAR_NAME_REGEX.test(trimmed)) {
-        setError("Each word must start with a capital letter and contain only letters (e.g. Dark Knight)");
-        return;
-      }
-    }
-
     const url = mode === "login" ? "/api/login" : "/api/register";
-
-    const body =
-      mode === "login"
-        ? { email, password }
-        : {
-            email,
-            password,
-            charName: charName.trim(),
-            classType,
-          };
+    const body = mode === "login"
+      ? { email, password }
+      : { email, password };
 
     try {
       const res = await fetch(url, {
@@ -168,20 +166,50 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
       }
 
       setToken(data.token);
-      setResolvedCharId(data.charId ?? "");
-
-      if (mode === "login") {
-        const name: string = data.charName ?? "";
-        const cls: ClassType = data.classType ?? "WARRIOR";
-        setResolvedCharName(name);
-        setClassType(cls);
-        onJoin(data.charId, cls, data.token);
-      } else {
-        setResolvedCharName(charName.trim());
-        setMode("class_select");
-      }
+      setCharacters(data.characters ?? []);
+      setMode("character_select");
     } catch {
       setError("Network error");
+    }
+  };
+
+  const handleCreateCharacter = async () => {
+    setError("");
+    const trimmed = charName.trim();
+    if (!trimmed) {
+      setError("Character name is required");
+      return;
+    }
+    if (!CHAR_NAME_REGEX.test(trimmed)) {
+      setError("Each word must start with a capital letter and contain only letters (e.g. Dark Knight)");
+      return;
+    }
+
+    setCreating(true);
+    try {
+      const res = await fetch("/api/characters", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ charName: trimmed, classType }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Character creation failed");
+        return;
+      }
+
+      setCharacters((prev) => [...prev, data as CharacterSummary]);
+      setCharName("");
+      setClassType("WARRIOR");
+      setMode("character_select");
+    } catch {
+      setError("Network error");
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -189,14 +217,16 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
     setCharName(getRandomName());
   };
 
-  const labelStyle = {
-    fontSize: "10px",
-    color: P.goldMuted,
-    letterSpacing: "2px",
-    textTransform: "uppercase" as const,
-    mb: "1.5",
-    fontWeight: "600",
+  const resetToLogin = () => {
+    setMode("login");
+    setToken("");
+    setCharacters([]);
+    setEmail("");
+    setPassword("");
+    setError("");
   };
+
+  const isCharSelectWide = mode === "character_select" || mode === "character_create";
 
   return (
     <Flex
@@ -216,11 +246,14 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
         backdropFilter="blur(20px)"
         borderRadius="12px"
         p="12"
-        minW="460px"
+        minW={isCharSelectWide ? "540px" : "460px"}
+        maxW="600px"
+        w="100%"
         boxShadow={`0 10px 50px rgba(0,0,0,0.8), 0 0 0 1px ${P.border}`}
         fontFamily={P.font}
         position="relative"
         overflow="hidden"
+        transition="min-width 0.3s ease"
       >
         {/* Shimmer Effect */}
         <Box
@@ -253,7 +286,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
           letterSpacing="12px"
           textTransform="uppercase"
           mb="8"
-          ml="12px" // To balance the letter spacing
+          ml="12px"
         >
           Arena
         </Text>
@@ -264,127 +297,267 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
           mb="8"
         />
 
-        {mode !== "class_select" ? (
-            <Flex 
-              as="form"
-              direction="column" 
-              gap="4"
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleAuth();
-              }}
+        {/* ── Account Auth ── */}
+        {(mode === "login" || mode === "register") && (
+          <Flex
+            as="form"
+            direction="column"
+            gap="4"
+            animation={`${entrance} 0.4s ease-out`}
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleAuth();
+            }}
+          >
+            <Box>
+              <Text {...labelStyle}>Email Address</Text>
+              <Input
+                type="email"
+                autoComplete="username"
+                placeholder="knight@abraxas.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                {...inputStyle}
+              />
+            </Box>
+
+            <Box>
+              <Text {...labelStyle}>Secret Key</Text>
+              <Input
+                type="password"
+                autoComplete="current-password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                {...inputStyle}
+              />
+            </Box>
+
+            {error && (
+              <Text color={P.blood} fontSize="12px" textAlign="center" py="2" fontWeight="600">
+                {error}
+              </Text>
+            )}
+
+            <Button
+              mt="2"
+              w="100%"
+              h="50px"
+              bg={P.goldDim}
+              color="#08080c"
+              type="submit"
+              fontFamily={P.font}
+              fontWeight="900"
+              fontSize="16px"
+              letterSpacing="4px"
+              textTransform="uppercase"
+              transition="all 0.2s"
+              _hover={{ bg: P.gold, transform: "translateY(-2px)", boxShadow: `0 5px 20px ${P.gold}44` }}
+              _active={{ transform: "translateY(0)" }}
             >
-              <Box>
-                <Text {...labelStyle}>Email Address</Text>
-                <Input
-                  type="email"
-                  autoComplete="username"
-                  placeholder="knight@abraxas.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  {...inputStyle}
-                />
-              </Box>
+              {mode === "login" ? "Login" : "Register"}
+            </Button>
 
-              <Box>
-                <Text {...labelStyle}>Secret Key</Text>
-                <Input
-                  type="password"
-                  autoComplete="current-password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  {...inputStyle}
-                />
-              </Box>
-
-              <Box>
-                <Text {...labelStyle}>Character Name</Text>
-                <Flex gap="2">
-                  <Input
-                    value={charName}
-                    onChange={(e) => setCharName(sanitizeCharName(e.target.value))}
-                    onBlur={() => setCharName((n: string) => formatCharName(n))}
-                    placeholder="E.g. Valerius the Bold"
-                    maxLength={20}
-                    {...inputStyle}
-                  />
-                  <IconButton
-                    aria-label="Random Name"
-                    type="button"
-                    variant="ghost"
-                    color={P.goldDim}
-                    onClick={handleRandomName}
-                    _hover={{ bg: "transparent", color: P.gold, transform: "rotate(15deg) scale(1.1)" }}
-                    _active={{ transform: "scale(0.95)" }}
-                  >
-                    <Text fontSize="20px">🎲</Text>
-                  </IconButton>
-                </Flex>
-              </Box>
-
-              {error && (
-                <Text color={P.blood} fontSize="12px" textAlign="center" py="2" fontWeight="600">
-                  {error}
-                </Text>
-              )}
-
-              <Button
-                mt="2"
-                w="100%"
-                h="50px"
-                bg={P.goldDim}
-                color="#08080c"
-                type="submit"
-                fontFamily={P.font}
-                fontWeight="900"
-                fontSize="16px"
-                letterSpacing="4px"
-                textTransform="uppercase"
-                transition="all 0.2s"
-                _hover={{ bg: P.gold, transform: "translateY(-2px)", boxShadow: `0 5px 20px ${P.gold}44` }}
-                _active={{ transform: "translateY(0)" }}
+            <Flex justify="center" gap="2" mt="2">
+              <Text fontSize="12px" color={P.goldMuted}>
+                {mode === "login" ? "New to the Arena?" : "Already a combatant?"}
+              </Text>
+              <Text
+                fontSize="12px"
+                color={P.gold}
+                fontWeight="700"
+                cursor="pointer"
+                borderBottom="1px solid transparent"
+                _hover={{ borderBottomColor: P.gold }}
+                onClick={() => {
+                  setMode(mode === "login" ? "register" : "login");
+                  setError("");
+                }}
               >
-                {mode === "login" ? "Login" : "Register"}
-              </Button>
-
-              <Flex justify="center" gap="2" mt="2">
-                <Text fontSize="12px" color={P.goldMuted}>
-                  {mode === "login" ? "New to the Arena?" : "Already a combatant?"}
-                </Text>
-                <Text
-                  fontSize="12px"
-                  color={P.gold}
-                  fontWeight="700"
-                  cursor="pointer"
-                  borderBottom="1px solid transparent"
-                  _hover={{ borderBottomColor: P.gold }}
-                  onClick={() => {
-                    setMode(mode === "login" ? "register" : "login");
-                    setError("");
-                  }}
-                >
-                  {mode === "login" ? "Create Account" : "Sign In"}
-                </Text>
-              </Flex>
-            </Flex>
-        ) : (
-          <Box animation={`${entrance} 0.4s ease-out`}>
-            <Flex justify="space-between" align="baseline" mb="4">
-              <Text {...labelStyle} mb="0">Select Your Path</Text>
-              <Text fontSize="12px" color={P.goldText} fontWeight="700">
-                {resolvedCharName}
+                {mode === "login" ? "Create Account" : "Sign In"}
               </Text>
             </Flex>
-            
-            <Grid templateColumns="repeat(1, 1fr)" gap="3" mb="8">
+          </Flex>
+        )}
+
+        {/* ── Character Select ── */}
+        {mode === "character_select" && (
+          <Box animation={`${entrance} 0.4s ease-out`}>
+            <Flex justify="space-between" align="center" mb="5">
+              <Text {...labelStyle} mb="0">Choose Your Champion</Text>
+              <Text fontSize="11px" color={P.goldDark}>
+                {characters.length}/{MAX_CHARACTERS} characters
+              </Text>
+            </Flex>
+
+            {characters.length === 0 ? (
+              <Flex
+                direction="column"
+                align="center"
+                justify="center"
+                py="10"
+                gap="3"
+              >
+                <Text fontSize="32px" opacity="0.4">⚔️</Text>
+                <Text fontSize="13px" color={P.goldMuted} textAlign="center">
+                  No champions yet.
+                  <br />Create your first character to enter the arena.
+                </Text>
+              </Flex>
+            ) : (
+              <Grid templateColumns="repeat(1, 1fr)" gap="3" mb="5">
+                {characters.map((char) => {
+                  const info = CLASS_INFO[char.class];
+                  return (
+                    <Box
+                      key={char.id}
+                      p="4"
+                      bg="rgba(8, 8, 12, 0.4)"
+                      border="1px solid"
+                      borderColor={P.border}
+                      borderRadius="8px"
+                      cursor="pointer"
+                      transition="all 0.2s"
+                      onClick={() => onJoin(char.id, char.class, token)}
+                      _hover={{
+                        bg: `${info.color}11`,
+                        borderColor: info.color,
+                        transform: "translateX(4px)",
+                      }}
+                    >
+                      <Flex align="center" gap="4">
+                        <Box
+                          fontSize="26px"
+                          w="40px"
+                          textAlign="center"
+                          flexShrink={0}
+                        >
+                          {info.icon}
+                        </Box>
+                        <Box flex="1">
+                          <Text
+                            fontSize="15px"
+                            fontWeight="900"
+                            color={P.goldText}
+                            letterSpacing="1px"
+                          >
+                            {char.name}
+                          </Text>
+                          <Text fontSize="11px" color={P.goldDark} textTransform="uppercase" letterSpacing="1px">
+                            {char.class}
+                          </Text>
+                        </Box>
+                        <Badge
+                          px="2"
+                          py="0.5"
+                          borderRadius="4px"
+                          bg={`${info.color}22`}
+                          color={info.color}
+                          border="1px solid"
+                          borderColor={`${info.color}44`}
+                          fontSize="11px"
+                          fontFamily={P.font}
+                          fontWeight="700"
+                        >
+                          Lv {char.level}
+                        </Badge>
+                      </Flex>
+                    </Box>
+                  );
+                })}
+              </Grid>
+            )}
+
+            <Button
+              w="100%"
+              h="44px"
+              bg={characters.length >= MAX_CHARACTERS ? P.goldDark : "transparent"}
+              border="1px solid"
+              borderColor={characters.length >= MAX_CHARACTERS ? "transparent" : P.border}
+              color={characters.length >= MAX_CHARACTERS ? P.goldDark : P.goldMuted}
+              fontFamily={P.font}
+              fontWeight="700"
+              fontSize="13px"
+              letterSpacing="3px"
+              textTransform="uppercase"
+              disabled={characters.length >= MAX_CHARACTERS}
+              onClick={() => {
+                setError("");
+                setMode("character_create");
+              }}
+              _hover={
+                characters.length < MAX_CHARACTERS
+                  ? { borderColor: P.gold, color: P.goldText }
+                  : {}
+              }
+            >
+              + New Character
+            </Button>
+
+            {connecting && (
+              <Text fontSize="11px" color={P.goldMuted} textAlign="center" mt="3">
+                Connecting...
+              </Text>
+            )}
+
+            <Button
+              mt="3"
+              bg="transparent"
+              variant="ghost"
+              w="100%"
+              color={P.goldDark}
+              fontSize="11px"
+              letterSpacing="2px"
+              textTransform="uppercase"
+              onClick={resetToLogin}
+              _hover={{ color: P.goldMuted }}
+            >
+              Sign Out
+            </Button>
+          </Box>
+        )}
+
+        {/* ── Character Create ── */}
+        {mode === "character_create" && (
+          <Box animation={`${entrance} 0.4s ease-out`}>
+            <Flex justify="space-between" align="baseline" mb="5">
+              <Text {...labelStyle} mb="0">New Character</Text>
+            </Flex>
+
+            <Box mb="4">
+              <Text {...labelStyle}>Character Name</Text>
+              <Flex gap="2">
+                <Input
+                  value={charName}
+                  onChange={(e) => setCharName(sanitizeCharName(e.target.value))}
+                  onBlur={() => setCharName((n: string) => formatCharName(n))}
+                  placeholder="E.g. Valerius the Bold"
+                  maxLength={20}
+                  {...inputStyle}
+                />
+                <IconButton
+                  aria-label="Random Name"
+                  type="button"
+                  variant="ghost"
+                  color={P.goldDim}
+                  onClick={handleRandomName}
+                  _hover={{ bg: "transparent", color: P.gold, transform: "rotate(15deg) scale(1.1)" }}
+                  _active={{ transform: "scale(0.95)" }}
+                >
+                  <Text fontSize="20px">🎲</Text>
+                </IconButton>
+              </Flex>
+            </Box>
+
+            <Text {...labelStyle} mb="3">Select Your Path</Text>
+            <Grid templateColumns="repeat(1, 1fr)" gap="2" mb="6">
               {CLASS_TYPES.map((cls) => {
                 const sel = classType === cls;
                 const info = CLASS_INFO[cls];
                 return (
                   <Box
                     key={cls}
-                    p="4"
+                    p="3"
                     bg={sel ? `${info.color}11` : "rgba(8, 8, 12, 0.4)"}
                     border="1px solid"
                     borderColor={sel ? info.color : P.border}
@@ -392,23 +565,25 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                     cursor="pointer"
                     transition="all 0.2s"
                     onClick={() => setClassType(cls)}
-                    _hover={{ 
+                    _hover={{
                       bg: sel ? `${info.color}22` : "rgba(20, 17, 30, 0.6)",
-                      transform: "translateX(4px)"
+                      transform: "translateX(4px)",
                     }}
-                    role="group"
                   >
-                    <Flex align="center" gap="4">
-                      <Box 
-                        fontSize="28px" 
+                    <Flex align="center" gap="3">
+                      <Box
+                        fontSize="24px"
                         filter={sel ? "none" : "grayscale(100%)"}
                         transition="all 0.3s"
+                        w="32px"
+                        textAlign="center"
+                        flexShrink={0}
                       >
                         {info.icon}
                       </Box>
                       <Box flex="1">
                         <Text
-                          fontSize="14px"
+                          fontSize="13px"
                           fontWeight="900"
                           color={sel ? P.goldText : P.goldMuted}
                           letterSpacing="2px"
@@ -421,11 +596,17 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                         </Text>
                       </Box>
                       {sel && (
-                        <Box boxSize="8px" bg={info.color} borderRadius="full" boxShadow={`0 0 10px ${info.color}`} />
+                        <Box
+                          boxSize="8px"
+                          bg={info.color}
+                          borderRadius="full"
+                          boxShadow={`0 0 10px ${info.color}`}
+                          flexShrink={0}
+                        />
                       )}
                     </Flex>
                     {sel && (
-                      <Text mt="2" fontSize="12px" color={P.goldText} opacity="0.8">
+                      <Text mt="2" fontSize="11px" color={P.goldText} opacity="0.8" pl="35px">
                         {info.longDesc}
                       </Text>
                     )}
@@ -434,13 +615,19 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
               })}
             </Grid>
 
+            {error && (
+              <Text color={P.blood} fontSize="12px" textAlign="center" py="2" fontWeight="600" mb="2">
+                {error}
+              </Text>
+            )}
+
             <Button
               w="100%"
               h="50px"
-              bg={connecting ? P.goldDark : P.goldDim}
+              bg={creating ? P.goldDark : P.goldDim}
               color="#08080c"
-              loading={connecting}
-              onClick={() => onJoin(resolvedCharId, classType, token)}
+              loading={creating}
+              onClick={handleCreateCharacter}
               fontFamily={P.font}
               fontWeight="900"
               fontSize="16px"
@@ -448,9 +635,9 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
               textTransform="uppercase"
               _hover={{ bg: P.gold, transform: "translateY(-2px)", boxShadow: `0 5px 20px ${P.gold}44` }}
             >
-              Enter Arena
+              Create Character
             </Button>
-            
+
             <Button
               mt="3"
               bg="transparent"
@@ -458,9 +645,12 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
               w="100%"
               color={P.goldMuted}
               fontSize="12px"
-              onClick={() => setMode("register")}
+              onClick={() => {
+                setError("");
+                setMode("character_select");
+              }}
             >
-              Go Back
+              Back
             </Button>
           </Box>
         )}

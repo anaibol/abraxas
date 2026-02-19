@@ -33,6 +33,7 @@ import { TickSystem } from "../systems/TickSystem";
 import { BankSystem } from "../systems/BankSystem";
 import { TradeSystem } from "../systems/TradeSystem";
 import { type Entity, SpatialLookup } from "../utils/SpatialLookup";
+import { findSafeSpawn } from "../utils/spawnUtils";
 
 export class ArenaRoom extends Room<{ state: GameState }> {
 	autoDispose = false;
@@ -224,12 +225,18 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 				char,
 				auth.id,
 			);
-			// Assign spawn point for Arena
+			// Assign spawn point — spiral outward if the candidate tile is blocked
 			const spawnIndex = this.state.players.size;
-			const spawn = this.map.spawns[spawnIndex % this.map.spawns.length];
-			if (spawn) {
-				player.tileX = spawn.x;
-				player.tileY = spawn.y;
+			const candidate = this.map.spawns[spawnIndex % this.map.spawns.length];
+			if (candidate) {
+				const safe = findSafeSpawn(
+					candidate.x,
+					candidate.y,
+					this.map,
+					this.spatial,
+				);
+				player.tileX = safe?.x ?? candidate.x;
+				player.tileY = safe?.y ?? candidate.y;
 			}
 			this.state.players.set(client.sessionId, player);
 			client.view = new StateView();

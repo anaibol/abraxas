@@ -19,6 +19,7 @@ import { CombatSystem } from "./CombatSystem";
 import { BuffSystem } from "./BuffSystem";
 import { logger } from "../logger";
 import { SpatialLookup, Entity } from "../utils/SpatialLookup";
+import { findSafeSpawn } from "../utils/spawnUtils";
 
 /** Scan for targets every N ticks (~500 ms at 20 TPS). */
 const IDLE_SCAN_INTERVAL = 10;
@@ -90,21 +91,20 @@ export class NpcSystem {
   }
 
   private spawnNpc(type: NpcType, map: TileMap): void {
-    let tx = 0, ty = 0;
-    let attempts = 0;
-    while (attempts < 100) {
-      tx = Math.floor(Math.random() * map.width);
-      ty = Math.floor(Math.random() * map.height);
-      if (map.collision[ty]?.[tx] === 0) break;
-      attempts++;
+    // Pick a random walkable tile then spiral to avoid any occupied cell
+    for (let attempt = 0; attempt < 20; attempt++) {
+      const rx = Math.floor(Math.random() * map.width);
+      const ry = Math.floor(Math.random() * map.height);
+      if (map.collision[ry]?.[rx] !== 0) continue;
+
+      const safe = findSafeSpawn(rx, ry, map, this.spatial);
+      if (safe) {
+        this.spawnNpcAt(type, map, safe.x, safe.y);
+        return;
+      }
     }
 
-    if (attempts >= 100) {
-      logger.error({ intent: "spawn_npc", result: "failed", type });
-      return;
-    }
-
-    this.spawnNpcAt(type, map, tx, ty);
+    logger.error({ intent: "spawn_npc", result: "failed", type });
   }
 
   tick(
@@ -118,9 +118,9 @@ export class NpcSystem {
     for (let i = this.respawns.length - 1; i >= 0; i--) {
       const r = this.respawns[i];
       if (now - r.deadAt >= NPC_RESPAWN_TIME_MS) {
-        const spawnFree = map.collision[r.spawnY]?.[r.spawnX] === 0 && !this.spatial.isTileOccupied(r.spawnX, r.spawnY, "");
-        if (spawnFree) {
-          this.spawnNpcAt(r.type, map, r.spawnX, r.spawnY);
+        const safe = findSafeSpawn(r.spawnX, r.spawnY, map, this.spatial);
+        if (safe) {
+          this.spawnNpcAt(r.type, map, safe.x, safe.y);
         } else {
           this.spawnNpc(r.type, map);
         }

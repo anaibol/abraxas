@@ -6,6 +6,7 @@ import {
 	ServerMessageType,
 	type TileMap,
 } from "@abraxas/shared";
+import { findSafeSpawn } from "../utils/spawnUtils";
 import type { Client } from "@colyseus/core";
 import type { GameState } from "../schema/GameState";
 import type { Npc } from "../schema/Npc";
@@ -110,6 +111,7 @@ export class TickSystem {
 			map,
 			broadcast,
 			(p) => systems.spatial.addToGrid(p),
+			(x, y) => findSafeSpawn(x, y, map, systems.spatial),
 		);
 	}
 
