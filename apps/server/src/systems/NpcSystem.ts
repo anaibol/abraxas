@@ -219,8 +219,8 @@ export class NpcSystem {
       return;
     }
 
-    if (dist <= stats.autoAttackRange) {
-      if (stats.autoAttackRange > 1 && dist < Math.max(2, stats.autoAttackRange / 2)) {
+    if (dist <= stats.attackRange) {
+      if (stats.attackRange > 1 && dist < Math.max(2, stats.attackRange / 2)) {
         const awayDir = this.getAwayDirection(npc, target);
         this.movementSystem.tryMove(npc, awayDir, map, now, tickCount, roomId);
       }
@@ -246,7 +246,7 @@ export class NpcSystem {
     }
 
     const dist = MathUtils.manhattanDist(npc.getPosition(), target.getPosition());
-    if (dist > stats.autoAttackRange) {
+    if (dist > stats.attackRange) {
       npc.state = NpcState.CHASE;
       return;
     }

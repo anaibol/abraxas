@@ -114,9 +114,9 @@ export interface NpcStats {
 	int: number;
 	speedTilesPerSecond: number;
 	/** Range in tiles for the auto-attack. Values > 1 use ranged (AGI-scaling) formula. */
-	autoAttackRange: number;
-	meleeCooldownMs: number;
-	meleeWindupMs: number;
+	attackRange: number;
+	attackCooldownMs: number;
+	attackWindupMs: number;
 	armor: number;
 	abilities: string[];
 	expReward?: number;

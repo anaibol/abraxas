@@ -28,7 +28,7 @@ type SendToClientFn = <T extends ServerMessageType>(
 
 export class CombatSystem {
 	private activeWindups = new Map<string, WindupAction>();
-	/** Tracks when each entity last started a melee swing, for meleeCooldownMs enforcement. */
+	/** Tracks when each entity last started an auto-attack, for attackCooldownMs enforcement. */
 	private lastMeleeMs = new Map<string, number>();
 
 	constructor(
@@ -162,7 +162,7 @@ export class CombatSystem {
 		const stats = attacker.getStats()!;
 
 		const lastMelee = this.lastMeleeMs.get(attacker.sessionId) ?? 0;
-		const meleeReady = now >= lastMelee + stats.meleeCooldownMs;
+		const meleeReady = now >= lastMelee + stats.attackCooldownMs;
 		const gcdReady = now >= attacker.lastGcdMs + GCD_MS;
 
 		if (!meleeReady || !gcdReady || this.activeWindups.has(attacker.sessionId)) {
@@ -176,7 +176,7 @@ export class CombatSystem {
 
 		this.faceToward(attacker, targetTileX, targetTileY);
 
-		const isRanged = stats.autoAttackRange > 1;
+		const isRanged = stats.attackRange > 1;
 
 		if (isRanged) {
 			const target = this.spatial.findEntityAtTile(targetTileX, targetTileY);
@@ -188,7 +188,7 @@ export class CombatSystem {
 				x: target.tileX,
 				y: target.tileY,
 			});
-			if (dist > stats.autoAttackRange) {
+			if (dist > stats.attackRange) {
 				sendToClient?.(ServerMessageType.InvalidTarget);
 				return false;
 			}
@@ -206,7 +206,7 @@ export class CombatSystem {
 
 		const windup: WindupAction = {
 			type: isRanged ? "ranged" : "melee",
-			completeAtMs: now + stats.meleeWindupMs,
+			completeAtMs: now + stats.attackWindupMs,
 			attackerSessionId: attacker.sessionId,
 			targetTileX,
 			targetTileY,
@@ -356,7 +356,7 @@ export class CombatSystem {
 				x: target.tileX,
 				y: target.tileY,
 			});
-			if (dist > stats.autoAttackRange) {
+			if (dist > stats.attackRange) {
 				broadcast(ServerMessageType.AttackHit, {
 					sessionId: attacker.sessionId,
 					targetSessionId: null,

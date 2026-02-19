@@ -23,7 +23,7 @@ type TargetingState =
 export class InputHandler {
   private scene: Phaser.Scene;
   private network: NetworkManager;
-  private autoAttackRange: number;
+  private attackRange: number;
   private moveKeys: Record<number, Phaser.Input.Keyboard.Key> = {};
   private ctrlKey!: Phaser.Input.Keyboard.Key;
   private escKey!: Phaser.Input.Keyboard.Key;
@@ -85,7 +85,7 @@ export class InputHandler {
     const stats = CLASS_STATS[classType];
     const speed = stats.speedTilesPerSecond;
     this.moveIntervalMs = 1000 / speed;
-    this.autoAttackRange = stats.autoAttackRange;
+    this.attackRange = stats.attackRange;
 
     scene.input.on("pointerdown", this.onPointerDown);
 
@@ -225,8 +225,8 @@ export class InputHandler {
   }
 
   handleAttackInput() {
-    if (this.autoAttackRange > 1) {
-      this.enterTargeting({ mode: "attack", rangeTiles: this.autoAttackRange });
+    if (this.attackRange > 1) {
+      this.enterTargeting({ mode: "attack", rangeTiles: this.attackRange });
     } else {
       this.network.sendAttack();
     }
