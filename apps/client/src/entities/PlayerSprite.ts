@@ -34,7 +34,6 @@ export class PlayerSprite {
   private hpBar: Phaser.GameObjects.Rectangle;
   private speakingIcon: Phaser.GameObjects.Text;
   private chatBubbleText: Phaser.GameObjects.Text | null = null;
-  private chatBubbleBg: Phaser.GameObjects.Rectangle | null = null;
 
   public targetX: number;
   public targetY: number;
@@ -145,12 +144,13 @@ export class PlayerSprite {
     }
     this.updateHeadPosition();
 
-    this.nameText = scene.add.text(0, -30, name, {
+    this.nameText = scene.add.text(0, TILE_SIZE / 2 + 6, name, {
       fontSize: "10px",
       color: isLocal ? "#ffffff" : "#cccccc",
       fontFamily: "'Friz Quadrata', Georgia, serif",
+      shadow: { offsetX: 1, offsetY: 1, color: "#000000", blur: 3, fill: true },
     });
-    this.nameText.setOrigin(0.5, 1);
+    this.nameText.setOrigin(0.5, 0);
 
     const barWidth = TILE_SIZE - 6;
     this.hpBarBg = scene.add.rectangle(
@@ -218,9 +218,6 @@ export class PlayerSprite {
     }
     if (this.helmetSprite) {
       this.helmetSprite.setPosition(offX, bodyTopY + offY);
-    }
-    if (this.nameText) {
-      this.nameText.setPosition(0, bodyTopY + offY - 2);
     }
   }
 
@@ -640,47 +637,32 @@ export class PlayerSprite {
       this.chatBubbleText.destroy();
       this.chatBubbleText = null;
     }
-    if (this.chatBubbleBg) {
-      this.chatBubbleBg.destroy();
-      this.chatBubbleBg = null;
-    }
 
     const maxLen = 80;
     const display = message.length > maxLen ? `${message.substring(0, maxLen)}…` : message;
 
-    const nameH = this.nameText.height || 12;
-    const padding = 5;
-    const bubbleBottomY = this.nameText.y - nameH - padding;
+    const bodyTopY = TILE_SIZE / 2 - (this.bodySprite.height || 45);
+    const textY = bodyTopY - 14;
 
-    const text = scene.add.text(0, bubbleBottomY, display, {
+    const text = scene.add.text(0, textY, display, {
       fontSize: "10px",
       color: "#ffffff",
       fontFamily: "'Friz Quadrata', Georgia, serif",
-      stroke: "#000000",
-      strokeThickness: 2,
       wordWrap: { width: 110 },
       align: "center",
+      shadow: { offsetX: 1, offsetY: 1, color: "#000000", blur: 4, fill: true },
     });
     text.setOrigin(0.5, 1);
 
-    const bgW = Math.max(text.width + padding * 2, 20);
-    const bgH = text.height + padding * 2;
-    const bg = scene.add.rectangle(0, bubbleBottomY - 1, bgW, bgH, 0x000000, 0.6);
-    bg.setOrigin(0.5, 1);
-    bg.setStrokeStyle(1, 0x888888, 0.5);
-
     this.chatBubbleText = text;
-    this.chatBubbleBg = bg;
-    this.container.add([bg, text]);
+    this.container.add(text);
 
     const floatOffset = 6;
-    text.setY(bubbleBottomY + floatOffset);
-    bg.setY(bubbleBottomY - 1 + floatOffset);
+    text.setY(textY + floatOffset);
     text.setAlpha(0);
-    bg.setAlpha(0);
 
     scene.tweens.add({
-      targets: [bg, text],
+      targets: text,
       alpha: 1,
       y: `-=${floatOffset}`,
       duration: 250,
@@ -689,16 +671,14 @@ export class PlayerSprite {
         scene.time.delayedCall(3500, () => {
           if (this.chatBubbleText !== text) return;
           scene.tweens.add({
-            targets: [bg, text],
+            targets: text,
             alpha: 0,
             duration: 600,
             ease: "Power2.In",
             onComplete: () => {
               if (this.chatBubbleText === text) {
                 text.destroy();
-                bg.destroy();
                 this.chatBubbleText = null;
-                this.chatBubbleBg = null;
               }
             },
           });
@@ -709,7 +689,6 @@ export class PlayerSprite {
 
   destroy() {
     this.chatBubbleText?.destroy();
-    this.chatBubbleBg?.destroy();
     this.container.destroy();
   }
 }
