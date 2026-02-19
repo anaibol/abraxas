@@ -1,4 +1,3 @@
-import "dotenv/config";
 import { defineConfig, env } from "prisma/config";
 
 export default defineConfig({
@@ -7,6 +6,8 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: env("DATABASE_URL"),
+    // Use the direct connection (not pooled) for migrations to avoid
+    // PgBouncer's transaction-mode limitations with DDL statements.
+    url: env("DIRECT_URL"),
   },
 });

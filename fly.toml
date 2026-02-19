@@ -4,11 +4,6 @@ primary_region = 'gru'
 [build]
 
 [env]
-# SQLite file on the persistent volume mounted at /data.
-# Override with a fly secret (fly secrets set DATABASE_URL=...) to use Turso instead.
-DATABASE_URL = "file:///app/apps/server/prod.db"
-# Serve the built client from the container path (keeps runtime consistent
-# with the Docker image `ENV STATIC_DIR=/app/apps/client/dist`).
 STATIC_DIR = "/app/apps/client/dist"
 
 [http_service]
@@ -30,7 +25,3 @@ timeout = "5s"
 cpu_kind = 'performance'
 cpus = 1
 memory = '2gb'
-
-[mounts]
-destination = "/data"
-source = "abraxas_data"

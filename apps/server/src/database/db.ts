@@ -1,21 +1,17 @@
 import { PrismaClient } from "../generated/prisma";
-import { PrismaLibSql } from "@prisma/adapter-libsql";
-import "dotenv/config";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 
-const databaseUrl = process.env.DATABASE_URL;
-
-if (!databaseUrl) {
-	throw new Error("DATABASE_URL is not set");
+if (!process.env.DATABASE_URL) {
+    throw new Error("DATABASE_URL is not set");
 }
 
-const adapter = new PrismaLibSql({
-	url: process.env.DATABASE_URL ?? "",
-});
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 export const prisma = new PrismaClient({
-	adapter,
-	log:
-		process.env.NODE_ENV === "production"
-			? ["warn", "error"]
-			: ["query", "info", "warn", "error"],
+    adapter: new PrismaPg(pool),
+    log:
+        process.env.NODE_ENV === "production"
+            ? ["warn", "error"]
+            : ["query", "info", "warn", "error"],
 });
