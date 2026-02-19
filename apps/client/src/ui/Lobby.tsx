@@ -334,7 +334,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
               _hover={{ bg: P.gold, transform: "translateY(-2px)", boxShadow: `0 5px 20px ${P.gold}44` }}
               _active={{ transform: "translateY(0)" }}
             >
-              {mode === "login" ? "Enter Vault" : "Forge Account"}
+              {mode === "login" ? "Login" : "Register"}
             </Button>
 
             <Flex justify="center" gap="2" mt="2">
@@ -353,7 +353,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                   setError("");
                 }}
               >
-                {mode === "login" ? "Register Now" : "Login Here"}
+                {mode === "login" ? "Create Account" : "Sign In"}
               </Text>
             </Flex>
           </Flex>
