@@ -649,25 +649,41 @@ export class GameScene extends Phaser.Scene {
 			ease: "Sine.InOut",
 		});
 
-		// Lazy-create sparkle texture
+		// Lazy-create sparkle textures
 		if (!this.textures.exists("drop-spark")) {
 			const g = this.add.graphics();
 			g.fillStyle(0xffffff, 1);
-			g.fillCircle(2, 2, 2);
-			g.generateTexture("drop-spark", 4, 4);
+			g.fillCircle(3, 3, 3);
+			g.generateTexture("drop-spark", 6, 6);
+			g.destroy();
+		}
+		if (!this.textures.exists("drop-star")) {
+			const g = this.add.graphics();
+			g.fillStyle(0xffffff, 1);
+			const outer = 5, inner = 2, cx = 6, cy = 6;
+			const pts: Phaser.Math.Vector2[] = [];
+			for (let i = 0; i < 8; i++) {
+				const angle = (i * Math.PI) / 4 - Math.PI / 2;
+				const r = i % 2 === 0 ? outer : inner;
+				pts.push(new Phaser.Math.Vector2(cx + r * Math.cos(angle), cy + r * Math.sin(angle)));
+			}
+			g.fillPoints(pts, true);
+			g.generateTexture("drop-star", 12, 12);
 			g.destroy();
 		}
 
-		const emitter = this.add.particles(px, py, "drop-spark", {
+		const sparkTex = isRare ? "drop-star" : "drop-spark";
+		const emitter = this.add.particles(px, py, sparkTex, {
 			tint: [color, 0xffffff],
-			speed: { min: 8, max: 22 },
+			speed: { min: 8, max: isRare ? 28 : 22 },
 			angle: { min: 0, max: 360 },
-			scale: { start: 0.55, end: 0 },
-			alpha: { start: 0.85, end: 0 },
-			lifespan: { min: 380, max: 780 },
+			scale: { start: isRare ? 0.7 : 0.55, end: 0 },
+			alpha: { start: 0.9, end: 0 },
+			lifespan: { min: 420, max: isRare ? 900 : 780 },
 			quantity: isRare ? 2 : 1,
-			frequency: isRare ? 100 : 180,
-			gravityY: -18,
+			frequency: isRare ? 80 : 180,
+			gravityY: -20,
+			rotate: isRare ? { start: 0, end: 360 } : undefined,
 		});
 		emitter.setDepth(6);
 
@@ -712,17 +728,19 @@ export class GameScene extends Phaser.Scene {
 
 		// Colored pickup burst matching item rarity/type
 		if (this.textures.exists("drop-spark")) {
-			const burst = this.add.particles(arc.x, arc.y, "drop-spark", {
+			const burstTex = this.textures.exists("drop-star") ? "drop-star" : "drop-spark";
+			const burst = this.add.particles(arc.x, arc.y, burstTex, {
 				tint: [color, 0xffffff],
-				speed: { min: 30, max: 90 },
+				speed: { min: 35, max: 105 },
 				angle: { min: 0, max: 360 },
-				scale: { start: 0.65, end: 0 },
+				scale: { start: 0.7, end: 0 },
 				alpha: { start: 1, end: 0 },
-				lifespan: { min: 200, max: 460 },
+				lifespan: { min: 220, max: 500 },
+				rotate: { start: 0, end: 360 },
 			});
 			burst.setDepth(6);
-			burst.explode(16);
-			this.time.delayedCall(520, () => burst.destroy());
+			burst.explode(20);
+			this.time.delayedCall(560, () => burst.destroy());
 		}
 
 		tween.stop();

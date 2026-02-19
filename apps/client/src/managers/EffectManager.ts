@@ -26,8 +26,9 @@ const TEX = {
 	STAR: "fx-star", // 4-point star — holy, stun, buffs     (16×16)
 	SHARD: "fx-shard", // elongated diamond — ice, lightning    (12×6)
 	SMOKE: "fx-smoke", // large fuzzy blob — smoke, aoe clouds  (32×32)
-	SPARK: "fx-spark", // tiny pixel — electricity, embers      (4×4)
+	SPARK: "fx-spark", // bright plus/cross — electricity, embers (8×8)
 	RING: "fx-ring", // thin circle outline — orbiting rings  (16×16)
+	CROSS: "fx-cross", // larger plus/cross — holy, heal, divine  (12×12)
 } as const;
 
 // ── EffectManager ─────────────────────────────────────────────────────────────
@@ -110,12 +111,13 @@ export class EffectManager {
 			g.destroy();
 		}
 
-		// fx-spark — tiny bright 4×4 pixel
+		// fx-spark — bright 8×8 plus/cross shape (replaces flat pixel square)
 		if (!this.scene.textures.exists(TEX.SPARK)) {
 			const g = this.scene.add.graphics();
 			g.fillStyle(0xffffff, 1);
-			g.fillRect(0, 0, 4, 4);
-			g.generateTexture(TEX.SPARK, 4, 4);
+			g.fillRect(3, 0, 2, 8); // vertical bar
+			g.fillRect(0, 3, 8, 2); // horizontal bar
+			g.generateTexture(TEX.SPARK, 8, 8);
 			g.destroy();
 		}
 
@@ -125,6 +127,19 @@ export class EffectManager {
 			g.lineStyle(2, 0xffffff, 1);
 			g.strokeCircle(8, 8, 6);
 			g.generateTexture(TEX.RING, 16, 16);
+			g.destroy();
+		}
+
+		// fx-cross — larger plus/cross shape for holy, heal and divine effects (12×12)
+		if (!this.scene.textures.exists(TEX.CROSS)) {
+			const g = this.scene.add.graphics();
+			g.fillStyle(0xffffff, 1);
+			g.fillRect(4, 0, 4, 12); // vertical bar
+			g.fillRect(0, 4, 12, 4); // horizontal bar
+			// Bright centre pixel
+			g.fillStyle(0xffffff, 1);
+			g.fillRect(4, 4, 4, 4);
+			g.generateTexture(TEX.CROSS, 12, 12);
 			g.destroy();
 		}
 	}
@@ -210,14 +225,16 @@ export class EffectManager {
 
 	/**
 	 * Jagged lightning bolt drawn from (x, y−height) down to (x, y).
-	 * Two passes: outer glow + bright core.
+	 * Three glow passes: wide soft halo → medium glow → bright core.
+	 * Optional branching splits a secondary bolt off ~40% down the main bolt.
 	 */
 	private lightning(
 		x: number,
 		y: number,
 		color = 0xffffff,
 		height = 120,
-		segments = 8,
+		segments = 10,
+		branch = false,
 	) {
 		const gfx = this.scene.add.graphics();
 		gfx.setDepth(16);
@@ -227,22 +244,45 @@ export class EffectManager {
 		for (let i = 1; i < segments; i++) {
 			pts.push(
 				new Phaser.Math.Vector2(
-					x + Phaser.Math.Between(-24, 24),
+					x + Phaser.Math.Between(-30, 30),
 					y - height + (height * i) / segments,
 				),
 			);
 		}
 		pts.push(new Phaser.Math.Vector2(x, y));
 
-		gfx.lineStyle(6, color, 0.2);
+		// Wide soft halo → medium glow → sharp bright core
+		gfx.lineStyle(10, color, 0.07);
+		gfx.strokePoints(pts, false);
+		gfx.lineStyle(5, color, 0.18);
 		gfx.strokePoints(pts, false);
 		gfx.lineStyle(2, color, 0.95);
 		gfx.strokePoints(pts, false);
 
+		// Optional branch: diverges from ~40% down at a randomised side angle
+		if (branch) {
+			const bi = Math.floor(segments * 0.4);
+			const origin = pts[bi];
+			const dir = Phaser.Math.Between(0, 1) ? 1 : -1;
+			const bPts: Phaser.Math.Vector2[] = [origin.clone()];
+			for (let i = 1; i <= 4; i++) {
+				bPts.push(
+					new Phaser.Math.Vector2(
+						origin.x + dir * (10 + i * 12) + Phaser.Math.Between(-8, 8),
+						origin.y + (height * 0.38 * i) / 4,
+					),
+				);
+			}
+			gfx.lineStyle(4, color, 0.1);
+			gfx.strokePoints(bPts, false);
+			gfx.lineStyle(1.5, color, 0.65);
+			gfx.strokePoints(bPts, false);
+		}
+
 		this.scene.tweens.add({
 			targets: gfx,
 			alpha: 0,
-			duration: 200,
+			duration: 220,
 			delay: 80,
 			ease: "Power2.In",
 			onComplete: () => gfx.destroy(),
@@ -252,26 +292,42 @@ export class EffectManager {
 	// ── Spell-specific effect functions ──────────────────────────────────────
 
 	private fx_fireball(px: number, py: number) {
-		this.flash(px, py, 0xffffff, 32, 80);
-		this.ring(px, py, 0xff4400, 5, 55, 380, 0.9, 4);
+		this.flash(px, py, 0xffffff, 40, 80);
+		this.ring(px, py, 0xff4400, 5, 58, 400, 0.9, 4);
+		// Delayed shockwave ring at larger radius
+		this.scene.time.delayedCall(50, () =>
+			this.ring(px, py, 0xff8800, 10, 85, 580, 0.5, 3),
+		);
 		this.burst(px, py, TEX.CIRCLE, {
 			colors: [0xff2200, 0xff7700, 0xffcc00, 0xffee88],
-			count: 40,
-			speed: { min: 80, max: 210 },
-			scale: { start: 0.9, end: 0 },
-			lifespan: { min: 400, max: 820 },
+			count: 50,
+			speed: { min: 80, max: 240 },
+			scale: { start: 1.0, end: 0 },
+			lifespan: { min: 400, max: 900 },
 			gravityY: -40,
-			radius: 6,
+			radius: 10,
+		});
+		// Dark smoke billowing outward
+		this.burst(px, py, TEX.SMOKE, {
+			colors: [0x661100, 0x441100, 0x220800],
+			count: 14,
+			speed: { min: 20, max: 65 },
+			scale: { start: 1.1, end: 0.2 },
+			lifespan: { min: 700, max: 1400 },
+			gravityY: -28,
+			radius: 22,
+			blendMode: Phaser.BlendModes.NORMAL,
+			alpha: { start: 0.55, end: 0 },
 		});
 		this.scene.time.delayedCall(80, () => {
 			this.burst(px, py, TEX.SPARK, {
 				colors: [0xff6600, 0xffaa00, 0xffff44],
-				count: 22,
-				speed: { min: 30, max: 80 },
-				scale: { start: 0.6, end: 0 },
-				lifespan: { min: 600, max: 1100 },
-				gravityY: -65,
-				radius: 20,
+				count: 28,
+				speed: { min: 30, max: 90 },
+				scale: { start: 0.55, end: 0 },
+				lifespan: { min: 700, max: 1300 },
+				gravityY: -72,
+				radius: 24,
 			});
 		});
 	}
@@ -298,47 +354,77 @@ export class EffectManager {
 	}
 
 	private fx_thunderstorm(px: number, py: number) {
-		this.lightning(px, py, 0xffffff, 140, 9);
-		this.scene.time.delayedCall(55, () => {
-			this.lightning(px - 32, py, 0xddddff, 100, 6);
-			this.lightning(px + 28, py, 0xddddff, 110, 7);
+		this.lightning(px, py, 0xffffff, 145, 12, true);
+		this.scene.time.delayedCall(45, () => {
+			this.lightning(px - 38, py, 0xddddff, 108, 7);
+			this.lightning(px + 32, py, 0xddddff, 118, 8);
 		});
-		this.ring(px, py, 0xffff44, 5, 70, 440, 0.8, 5);
-		this.flash(px, py, 0xffffff, 55, 110);
+		this.scene.time.delayedCall(110, () => {
+			this.lightning(px - 18, py, 0xaaaaff, 84, 6);
+			this.lightning(px + 50, py, 0xaaaaff, 94, 6);
+		});
+		this.ring(px, py, 0xffff44, 5, 78, 500, 0.88, 5);
+		this.flash(px, py, 0xffffff, 62, 110);
+		// Downward rain of electric sparks
 		this.burst(px, py, TEX.SPARK, {
 			colors: [0xffffff, 0xffffaa, 0xaaaaff],
-			count: 45,
-			speed: { min: 80, max: 210 },
+			count: 55,
+			speed: { min: 80, max: 230 },
 			scale: { start: 0.5, end: 0 },
-			lifespan: { min: 150, max: 420 },
+			lifespan: { min: 150, max: 460 },
 			angle: { min: 50, max: 130 },
-			gravityY: 230,
-			radius: 45,
+			gravityY: 260,
+			radius: 52,
+		});
+		// Horizontal arc sparks spreading outward
+		this.burst(px, py, TEX.SPARK, {
+			colors: [0xffffff, 0xffffaa],
+			count: 22,
+			speed: { min: 60, max: 165 },
+			scale: { start: 0.4, end: 0 },
+			lifespan: { min: 100, max: 280 },
+			angle: { min: 155, max: 205 },
+			radius: 24,
 		});
 	}
 
 	private fx_frost_nova(px: number, py: number) {
-		this.ring(px, py, 0x44ccff, 5, 85, 580, 0.9, 5);
+		this.ring(px, py, 0x44ccff, 5, 90, 600, 0.9, 5);
 		this.scene.time.delayedCall(90, () =>
-			this.ring(px, py, 0xffffff, 5, 68, 480, 0.6, 2),
+			this.ring(px, py, 0xffffff, 5, 72, 500, 0.6, 2),
 		);
+		this.scene.time.delayedCall(180, () =>
+			this.ring(px, py, 0x88ddff, 5, 54, 380, 0.4, 2),
+		);
+		// Primary ice shards bursting outward
 		this.burst(px, py, TEX.SHARD, {
 			colors: [0x44ccff, 0x88eeff, 0xffffff, 0xaaddff],
-			count: 36,
-			speed: { min: 90, max: 210 },
-			scale: { start: 0.65, end: 0 },
-			lifespan: { min: 380, max: 720 },
+			count: 42,
+			speed: { min: 90, max: 230 },
+			scale: { start: 0.75, end: 0 },
+			lifespan: { min: 400, max: 800 },
+			rotate: { start: 0, end: 360 },
+			radius: 10,
+		});
+		// Slow-drifting ice crystal fragments (longer lifespan)
+		this.burst(px, py, TEX.SHARD, {
+			colors: [0xffffff, 0xaaeeff, 0x88ccff],
+			count: 20,
+			speed: { min: 8, max: 36 },
+			scale: { start: 0.4, end: 0 },
+			lifespan: { min: 900, max: 1700 },
+			gravityY: -18,
+			radius: 62,
 			rotate: { start: 0, end: 180 },
-			radius: 8,
 		});
 		this.burst(px, py, TEX.CIRCLE, {
 			colors: [0x88ddff, 0xffffff],
-			count: 18,
-			speed: { min: 15, max: 50 },
-			scale: { start: 0.35, end: 0 },
-			lifespan: { min: 600, max: 1100 },
+			count: 22,
+			speed: { min: 15, max: 52 },
+			scale: { start: 0.38, end: 0 },
+			lifespan: { min: 650, max: 1200 },
 			gravityY: -28,
-			radius: 44,
+			radius: 48,
 		});
 	}
 
@@ -447,43 +533,67 @@ export class EffectManager {
 	}
 
 	private fx_holy_nova(px: number, py: number) {
-		this.ring(px, py, 0xffee44, 5, 90, 680, 0.9, 5);
-		this.scene.time.delayedCall(80, () =>
-			this.ring(px, py, 0xffffff, 5, 74, 570, 0.7, 3),
+		this.flash(px, py, 0xffffff, 55, 120);
+		this.ring(px, py, 0xffee44, 5, 94, 720, 0.9, 6);
+		this.scene.time.delayedCall(70, () =>
+			this.ring(px, py, 0xffffff, 5, 76, 590, 0.7, 3),
 		);
-		this.scene.time.delayedCall(160, () =>
-			this.ring(px, py, 0xffcc88, 5, 58, 460, 0.5, 2),
+		this.scene.time.delayedCall(140, () =>
+			this.ring(px, py, 0xffcc88, 5, 60, 475, 0.5, 2),
 		);
 		this.burst(px, py, TEX.STAR, {
 			colors: [0xffffff, 0xffffaa, 0xffcc44],
-			count: 36,
-			speed: { min: 80, max: 210 },
-			scale: { start: 0.65, end: 0 },
-			lifespan: { min: 500, max: 920 },
+			count: 44,
+			speed: { min: 80, max: 230 },
+			scale: { start: 0.7, end: 0 },
+			lifespan: { min: 500, max: 1000 },
+			rotate: { start: 0, end: 540 },
+			radius: 12,
+		});
+		// Cross-shaped holy light bursts
+		this.burst(px, py, TEX.CROSS, {
+			colors: [0xffffff, 0xffffcc],
+			count: 16,
+			speed: { min: 30, max: 90 },
+			scale: { start: 0.6, end: 0 },
+			lifespan: { min: 600, max: 1100 },
 			rotate: { start: 0, end: 360 },
-			radius: 10,
+			gravityY: -32,
+			radius: 42,
 		});
 		this.burst(px, py, TEX.CIRCLE, {
 			colors: [0xffffff, 0xffffa0],
-			count: 24,
-			speed: { min: 20, max: 60 },
-			scale: { start: 0.45, end: 0 },
-			lifespan: { min: 650, max: 1200 },
-			gravityY: -65,
-			radius: 55,
+			count: 28,
+			speed: { min: 20, max: 65 },
+			scale: { start: 0.5, end: 0 },
+			lifespan: { min: 700, max: 1300 },
+			gravityY: -68,
+			radius: 58,
 		});
 	}
 
 	private fx_heal(px: number, py: number) {
-		this.ring(px, py, 0x44ff88, 5, 40, 400, 0.8, 3);
+		this.flash(px, py, 0x44ff88, 28, 100);
+		this.ring(px, py, 0x44ff88, 5, 44, 440, 0.85, 3);
 		this.burst(px, py, TEX.CIRCLE, {
 			colors: [0x44ff88, 0x22cc66, 0x88ffcc, 0xffffff],
-			count: 24,
-			speed: { min: 15, max: 60 },
-			scale: { start: 0.55, end: 0 },
-			lifespan: { min: 550, max: 1120 },
-			gravityY: -62,
+			count: 30,
+			speed: { min: 15, max: 65 },
+			scale: { start: 0.6, end: 0 },
+			lifespan: { min: 600, max: 1200 },
+			gravityY: -68,
 			radius: 18,
+		});
+		// Cross-shaped healing sparks rising upward
+		this.burst(px, py, TEX.CROSS, {
+			colors: [0xffffff, 0xaaffcc, 0x44ff88],
+			count: 12,
+			speed: { min: 15, max: 48 },
+			scale: { start: 0.5, end: 0 },
+			lifespan: { min: 700, max: 1250 },
+			rotate: { start: 0, end: 180 },
+			gravityY: -55,
+			radius: 24,
 		});
 		this.burst(px, py, TEX.STAR, {
 			colors: [0xffffff, 0xaaffcc],
@@ -965,25 +1075,42 @@ export class EffectManager {
 		const px = sprite.renderX;
 		const py = sprite.renderY - TILE_SIZE * 0.4;
 
-		this.flash(px, py, 0xdd0000, 26, 140);
+		// Brief white flash → red flash for dramatic impact
+		this.flash(px, py, 0xffffff, 22, 60);
+		this.scene.time.delayedCall(55, () => {
+			this.flash(px, py, 0xdd0000, 32, 200);
+			this.ring(px, py, 0x880000, 5, 40, 380, 0.7, 3);
+		});
 		this.burst(px, py, TEX.SMOKE, {
 			colors: [0x330011, 0x110000, 0x220000, 0x440022],
-			count: 22,
-			speed: { min: 20, max: 75 },
-			scale: { start: 0.9, end: 0.1 },
-			lifespan: { min: 500, max: 1200 },
-			gravityY: -12,
-			radius: 18,
+			count: 30,
+			speed: { min: 22, max: 85 },
+			scale: { start: 1.0, end: 0.1 },
+			lifespan: { min: 600, max: 1500 },
+			gravityY: -14,
+			radius: 20,
 			blendMode: Phaser.BlendModes.NORMAL,
-			alpha: { start: 0.65, end: 0 },
+			alpha: { start: 0.7, end: 0 },
 		});
+		// Blood droplets falling downward
 		this.burst(px, py, TEX.CIRCLE, {
-			colors: [0xff2222, 0x880000, 0x222222],
-			count: 20,
-			speed: { min: 40, max: 130 },
-			scale: { start: 0.5, end: 0 },
-			lifespan: { min: 280, max: 580 },
-			radius: 8,
+			colors: [0xff2222, 0x880000, 0x440000],
+			count: 28,
+			speed: { min: 50, max: 160 },
+			scale: { start: 0.55, end: 0 },
+			lifespan: { min: 300, max: 650 },
+			radius: 10,
+			gravityY: 85,
+		});
+		// Blood splatter arcing upward
+		this.burst(px, py, TEX.CIRCLE, {
+			colors: [0xff0000, 0xcc0000],
+			count: 14,
+			speed: { min: 60, max: 145 },
+			scale: { start: 0.42, end: 0 },
+			lifespan: { min: 200, max: 420 },
+			angle: { min: 220, max: 320 },
+			gravityY: 180,
 		});
 	}
 
@@ -998,29 +1125,45 @@ export class EffectManager {
 		const px = sprite.renderX;
 		const py = sprite.renderY - TILE_SIZE * 0.5;
 
-		this.flash(px, py, 0xffff88, 48, 200);
-		this.ring(px, py, 0xffff00, 5, 58, 640, 0.9, 5);
-		this.scene.time.delayedCall(100, () =>
-			this.ring(px, py, 0xffd700, 5, 44, 520, 0.65, 3),
+		this.flash(px, py, 0xffff88, 60, 250);
+		this.ring(px, py, 0xffff00, 5, 64, 700, 0.9, 6);
+		this.scene.time.delayedCall(80, () =>
+			this.ring(px, py, 0xffd700, 5, 50, 580, 0.7, 4),
 		);
+		this.scene.time.delayedCall(160, () =>
+			this.ring(px, py, 0xffffff, 5, 36, 460, 0.5, 2),
+		);
+		// Primary spinning gold stars
 		this.burst(px, py, TEX.STAR, {
-			colors: [0xffff00, 0xffd700, 0xffffff],
-			count: 36,
-			speed: { min: 55, max: 170 },
-			scale: { start: 0.7, end: 0 },
-			lifespan: { min: 500, max: 1050 },
-			rotate: { start: 0, end: 540 },
-			radius: 10,
-			gravityY: -35,
+			colors: [0xffff00, 0xffd700, 0xffffff, 0xffee88],
+			count: 50,
+			speed: { min: 55, max: 200 },
+			scale: { start: 0.8, end: 0 },
+			lifespan: { min: 600, max: 1200 },
+			rotate: { start: 0, end: 720 },
+			radius: 12,
+			gravityY: -40,
 		});
-		this.burst(px, py, TEX.CIRCLE, {
-			colors: [0xffff44, 0xffffff],
-			count: 22,
-			speed: { min: 20, max: 72 },
-			scale: { start: 0.4, end: 0 },
-			lifespan: { min: 600, max: 1250 },
-			gravityY: -55,
+		// Golden cross-shaped sparks
+		this.burst(px, py, TEX.CROSS, {
+			colors: [0xffffff, 0xffff44],
+			count: 14,
+			speed: { min: 25, max: 80 },
+			scale: { start: 0.65, end: 0 },
+			lifespan: { min: 800, max: 1400 },
+			rotate: { start: 0, end: 360 },
+			gravityY: -50,
 			radius: 28,
+		});
+		// Wide sparkle cloud
+		this.burst(px, py, TEX.CIRCLE, {
+			colors: [0xffff44, 0xffd700, 0xffffff],
+			count: 32,
+			speed: { min: 35, max: 95 },
+			scale: { start: 0.45, end: 0 },
+			lifespan: { min: 700, max: 1450 },
+			gravityY: -62,
+			radius: 40,
 		});
 		// Large styled text — bigger than normal floatText
 		this.floatText(px, py - 56, "✦ LEVEL UP! ✦", "#ffff00", "18px");
@@ -1084,8 +1227,20 @@ export class EffectManager {
 		const color = this.spellWindupColor(spellId);
 		const px = sprite.renderX;
 		const py = sprite.renderY - TILE_SIZE * 0.4;
-		// Contracts from outer radius inward (charging effect)
-		this.ring(px, py, color, 32, 5, 200, 0.65, 2);
+		// Two contracting rings at different radii/timings for a charging effect
+		this.ring(px, py, color, 34, 4, 200, 0.7, 2);
+		this.scene.time.delayedCall(60, () =>
+			this.ring(px, py, color, 20, 3, 140, 0.5, 1),
+		);
+		// Small particle spray to draw the eye
+		this.burst(px, py, TEX.SPARK, {
+			colors: [color],
+			count: 6,
+			speed: { min: 10, max: 28 },
+			scale: { start: 0.3, end: 0 },
+			lifespan: { min: 100, max: 200 },
+			radius: 22,
+		});
 	}
 
 	// ── Public API ────────────────────────────────────────────────────────────
@@ -1375,28 +1530,33 @@ export class EffectManager {
 		if (dist < 4) return; // caster is at target, skip
 
 		const { color, texKey, size } = this.projectileStyle(spellId);
+		const orbSize = size * 1.5;
 
-		// Glowing orb that travels source → target
+		// Glowing orb that travels source → target (larger, multi-layer glow)
 		const orb = this.scene.add.graphics();
 		orb.setDepth(16);
 		orb.setBlendMode(Phaser.BlendModes.ADD);
 
-		// Core glow
-		for (let r = size; r >= 1; r--) {
-			orb.fillStyle(color, 1 - (r - 1) / size);
+		// Soft outer halo + bright core
+		for (let r = Math.round(orbSize * 2); r >= 1; r--) {
+			orb.fillStyle(color, (1 - (r - 1) / Math.round(orbSize * 2)) * 0.5);
+			orb.fillCircle(0, 0, r);
+		}
+		for (let r = Math.round(orbSize); r >= 1; r--) {
+			orb.fillStyle(color, 1 - (r - 1) / Math.round(orbSize));
 			orb.fillCircle(0, 0, r);
 		}
 		orb.setPosition(sx, sy);
 
-		// Trailing particle emitter that follows the orb
+		// Denser trail with slight colour variation
 		const trail = this.scene.add.particles(sx, sy, texKey, {
-			speed: { min: 2, max: 12 },
-			scale: { start: 0.45, end: 0 },
-			lifespan: { min: 120, max: 280 },
-			tint: [color],
+			speed: { min: 2, max: 15 },
+			scale: { start: 0.55, end: 0 },
+			lifespan: { min: 150, max: 320 },
+			tint: [color, 0xffffff],
 			blendMode: Phaser.BlendModes.ADD,
-			alpha: { start: 0.8, end: 0 },
-			frequency: 18,
+			alpha: { start: 0.9, end: 0 },
+			frequency: 12,
 		});
 		trail.setDepth(15);
 

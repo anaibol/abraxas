@@ -511,15 +511,16 @@ export class PlayerSprite {
       this.renderX, this.renderY - TILE_SIZE * 1.4,
       "status-star",
       {
-        tint: [0xffff00, 0xffcc00, 0xffffff],
-        speed: { min: 18, max: 42 },
+        tint: [0xffff00, 0xffcc00, 0xffffff, 0xffee44],
+        speed: { min: 20, max: 48 },
         angle: { min: 0, max: 360 },
-        scale: { start: 0.55, end: 0.15 },
-        alpha: { start: 1, end: 0.4 },
-        lifespan: { min: 650, max: 1050 },
-        quantity: 1,
-        frequency: 95,
+        scale: { start: 0.6, end: 0.12 },
+        alpha: { start: 1, end: 0.3 },
+        lifespan: { min: 700, max: 1100 },
+        quantity: 2,
+        frequency: 80,
         rotate: { start: 0, end: 720 },
+        x: { min: -TILE_SIZE * 0.5, max: TILE_SIZE * 0.5 },
       },
     );
     this.stunEmitter.setDepth(this.container.depth + 3);
@@ -547,16 +548,16 @@ export class PlayerSprite {
       this.renderX, this.renderY - TILE_SIZE * 0.2,
       "status-dot",
       {
-        tint: [0x44ff44, 0x007700, 0x88ff00, 0x33cc00],
-        speed: { min: 8, max: 24 },
+        tint: [0x44ff44, 0x007700, 0x88ff00, 0x33cc00, 0xaaff00],
+        speed: { min: 8, max: 28 },
         angle: { min: 0, max: 360 },
-        scale: { start: 0.45, end: 0 },
-        alpha: { start: 0.9, end: 0 },
-        lifespan: { min: 700, max: 1200 },
-        quantity: 1,
-        frequency: 80,
-        gravityY: 60,
-        x: { min: -10, max: 10 },
+        scale: { start: 0.52, end: 0 },
+        alpha: { start: 0.95, end: 0 },
+        lifespan: { min: 700, max: 1300 },
+        quantity: 2,
+        frequency: 60,
+        gravityY: 65,
+        x: { min: -12, max: 12 },
       },
     );
     this.poisonEmitter.setDepth(this.container.depth + 2);
@@ -656,12 +657,15 @@ export class PlayerSprite {
     if (!scene || this.invulnRing) return;
     this.ensureStatusTextures(scene);
 
-    // Rotating halo ring inside the container
+    // Double-ellipse halo ring inside the container (outer + inner for depth)
     const ring = scene.add.graphics();
-    ring.lineStyle(3, 0xffffff, 0.85);
     ring.setBlendMode(Phaser.BlendModes.ADD);
-    // Slightly flattened ellipse for a 3-D-halo feel
-    ring.strokeEllipse(0, -TILE_SIZE * 0.35, TILE_SIZE * 1.55, TILE_SIZE * 0.45);
+    // Outer halo
+    ring.lineStyle(2.5, 0xffffff, 0.85);
+    ring.strokeEllipse(0, -TILE_SIZE * 0.35, TILE_SIZE * 1.62, TILE_SIZE * 0.5);
+    // Inner halo (tighter, slightly blue-tinted)
+    ring.lineStyle(1.5, 0x88ccff, 0.6);
+    ring.strokeEllipse(0, -TILE_SIZE * 0.35, TILE_SIZE * 1.25, TILE_SIZE * 0.35);
     this.container.add(ring);
     this.invulnRing = ring;
 
@@ -674,21 +678,21 @@ export class PlayerSprite {
       ease: "Sine.InOut",
     });
 
-    // Orbiting white sparkles (world-space emitter)
+    // Orbiting white sparkles (world-space emitter) — more particles, wider spread
     this.invulnEmitter = scene.add.particles(
       this.renderX, this.renderY,
       "status-star",
       {
-        tint: [0xffffff, 0xeef8ff, 0xffee88],
-        speed: { min: 15, max: 38 },
+        tint: [0xffffff, 0xeef8ff, 0xffee88, 0x88ccff],
+        speed: { min: 18, max: 45 },
         angle: { min: 0, max: 360 },
-        scale: { start: 0.38, end: 0 },
-        alpha: { start: 0.9, end: 0 },
-        lifespan: { min: 500, max: 850 },
-        quantity: 1,
-        frequency: 85,
-        gravityY: -18,
-        x: { min: -TILE_SIZE * 0.6, max: TILE_SIZE * 0.6 },
+        scale: { start: 0.45, end: 0 },
+        alpha: { start: 0.95, end: 0 },
+        lifespan: { min: 500, max: 900 },
+        quantity: 2,
+        frequency: 65,
+        gravityY: -20,
+        x: { min: -TILE_SIZE * 0.7, max: TILE_SIZE * 0.7 },
         rotate: { start: 0, end: 360 },
       },
     );
