@@ -252,49 +252,42 @@ export class InventorySystem {
 
   dropAllItems(player: Player): { itemId: string; quantity: number }[] {
     const dropped: { itemId: string; quantity: number }[] = [];
-    const basicItems = new Set(BASIC_ITEMS_BY_CLASS[player.classType] ?? []);
+    const basicItems = BASIC_ITEMS_BY_CLASS[player.classType];
 
-    // Track which basic item types are already accounted for so duplicates drop.
-    // Equipment is checked first — an equipped basic item takes priority over
-    // any copy sitting in the bag.
+    // Equipment is prioritised — an equipped basic item counts as the "kept"
+    // copy so any duplicate in the bag still drops.
     const basicKept = new Set<string>();
 
     for (const slotKey of Object.values(EQUIP_SLOT_MAP)) {
-      const itemId = getEquipSlot(player, slotKey);
+      const itemId = player[slotKey];
       if (!itemId) continue;
       if (basicItems.has(itemId)) {
         basicKept.add(itemId);
       } else {
         dropped.push({ itemId, quantity: 1 });
-        setEquipSlot(player, slotKey, "");
+        player[slotKey] = "";
       }
     }
 
-    // Inventory: keep one copy (or full stack for stackables) of each basic
-    // item not already covered by an equipped slot.
-    const keptInventory: { itemId: string; quantity: number }[] = [];
+    // Keep one non-stackable or the full stack of a stackable basic item,
+    // as long as it isn't already covered by an equipped slot above.
+    const toRestore: { itemId: string; quantity: number }[] = [];
 
     player.inventory.forEach((item) => {
       if (!item?.itemId) return;
       if (basicItems.has(item.itemId) && !basicKept.has(item.itemId)) {
         basicKept.add(item.itemId);
-        const def = ITEMS[item.itemId];
-        // Keep the full stack for stackable consumables; keep 1 for gear.
-        const keepQty = def?.stackable ? item.quantity : 1;
-        keptInventory.push({ itemId: item.itemId, quantity: keepQty });
-        if (item.quantity > keepQty) {
+        const keepQty = ITEMS[item.itemId]?.stackable ? item.quantity : 1;
+        toRestore.push({ itemId: item.itemId, quantity: keepQty });
+        if (item.quantity > keepQty)
           dropped.push({ itemId: item.itemId, quantity: item.quantity - keepQty });
-        }
       } else {
         dropped.push({ itemId: item.itemId, quantity: item.quantity });
       }
     });
 
     player.inventory.clear();
-
-    for (const { itemId, quantity } of keptInventory) {
-      this.addItem(player, itemId, quantity);
-    }
+    for (const { itemId, quantity } of toRestore) this.addItem(player, itemId, quantity);
 
     this.recalcStats(player);
     return dropped;
