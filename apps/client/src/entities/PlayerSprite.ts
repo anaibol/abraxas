@@ -32,7 +32,6 @@ export class PlayerSprite {
   private nameText: Phaser.GameObjects.Text;
   private hpBarBg: Phaser.GameObjects.Rectangle;
   private hpBar: Phaser.GameObjects.Rectangle;
-  private manaBar: Phaser.GameObjects.Rectangle;
   private speakingIcon: Phaser.GameObjects.Text;
 
   public targetX: number;
@@ -43,7 +42,6 @@ export class PlayerSprite {
   public classType: string;
   public isLocal: boolean;
   private maxHp: number = 1;
-  private maxMana: number = 1;
   private pixelsPerSecond: number;
 
   private resolver: AoGrhResolver;
@@ -85,11 +83,9 @@ export class PlayerSprite {
       const defaultStats = CLASS_STATS.WARRIOR;
       this.pixelsPerSecond = defaultStats.speedTilesPerSecond * TILE_SIZE;
       this.maxHp = defaultStats.hp;
-      this.maxMana = defaultStats.mana;
     } else {
       this.pixelsPerSecond = stats.speedTilesPerSecond * TILE_SIZE;
       this.maxHp = stats.hp;
-      this.maxMana = stats.mana ?? 0;
     }
 
     const res = scene.registry.get("aoResolver");
@@ -170,13 +166,9 @@ export class PlayerSprite {
       3,
       0x33cc33,
     );
-    this.manaBar = scene.add.rectangle(
-      0,
-      TILE_SIZE / 2 + 6,
-      barWidth,
-      2,
-      0x3388ff,
-    );
+
+    this.hpBarBg.setVisible(false);
+    this.hpBar.setVisible(false);
 
     this.speakingIcon = scene.add.text(0, -45, "🎤", {
       fontSize: "16px",
@@ -189,13 +181,25 @@ export class PlayerSprite {
       this.nameText,
       this.hpBarBg,
       this.hpBar,
-      this.manaBar,
       this.speakingIcon,
     ];
     if (this.headSprite) containerChildren.push(this.headSprite);
 
     this.container = scene.add.container(px, py, containerChildren);
     this.container.setDepth(10);
+
+    this.container.setInteractive(
+      new Phaser.Geom.Rectangle(-TILE_SIZE / 2, -TILE_SIZE, TILE_SIZE, TILE_SIZE * 2),
+      Phaser.Geom.Rectangle.Contains,
+    );
+    this.container.on("pointerover", () => {
+      this.hpBarBg.setVisible(true);
+      this.hpBar.setVisible(true);
+    });
+    this.container.on("pointerout", () => {
+      this.hpBarBg.setVisible(false);
+      this.hpBar.setVisible(false);
+    });
 
     // Ensure body walk animation exists for the initial direction
     this.resolver.ensureAnimation(scene, bodyGrhId, "body");
@@ -579,16 +583,12 @@ export class PlayerSprite {
     this.updateZOrder();
   }
 
-  updateHpMana(hp: number, mana: number) {
+  updateHpMana(hp: number, _mana: number) {
     const hpRatio = Math.max(0, hp / this.maxHp);
-    const manaRatio = Math.max(0, mana / this.maxMana);
     const barWidth = TILE_SIZE - 6;
 
     this.hpBar.width = barWidth * hpRatio;
     this.hpBar.x = -(barWidth * (1 - hpRatio)) / 2;
-
-    this.manaBar.width = barWidth * manaRatio;
-    this.manaBar.x = -(barWidth * (1 - manaRatio)) / 2;
 
     if (hpRatio > 0.5) {
       this.hpBar.setFillStyle(0x33cc33);

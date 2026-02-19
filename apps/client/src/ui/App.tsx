@@ -118,6 +118,17 @@ export function App() {
   useEffect(() => {
     if (phase !== "game") return;
 
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase !== "game") return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Enter" && !isChatOpen) setIsChatOpen(true);
       if (e.key === "Escape" && isChatOpen) setIsChatOpen(false);
