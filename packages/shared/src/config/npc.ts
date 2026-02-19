@@ -18,7 +18,7 @@ export const NPC_APPEARANCE: Record<
 export const NPC_STATS: Record<NpcType, NpcStats> = {
 	orc: {
 		hp: 120,
-		str: 18,
+		str: 12,
 		agi: 10,
 		int: 5,
 		speedTilesPerSecond: 5,
@@ -31,7 +31,7 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 	},
 	skeleton: {
 		hp: 60,
-		str: 12,
+		str: 8,
 		agi: 15,
 		int: 5,
 		speedTilesPerSecond: 6,
@@ -44,7 +44,7 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 	},
 	goblin: {
 		hp: 40,
-		str: 8,
+		str: 6,
 		agi: 18,
 		int: 5,
 		speedTilesPerSecond: 7,
@@ -58,7 +58,7 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 	},
 	wolf: {
 		hp: 80,
-		str: 15,
+		str: 10,
 		agi: 20,
 		int: 5,
 		speedTilesPerSecond: 8,
@@ -85,7 +85,7 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 	},
 	spider: {
 		hp: 50,
-		str: 10,
+		str: 7,
 		agi: 25,
 		int: 5,
 		speedTilesPerSecond: 8,

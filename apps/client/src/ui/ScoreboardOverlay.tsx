@@ -1,4 +1,5 @@
 import { Box, Flex, Text, Grid } from "@chakra-ui/react";
+import { P } from "./palette";
 
 export type KillStats = {
   npcKills: number;
@@ -19,21 +20,6 @@ type ScoreboardOverlayProps = {
   myLevel: number;
 };
 
-const P = {
-  bg: "rgba(8,8,12,0.95)",
-  surface: "#0e0c14",
-  raised: "#14111e",
-  border: "#2e2840",
-  borderLight: "#3e3555",
-  gold: "#d4a843",
-  goldDim: "#b8962e",
-  goldDark: "#6e5a18",
-  text: "#c8b68a",
-  textDim: "#8a7a60",
-  textMuted: "#4a3e2a",
-  red: "#c41e3a",
-  green: "#44cc88",
-};
 
 const FONT = "'Friz Quadrata', Georgia, serif";
 

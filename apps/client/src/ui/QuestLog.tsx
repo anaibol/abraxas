@@ -1,21 +1,12 @@
 import { Box, Flex, Text, VStack, Progress } from "@chakra-ui/react";
 import { QUESTS, type PlayerQuestState } from "@abraxas/shared";
+import { P } from "./palette";
 import { useTranslation } from "react-i18next";
 
 interface QuestLogProps {
     quests: PlayerQuestState[];
 }
 
-const P = {
-  bg: "#0e0c14",
-  surface: "#14111e",
-  border: "#2e2840",
-  gold: "#d4a843",
-  goldDark: "#6e5a18",
-  goldMuted: "#8a7a60",
-  font: "'Friz Quadrata', Georgia, serif",
-  mono: "'Consolas', monospace",
-};
 
 export function QuestLog({ quests }: QuestLogProps) {
     const { t } = useTranslation();

@@ -3,22 +3,8 @@ import { Box, Flex, Text, Grid, Button, Input, VStack, HStack } from "@chakra-ui
 import { ITEMS } from "@abraxas/shared";
 import type { TradeState } from "@abraxas/shared";
 import type { InventorySlot } from "./Sidebar";
+import { P } from "./palette";
 
-const P = {
-  bg: "#0e0c14",
-  surface: "#14111e",
-  raised: "#1a1628",
-  darkest: "#08080c",
-  border: "#2e2840",
-  borderLight: "#3e3555",
-  gold: "#d4a843",
-  goldDim: "#b8962e",
-  goldDark: "#6e5a18",
-  goldText: "#c8b68a",
-  blood: "#8b1a1a",
-  font: "'Friz Quadrata', Georgia, serif",
-  mono: "'Consolas', monospace",
-};
 
 const ITEM_ICONS: Record<string, string> = {
   weapon: "⚔️", armor: "🛡️", shield: "🛡️", helmet: "⛑️",

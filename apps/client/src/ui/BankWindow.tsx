@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Box, Flex, Text, Button, Grid, Input, Tooltip } from "@chakra-ui/react";
 import { ITEMS, type Item } from "@abraxas/shared";
+import { P } from "./palette";
 import { useTranslation } from "react-i18next";
 
 interface BankSlot {
@@ -17,18 +18,6 @@ interface BankWindowProps {
   onClose: () => void;
 }
 
-const P = {
-  bg: "rgba(10, 8, 16, 0.98)",
-  surface: "#14111e",
-  raised: "#1a1628",
-  border: "#3a3250",
-  gold: "#d4a843",
-  goldDim: "#b8962e",
-  goldDark: "#6e5a18",
-  goldText: "#c8b68a",
-  goldMuted: "#8a7a60",
-  font: "'Friz Quadrata', Georgia, serif",
-};
 
 export function BankWindow({
   bankItems,

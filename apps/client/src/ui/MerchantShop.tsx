@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Box, Flex, Text, Button, Grid, Input } from "@chakra-ui/react";
 import { ITEMS, type Item } from "@abraxas/shared";
+import { P } from "./palette";
 import { useTranslation } from "react-i18next";
 
 interface MerchantShopProps {
@@ -13,16 +14,6 @@ interface MerchantShopProps {
   onClose: () => void;
 }
 
-const P = {
-  bg: "rgba(14, 12, 20, 0.95)",
-  raised: "#1a1628",
-  border: "#3a3250",
-  gold: "#d4a843",
-  goldDim: "#b8962e",
-  goldDark: "#6e5a18",
-  goldText: "#c8b68a",
-  font: "'Friz Quadrata', Georgia, serif",
-};
 
 export function MerchantShop({ npcId, merchantInventory, playerGold, playerInventory, onBuy, onSell, onClose }: MerchantShopProps) {
   const { t } = useTranslation();
