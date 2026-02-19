@@ -196,6 +196,8 @@ export interface BaseEntityState {
 
 export interface PlayerEntityState extends BaseEntityState {
   classType: ClassType;
+  mana: number;
+  maxMana: number;
   equipWeapon: string;
   equipShield: string;
   equipHelmet: string;

@@ -19,6 +19,7 @@ import { Console, type ConsoleMessage } from "./Console";
 import { Minimap } from "./Minimap";
 import { MerchantShop } from "./MerchantShop";
 import { SocialPanel } from "./SocialPanel";
+import { BankWindow } from "./BankWindow";
 import type {
   ClassType,
   TileMap,
@@ -79,6 +80,9 @@ export function App() {
     npcId: string;
     text: string;
     options: { text: string; action: string; data?: unknown }[];
+  } | null>(null);
+  const [bankData, setBankData] = useState<{
+    items: { itemId: string; quantity: number; slotIndex: number }[];
   } | null>(null);
   const [isRecording, setIsRecording] = useState(false);
 
@@ -355,6 +359,24 @@ export function App() {
         network
           .getRoom()
           .onMessage(
+            ServerMessageType.BankOpened,
+            () => {
+              setBankData({ items: [] });
+            },
+          );
+
+        network
+          .getRoom()
+          .onMessage(
+            ServerMessageType.BankSync,
+            (data: ServerMessages[ServerMessageType.BankSync]) => {
+              setBankData({ items: data.items });
+            },
+          );
+
+        network
+          .getRoom()
+          .onMessage(
             ServerMessageType.Audio,
             (data: ServerMessages[ServerMessageType.Audio]) => {
               audioManagerRef.current?.playAudioChunk(data.data);
@@ -574,6 +596,25 @@ export function App() {
                   networkRef.current?.getRoom().send(action, data)
                 }
                 onClose={() => setDialogueData(null)}
+              />
+            )}
+            {bankData && (
+              <BankWindow
+                bankItems={bankData.items}
+                playerInventory={(playerState.inventory ?? []).map((it) => ({
+                  ...it,
+                  slotIndex: it.slotIndex,
+                }))}
+                onDeposit={(itemId, qty, slot) =>
+                  networkRef.current?.sendBankDeposit(itemId, qty, slot)
+                }
+                onWithdraw={(itemId, qty, slot) =>
+                  networkRef.current?.sendBankWithdraw(itemId, qty, slot)
+                }
+                onClose={() => {
+                  networkRef.current?.sendBankClose();
+                  setBankData(null);
+                }}
               />
             )}
           </Flex>

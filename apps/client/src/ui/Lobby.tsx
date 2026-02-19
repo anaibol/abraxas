@@ -1,6 +1,10 @@
 import { useState } from "react";
-import { Box, Flex, Text, Input, Button, Grid } from "@chakra-ui/react";
-import type { ClassType } from "@abraxas/shared";
+import { 
+  Box, Flex, Text, Input, Button, Grid, 
+  IconButton, 
+} from "@chakra-ui/react";
+import { keyframes } from "@emotion/react";
+import { type ClassType, getRandomName } from "@abraxas/shared";
 
 interface LobbyProps {
   onJoin: (charId: string, classType: ClassType, token: string) => void;
@@ -8,8 +12,8 @@ interface LobbyProps {
 }
 
 const P = {
-  bg: "#0e0c14",
-  surface: "#14111e",
+  bg: "#0e0c14dd", // Semitransparent for glassmorphism
+  surface: "#14111ecc",
   raised: "#1a1628",
   border: "#2e2840",
   gold: "#d4a843",
@@ -31,25 +35,67 @@ const CLASS_TYPES: readonly ClassType[] = [
 
 const CLASS_INFO: Record<
   ClassType,
-  { icon: string; color: string; desc: string }
+  { icon: string; color: string; desc: string; longDesc: string }
 > = {
-  WARRIOR: { icon: "\u2694\uFE0F", color: "#c41e3a", desc: "HP:180 STR:25" },
-  MAGE:    { icon: "\u2728",       color: "#3355cc", desc: "INT:28 Mana:150" },
-  RANGER:  { icon: "\uD83C\uDFF9", color: "#33aa44", desc: "AGI:26 Range:5" },
-  ROGUE:   { icon: "\uD83D\uDDE1\uFE0F", color: "#9944cc", desc: "AGI:24 SPD:8" },
-  CLERIC:  { icon: "\uD83D\uDEE1\uFE0F", color: "#d4a843", desc: "HP:160 STR:20" },
+  WARRIOR: { 
+    icon: "\u2694\uFE0F", 
+    color: "#e63946", 
+    desc: "HP:180 STR:25", 
+    longDesc: "A master of close-quarters combat with high survivability." 
+  },
+  MAGE: { 
+    icon: "\u2728", 
+    color: "#4895ef", 
+    desc: "INT:28 Mana:150", 
+    longDesc: "Wields destructive arcane power from a distance." 
+  },
+  RANGER: { 
+    icon: "\uD83C\uDFF9", 
+    color: "#4caf50", 
+    desc: "AGI:26 Range:5", 
+    longDesc: "Swift and precise, striking foes before they can react." 
+  },
+  ROGUE: { 
+    icon: "\uD83D\uDDE1\uFE0F", 
+    color: "#9d4edd", 
+    desc: "AGI:24 SPD:8", 
+    longDesc: "A shadowy assassin specializing in speed and critical strikes." 
+  },
+  CLERIC: { 
+    icon: "\uD83D\uDEE1\uFE0F", 
+    color: "#ffca3a", 
+    desc: "HP:160 STR:20", 
+    longDesc: "A holy defender who blends combat with divine protection." 
+  },
 };
 
+const shimmer = keyframes`
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+`;
+
+const entrance = keyframes`
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+`;
+
+const titleGlow = keyframes`
+  0% { text-shadow: 0 0 10px rgba(212, 168, 67, 0.2); }
+  50% { text-shadow: 0 0 25px rgba(212, 168, 67, 0.6); }
+  100% { text-shadow: 0 0 10px rgba(212, 168, 67, 0.2); }
+`;
+
 const inputStyle = {
-  bg: "#08080c",
+  bg: "rgba(8, 8, 12, 0.8)",
   border: "1px solid",
-  borderRadius: "2px",
+  borderRadius: "4px",
   color: P.goldText,
   fontFamily: P.font,
   fontSize: "14px",
   p: "2.5",
   outline: "none",
-  _focus: { borderColor: P.gold },
+  transition: "all 0.2s",
+  _focus: { borderColor: P.gold, boxShadow: `0 0 10px ${P.gold}44` },
 } as const;
 
 const CHAR_NAME_REGEX = /^[A-Z][a-z]*( [A-Z][a-z]*)*$/;
@@ -77,11 +123,8 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
   const [classType, setClassType] = useState<ClassType>("WARRIOR");
   const [error, setError] = useState("");
 
-  // After a successful login, the server returns the character name + class.
-  // We store them so the class_select screen can pre-fill and join correctly.
   const [resolvedCharName, setResolvedCharName] = useState("");
   const [resolvedCharId, setResolvedCharId] = useState("");
-  const [, setResolvedClass] = useState<ClassType>("WARRIOR");
   const [token, setToken] = useState("");
 
   const handleAuth = async () => {
@@ -128,22 +171,22 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
       setResolvedCharId(data.charId ?? "");
 
       if (mode === "login") {
-        // Server tells us the char's name and class from the DB.
         const name: string = data.charName ?? "";
-        const cls: ClassType = data.classType ?? "warrior";
+        const cls: ClassType = data.classType ?? "WARRIOR";
         setResolvedCharName(name);
-        setResolvedClass(cls);
         setClassType(cls);
         onJoin(data.charId, cls, data.token);
       } else {
-        // Registration: go to class_select to confirm the chosen class.
         setResolvedCharName(charName.trim());
-        setResolvedClass(classType);
         setMode("class_select");
       }
     } catch {
       setError("Network error");
     }
+  };
+
+  const handleRandomName = () => {
+    setCharName(getRandomName());
   };
 
   const labelStyle = {
@@ -152,6 +195,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
     letterSpacing: "2px",
     textTransform: "uppercase" as const,
     mb: "1.5",
+    fontWeight: "600",
   };
 
   return (
@@ -160,176 +204,220 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
       inset="0"
       align="center"
       justify="center"
-      bg="rgba(4,4,8,0.96)"
+      bg="rgba(2, 2, 4, 0.9)"
       zIndex="100"
+      backdropFilter="blur(8px)"
+      animation={`${entrance} 0.5s ease-out`}
     >
       <Box
         bg={P.bg}
-        border="2px solid"
-        borderColor={P.gold}
-        borderRadius="4px"
-        p="10"
-        minW="420px"
-        boxShadow={`0 0 60px rgba(180,140,50,0.12), inset 0 0 40px rgba(0,0,0,0.5)`}
+        border="1px solid"
+        borderColor={P.goldDim}
+        backdropFilter="blur(20px)"
+        borderRadius="12px"
+        p="12"
+        minW="460px"
+        boxShadow={`0 10px 50px rgba(0,0,0,0.8), 0 0 0 1px ${P.border}`}
         fontFamily={P.font}
+        position="relative"
+        overflow="hidden"
       >
+        {/* Shimmer Effect */}
+        <Box
+          position="absolute"
+          top="0"
+          left="0"
+          right="0"
+          h="1px"
+          bg={`linear-gradient(90deg, transparent, ${P.gold}, transparent)`}
+          backgroundSize="200% 100%"
+          animation={`${shimmer} 3s linear infinite`}
+        />
+
         <Text
           textAlign="center"
-          fontSize="32px"
-          fontWeight="700"
+          fontSize="40px"
+          fontWeight="900"
           color={P.gold}
-          letterSpacing="6px"
-          textShadow="0 0 24px rgba(180,140,50,0.35)"
-          mb="0.5"
+          letterSpacing="10px"
+          textTransform="uppercase"
+          animation={`${titleGlow} 4s infinite ease-in-out`}
+          mb="1"
         >
           Abraxas
         </Text>
         <Text
           textAlign="center"
-          fontSize="11px"
+          fontSize="12px"
           color={P.goldDark}
-          letterSpacing="8px"
+          letterSpacing="12px"
           textTransform="uppercase"
-          mb="7"
+          mb="8"
+          ml="12px" // To balance the letter spacing
         >
           Arena
         </Text>
+
         <Box
           h="1px"
-          bg={`linear-gradient(90deg, transparent, ${P.gold}, transparent)`}
-          mb="7"
+          bg={`linear-gradient(90deg, transparent, ${P.border}, transparent)`}
+          mb="8"
         />
 
         {mode !== "class_select" ? (
-          <>
-            <Text {...labelStyle}>Email</Text>
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              borderColor={P.border}
-              mb="4"
-              {...inputStyle}
-            />
+          <Flex direction="column" gap="4">
+            <Box>
+              <Text {...labelStyle}>Email Address</Text>
+              <Input
+                type="email"
+                placeholder="knight@abraxas.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                {...inputStyle}
+              />
+            </Box>
 
-            <Text {...labelStyle}>Password</Text>
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              borderColor={P.border}
-              mb={mode === "register" ? "4" : "5"}
-              {...inputStyle}
-            />
+            <Box>
+              <Text {...labelStyle}>Secret Key</Text>
+              <Input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                {...inputStyle}
+              />
+            </Box>
 
-            {mode === "register" && (
-              <>
-                <Text {...labelStyle}>Character Name</Text>
+            <Box>
+              <Text {...labelStyle}>Character Name</Text>
+              <Flex gap="2">
                 <Input
                   value={charName}
                   onChange={(e) => setCharName(sanitizeCharName(e.target.value))}
-                  onBlur={() => setCharName((n) => formatCharName(n))}
-                  placeholder="Dark Knight"
+                  onBlur={() => setCharName((n: string) => formatCharName(n))}
+                  placeholder="E.g. Valerius the Bold"
                   maxLength={20}
-                  borderColor={P.border}
-                  mb="4"
                   {...inputStyle}
                 />
-              </>
-            )}
+                <IconButton
+                  aria-label="Random Name"
+                  variant="ghost"
+                  color={P.goldDim}
+                  onClick={handleRandomName}
+                  _hover={{ bg: "transparent", color: P.gold, transform: "rotate(15deg) scale(1.1)" }}
+                  _active={{ transform: "scale(0.95)" }}
+                >
+                  <Text fontSize="20px">\uD83C\uDFB2</Text>
+                </IconButton>
+              </Flex>
+            </Box>
 
             {error && (
-              <Text color={P.blood} fontSize="11px" mb="4" textAlign="center">
+              <Text color={P.blood} fontSize="12px" textAlign="center" py="2" fontWeight="600">
                 {error}
               </Text>
             )}
 
             <Button
+              mt="2"
               w="100%"
-              mb="4"
+              h="50px"
               bg={P.goldDim}
               color="#08080c"
               onClick={handleAuth}
               fontFamily={P.font}
-              fontWeight="700"
-              fontSize="13px"
-              letterSpacing="3px"
+              fontWeight="900"
+              fontSize="16px"
+              letterSpacing="4px"
               textTransform="uppercase"
-              _hover={{ bg: P.gold }}
+              transition="all 0.2s"
+              _hover={{ bg: P.gold, transform: "translateY(-2px)", boxShadow: `0 5px 20px ${P.gold}44` }}
+              _active={{ transform: "translateY(0)" }}
             >
-              {mode === "login" ? "Login" : "Register"}
+              {mode === "login" ? "Enter Vault" : "Forge Account"}
             </Button>
 
-            <Text
-              textAlign="center"
-              fontSize="11px"
-              color={P.goldDark}
-              cursor="pointer"
-              _hover={{ color: P.goldText }}
-              onClick={() => {
-                setMode(mode === "login" ? "register" : "login");
-                setError("");
-              }}
-            >
-              {mode === "login"
-                ? "Need an account? Register"
-                : "Have an account? Login"}
-            </Text>
-          </>
+            <Flex justify="center" gap="2" mt="2">
+              <Text fontSize="12px" color={P.goldMuted}>
+                {mode === "login" ? "New to the Arena?" : "Already a combatant?"}
+              </Text>
+              <Text
+                fontSize="12px"
+                color={P.gold}
+                fontWeight="700"
+                cursor="pointer"
+                borderBottom="1px solid transparent"
+                _hover={{ borderBottomColor: P.gold }}
+                onClick={() => {
+                  setMode(mode === "login" ? "register" : "login");
+                  setError("");
+                }}
+              >
+                {mode === "login" ? "Register Now" : "Login Here"}
+              </Text>
+            </Flex>
+          </Flex>
         ) : (
-          <>
-            <Text
-              fontSize="10px"
-              color={P.goldMuted}
-              letterSpacing="2px"
-              textTransform="uppercase"
-              mb="1"
-            >
-              Playing as{" "}
-              <Text as="span" color={P.goldText} fontWeight="700">
+          <Box animation={`${entrance} 0.4s ease-out`}>
+            <Flex justify="space-between" align="baseline" mb="4">
+              <Text {...labelStyle} mb="0">Select Your Path</Text>
+              <Text fontSize="12px" color={P.goldText} fontWeight="700">
                 {resolvedCharName}
               </Text>
-            </Text>
-            <Text
-              fontSize="10px"
-              color={P.goldMuted}
-              letterSpacing="2px"
-              textTransform="uppercase"
-              mb="3"
-            >
-              Select Class
-            </Text>
-            <Grid templateColumns="repeat(3, 1fr)" gap="2.5" mb="7">
+            </Flex>
+            
+            <Grid templateColumns="repeat(1, 1fr)" gap="3" mb="8">
               {CLASS_TYPES.map((cls) => {
                 const sel = classType === cls;
                 const info = CLASS_INFO[cls];
                 return (
                   <Box
                     key={cls}
-                    textAlign="center"
-                    p="3"
-                    bg={sel ? P.raised : "#08080c"}
+                    p="4"
+                    bg={sel ? `${info.color}11` : "rgba(8, 8, 12, 0.4)"}
                     border="1px solid"
                     borderColor={sel ? info.color : P.border}
-                    borderRadius="2px"
+                    borderRadius="8px"
                     cursor="pointer"
-                    transition="all 0.15s"
+                    transition="all 0.2s"
                     onClick={() => setClassType(cls)}
-                    _hover={{ bg: P.raised }}
+                    _hover={{ 
+                      bg: sel ? `${info.color}22` : "rgba(20, 17, 30, 0.6)",
+                      transform: "translateX(4px)"
+                    }}
+                    role="group"
                   >
-                    <Text fontSize="24px" mb="1">
-                      {info.icon}
-                    </Text>
-                    <Text
-                      fontSize="9px"
-                      fontWeight="700"
-                      color={sel ? P.goldText : P.goldMuted}
-                    >
-                      {cls.toUpperCase()}
-                    </Text>
-                    <Text fontSize="8px" color={P.goldDark}>
-                      {info.desc}
-                    </Text>
+                    <Flex align="center" gap="4">
+                      <Box 
+                        fontSize="28px" 
+                        filter={sel ? "none" : "grayscale(100%)"}
+                        transition="all 0.3s"
+                      >
+                        {info.icon}
+                      </Box>
+                      <Box flex="1">
+                        <Text
+                          fontSize="14px"
+                          fontWeight="900"
+                          color={sel ? P.goldText : P.goldMuted}
+                          letterSpacing="2px"
+                          textTransform="uppercase"
+                        >
+                          {cls}
+                        </Text>
+                        <Text fontSize="11px" color={P.goldDark}>
+                          {info.desc}
+                        </Text>
+                      </Box>
+                      {sel && (
+                        <Box boxSize="8px" bg={info.color} borderRadius="full" boxShadow={`0 0 10px ${info.color}`} />
+                      )}
+                    </Flex>
+                    {sel && (
+                      <Text mt="2" fontSize="12px" color={P.goldText} opacity="0.8">
+                        {info.longDesc}
+                      </Text>
+                    )}
                   </Box>
                 );
               })}
@@ -337,20 +425,33 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
 
             <Button
               w="100%"
+              h="50px"
               bg={connecting ? P.goldDark : P.goldDim}
               color="#08080c"
-              disabled={connecting}
+              loading={connecting}
               onClick={() => onJoin(resolvedCharId, classType, token)}
               fontFamily={P.font}
-              fontWeight="700"
-              fontSize="13px"
-              letterSpacing="3px"
+              fontWeight="900"
+              fontSize="16px"
+              letterSpacing="4px"
               textTransform="uppercase"
-              _hover={{ bg: P.gold }}
+              _hover={{ bg: P.gold, transform: "translateY(-2px)", boxShadow: `0 5px 20px ${P.gold}44` }}
             >
-              {connecting ? "Connecting..." : "Enter Arena"}
+              Enter Arena
             </Button>
-          </>
+            
+            <Button
+              mt="3"
+              bg="transparent"
+              variant="ghost"
+              w="100%"
+              color={P.goldMuted}
+              fontSize="12px"
+              onClick={() => setMode("register")}
+            >
+              Go Back
+            </Button>
+          </Box>
         )}
       </Box>
     </Flex>

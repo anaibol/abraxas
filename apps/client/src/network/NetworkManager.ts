@@ -210,6 +210,23 @@ export class NetworkManager {
     this._send(ClientMessageType.SellItem, { itemId, quantity, npcId });
   }
 
+  // Bank System
+  sendBankDeposit(itemId: string, quantity: number, slotIndex: number) {
+    this._send(ClientMessageType.BankDeposit, { itemId, quantity, slotIndex });
+  }
+
+  sendBankWithdraw(itemId: string, quantity: number, bankSlotIndex: number) {
+    this._send(ClientMessageType.BankWithdraw, {
+      itemId,
+      quantity,
+      bankSlotIndex,
+    });
+  }
+
+  sendBankClose() {
+    this._send(ClientMessageType.BankClose, {});
+  }
+
   disconnect() {
     this.room?.leave();
   }

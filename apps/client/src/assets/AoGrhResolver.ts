@@ -19,7 +19,7 @@ interface AnimGrh {
 
 type GrhEntry = StaticGrh | AnimGrh | 0;
 
-interface DirectionEntry {
+export interface DirectionEntry {
   id: number;
   down: number;
   up: number;
@@ -27,7 +27,7 @@ interface DirectionEntry {
   right: number;
 }
 
-interface BodyEntry extends DirectionEntry {
+export interface BodyEntry extends DirectionEntry {
   offHeadX: number;
   offHeadY: number;
 }
