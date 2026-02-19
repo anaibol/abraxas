@@ -5,11 +5,7 @@ import { InventorySystem } from "./InventorySystem";
 import { DROP_EXPIRY_MS } from "@abraxas/shared";
 
 export class DropSystem {
-  private inventorySystem?: InventorySystem;
-
-  setInventorySystem(inv: InventorySystem): void {
-    this.inventorySystem = inv;
-  }
+  constructor(private inventorySystem: InventorySystem) {}
 
   private createDrop(
     drops: MapSchema<Drop>,
@@ -76,7 +72,7 @@ export class DropSystem {
     }
 
     // Handle item drops
-    if (drop.itemType === "item" && drop.itemId && this.inventorySystem) {
+    if (drop.itemType === "item" && drop.itemId) {
       if (!this.inventorySystem.addItem(player, drop.itemId, drop.quantity)) {
         onError?.("Inventory full");
         return false; // Inventory full
