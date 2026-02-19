@@ -21,6 +21,8 @@ import {
 } from "@abraxas/shared";
 import { QuestSystem } from "../systems/QuestSystem";
 import { logger } from "../logger";
+import { ChatService } from "../services/ChatService";
+import { LevelService } from "../services/LevelService";
 
 type BroadcastCallback = <T extends ServerMessageType>(
   type: T,
@@ -28,33 +30,38 @@ type BroadcastCallback = <T extends ServerMessageType>(
   options?: { except?: Client },
 ) => void;
 
+/** Dependency container for MessageHandler to reduce constructor bloat. */
+export interface RoomContext {
+  state: GameState;
+  map: TileMap;
+  roomId: string;
+  systems: {
+    movement: MovementSystem;
+    combat: CombatSystem;
+    inventory: InventorySystem;
+    drops: DropSystem;
+    social: SocialSystem;
+    friends: FriendsSystem;
+    quests: QuestSystem;
+  };
+  services: {
+    chat: ChatService;
+    level: LevelService;
+  };
+  broadcast: BroadcastCallback;
+  isTileOccupied: (x: number, y: number, excludeId: string) => boolean;
+  findClientByName: (name: string) => Client | undefined;
+  gainXp: (player: Player, amount: number) => void;
+}
+
 export class MessageHandler {
-  constructor(
-    private state: GameState,
-    private map: TileMap,
-    private roomId: string,
-    private movement: MovementSystem,
-    private combat: CombatSystem,
-    private inventorySystem: InventorySystem,
-    private drops: DropSystem,
-    private social: SocialSystem,
-    private friends: FriendsSystem,
-    private broadcast: BroadcastCallback,
-    private isTileOccupied: (
-      x: number,
-      y: number,
-      excludeId: string,
-    ) => boolean,
-    private findClientByName: (name: string) => Client | undefined,
-    private quests: QuestSystem,
-    private gainXp: (player: Player, amount: number) => void,
-  ) {}
+  constructor(private ctx: RoomContext) {}
 
   // ── Helpers ─────────────────────────────────────────────────────────────
 
   /** Returns the player if they exist and are alive, otherwise `null`. */
   private getActivePlayer(client: Client): Player | null {
-    const player = this.state.players.get(client.sessionId);
+    const player = this.ctx.state.players.get(client.sessionId);
     return player?.alive ? player : null;
   }
 
@@ -85,27 +92,21 @@ export class MessageHandler {
     if (!player) return;
     if (player.stunned) return;
 
-    if (
-      this.movement.tryMove(
-        player,
-        direction,
-        this.map,
-        Date.now(),
-        this.isTileOccupied,
-        this.state.tick,
-        this.roomId,
-      )
-    ) {
-      const warp = this.map.warps?.find(
-        (w) => w.x === player.tileX && w.y === player.tileY,
-      );
-      if (warp) {
-        client.send(ServerMessageType.Warp, {
-          targetMap: warp.targetMap,
-          targetX: warp.targetX,
-          targetY: warp.targetY,
-        });
-      }
+    const result = this.ctx.systems.movement.tryMove(
+      player,
+      direction,
+      this.ctx.map,
+      Date.now(),
+      this.ctx.state.tick,
+      this.ctx.roomId,
+    );
+
+    if (result.success && result.warp) {
+      client.send(ServerMessageType.Warp, {
+        targetMap: result.warp.targetMap,
+        targetX: result.warp.targetX,
+        targetY: result.warp.targetY,
+      });
     }
   }
 
@@ -116,11 +117,11 @@ export class MessageHandler {
     const player = this.getActivePlayer(client);
     if (!player) return;
 
-    this.combat.tryAttack(
+    this.ctx.systems.combat.tryAttack(
       player,
       data.targetTileX ?? player.tileX,
       data.targetTileY ?? player.tileY,
-      this.broadcast,
+      this.ctx.broadcast,
       Date.now(),
       (type, payload) => client.send(type, payload),
     );
@@ -133,12 +134,12 @@ export class MessageHandler {
     const player = this.getActivePlayer(client);
     if (!player) return;
 
-    this.combat.tryCast(
+    this.ctx.systems.combat.tryCast(
       player,
       data.spellId,
       data.targetTileX ?? player.tileX,
       data.targetTileY ?? player.tileY,
-      this.broadcast,
+      this.ctx.broadcast,
       Date.now(),
       (type, payload) => client.send(type, payload),
     );
@@ -151,28 +152,28 @@ export class MessageHandler {
     const player = this.getActivePlayer(client);
     if (!player) return;
 
-    const drop = this.state.drops.get(data.dropId);
+    const drop = this.ctx.state.drops.get(data.dropId);
     if (
       drop &&
-      this.drops.tryPickup(
+      this.ctx.systems.drops.tryPickup(
         player,
         data.dropId,
-        this.state.drops,
-        this.roomId,
-        this.state.tick,
+        this.ctx.state.drops,
+        this.ctx.roomId,
+        this.ctx.state.tick,
         (msg) => this.sendError(client, msg),
       )
     ) {
       if (drop.itemType === "gold") {
-        this.broadcast(ServerMessageType.Notification, {
+        this.ctx.broadcast(ServerMessageType.Notification, {
           message: `${player.name} picked up ${drop.goldAmount} gold`,
         });
       } else {
         const itemName = ITEMS[drop.itemId]?.name ?? drop.itemId;
-        this.broadcast(ServerMessageType.Notification, {
+        this.ctx.broadcast(ServerMessageType.Notification, {
           message: `${player.name} picked up ${itemName}`,
         });
-        this.quests
+        this.ctx.systems.quests
           .updateProgress(player.dbId, "collect", drop.itemId, drop.quantity)
           .then((updatedQuests) =>
             this.sendQuestUpdates(client, updatedQuests),
@@ -187,7 +188,7 @@ export class MessageHandler {
   ): void {
     const player = this.getActivePlayer(client);
     if (!player) return;
-    this.inventorySystem.equipItem(player, data.itemId, (msg) =>
+    this.ctx.systems.inventory.equipItem(player, data.itemId, (msg) =>
       this.sendError(client, msg),
     );
   }
@@ -198,7 +199,7 @@ export class MessageHandler {
   ): void {
     const player = this.getActivePlayer(client);
     if (!player) return;
-    this.inventorySystem.unequipItem(player, data.slot, (msg) =>
+    this.ctx.systems.inventory.unequipItem(player, data.slot, (msg) =>
       this.sendError(client, msg),
     );
   }
@@ -210,11 +211,11 @@ export class MessageHandler {
     const player = this.getActivePlayer(client);
     if (!player) return;
     if (
-      this.inventorySystem.useItem(player, data.itemId, (msg) =>
+      this.ctx.systems.inventory.useItem(player, data.itemId, (msg) =>
         this.sendError(client, msg),
       )
     ) {
-      this.broadcast(ServerMessageType.ItemUsed, {
+      this.ctx.broadcast(ServerMessageType.ItemUsed, {
         sessionId: client.sessionId,
         itemId: data.itemId,
       });
@@ -229,8 +230,8 @@ export class MessageHandler {
     if (!player) return;
     const slot = player.inventory.find((s) => s.itemId === data.itemId);
     const qty = data.quantity ?? slot?.quantity ?? 1;
-    if (this.inventorySystem.removeItem(player, data.itemId, qty)) {
-      this.drops.spawnItemDrop(this.state.drops, player.tileX, player.tileY, data.itemId, qty);
+    if (this.ctx.systems.inventory.removeItem(player, data.itemId, qty)) {
+      this.ctx.systems.drops.spawnItemDrop(this.ctx.state.drops, player.tileX, player.tileY, data.itemId, qty);
     }
   }
 
@@ -241,7 +242,7 @@ export class MessageHandler {
     const player = this.getActivePlayer(client);
     if (!player) return;
 
-    const npc = this.state.npcs.get(data.npcId);
+    const npc = this.ctx.state.npcs.get(data.npcId);
     if (!npc) return;
 
     const dist =
@@ -251,18 +252,17 @@ export class MessageHandler {
       return;
     }
 
-    this.quests
+    this.ctx.systems.quests
       .updateProgress(player.dbId, "talk", npc.type, 1)
       .then((updatedQuests) => this.sendQuestUpdates(client, updatedQuests));
 
     if (npc.type === "merchant") {
       const inventory = MERCHANT_INVENTORY.general_store ?? [];
-      // Bug Fix: Send inventory only if near. (Distance check already done above for all interactions)
       client.send(ServerMessageType.OpenShop, { npcId: data.npcId, inventory });
       return;
     }
 
-    const availableQuests = this.quests.getAvailableQuests(player.dbId, npc.type);
+    const availableQuests = this.ctx.systems.quests.getAvailableQuests(player.dbId, npc.type);
     if (availableQuests.length > 0) {
       const questId = availableQuests[0];
       const questDef = QUESTS[questId];
@@ -277,7 +277,7 @@ export class MessageHandler {
       return;
     }
 
-    for (const state of this.quests.getCharQuestStates(player.dbId)) {
+    for (const state of this.ctx.systems.quests.getCharQuestStates(player.dbId)) {
       if (state.status !== "COMPLETED") continue;
       const questDef = QUESTS[state.questId];
       if (questDef?.npcId === npc.type) {
@@ -310,7 +310,7 @@ export class MessageHandler {
     const player = this.getActivePlayer(client);
     if (!player) return;
 
-    this.quests
+    this.ctx.systems.quests
       .acceptQuest(player.dbId, data.questId)
       .then((state) => {
         if (state) {
@@ -333,21 +333,21 @@ export class MessageHandler {
     const player = this.getActivePlayer(client);
     if (!player) return;
 
-    this.quests
+    this.ctx.systems.quests
       .completeQuest(player.dbId, data.questId)
       .then((questDef) => {
         if (questDef) {
-          this.gainXp(player, questDef.rewards.exp);
+          this.ctx.gainXp(player, questDef.rewards.exp);
           player.gold += questDef.rewards.gold;
 
           if (questDef.rewards.items) {
             for (const item of questDef.rewards.items) {
-              this.inventorySystem.addItem(player, item.itemId, item.quantity);
+              this.ctx.systems.inventory.addItem(player, item.itemId, item.quantity);
             }
           }
 
           client.send(ServerMessageType.QuestUpdate, {
-            quest: this.quests.getQuestState(player.dbId, data.questId)!,
+            quest: this.ctx.systems.quests.getQuestState(player.dbId, data.questId)!,
           });
           client.send(ServerMessageType.Notification, {
             message: `Quest Completed: ${questDef.title} (+${questDef.rewards.exp} XP, +${questDef.rewards.gold} Gold)`,
@@ -361,7 +361,7 @@ export class MessageHandler {
   }
 
   private isNearMerchant(player: Player): boolean {
-    return Array.from(this.state.npcs.values()).some(
+    return Array.from(this.ctx.state.npcs.values()).some(
       (n) =>
         n.type === "merchant" &&
         n.alive &&
@@ -395,7 +395,7 @@ export class MessageHandler {
     }
 
     if (
-      this.inventorySystem.addItem(player, data.itemId, quantity, (msg) =>
+      this.ctx.systems.inventory.addItem(player, data.itemId, quantity, (msg) =>
         this.sendError(client, msg),
       )
     ) {
@@ -424,7 +424,7 @@ export class MessageHandler {
     const quantity = data.quantity ?? 1;
     const sellValue = Math.floor(itemDef.goldValue * 0.5) * quantity;
 
-    if (this.inventorySystem.removeItem(player, data.itemId, quantity)) {
+    if (this.ctx.systems.inventory.removeItem(player, data.itemId, quantity)) {
       player.gold += sellValue;
       client.send(ServerMessageType.Notification, {
         message: `Sold ${quantity}x ${itemDef.name} for ${sellValue} gold`,
@@ -441,93 +441,52 @@ export class MessageHandler {
     const player = this.getActivePlayer(client);
     if (!player) return;
 
-    const chatMsg = data.message.trim().slice(0, 100);
-    const safeText = chatMsg.replace(/[<>]/g, "").trim();
-    if (safeText.length === 0) return;
-
-    const safePlayerName = player.name.replace(/[\[\]]/g, "");
-
-    if (safeText.startsWith("/w ") || safeText.startsWith("/whisper ")) {
-      const parts = safeText.split(" ");
-      if (parts.length < 3) {
-        this.sendError(client, "Usage: /w <name> <message>");
-        return;
-      }
-      const targetName = parts[1];
-      const whisperMsg = parts.slice(2).join(" ");
-      const targetClient = this.findClientByName(targetName);
-
-      if (!targetClient) {
-        this.sendError(client, `Player '${targetName}' not found or offline.`);
-        return;
-      }
-
-      const whisperData: ServerMessages[ServerMessageType.Chat] = {
-        senderId: player.sessionId,
-        senderName: `[To: ${targetName}]`,
-        message: whisperMsg,
-        channel: "whisper",
-      };
-
-      client.send(ServerMessageType.Chat, whisperData);
-      targetClient.send(ServerMessageType.Chat, {
-        ...whisperData,
-        senderName: `[From: ${safePlayerName}]`,
-      });
-      return;
-    }
-
-    this.broadcast(ServerMessageType.Chat, {
-      senderId: player.sessionId,
-      senderName: safePlayerName,
-      message: safeText,
-      channel: "global",
-    });
+    this.ctx.services.chat.handleChat(player, data.message);
   }
 
   handleFriendRequest(
     client: Client,
     data: ClientMessages[ClientMessageType.FriendRequest],
   ): void {
-    this.friends.handleFriendRequest(client, data.targetName);
+    this.ctx.systems.friends.handleFriendRequest(client, data.targetName);
   }
 
   handleFriendAccept(
     client: Client,
     data: ClientMessages[ClientMessageType.FriendAccept],
   ): void {
-    this.friends.handleFriendAccept(client, data.requesterId);
+    this.ctx.systems.friends.handleFriendAccept(client, data.requesterId);
   }
 
   handlePartyInvite(
     client: Client,
     data: ClientMessages[ClientMessageType.PartyInvite],
   ): void {
-    this.social.handleInvite(client, data.targetSessionId);
+    this.ctx.systems.social.handleInvite(client, data.targetSessionId);
   }
 
   handlePartyAccept(
     client: Client,
     data: ClientMessages[ClientMessageType.PartyAccept],
   ): void {
-    this.social.handleAcceptInvite(client, data.partyId);
+    this.ctx.systems.social.handleAcceptInvite(client, data.partyId);
   }
 
   handlePartyLeave(client: Client): void {
-    this.social.handleLeaveParty(client);
+    this.ctx.systems.social.handleLeaveParty(client);
   }
 
   handlePartyKick(
     client: Client,
     data: ClientMessages[ClientMessageType.PartyKick],
   ): void {
-    this.social.handleKickPlayer(client, data.targetSessionId);
+    this.ctx.systems.social.handleKickPlayer(client, data.targetSessionId);
   }
 
   handleAudio(client: Client, data: ArrayBuffer): void {
     const player = this.getActivePlayer(client);
     if (player) {
-      this.broadcast(
+      this.ctx.broadcast(
         ServerMessageType.Audio,
         {
           sessionId: client.sessionId,

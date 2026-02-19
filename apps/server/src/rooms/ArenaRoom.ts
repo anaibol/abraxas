@@ -10,8 +10,6 @@ import { z } from "zod";
 import { StateView } from "@colyseus/schema";
 import { GameState } from "../schema/GameState";
 import { Player } from "../schema/Player";
-import { InventoryItem } from "../schema/InventoryItem";
-import { Npc } from "../schema/Npc";
 import { MovementSystem } from "../systems/MovementSystem";
 import { CombatSystem } from "../systems/CombatSystem";
 import { DropSystem } from "../systems/DropSystem";
@@ -21,22 +19,11 @@ import { RespawnSystem } from "../systems/RespawnSystem";
 import { NpcSystem } from "../systems/NpcSystem";
 import {
   TICK_MS,
-  STARTING_EQUIPMENT,
-  ITEMS,
-  KILL_GOLD_BONUS,
-  NPC_STATS,
-  EXP_TABLE,
-  LEVEL_UP_STATS,
-  NPC_DROPS,
   TileMap,
-  Direction,
-  ServerMessages,
-  JoinOptions,
-  InventoryEntry,
-  EquipmentData,
   ClientMessageType,
   ServerMessageType,
   EQUIPMENT_SLOTS,
+  type JoinOptions,
 } from "@abraxas/shared";
 import { logger } from "../logger";
 import { MapService } from "../services/MapService";
@@ -49,7 +36,10 @@ import { SocialSystem } from "../systems/SocialSystem";
 import { FriendsSystem } from "../systems/FriendsSystem";
 import { SpatialLookup, Entity } from "../utils/SpatialLookup";
 import { QuestSystem } from "../systems/QuestSystem";
-
+import { ChatService } from "../services/ChatService";
+import { PlayerService } from "../services/PlayerService";
+import { TickSystem } from "../systems/TickSystem";
+import { LevelService } from "../services/LevelService";
 
 export class ArenaRoom extends Room<{ state: GameState }> {
   constructor() {
@@ -69,371 +59,159 @@ export class ArenaRoom extends Room<{ state: GameState }> {
   private social!: SocialSystem;
   private friends!: FriendsSystem;
   private messageHandler!: MessageHandler;
+  private playerService!: PlayerService;
+  private tickSystem!: TickSystem;
+  private levelService!: LevelService;
   private spatial!: SpatialLookup;
   private quests = new QuestSystem();
-  private spawnIndex = 0;
-  private boundBroadcast!: typeof this.broadcast;
 
-  // ── Message Handlers (Colyseus 0.17 messages API) ───────────────────────
+  // ── Message Handlers ───────────────────────────────────────────────────
   messages: Messages<ArenaRoom> = {
-    // Movement & Combat
-    [ClientMessageType.Move]: validate(
-      z.object({ direction: z.number() }),
-      (client, data) => this.messageHandler.handleMove(client, data.direction),
-    ),
-    [ClientMessageType.Attack]: validate(
-      z.object({
-        targetTileX: z.number().optional(),
-        targetTileY: z.number().optional(),
-      }),
-      (client, data) => this.messageHandler.handleAttack(client, data),
-    ),
-    [ClientMessageType.Cast]: validate(
-      z.object({
-        spellId: z.string(),
-        targetTileX: z.number(),
-        targetTileY: z.number(),
-      }),
-      (client, data) => this.messageHandler.handleCast(client, data),
-    ),
-    // Inventory
-    [ClientMessageType.Pickup]: validate(
-      z.object({ dropId: z.string() }),
-      (client, data) => this.messageHandler.handlePickup(client, data),
-    ),
-    [ClientMessageType.Equip]: validate(
-      z.object({ itemId: z.string() }),
-      (client, data) => this.messageHandler.handleEquip(client, data),
-    ),
-    [ClientMessageType.Unequip]: validate(
-      z.object({
-        slot: z.enum(EQUIPMENT_SLOTS),
-      }),
-      (client, data) => this.messageHandler.handleUnequip(client, data),
-    ),
-    [ClientMessageType.UseItem]: validate(
-      z.object({ itemId: z.string() }),
-      (client, data) => this.messageHandler.handleUseItem(client, data),
-    ),
-    [ClientMessageType.DropItem]: validate(
-      z.object({ itemId: z.string() }),
-      (client, data) => this.messageHandler.handleDropItem(client, data),
-    ),
-    // NPCs & Quests
-    [ClientMessageType.Interact]: validate(
-      z.object({ npcId: z.string() }),
-      (client, data) => this.messageHandler.handleInteract(client, data),
-    ),
-    [ClientMessageType.BuyItem]: validate(
-      z.object({ itemId: z.string(), quantity: z.number() }),
-      (client, data) => this.messageHandler.handleBuyItem(client, data),
-    ),
-    [ClientMessageType.SellItem]: validate(
-      z.object({
-        itemId: z.string(),
-        quantity: z.number(),
-        npcId: z.string().optional(),
-      }),
-      (client, data) => this.messageHandler.handleSellItem(client, data),
-    ),
-    [ClientMessageType.QuestAccept]: validate(
-      z.object({ questId: z.string() }),
-      (client, data) => this.messageHandler.handleQuestAccept(client, data),
-    ),
-    [ClientMessageType.QuestComplete]: validate(
-      z.object({ questId: z.string() }),
-      (client, data) => this.messageHandler.handleQuestComplete(client, data),
-    ),
-    // Social
-    [ClientMessageType.Chat]: validate(
-      z.object({ message: z.string() }),
-      (client, data) => this.messageHandler.handleChat(client, data),
-    ),
-    [ClientMessageType.FriendRequest]: validate(
-      z.object({ targetName: z.string() }),
-      (client, data) => this.messageHandler.handleFriendRequest(client, data),
-    ),
-    [ClientMessageType.FriendAccept]: validate(
-      z.object({ requesterId: z.string() }),
-      (client, data) => this.messageHandler.handleFriendAccept(client, data),
-    ),
-    // Party
-    [ClientMessageType.PartyInvite]: validate(
-      z.object({ targetSessionId: z.string() }),
-      (client, data) => this.messageHandler.handlePartyInvite(client, data),
-    ),
-    [ClientMessageType.PartyAccept]: validate(
-      z.object({ partyId: z.string() }),
-      (client, data) => this.messageHandler.handlePartyAccept(client, data),
-    ),
-    [ClientMessageType.PartyLeave]: (client: Client) =>
-      this.messageHandler.handlePartyLeave(client),
-    [ClientMessageType.PartyKick]: validate(
-      z.object({ targetSessionId: z.string() }),
-      (client, data) => this.messageHandler.handlePartyKick(client, data),
-    ),
-    // Audio (raw binary — no schema validation)
-    [ClientMessageType.Audio]: (client: Client, data: ArrayBuffer) =>
-      this.messageHandler.handleAudio(client, data),
+    [ClientMessageType.Move]: validate(z.object({ direction: z.number() }), (client, data) => this.messageHandler.handleMove(client, data.direction)),
+    [ClientMessageType.Attack]: validate(z.object({ targetTileX: z.number().optional(), targetTileY: z.number().optional() }), (client, data) => this.messageHandler.handleAttack(client, data)),
+    [ClientMessageType.Cast]: validate(z.object({ spellId: z.string(), targetTileX: z.number(), targetTileY: z.number() }), (client, data) => this.messageHandler.handleCast(client, data)),
+    [ClientMessageType.Pickup]: validate(z.object({ dropId: z.string() }), (client, data) => this.messageHandler.handlePickup(client, data)),
+    [ClientMessageType.Equip]: validate(z.object({ itemId: z.string() }), (client, data) => this.messageHandler.handleEquip(client, data)),
+    [ClientMessageType.Unequip]: validate(z.object({ slot: z.enum(EQUIPMENT_SLOTS) }), (client, data) => this.messageHandler.handleUnequip(client, data)),
+    [ClientMessageType.UseItem]: validate(z.object({ itemId: z.string() }), (client, data) => this.messageHandler.handleUseItem(client, data)),
+    [ClientMessageType.DropItem]: validate(z.object({ itemId: z.string() }), (client, data) => this.messageHandler.handleDropItem(client, data)),
+    [ClientMessageType.Interact]: validate(z.object({ npcId: z.string() }), (client, data) => this.messageHandler.handleInteract(client, data)),
+    [ClientMessageType.BuyItem]: validate(z.object({ itemId: z.string(), quantity: z.number() }), (client, data) => this.messageHandler.handleBuyItem(client, data)),
+    [ClientMessageType.SellItem]: validate(z.object({ itemId: z.string(), quantity: z.number(), npcId: z.string().optional() }), (client, data) => this.messageHandler.handleSellItem(client, data)),
+    [ClientMessageType.QuestAccept]: validate(z.object({ questId: z.string() }), (client, data) => this.messageHandler.handleQuestAccept(client, data)),
+    [ClientMessageType.QuestComplete]: validate(z.object({ questId: z.string() }), (client, data) => this.messageHandler.handleQuestComplete(client, data)),
+    [ClientMessageType.Chat]: validate(z.object({ message: z.string() }), (client, data) => this.messageHandler.handleChat(client, data)),
+    [ClientMessageType.FriendRequest]: validate(z.object({ targetName: z.string() }), (client, data) => this.messageHandler.handleFriendRequest(client, data)),
+    [ClientMessageType.FriendAccept]: validate(z.object({ requesterId: z.string() }), (client, data) => this.messageHandler.handleFriendAccept(client, data)),
+    [ClientMessageType.PartyInvite]: validate(z.object({ targetSessionId: z.string() }), (client, data) => this.messageHandler.handlePartyInvite(client, data)),
+    [ClientMessageType.PartyAccept]: validate(z.object({ partyId: z.string() }), (client, data) => this.messageHandler.handlePartyAccept(client, data)),
+    [ClientMessageType.PartyLeave]: (client: Client) => this.messageHandler.handlePartyLeave(client),
+    [ClientMessageType.PartyKick]: validate(z.object({ targetSessionId: z.string() }), (client, data) => this.messageHandler.handlePartyKick(client, data)),
+    [ClientMessageType.Audio]: (client: Client, data: ArrayBuffer) => this.messageHandler.handleAudio(client, data),
   };
 
   async onCreate(options: JoinOptions & { mapName?: string }) {
     try {
-      logger.info({ message: "[ArenaRoom] Entering onCreate" });
-      this.autoDispose = false; // Prevent premature shutdown during tests
+      this.autoDispose = false;
       this.seatReservationTimeout = 60;
       this.setState(new GameState());
-      logger.info({ message: "[ArenaRoom] State initialized" });
 
       this.roomMapName = options.mapName || "arena.test";
-      logger.info({ message: `[ArenaRoom] Map name: ${this.roomMapName}` });
-
       const loadedMap = await MapService.getMap(this.roomMapName);
-      if (!loadedMap) {
-        logger.error({
-          message: `[ArenaRoom] Failed to load map: ${this.roomMapName}`,
-        });
-        throw new Error(`Failed to load map: ${this.roomMapName}`);
-      }
+      if (!loadedMap) throw new Error(`Failed to load map: ${this.roomMapName}`);
       this.map = loadedMap;
-      logger.info({ message: "[ArenaRoom] Map loaded" });
 
       this.drops.setInventorySystem(this.inventorySystem);
-
       this.spatial = new SpatialLookup(this.state);
       this.movement = new MovementSystem(this.spatial);
       this.combat = new CombatSystem(this.spatial, this.buffSystem, this.map);
-      this.npcSystem = new NpcSystem(
-        this.state,
-        this.movement,
-        this.combat,
-        this.spatial,
-        this.buffSystem,
-      );
-
-      this.boundBroadcast = this.broadcast.bind(this);
-
+      this.npcSystem = new NpcSystem(this.state, this.movement, this.combat, this.spatial, this.buffSystem);
       this.social = new SocialSystem(this.state, (sid) => this.findClient(sid));
-      this.friends = new FriendsSystem(this.state, (sid) =>
-        this.findClient(sid),
-      );
+      this.friends = new FriendsSystem(this.state, (sid) => this.findClient(sid));
 
-      this.messageHandler = new MessageHandler(
-        this.state,
-        this.map,
-        this.roomId,
-        this.movement,
-        this.combat,
-        this.inventorySystem,
-        this.drops,
-        this.social,
-        this.friends,
-        this.broadcast.bind(this),
-        this.spatial.isTileOccupied.bind(this.spatial),
-        (name: string) => {
-          const player = Array.from(this.state.players.values()).find(
-            (p) => p.name === name,
-          );
-          return player ? this.findClient(player.sessionId) : undefined;
+      this.playerService = new PlayerService(this.state, this.inventorySystem, this.spatial, this.quests, this.friends);
+      this.levelService = new LevelService(this.broadcast.bind(this));
+
+      const findClientByName = (name: string) => {
+        const player = Array.from(this.state.players.values()).find((p) => p.name === name);
+        return player ? this.findClient(player.sessionId) : undefined;
+      };
+
+      const chatService = new ChatService(this.broadcast.bind(this), findClientByName);
+
+      this.messageHandler = new MessageHandler({
+        state: this.state,
+        map: this.map,
+        roomId: this.roomId,
+        systems: {
+          movement: this.movement,
+          combat: this.combat,
+          inventory: this.inventorySystem,
+          drops: this.drops,
+          social: this.social,
+          friends: this.friends,
+          quests: this.quests,
         },
-        this.quests,
-        this.gainXp.bind(this),
-      );
+        services: {
+          chat: chatService,
+          level: this.levelService,
+        },
+        broadcast: this.broadcast.bind(this),
+        isTileOccupied: this.spatial.isTileOccupied.bind(this.spatial),
+        findClientByName,
+        gainXp: (player, amount) => this.levelService.gainXp(player, amount),
+      });
+
+      this.tickSystem = new TickSystem({
+        state: this.state,
+        map: this.map,
+        roomId: this.roomId,
+        systems: {
+          buff: this.buffSystem,
+          npc: this.npcSystem,
+          combat: this.combat,
+          drops: this.drops,
+          respawn: this.respawnSystem,
+          quests: this.quests,
+          spatial: this.spatial,
+        },
+        broadcast: this.broadcast.bind(this),
+        onEntityDeath: (e, k) => this.onEntityDeath(e, k),
+        onSummon: (caster, spellId, x, y) => this.onSummon(caster, spellId, x, y),
+        gainXp: (p, a) => this.levelService.gainXp(p, a),
+        sendQuestUpdates: (c, u) => this.messageHandler.sendQuestUpdates(c, u),
+        findClient: (sid) => this.findClient(sid),
+      });
 
       if (this.map.npcs) {
         for (const npcDef of this.map.npcs) {
           this.npcSystem.spawnNpcAt(npcDef.type, this.map, npcDef.x, npcDef.y);
         }
       }
-
       const npcCount = this.map.npcCount ?? 20;
-      if (npcCount > 0) {
-        this.npcSystem.spawnNpcs(npcCount, this.map);
-      }
+      if (npcCount > 0) this.npcSystem.spawnNpcs(npcCount, this.map);
 
-      this.setSimulationInterval((dt) => this.tick(dt), TICK_MS);
+      this.setSimulationInterval((dt) => this.tickSystem.tick(dt), TICK_MS);
       this.setPatchRate(TICK_MS);
 
-      logger.info({ room: this.roomId, intent: "room_created", result: "ok" });
-      logger.info({ message: "[ArenaRoom] onCreate completed successfully" });
+      logger.info({ room: this.roomId, message: "onCreate completed successfully" });
     } catch (e: unknown) {
-      logger.error({
-        message: `[ArenaRoom] CRITICAL ERROR IN ONCREATE: ${e}`,
-        stack: e instanceof Error ? e.stack : undefined,
-      });
+      logger.error({ message: `[ArenaRoom] onCreate error: ${e}` });
       throw e;
     }
   }
 
-  /**
-   * Static onAuth runs before the room instance is created — invalid tokens
-   * are rejected without spinning up a room.
-   */
   static async onAuth(token: string, options: Record<string, unknown>, context: AuthContext) {
-    const actualToken =
-      (typeof token === "string" ? token : null) ||
-      context?.token ||
-      (typeof options?.token === "string" ? options.token : undefined);
-
-    if (!actualToken || typeof actualToken !== "string") {
-      logger.warn({
-        message: `[ArenaRoom] onAuth missing token. type=${typeof actualToken}`,
-        tokenParam: token,
-        contextToken: context?.token,
-        optionsToken: options?.token,
-      });
-      throw new Error("Authentication token required");
-    }
-
+    const actualToken = (typeof token === "string" ? token : null) || context?.token || (typeof options?.token === "string" ? options.token : undefined);
+    if (!actualToken || typeof actualToken !== "string") throw new Error("Authentication token required");
     try {
       const payload = AuthService.verifyToken(actualToken);
-      if (!payload) {
-        throw new Error("Invalid token");
-      }
-
-      const dbUser = await prisma.account.findUnique({
-        where: { id: payload.userId },
-      });
-
-      if (!dbUser) {
-        throw new Error("User associated with token not found");
-      }
-
-      logger.info({
-        message: `[ArenaRoom] onAuth success: ${dbUser.username}`,
-        isWebSocket: !!context.ip,
-      });
-
+      if (!payload) throw new Error("Invalid token");
+      const dbUser = await prisma.account.findUnique({ where: { id: payload.userId } });
+      if (!dbUser) throw new Error("User not found");
       return dbUser;
     } catch (e: unknown) {
-      logger.error({ message: `[ArenaRoom] onAuth failed: ${e instanceof Error ? e.message : e}` });
       throw e;
     }
   }
 
-  async onJoin(
-    client: Client,
-    options: JoinOptions & { mapName?: string },
-    auth: Account,
-  ) {
+  async onJoin(client: Client, options: JoinOptions & { mapName?: string }, auth: Account) {
     try {
-      logger.info({
-        message: `[ArenaRoom] onJoin START: client=${client.sessionId} user=${auth?.username}`,
-      });
       const char = await PersistenceService.loadChar(options.charId);
-      logger.info({ message: `[ArenaRoom] char loaded: ${!!char}` });
-
       if (!char) {
-        logger.error({ message: "Char not found", charId: options.charId });
         client.leave();
         return;
       }
-
       prisma.character.update({ where: { id: char.id }, data: { lastLoginAt: new Date() } }).catch(() => {});
-
-      if (char.mapId !== this.roomMapName) {
-        logger.info({
-          room: this.roomId,
-          clientId: client.sessionId,
-          message: `Char ${char.name} joined ${this.roomMapName} but was last in ${char.mapId}. Teleporting.`,
-        });
-      }
-
-      const player = new Player();
-      player.sessionId = client.sessionId;
-      player.dbId = char.id;
-      player.userId = auth.id;
-      player.name = char.name;
-      player.classType = char.class;
-      player.tileX = char.x;
-      player.tileY = char.y;
-
-      const stats = char.stats;
-      if (stats) {
-        player.hp = stats.hp;
-        player.maxHp = stats.maxHp;
-        player.mana = stats.mp;
-        player.maxMana = stats.maxMp;
-        player.str = stats.str;
-        player.agi = stats.agi;
-        player.intStat = stats.int;
-      }
-
-      player.gold = Number(char.gold ?? 0);
-      player.level = char.level;
-      player.xp = Number(char.exp ?? 0);
-      player.maxXp = EXP_TABLE[player.level] ?? 100;
-
-      if (char.inventory?.slots) {
-        for (const slot of char.inventory.slots) {
-          if (slot.item?.itemDef) {
-            const invItem = new InventoryItem();
-            invItem.itemId = slot.item.itemDef.code;
-            invItem.quantity = slot.qty;
-            invItem.slotIndex = slot.idx;
-            player.inventory.push(invItem);
-          }
-        }
-      }
-
-      player.facing = Direction[char.facing.toUpperCase() as keyof typeof Direction] ?? Direction.DOWN;
-      player.alive = player.hp > 0;
-
-      // Give starting gear if totally empty
-      if (
-        player.inventory.length === 0 &&
-        !player.equipWeapon &&
-        !player.equipArmor &&
-        !player.equipShield &&
-        !player.equipHelmet &&
-        player.gold === 0
-      ) {
-        const startingGear = STARTING_EQUIPMENT[char.class];
-        if (startingGear) {
-          player.gold = startingGear.gold;
-          for (const itemId of startingGear.items) {
-            this.inventorySystem.addItem(player, itemId);
-            const def = ITEMS[itemId];
-            if (def && def.slot !== "consumable") {
-              this.inventorySystem.equipItem(player, itemId);
-            }
-          }
-          this.inventorySystem.recalcStats(player);
-          player.hp = player.maxHp;
-          player.mana = player.maxMana;
-        }
-      }
-
+      const player = await this.playerService.createPlayer(client, char, auth.id);
       this.state.players.set(client.sessionId, player);
-
-      // Give this client exclusive visibility of their own private @view() fields
       client.view = new StateView();
       client.view.add(player);
-
       this.spatial.addToGrid(player);
-
-      logger.info({ message: "[ArenaRoom] notifying friends" });
       this.friends.setUserOnline(auth.id, client.sessionId);
       await this.friends.sendUpdateToUser(auth.id, client.sessionId);
-
-      if (char.equipments) {
-        for (const eq of char.equipments) {
-          if (eq.item?.itemDef) {
-            const code = eq.item.itemDef.code;
-            switch (eq.slot) {
-              case "WEAPON_MAIN": player.equipWeapon = code; break;
-              case "WEAPON_OFF":  player.equipShield = code; break;
-              case "HEAD":        player.equipHelmet = code; break;
-              case "CHEST":       player.equipArmor = code;  break;
-              case "RING1":       player.equipRing = code;   break;
-            }
-          }
-        }
-      }
-
       const quests = await this.quests.loadCharQuests(char.id);
       client.send(ServerMessageType.QuestList, { quests });
-
       client.send(ServerMessageType.Welcome, {
         sessionId: client.sessionId,
         tileX: player.tileX,
@@ -443,65 +221,20 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         tileSize: this.map.tileSize,
         collision: this.map.collision,
       });
-      logger.info({
-        room: this.roomId,
-        clientId: client.sessionId,
-        intent: "join",
-        result: "ok",
-        posAfter: { x: player.tileX, y: player.tileY },
-      });
     } catch (e: unknown) {
-      logger.error({
-        message: `[ArenaRoom] error in onJoin: ${e instanceof Error ? e.message : e}`,
-        stack: e instanceof Error ? e.stack : undefined,
-      });
+      logger.error({ message: `[ArenaRoom] onJoin error: ${e}` });
       client.leave(4000);
       throw e;
     }
   }
 
-  // ── devMode: persist out-of-state data across hot restarts ──────────────
-
-  /**
-   * Called before the room is cached on server shutdown (devMode only).
-   * Return any JSON-serializable data that lives outside `this.state`.
-   */
-  onCacheRoom() {
-    return { spawnIndex: this.spawnIndex };
-  }
-
-  /**
-   * Called after the room and its state have been restored (devMode only).
-   * Rebuild the spatial grid from the now-restored state so collision /
-   * entity lookup works correctly without requiring clients to re-join.
-   */
-  onRestoreRoom(cached: { spawnIndex: number }): void {
-    this.spawnIndex = cached.spawnIndex;
-    // State is already restored at this point — rebuild the in-memory grid.
-    this.spatial.rebuild();
-    logger.info({
-      room: this.roomId,
-      message: `[ArenaRoom] Room restored — ${this.state.players.size} players, ${this.state.npcs.size} npcs`,
-    });
-  }
-
   async onLeave(client: Client, code?: number) {
-    // CloseCode.CONSENTED = normal/voluntary close. Any other code = abrupt disconnect.
     if (code !== CloseCode.CONSENTED) {
       try {
         await this.allowReconnection(client, 30);
-        logger.info({
-          room: this.roomId,
-          clientId: client.sessionId,
-          intent: "reconnected",
-          result: "ok",
-        });
-        return; // player reconnected — keep their state intact
-      } catch {
-        // reconnection timed out — fall through to cleanup
-      }
+        return;
+      } catch {}
     }
-
     await this.removePlayer(client);
   }
 
@@ -509,170 +242,30 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     const player = this.state.players.get(client.sessionId);
     if (player) {
       this.messageHandler.handlePartyLeave(client);
-      this.friends.setUserOffline(player.userId);
-
-      const inventory: InventoryEntry[] = [];
-      player.inventory.forEach((item) => {
-        inventory.push({
-          itemId: item.itemId,
-          quantity: item.quantity,
-          slotIndex: item.slotIndex,
-        });
-      });
-
-      const equipment: EquipmentData = {
-        weapon: player.equipWeapon,
-        shield: player.equipShield,
-        helmet: player.equipHelmet,
-        armor: player.equipArmor,
-        ring: player.equipRing,
-      };
-
-      await PersistenceService.saveChar(player.dbId, {
-        x: player.tileX,
-        y: player.tileY,
-        mapId: this.roomMapName,
-        hp: player.hp,
-        maxHp: player.maxHp,
-        mana: player.mana,
-        maxMana: player.maxMana,
-        str: player.str,
-        agi: player.agi,
-        intStat: player.intStat,
-        facing: player.facing,
-        gold: player.gold,
-        level: player.level,
-        xp: player.xp,
-        maxXp: player.maxXp,
-        inventory,
-        equipment,
-        classType: player.classType,
-      });
-
-      this.spatial.removeFromGrid(player);
+      await this.playerService.cleanupPlayer(player, this.roomMapName);
     }
-
-    if (player) this.quests.removeChar(player.dbId);
-    this.state.players.delete(client.sessionId);
     this.movement.removePlayer(client.sessionId);
     this.combat.removeEntity(client.sessionId);
     this.buffSystem.removePlayer(client.sessionId);
     this.respawnSystem.removePlayer(client.sessionId);
-
-    logger.info({
-      room: this.roomId,
-      clientId: client.sessionId,
-      intent: "leave",
-      result: "ok",
-    });
-  }
-
-  private tick(_deltaTime: number) {
-    this.state.tick++;
-    const now = Date.now();
-
-    this.buffSystem.tick(
-      now,
-      (sid: string) => {
-        const entity = this.spatial.findEntityBySessionId(sid);
-        return entity instanceof Player ? entity : undefined;
-      },
-      this.boundBroadcast,
-      (player: Player) => { this.onEntityDeath(player); },
-      this.roomId,
-      this.state.tick,
-    );
-
-    this.npcSystem.tick(
-      _deltaTime,
-      this.map,
-      now,
-      (x: number, y: number, excludeId: string) =>
-        this.spatial.isTileOccupied(x, y, excludeId),
-      this.state.tick,
-      this.roomId,
-      this.boundBroadcast,
-    );
-
-    this.combat.processWindups(
-      now,
-      this.boundBroadcast,
-      (entity: Entity, killerSessionId?: string) =>
-        this.onEntityDeath(entity, killerSessionId),
-      (caster: Entity, spellId: string, x: number, y: number) =>
-        this.onSummon(caster, spellId, x, y),
-    );
-
-    this.combat.processBufferedActions(now, this.boundBroadcast, (sessionId: string) => {
-      const c = this.findClient(sessionId);
-      return <T extends ServerMessageType>(type: T, data?: ServerMessages[T]) =>
-        c?.send(type, data);
-    });
-
-    this.drops.expireDrops(this.state.drops, now);
-
-    // Mana regeneration: 1% of maxMana per tick (~every 1s at 20 TPS)
-    if (this.state.tick % 20 === 0) {
-      for (const player of this.state.players.values()) {
-        if (player.alive && player.mana < player.maxMana) {
-          player.mana = Math.min(player.maxMana, player.mana + Math.max(1, Math.floor(player.maxMana * 0.01)));
-        }
-      }
-    }
-
-    this.respawnSystem.tick(
-      now,
-      (sid: string) => this.state.players.get(sid),
-      this.map,
-      this.boundBroadcast,
-      (player: Player) => this.spatial.addToGrid(player),
-    );
   }
 
   private onEntityDeath(entity: Entity, killerSessionId?: string) {
-    if (entity instanceof Player) {
-      this.onPlayerDeath(entity, killerSessionId);
-    } else {
-      this.onNpcDeath(entity, killerSessionId);
-    }
-  }
-
-  private onNpcDeath(npc: Npc, killerSessionId?: string) {
-    this.npcSystem.handleDeath(npc);
-
-    if (killerSessionId) {
-      const killer = this.state.players.get(killerSessionId);
-      if (killer && killer.alive) {
-        this.handleNpcKillRewards(killer, npc);
-      }
-    }
-
-    this.broadcast(ServerMessageType.Death, {
-      sessionId: npc.sessionId,
-      killerSessionId,
-    });
+    if (entity instanceof Player) this.onPlayerDeath(entity, killerSessionId);
+    else this.tickSystem.handleNpcDeath(entity, killerSessionId);
   }
 
   private onSummon(_caster: Entity, spellId: string, x: number, y: number) {
     if (spellId === "summon_skeleton") {
-      // Global and type-specific limit to prevent DoS
-      const totalNpcs = this.state.npcs.size;
-      if (totalNpcs > 200) return;
-
-      const currentSkeletons = Array.from(this.state.npcs.values()).filter(
-        (n) => n.type === "skeleton",
-      ).length;
-      if (currentSkeletons > 50) return;
-
+      if (this.state.npcs.size > 200) return;
+      const skeletons = Array.from(this.state.npcs.values()).filter(n => n.type === "skeleton").length;
+      if (skeletons > 50) return;
       const count = 2 + Math.floor(Math.random() * 2);
       for (let i = 0; i < count; i++) {
         const rx = x + Math.floor(Math.random() * 3) - 1;
         const ry = y + Math.floor(Math.random() * 3) - 1;
         if (rx >= 0 && rx < this.map.width && ry >= 0 && ry < this.map.height) {
-          if (
-            this.map.collision[ry]?.[rx] === 0 &&
-            !this.spatial.isTileOccupied(rx, ry, "")
-          ) {
+          if (this.map.collision[ry]?.[rx] === 0 && !this.spatial.isTileOccupied(rx, ry, "")) {
             this.npcSystem.spawnNpcAt("skeleton", this.map, rx, ry);
           }
         }
@@ -680,144 +273,24 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     }
   }
 
-  private handleNpcKillRewards(player: Player, npc: Npc) {
-    const stats = NPC_STATS[npc.type];
-    if (stats && stats.expReward) {
-      this.gainXp(player, stats.expReward);
-    }
-
-    this.quests
-      .updateProgress(player.dbId, "kill", npc.type, 1)
-      .then((updatedQuests) => {
-        if (updatedQuests.length > 0) {
-          const client = this.findClient(player.sessionId);
-          if (client)
-            this.messageHandler.sendQuestUpdates(client, updatedQuests);
-        }
-      });
-
-    const dropTable = NPC_DROPS[npc.type];
-    if (dropTable) {
-      for (const entry of dropTable) {
-        if (Math.random() < entry.chance) {
-          const quantity =
-            Math.floor(Math.random() * (entry.max - entry.min + 1)) + entry.min;
-          const offsetX = (Math.random() - 0.5) * 1.5;
-          const offsetY = (Math.random() - 0.5) * 1.5;
-
-          if (entry.itemId === "gold") {
-            this.drops.spawnGoldDrop(
-              this.state.drops,
-              npc.tileX + offsetX,
-              npc.tileY + offsetY,
-              quantity,
-            );
-          } else {
-            this.drops.spawnItemDrop(
-              this.state.drops,
-              npc.tileX + offsetX,
-              npc.tileY + offsetY,
-              entry.itemId,
-              quantity,
-            );
-          }
-        }
-      }
-    }
-  }
-
   private onPlayerDeath(player: Player, killerSessionId?: string) {
-    // Mark dead immediately so the entity is no longer attackable / occupied
-    player.hp = 0;
-    player.alive = false;
+    player.hp = 0; player.alive = false;
     this.spatial.removeFromGrid(player);
-
-    const droppedItems = this.inventorySystem.dropAllItems(player);
-    for (const { itemId, quantity } of droppedItems) {
-      this.drops.spawnItemDrop(
-        this.state.drops,
-        player.tileX,
-        player.tileY,
-        itemId,
-        quantity,
-      );
-    }
-
+    const dropped = this.inventorySystem.dropAllItems(player);
+    for (const d of dropped) this.drops.spawnItemDrop(this.state.drops, player.tileX, player.tileY, d.itemId, d.quantity);
     if (player.gold > 0) {
-      this.drops.spawnGoldDrop(
-        this.state.drops,
-        player.tileX,
-        player.tileY,
-        player.gold,
-      );
+      this.drops.spawnGoldDrop(this.state.drops, player.tileX, player.tileY, player.gold);
       player.gold = 0;
     }
-
-    // Only player killers receive a gold bonus
-    if (killerSessionId) {
-      const killerPlayer = this.state.players.get(killerSessionId);
-      if (killerPlayer) killerPlayer.gold += KILL_GOLD_BONUS;
-    }
-
-    const killerEntity = killerSessionId ? this.spatial.findEntityBySessionId(killerSessionId) : undefined;
-    const killerName = killerEntity instanceof Player ? killerEntity.name : (killerEntity?.type ?? "");
-
-    this.broadcast(ServerMessageType.KillFeed, {
-      killerSessionId,
-      victimSessionId: player.sessionId,
-      killerName,
-      victimName: player.name,
-    });
-
+    this.broadcast(ServerMessageType.Death, { sessionId: player.sessionId, killerSessionId });
     this.respawnSystem.queueRespawn(player.sessionId, Date.now());
-
-    logger.info({
-      room: this.roomId,
-      tick: this.state.tick,
-      clientId: player.sessionId,
-      intent: "death",
-      result: "ok",
-      posAfter: { x: player.tileX, y: player.tileY },
-    });
   }
 
-  /** Looks up a connected client by session ID. */
-  private findClient(sessionId: string): Client | undefined {
-    return this.clients.find((c) => c.sessionId === sessionId);
+  private gainXp(player: Player, amount: number) {
+    this.levelService.gainXp(player, amount);
   }
 
-  /** Sends a message to a specific player by their session ID. */
-  private sendToPlayer<T extends ServerMessageType>(
-    sessionId: string,
-    type: T,
-    data: ServerMessages[T],
-  ): void {
-    this.findClient(sessionId)?.send(type, data);
-  }
-
-  public gainXp(player: Player, amount: number) {
-    if (amount <= 0) return;
-    player.xp += amount;
-
-    while (player.xp >= player.maxXp && player.level < 20) {
-      player.xp -= player.maxXp;
-      player.level++;
-      player.maxXp = EXP_TABLE[player.level] ?? player.maxXp;
-      const gains = LEVEL_UP_STATS[player.classType] ?? { str: 1, agi: 1, int: 1 };
-      player.str += gains.str;
-      player.agi += gains.agi;
-      player.intStat += gains.int;
-      player.hp = player.maxHp;
-      player.mana = player.maxMana;
-
-      this.broadcast(ServerMessageType.LevelUp, {
-        sessionId: player.sessionId,
-        level: player.level,
-      });
-
-      this.sendToPlayer(player.sessionId, ServerMessageType.Notification, {
-        message: `Level Up! You are now level ${player.level}!`,
-      });
-    }
+  private findClient(sid: string): Client | undefined {
+    return this.clients.find((c) => c.sessionId === sid);
   }
 }

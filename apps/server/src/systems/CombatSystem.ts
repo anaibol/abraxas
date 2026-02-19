@@ -80,12 +80,60 @@ export class CombatSystem {
     }
   }
 
-  // Placeholder for compatible ArenaRoom call
   processBufferedActions(
-    _now: number,
-    _broadcast: BroadcastFn,
-    _getSendToClient?: (sessionId: string) => SendToClientFn | undefined,
-  ) {}
+    now: number,
+    broadcast: BroadcastFn,
+    getSendToClient: (sessionId: string) => SendToClientFn | undefined,
+    onDeath: (entity: Entity, killerSessionId?: string) => void,
+    onSummon?: (caster: Entity, spellId: string, x: number, y: number) => void,
+  ) {
+    for (const [sessionId, cs] of this.entityStates.entries()) {
+      if (!cs.bufferedAction) continue;
+
+      const entity = this.spatial.findEntityBySessionId(sessionId);
+      if (!entity || !entity.alive) {
+        cs.bufferedAction = null;
+        continue;
+      }
+
+      // Buffer expires if too old
+      if (now - cs.bufferedAction.bufferedAt > 500) {
+        cs.bufferedAction = null;
+        continue;
+      }
+
+      const sendToClient = getSendToClient(sessionId);
+
+      if (cs.bufferedAction.type === "attack") {
+        if (
+          this.tryAttack(
+            entity,
+            cs.bufferedAction.targetTileX ?? entity.tileX,
+            cs.bufferedAction.targetTileY ?? entity.tileY,
+            broadcast,
+            now,
+            sendToClient,
+          )
+        ) {
+          cs.bufferedAction = null;
+        }
+      } else if (cs.bufferedAction.type === "cast" && cs.bufferedAction.spellId) {
+        if (
+          this.tryCast(
+            entity,
+            cs.bufferedAction.spellId,
+            cs.bufferedAction.targetTileX ?? entity.tileX,
+            cs.bufferedAction.targetTileY ?? entity.tileY,
+            broadcast,
+            now,
+            sendToClient,
+          )
+        ) {
+          cs.bufferedAction = null;
+        }
+      }
+    }
+  }
 
   tryAttack(
     attacker: Entity,
@@ -98,8 +146,23 @@ export class CombatSystem {
     const cs = this.getEntityState(attacker.sessionId);
     const stats = attacker.getStats()!;
 
-    if (now < cs.lastGcdMs + GCD_MS) return false;
-    if (this.activeWindups.has(attacker.sessionId)) return false;
+    if (now < cs.lastGcdMs + GCD_MS || this.activeWindups.has(attacker.sessionId)) {
+      cs.bufferedAction = {
+        type: "attack",
+        targetTileX,
+        targetTileY,
+        bufferedAt: now,
+      };
+      return false;
+    }
+
+    // Facing check
+    const targetFacing = MathUtils.getDirection(attacker.getPosition(), { x: targetTileX, y: targetTileY });
+    if (attacker.tileX !== targetTileX || attacker.tileY !== targetTileY) {
+      if (attacker.facing !== targetFacing) {
+        attacker.facing = targetFacing;
+      }
+    }
 
     if (stats.meleeRange > 1) {
       const target = this.spatial.findEntityAtTile(targetTileX, targetTileY);
@@ -124,7 +187,7 @@ export class CombatSystem {
 
     const windup: WindupAction = {
       type: "melee",
-      completeAtMs: now + 300,
+      completeAtMs: now + stats.meleeWindupMs,
       attackerSessionId: attacker.sessionId,
       targetTileX,
       targetTileY,
@@ -152,10 +215,27 @@ export class CombatSystem {
     const spell = SPELLS[spellId];
     if (!spell) return false;
 
-    if (now < cs.lastGcdMs + GCD_MS) return false;
+    if (now < cs.lastGcdMs + GCD_MS || this.activeWindups.has(caster.sessionId)) {
+      cs.bufferedAction = {
+        type: "cast",
+        spellId,
+        targetTileX,
+        targetTileY,
+        bufferedAt: now,
+      };
+      return false;
+    }
+
     const cd = cs.spellCooldowns.get(spellId) || 0;
     if (now < cd) return false;
-    if (this.activeWindups.has(caster.sessionId)) return false;
+
+    // Facing check for targeted spells
+    if (spell.rangeTiles > 0 && (caster.tileX !== targetTileX || caster.tileY !== targetTileY)) {
+      const targetFacing = MathUtils.getDirection(caster.getPosition(), { x: targetTileX, y: targetTileY });
+      if (caster.facing !== targetFacing) {
+        caster.facing = targetFacing;
+      }
+    }
 
     if (caster instanceof Player && caster.mana < spell.manaCost) {
       sendToClient?.(ServerMessageType.Notification, {
@@ -348,8 +428,16 @@ export class CombatSystem {
   }
 
   private sameFaction(a: Entity, b: Entity): boolean {
-    // Both Player instances or both non-Player (NPC) instances
-    return (a instanceof Player) === (b instanceof Player);
+    if ((a instanceof Player) && (b instanceof Player)) {
+      // Party members are same faction (prevent friendly fire)
+      if (a.partyId && a.partyId === b.partyId) return true;
+      return false; // Players can hit other players not in their party
+    }
+    // NPCs of same type are same faction
+    if (!(a instanceof Player) && !(b instanceof Player)) {
+      return a.type === b.type;
+    }
+    return false; // Player vs NPC always ok
   }
 
   private applySpellToTarget(

@@ -71,12 +71,12 @@ export const CLASS_STATS: Record<string, ClassStats> = {
   },
 };
 
-export const LEVEL_UP_STATS: Record<string, { str: number; agi: number; int: number }> = {
-  WARRIOR: { str: 3, agi: 1, int: 0 },
-  MAGE:    { str: 0, agi: 1, int: 3 },
-  RANGER:  { str: 1, agi: 3, int: 0 },
-  ROGUE:   { str: 1, agi: 3, int: 0 },
-  CLERIC:  { str: 1, agi: 0, int: 3 },
+export const LEVEL_UP_STATS: Record<string, { str: number; agi: number; int: number; hp: number; mp: number }> = {
+  WARRIOR: { str: 3, agi: 1, int: 0, hp: 25, mp: 5 },
+  MAGE:    { str: 0, agi: 1, int: 3, hp: 10, mp: 20 },
+  RANGER:  { str: 1, agi: 3, int: 0, hp: 15, mp: 10 },
+  ROGUE:   { str: 1, agi: 3, int: 0, hp: 15, mp: 8 },
+  CLERIC:  { str: 1, agi: 0, int: 3, hp: 20, mp: 15 },
 };
 
 export const EXP_TABLE = [

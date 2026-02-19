@@ -120,7 +120,6 @@ export class NpcSystem {
     _dt: number,
     map: TileMap,
     now: number,
-    occupiedCheck: (x: number, y: number, excludeId: string) => boolean,
     tickCount: number,
     roomId: string,
     broadcast: BroadcastFn,
@@ -220,7 +219,6 @@ export class NpcSystem {
     npc: Npc,
     map: TileMap,
     now: number,
-    occupiedCheck: (x: number, y: number, excludeId: string) => boolean,
     tickCount: number,
     roomId: string,
   ): void {
@@ -257,7 +255,6 @@ export class NpcSystem {
       dir,
       map,
       now,
-      occupiedCheck,
       tickCount,
       roomId,
     );
@@ -270,7 +267,6 @@ export class NpcSystem {
     npc: Npc,
     map: TileMap,
     now: number,
-    occupiedCheck: (x: number, y: number, excludeId: string) => boolean,
     tickCount: number,
     roomId: string,
   ): void {
