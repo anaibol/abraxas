@@ -84,11 +84,4 @@ export const EXP_TABLE = [
   3250, 3850, 4500, 5200, 5950, 6750, 7600, 8500, 9450, 10450,
 ];
 
-// Item 24: Starting gear from ArenaRoom context
-export const STARTER_EQUIPMENT: Record<string, { gold: number; items: string[] }> = {
-  WARRIOR: { gold: 50, items: ["iron_sword", "wooden_shield", "health_potion"] },
-  MAGE:    { gold: 20, items: ["iron_dagger", "mana_potion", "mana_potion"] },
-  RANGER:  { gold: 30, items: ["iron_dagger", "health_potion"] },
-  ROGUE:   { gold: 40, items: ["iron_dagger", "health_potion"] },
-  CLERIC:  { gold: 30, items: ["iron_dagger", "health_potion"] },
-};
+

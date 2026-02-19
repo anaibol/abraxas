@@ -19,8 +19,8 @@ import { Player } from "../../../server/src/schema/Player";
 import { Npc } from "../../../server/src/schema/Npc";
 import { Drop } from "../../../server/src/schema/Drop";
 
-export type StateCallback = (state: PlayerState) => void;
-export type KillFeedCallback = (killer: string, victim: string) => void;
+type StateCallback = (state: PlayerState) => void;
+type KillFeedCallback = (killer: string, victim: string) => void;
 export type ConsoleCallback = (text: string, color?: string) => void;
 
 /** Typed wrapper for Colyseus MapSchema onAdd/onRemove (client SDK v2 doesn't expose these in its types) */

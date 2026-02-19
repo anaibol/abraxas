@@ -2,7 +2,7 @@ import { Client } from "@colyseus/core";
 import { GameState } from "../schema/GameState";
 import { Player } from "../schema/Player";
 import { Npc } from "../schema/Npc";
-import { TileMap, ServerMessageType, NPC_STATS, NPC_DROPS, BroadcastFn } from "@abraxas/shared";
+import { TileMap, ServerMessageType, ServerMessages, NPC_STATS, NPC_DROPS, BroadcastFn } from "@abraxas/shared";
 import { SpatialLookup, Entity } from "../utils/SpatialLookup";
 import { BuffSystem } from "../systems/BuffSystem";
 import { NpcSystem } from "../systems/NpcSystem";
@@ -11,7 +11,7 @@ import { DropSystem } from "../systems/DropSystem";
 import { RespawnSystem } from "../systems/RespawnSystem";
 import { QuestSystem } from "../systems/QuestSystem";
 
-export interface TickOptions {
+interface TickOptions {
   state: GameState;
   map: TileMap;
   roomId: string;
@@ -76,7 +76,7 @@ export class TickSystem {
       broadcast, 
       (sid) => {
         const c = this.opts.findClient(sid);
-        return (type: any, data?: any) => c?.send(type, data);
+        return <T extends ServerMessageType>(type: T, data?: ServerMessages[T]) => c?.send(type, data);
       },
       (e, k) => this.opts.onEntityDeath(e, k),
       (caster, spellId, x, y) => this.opts.onSummon(caster, spellId, x, y),

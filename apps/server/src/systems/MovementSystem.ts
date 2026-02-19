@@ -8,7 +8,7 @@ interface EntityTimers {
   lastMoveMs: number;
 }
 
-export interface MoveResult {
+interface MoveResult {
   success: boolean;
   warp?: {
     targetMap: string;

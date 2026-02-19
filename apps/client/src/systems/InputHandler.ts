@@ -16,7 +16,7 @@ const SPELL_KEY_CODES: Record<string, number> = {
   R: Phaser.Input.Keyboard.KeyCodes.R,
 };
 
-export interface TargetingState {
+interface TargetingState {
   mode: "spell" | "attack";
   spellId?: string;
   rangeTiles: number;

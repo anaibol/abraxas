@@ -2,7 +2,7 @@ import Phaser from "phaser";
 
 // --- Index JSON types ---
 
-export interface StaticGrh {
+interface StaticGrh {
   id: number;
   grafico: number;
   offX: number;
@@ -11,7 +11,7 @@ export interface StaticGrh {
   height: number;
 }
 
-export interface AnimGrh {
+interface AnimGrh {
   id: number;
   frames: number[];
   velocidad: number;
@@ -19,7 +19,7 @@ export interface AnimGrh {
 
 type GrhEntry = StaticGrh | AnimGrh | 0;
 
-export interface DirectionEntry {
+interface DirectionEntry {
   id: number;
   down: number;
   up: number;
@@ -27,7 +27,7 @@ export interface DirectionEntry {
   right: number;
 }
 
-export interface BodyEntry extends DirectionEntry {
+interface BodyEntry extends DirectionEntry {
   offHeadX: number;
   offHeadY: number;
 }
@@ -44,7 +44,7 @@ function isFxEntry(entry: IndexEntry): entry is FxEntry {
   return typeof entry === "object" && "animacion" in entry;
 }
 
-export interface FxEntry {
+interface FxEntry {
   id: number;
   animacion: number;
   offX: number;

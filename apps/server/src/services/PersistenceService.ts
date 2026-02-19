@@ -45,7 +45,7 @@ export type FullCharacter = Prisma.CharacterGetPayload<{
 const charWithStats = Prisma.validator<Prisma.CharacterDefaultArgs>()({
   include: { stats: true },
 });
-export type CharacterWithStats = Prisma.CharacterGetPayload<typeof charWithStats>;
+type CharacterWithStats = Prisma.CharacterGetPayload<typeof charWithStats>;
 
 export class PersistenceService {
   static async loadChar(id: string): Promise<FullCharacter | null> {

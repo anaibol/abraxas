@@ -18,7 +18,7 @@ type EquipSlotKey =
   | "equipHelmet"
   | "equipRing";
 
-export const EQUIP_SLOT_MAP: Record<EquipmentSlot, EquipSlotKey> = {
+const EQUIP_SLOT_MAP: Record<EquipmentSlot, EquipSlotKey> = {
   weapon: "equipWeapon",
   armor: "equipArmor",
   shield: "equipShield",
@@ -27,7 +27,7 @@ export const EQUIP_SLOT_MAP: Record<EquipmentSlot, EquipSlotKey> = {
 };
 
 /** Set a single equipment slot on a player. */
-export function setEquipSlot(
+function setEquipSlot(
   player: Player,
   slotKey: EquipSlotKey,
   value: string,
@@ -36,7 +36,7 @@ export function setEquipSlot(
 }
 
 /** Get the item ID in a single equipment slot (empty string = nothing equipped). */
-export function getEquipSlot(player: Player, slotKey: EquipSlotKey): string {
+function getEquipSlot(player: Player, slotKey: EquipSlotKey): string {
   return player[slotKey];
 }
 

@@ -5,7 +5,7 @@ import "dotenv/config";
 const JWT_SECRET = process.env.JWT_SECRET || "super-secret-default-key-change-in-prod";
 const SALT_ROUNDS = 10;
 
-export type AuthPayload = {
+type AuthPayload = {
   userId: string;
   username: string;
 };
