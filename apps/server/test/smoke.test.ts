@@ -25,17 +25,22 @@ let clientB: Client;
  */
 
 beforeAll(async () => {
-  const mapPath = resolve(
-    import.meta.dir,
-    "../../../packages/shared/src/maps/arena.test.json"
-  );
-  testMap = await Bun.file(mapPath).json();
-  server = await createGameServer({ port: TEST_PORT, map: testMap });
-  // Ensure Bun.serve is ready
-  await new Promise(r => setTimeout(r, 500));
+  try {
+    const mapPath = resolve(
+      import.meta.dir,
+      "../../../packages/shared/src/maps/arena.test.json"
+    );
+    testMap = await Bun.file(mapPath).json();
+    server = await createGameServer({ port: TEST_PORT, map: testMap });
+    // Ensure Bun.serve is ready
+    await new Promise(r => setTimeout(r, 500));
 
-  clientA = new Client(`ws://127.0.0.1:${TEST_PORT}`);
-  clientB = new Client(`ws://127.0.0.1:${TEST_PORT}`);
+    clientA = new Client(`ws://127.0.0.1:${TEST_PORT}`);
+    clientB = new Client(`ws://127.0.0.1:${TEST_PORT}`);
+  } catch (e) {
+    console.error("[smoke.test] beforeAll FAILED:", e);
+    throw e;
+  }
 });
 
 afterAll(async () => {
@@ -54,7 +59,7 @@ function waitForState(
   return new Promise((resolve, reject) => {
     const start = Date.now();
     const check = () => {
-      if (predicate(room.state)) {
+      if (room.state && predicate(room.state)) {
         resolve();
       } else if (Date.now() - start > timeoutMs) {
         reject(new Error("Timeout waiting for state condition"));
@@ -78,7 +83,8 @@ function expectPlayer(room: Room<GameState>, sessionId: string): Player {
 
 describe("Arena multiplayer smoke test", () => {
   test("full game flow: join, move, blocked move, melee, spell, disconnect", async () => {
-    // ---- Step 1: Both clients join ----
+    try {
+      // ---- Step 1: Both clients join ----
     const testSuffix = Date.now().toString();
     const nameA = "Warrior_" + testSuffix;
     const nameB = "Wizard_" + testSuffix;
@@ -100,6 +106,7 @@ describe("Arena multiplayer smoke test", () => {
 
     const tokenA = AuthService.generateToken({ userId: userA.id, email: emailA });
     const tokenB = AuthService.generateToken({ userId: userB.id, email: emailB });
+    console.log("[smoke.test] Step 0.3: Tokens generated");
 
     async function joinWithRetry(client: Client, token: string, opts: any, attempts = 3) {
       // Set token correctly for Colyseus 0.17
@@ -112,6 +119,7 @@ describe("Arena multiplayer smoke test", () => {
           return await client.joinOrCreate("arena", opts);
         } catch (e: any) {
           lastErr = e;
+          console.error(`[smoke.test] joinWithRetry attempt ${i+1} failed:`, e);
           // If reservation expired (524), retry after a short delay
           const msg = (e && (e.message || e.toString())) || '';
           if (msg.includes('seat reservation expired') || (e && e.code === 524)) {
@@ -134,6 +142,7 @@ describe("Arena multiplayer smoke test", () => {
         inventory: { create: { size: 40 } },
       }
     });
+    console.log("[smoke.test] Step 0.4: Character A created");
 
     const charB = await prisma.character.create({
       data: {
@@ -144,6 +153,7 @@ describe("Arena multiplayer smoke test", () => {
         inventory: { create: { size: 40 } },
       }
     });
+    console.log("[smoke.test] Step 0.5: Character B created");
 
     console.log("Step 1: Joining rooms...");
     const roomA: Room<GameState> = await joinWithRetry(clientA, tokenA, {
@@ -158,8 +168,8 @@ describe("Arena multiplayer smoke test", () => {
       mapName: "arena.test",
     });
     // Wait until both rooms see 2 players
-    await waitForState(roomA, (state) => state.players.size >= 2);
-    await waitForState(roomB, (state) => state.players.size >= 2);
+    await waitForState(roomA, (state) => state?.players?.size >= 2);
+    await waitForState(roomB, (state) => state?.players?.size >= 2);
 
     console.log("Step 2: Checking spawn positions...");
     expect(roomA.state.players.size).toBe(2);
@@ -187,8 +197,8 @@ describe("Arena multiplayer smoke test", () => {
     // ---- Step 2: Move A right -> (3,4) ----
     roomA.send("move", { direction: Direction.RIGHT });
     await waitForState(roomA, (state) => {
-        const p = state.players.get(roomA.sessionId);
-        return p !== undefined && p.tileX === 3;
+      const p = state?.players?.get(roomA.sessionId);
+      return p !== undefined && p.tileX === 3;
     });
 
     const pA2 = getPlayer(roomA, roomA.sessionId);
@@ -272,5 +282,9 @@ describe("Arena multiplayer smoke test", () => {
     roomA.leave();
     roomB.leave();
     await wait(300);
+    } catch (e: any) {
+      console.error("[smoke.test] CRITICAL ERROR IN TEST:", e);
+      throw e;
+    }
   }, 20000);
 });
