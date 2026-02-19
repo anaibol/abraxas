@@ -43,6 +43,7 @@
         "@libsql/client": "^0.17.0",
         "@prisma/adapter-libsql": "^7.4.0",
         "@prisma/client": "^7.4.0",
+        "@prisma/client-runtime-utils": "^7.4.0",
         "@types/jsonwebtoken": "^9.0.10",
         "bcryptjs": "^3.0.3",
         "dotenv": "^17.3.1",
