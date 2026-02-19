@@ -213,16 +213,18 @@ export class GameScene extends Phaser.Scene {
       },
     );
 
-    // Debug text
-    this.debugText = this.add.text(10, 10, "", {
-      fontSize: "16px",
-      color: "#ffffff",
-      stroke: "#000000",
-      strokeThickness: 4,
-      fontFamily: "'Courier New', Courier, monospace",
-    });
-    this.debugText.setScrollFactor(0);
-    this.debugText.setDepth(100);
+    // Debug text — only visible in development
+    if (import.meta.env.DEV) {
+      this.debugText = this.add.text(10, 10, "", {
+        fontSize: "16px",
+        color: "#ffffff",
+        stroke: "#000000",
+        strokeThickness: 4,
+        fontFamily: "'Courier New', Courier, monospace",
+      });
+      this.debugText.setScrollFactor(0);
+      this.debugText.setDepth(100);
+    }
 
     // Notify ready
     this.onReady?.();
@@ -380,17 +382,6 @@ export class GameScene extends Phaser.Scene {
         TILE_SIZE,
       );
     }
-  }
-
-  private onInvalidTarget() {
-    const localSprite = this.spriteManager.getSprite(this.room.sessionId);
-    if (!localSprite) return;
-
-    this.effectManager.showNotification(
-      this.room.sessionId,
-      "Invalid target",
-      "#ff8800",
-    );
   }
 
   private buildInventory(localPlayer: Player) {
