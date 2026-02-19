@@ -38,6 +38,7 @@ import type {
 import { getRandomName, ServerMessageType, ITEMS, CLASS_STATS, SPELLS } from "@abraxas/shared";
 import { QuestDialogue } from "./QuestDialogue";
 import { MobileControls } from "./MobileControls";
+import { useIsMobile } from "../hooks/useIsMobile";
 import { NetworkManager } from "../network/NetworkManager";
 import { Menu, MessageCircle } from "lucide-react";
 import { AudioManager } from "../managers/AudioManager";
@@ -105,7 +106,7 @@ export function App() {
   const [showScoreboard, setShowScoreboard] = useState(false);
   const [killStats, setKillStats] = useState<Record<string, KillStats>>({});
   const [pendingSpellId, setPendingSpellId] = useState<string | null>(null);
-  const [isMobile] = useState(() => typeof window !== "undefined" && ("ontouchstart" in window || navigator.maxTouchPoints > 0));
+  const isMobile = useIsMobile();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const [room, setRoom] = useState<Room<GameState> | null>(null);
@@ -447,7 +448,6 @@ export function App() {
                   players={roomRef.current.state?.players}
                   npcs={roomRef.current.state?.npcs}
                   currentPlayerId={roomRef.current.sessionId}
-                  isMobile={isMobile}
                 />
               )}
               {/* Mobile sidebar toggle button */}
@@ -498,7 +498,6 @@ export function App() {
                 onSelectItem={setSelectedItemId}
                 onSpellClick={handleSpellClick}
                 pendingSpellId={pendingSpellId}
-                isMobile={isMobile}
                 onClose={isMobile ? () => setIsSidebarOpen(false) : undefined}
               />
             )}

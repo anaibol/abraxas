@@ -19,7 +19,7 @@ export function KillFeed({ entries }: KillFeedProps) {
   if (visible.length === 0) return null;
 
   return (
-    <Box pos="fixed" top="12px" right="296px" zIndex="40" pointerEvents="none">
+    <Box pos="fixed" top="12px" right={{ base: "62px", md: "296px" }} zIndex="40" pointerEvents="none">
       {visible.map((entry) => (
         <Box
           key={entry.id}

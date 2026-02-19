@@ -2,6 +2,7 @@ import { useEffect, useRef, type FC } from "react";
 import type { TileMap } from "@abraxas/shared";
 import type { Player } from "../../../server/src/schema/Player";
 import type { Npc } from "../../../server/src/schema/Npc";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 type SchemaMap<T> = { forEach: (cb: (value: T, key: string) => void) => void };
 
@@ -10,10 +11,10 @@ type MinimapProps = {
   players: SchemaMap<Player> | undefined;
   npcs: SchemaMap<Npc> | undefined;
   currentPlayerId: string;
-  isMobile?: boolean;
 };
 
-export const Minimap: FC<MinimapProps> = ({ map, players, npcs, currentPlayerId, isMobile }) => {
+export const Minimap: FC<MinimapProps> = ({ map, players, npcs, currentPlayerId }) => {
+  const isMobile = useIsMobile();
   const size = isMobile ? 110 : 200;
   const canvasRef = useRef<HTMLCanvasElement>(null);
 

@@ -536,6 +536,7 @@ export class GameScene extends Phaser.Scene {
 			if (n.alive && n.tileX === nextX && n.tileY === nextY) return;
 		}
 
+		sprite.setFacing(direction);
 		sprite.predictMove(direction);
 		this.soundManager.playStep();
 	}

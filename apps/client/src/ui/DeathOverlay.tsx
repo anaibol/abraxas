@@ -35,21 +35,24 @@ export function DeathOverlay({ visible, deathTime }: DeathOverlayProps) {
       direction="column"
     >
       <Text
-        fontSize="64px"
+        fontSize={{ base: "40px", md: "64px" }}
         fontWeight="700"
         color={T.bloodBright}
         fontFamily={T.display}
-        letterSpacing="12px"
+        letterSpacing={{ base: "6px", md: "12px" }}
         textShadow="0 0 40px rgba(200,30,60,0.5)"
+        textAlign="center"
+        px="4"
       >
         YOU DIED
       </Text>
       <Text
-        fontSize="18px"
+        fontSize={{ base: "14px", md: "18px" }}
         color={T.goldMuted}
         fontFamily={T.display}
-        letterSpacing="4px"
+        letterSpacing={{ base: "2px", md: "4px" }}
         mt="4"
+        textAlign="center"
       >
         Respawning in {countdown}s
       </Text>

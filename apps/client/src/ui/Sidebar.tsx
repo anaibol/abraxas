@@ -12,6 +12,7 @@ import { SpellsTab } from "./sidebar/SpellsTab";
 import { PartyTab } from "./sidebar/PartyTab";
 import { FriendsTab } from "./sidebar/FriendsTab";
 import { type SidebarProps } from "./sidebar/types";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 const SIDEBAR_TABS: readonly {
 	key: "inv" | "spells" | "quests" | "party" | "friends";
@@ -47,9 +48,9 @@ export function Sidebar({
 	onSelectItem,
 	onSpellClick,
 	pendingSpellId,
-	isMobile,
 	onClose,
 }: SidebarProps) {
+	const isMobile = useIsMobile();
 	const { t } = useTranslation();
 	const [tab, setTab] = useState<
 		"inv" | "spells" | "quests" | "party" | "friends"
@@ -63,43 +64,41 @@ export function Sidebar({
 
 	const sidebarPanel = (
 		<Flex
-			w={isMobile ? "min(380px, 100vw)" : "380px"}
-			h={isMobile ? "100dvh" : "100%"}
+			w={{ base: "min(380px, 100vw)", md: "380px" }}
+			h={{ base: "100dvh", md: "100%" }}
 			direction="column"
 			bg={T.bg}
-			borderLeft={isMobile ? "none" : "3px solid"}
+			borderLeft={{ base: "none", md: "3px solid" }}
 			borderColor={T.border}
 			flexShrink={0}
 			overflow="hidden"
 			userSelect="none"
 			fontFamily={T.display}
-			position={isMobile ? "relative" : undefined}
+			position="relative"
 		>
-			{isMobile && (
-				<Box
-					position="absolute"
-					top="10px"
-					right="12px"
-					zIndex={10}
-					w="36px"
-					h="36px"
-					bg={T.raised}
-					border="1px solid"
-					borderColor={T.border}
-					borderRadius="6px"
-					display="flex"
-					alignItems="center"
-					justifyContent="center"
-					color={T.gold}
-					cursor="pointer"
-					onPointerDown={(e) => {
-						e.preventDefault();
-						onClose?.();
-					}}
-				>
-					<X size={18} />
-				</Box>
-			)}
+			<Box
+				display={{ base: "flex", md: "none" }}
+				position="absolute"
+				top="10px"
+				right="12px"
+				zIndex={10}
+				w="36px"
+				h="36px"
+				bg={T.raised}
+				border="1px solid"
+				borderColor={T.border}
+				borderRadius="6px"
+				alignItems="center"
+				justifyContent="center"
+				color={T.gold}
+				cursor="pointer"
+				onPointerDown={(e) => {
+					e.preventDefault();
+					onClose?.();
+				}}
+			>
+				<X size={18} />
+			</Box>
 
 			{/* Header */}
 			<CharacterHeader state={state} isRecording={isRecording} />
@@ -197,11 +196,10 @@ export function Sidebar({
 			</Box>
 
 			{/* Footer */}
-			<SidebarFooter
-				state={state}
-				isMobile={isMobile}
-				classSpells={classSpells}
-			/>
+		<SidebarFooter
+			state={state}
+			classSpells={classSpells}
+		/>
 		</Flex>
 	);
 

@@ -7,13 +7,11 @@ import { type PlayerState } from "./types";
 
 interface SidebarFooterProps {
 	state: PlayerState;
-	isMobile?: boolean;
 	classSpells: Spell[];
 }
 
 export function SidebarFooter({
 	state,
-	isMobile,
 	classSpells,
 }: SidebarFooterProps) {
 	const { t } = useTranslation();
@@ -122,32 +120,31 @@ export function SidebarFooter({
 				</Box>
 			</Box>
 
-			{/* Keybinds — hide on mobile since controls are on-screen */}
-			{!isMobile && (
-				<Flex
-					px="3"
-					py="2"
-					gap="2"
-					justify="center"
-					flexWrap="wrap"
-					borderTop="1px solid"
-					borderTopColor={T.raised}
-					bg={T.bg}
-				>
-					<KeyHint keys="Arrows" action={t("controls.move")} />
-					<KeyHint keys="Ctrl" action={t("controls.melee")} />
-					<KeyHint keys="A" action={t("controls.pickup")} />
-					<KeyHint keys="T" action={t("controls.drop")} />
-					<KeyHint keys="M" action={t("controls.meditate")} />
-					{classSpells.map((spell) => (
-						<KeyHint
-							key={spell.id}
-							keys={`${spell.key}${spell.rangeTiles > 0 ? "+Click" : ""}`}
-							action={t(`spells.${spell.id}.name`)}
-						/>
-					))}
-				</Flex>
-			)}
+			{/* Keybinds — hidden on mobile since controls are on-screen */}
+			<Flex
+				display={{ base: "none", md: "flex" }}
+				px="3"
+				py="2"
+				gap="2"
+				justify="center"
+				flexWrap="wrap"
+				borderTop="1px solid"
+				borderTopColor={T.raised}
+				bg={T.bg}
+			>
+				<KeyHint keys="Arrows" action={t("controls.move")} />
+				<KeyHint keys="Ctrl" action={t("controls.melee")} />
+				<KeyHint keys="A" action={t("controls.pickup")} />
+				<KeyHint keys="T" action={t("controls.drop")} />
+				<KeyHint keys="M" action={t("controls.meditate")} />
+				{classSpells.map((spell) => (
+					<KeyHint
+						key={spell.id}
+						keys={`${spell.key}${spell.rangeTiles > 0 ? "+Click" : ""}`}
+						action={t(`spells.${spell.id}.name`)}
+					/>
+				))}
+			</Flex>
 		</Box>
 	);
 }
