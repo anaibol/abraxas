@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { CLASS_APPEARANCE, ITEMS } from "@abraxas/shared";
+import { CLASS_APPEARANCE, NPC_APPEARANCE, ITEMS } from "@abraxas/shared";
 import { AoGrhResolver } from "../assets/AoGrhResolver";
 
 export class PreloaderScene extends Phaser.Scene {
@@ -72,6 +72,10 @@ export class PreloaderScene extends Phaser.Scene {
     for (const cls of Object.values(CLASS_APPEARANCE)) {
       bodyIds.add(cls.bodyId);
       headIds.add(cls.headId);
+    }
+    for (const npc of Object.values(NPC_APPEARANCE)) {
+      bodyIds.add(npc.bodyId);
+      if (npc.headId) headIds.add(npc.headId);
     }
 
     const weaponIds = new Set<number>();

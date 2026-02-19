@@ -25,7 +25,7 @@ const DIR_NAME_MAP: Record<number, "down" | "up" | "left" | "right"> = {
 export class PlayerSprite {
   public container: Phaser.GameObjects.Container;
   private bodySprite: Phaser.GameObjects.Sprite;
-  private headSprite: Phaser.GameObjects.Sprite;
+  private headSprite: Phaser.GameObjects.Sprite | null = null;
   private weaponSprite: Phaser.GameObjects.Sprite | null = null;
   private shieldSprite: Phaser.GameObjects.Sprite | null = null;
   private helmetSprite: Phaser.GameObjects.Sprite | null = null;
@@ -48,7 +48,7 @@ export class PlayerSprite {
 
   private resolver: AoGrhResolver;
   private bodyEntry: BodyEntry;
-  private headEntry: DirectionEntry;
+  private headEntry: DirectionEntry | null;
   private currentDir: Direction = Direction.DOWN;
   private isMoving: boolean = false;
 
@@ -101,8 +101,12 @@ export class PlayerSprite {
       CLASS_APPEARANCE[classType] ??
       NPC_APPEARANCE[classType] ??
       CLASS_APPEARANCE.WARRIOR;
-    this.bodyEntry = this.resolver.getBodyEntry(appearance.bodyId)!;
-    this.headEntry = this.resolver.getHeadEntry(appearance.headId)!;
+    const bodyEntryResult = this.resolver.getBodyEntry(appearance.bodyId);
+    if (!bodyEntryResult) {
+      throw new Error(`No body entry found for bodyId ${appearance.bodyId} (class/type: ${classType})`);
+    }
+    this.bodyEntry = bodyEntryResult;
+    this.headEntry = this.resolver.getHeadEntry(appearance.headId);
 
     const px = tileX * TILE_SIZE + TILE_SIZE / 2;
     const py = tileY * TILE_SIZE + TILE_SIZE / 2;
@@ -116,7 +120,10 @@ export class PlayerSprite {
     this.lastServerTileY = tileY;
 
     const bodyGrhId = this.bodyEntry.down;
-    const bodyStatic = this.resolver.resolveStaticGrh(bodyGrhId)!;
+    const bodyStatic = this.resolver.resolveStaticGrh(bodyGrhId);
+    if (!bodyStatic) {
+      throw new Error(`No static grh for bodyGrhId ${bodyGrhId} (class/type: ${classType})`);
+    }
     this.bodySprite = scene.add.sprite(
       0,
       TILE_SIZE / 2,
@@ -125,15 +132,19 @@ export class PlayerSprite {
     );
     this.bodySprite.setOrigin(0.5, 1);
 
-    const headGrhId = this.headEntry.down;
-    const headStatic = this.resolver.resolveStaticGrh(headGrhId)!;
-    this.headSprite = scene.add.sprite(
-      0,
-      0,
-      `ao-${headStatic.grafico}`,
-      `grh-${headStatic.id}`,
-    );
-    this.headSprite.setOrigin(0.5, 0);
+    if (this.headEntry) {
+      const headGrhId = this.headEntry.down;
+      const headStatic = this.resolver.resolveStaticGrh(headGrhId);
+      if (headStatic) {
+        this.headSprite = scene.add.sprite(
+          0,
+          0,
+          `ao-${headStatic.grafico}`,
+          `grh-${headStatic.id}`,
+        );
+        this.headSprite.setOrigin(0.5, 0);
+      }
+    }
     this.updateHeadPosition();
 
     this.nameText = scene.add.text(0, -30, name, {
@@ -172,15 +183,17 @@ export class PlayerSprite {
     this.speakingIcon.setOrigin(0.5, 1);
     this.speakingIcon.setVisible(false);
 
-    this.container = scene.add.container(px, py, [
+    const containerChildren: Phaser.GameObjects.GameObject[] = [
       this.bodySprite,
-      this.headSprite,
       this.nameText,
       this.hpBarBg,
       this.hpBar,
       this.manaBar,
       this.speakingIcon,
-    ]);
+    ];
+    if (this.headSprite) containerChildren.push(this.headSprite);
+
+    this.container = scene.add.container(px, py, containerChildren);
     this.container.setDepth(10);
 
     // Ensure body walk animation exists for the initial direction
@@ -194,7 +207,9 @@ export class PlayerSprite {
     const bodyTopY = TILE_SIZE / 2 - bodyH;
     const offX = this.bodyEntry.offHeadX ?? 0;
     const offY = this.bodyEntry.offHeadY ?? 0;
-    this.headSprite.setPosition(offX, bodyTopY + offY);
+    if (this.headSprite) {
+      this.headSprite.setPosition(offX, bodyTopY + offY);
+    }
     if (this.helmetSprite) {
       this.helmetSprite.setPosition(offX, bodyTopY + offY);
     }
@@ -257,13 +272,15 @@ export class PlayerSprite {
     this.currentDir = direction;
     const dirName = DIR_NAME_MAP[direction];
 
-    const headGrhId = this.headEntry[dirName];
-    const headStatic = this.resolver.resolveStaticGrh(headGrhId);
-    if (headStatic) {
-      this.headSprite.setTexture(
-        `ao-${headStatic.grafico}`,
-        `grh-${headStatic.id}`,
-      );
+    if (this.headEntry && this.headSprite) {
+      const headGrhId = this.headEntry[dirName];
+      const headStatic = this.resolver.resolveStaticGrh(headGrhId);
+      if (headStatic) {
+        this.headSprite.setTexture(
+          `ao-${headStatic.grafico}`,
+          `grh-${headStatic.id}`,
+        );
+      }
     }
 
     this.updateHeadPosition();
@@ -404,7 +421,7 @@ export class PlayerSprite {
     // Z-ordering within container: lower depth = rendered behind
     // body=3, head=4, helmet=5 always on top of body
     this.bodySprite.setDepth(3);
-    this.headSprite.setDepth(4);
+    if (this.headSprite) this.headSprite.setDepth(4);
     if (this.helmetSprite) this.helmetSprite.setDepth(5);
 
     switch (this.currentDir) {
