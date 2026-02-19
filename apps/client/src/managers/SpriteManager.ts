@@ -79,7 +79,8 @@ export class SpriteManager {
         }
 
         sprite.setFacing(entity.facing);
-        sprite.updateHpMana(entity.hp, entity.maxHp);
+        const mana = player ? player.mana : 0;
+        sprite.updateHpMana(entity.hp, mana);
 
         if (player) {
           // It's a player

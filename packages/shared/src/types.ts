@@ -380,7 +380,7 @@ export type ClientMessages = {
   [ClientMessageType.Equip]: { itemId: string };
   [ClientMessageType.Unequip]: { slot: EquipmentSlot };
   [ClientMessageType.UseItem]: { itemId: string };
-  [ClientMessageType.DropItem]: { itemId: string };
+  [ClientMessageType.DropItem]: { itemId: string; quantity?: number };
   [ClientMessageType.Chat]: { message: string };
   [ClientMessageType.Audio]: ArrayBuffer;
   [ClientMessageType.PartyInvite]: { targetSessionId: string };

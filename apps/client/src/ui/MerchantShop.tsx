@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Box, Flex, Text, Button, Grid } from "@chakra-ui/react";
-import { ITEMS, ItemDef } from "@abraxas/shared";
+import { ITEMS, type Item } from "@abraxas/shared";
 
 interface MerchantShopProps {
   npcId: string;
@@ -24,7 +24,7 @@ const P = {
 };
 
 export function MerchantShop({ npcId, merchantInventory, playerGold, playerInventory, onBuy, onSell, onClose }: MerchantShopProps) {
-  const [selectedItem, setSelectedItem] = useState<ItemDef | null>(null);
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [tab, setTab] = useState<"buy" | "sell">("buy");
   const [quantity, setQuantity] = useState<number>(1);
 

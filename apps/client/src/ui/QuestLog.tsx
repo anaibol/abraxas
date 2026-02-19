@@ -17,7 +17,7 @@ const P = {
 };
 
 export function QuestLog({ quests }: QuestLogProps) {
-    const activeQuests = quests.filter(q => q.status === "active" || q.status === "completed");
+    const activeQuests = quests.filter(q => q.status === "IN_PROGRESS" || q.status === "COMPLETED");
 
     return (
         <Box flex="1" overflow="auto" p="2.5" fontFamily={P.font}>
@@ -37,7 +37,7 @@ export function QuestLog({ quests }: QuestLogProps) {
                                 p="3"
                                 bg={P.surface}
                                 border="1px solid"
-                                borderColor={q.status === "completed" ? P.gold : P.border}
+                                borderColor={q.status === "COMPLETED" ? P.gold : P.border}
                                 borderRadius="2px"
                                 position="relative"
                             >
@@ -45,7 +45,7 @@ export function QuestLog({ quests }: QuestLogProps) {
                                     <Text fontSize="12px" fontWeight="bold" color={P.gold}>
                                         {def.title}
                                     </Text>
-                                    <Text fontSize="9px" color={q.status === "completed" ? "#00ff00" : P.goldMuted} fontWeight="bold" textTransform="uppercase">
+                                    <Text fontSize="9px" color={q.status === "COMPLETED" ? "#00ff00" : P.goldMuted} fontWeight="bold" textTransform="uppercase">
                                         {q.status}
                                     </Text>
                                 </Flex>
@@ -75,7 +75,7 @@ export function QuestLog({ quests }: QuestLogProps) {
                                     })}
                                 </VStack>
 
-                                {q.status === "completed" && (
+                                {q.status === "COMPLETED" && (
                                     <Text fontSize="9px" color="#00ff00" mt="2" textAlign="center" fontWeight="bold">
                                         Talk to {def.npcId.replace(/_/g, " ")} to turn in
                                     </Text>

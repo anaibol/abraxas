@@ -7,13 +7,10 @@ import {
 import { prisma } from "../database/db";
 
 export class QuestSystem {
-  /** userId → questId → state */
+  /** charId → questId → state */
   private charQuests = new Map<string, Map<string, PlayerQuestState>>();
 
-  async loadCharQuests(
-    userId: string,
-    charId: string,
-  ): Promise<PlayerQuestState[]> {
+  async loadCharQuests(charId: string): Promise<PlayerQuestState[]> {
     const dbQuests = await prisma.characterQuest.findMany({
       where: { characterId: charId },
       include: { quest: true },
@@ -28,33 +25,33 @@ export class QuestSystem {
         progress: dbQuest.progressJson as Record<string, number> ?? {},
       });
     }
-    this.charQuests.set(userId, questStates);
+    this.charQuests.set(charId, questStates);
     return Array.from(questStates.values());
   }
 
-  getQuestState(userId: string, questId: string): PlayerQuestState | undefined {
-    return this.charQuests.get(userId)?.get(questId);
+  getQuestState(charId: string, questId: string): PlayerQuestState | undefined {
+    return this.charQuests.get(charId)?.get(questId);
   }
 
-  getCharQuestStates(userId: string): PlayerQuestState[] {
-    return Array.from(this.charQuests.get(userId)?.values() ?? []);
+  getCharQuestStates(charId: string): PlayerQuestState[] {
+    return Array.from(this.charQuests.get(charId)?.values() ?? []);
   }
 
-  async acceptQuest(
-    userId: string,
-    charId: string,
-    questId: string,
-  ): Promise<PlayerQuestState | null> {
+  removeChar(charId: string): void {
+    this.charQuests.delete(charId);
+  }
+
+  async acceptQuest(charId: string, questId: string): Promise<PlayerQuestState | null> {
     const questDef = QUESTS[questId];
     if (!questDef) return null;
 
-    let userQuests = this.charQuests.get(userId);
-    if (!userQuests) {
-      userQuests = new Map();
-      this.charQuests.set(userId, userQuests);
+    let quests = this.charQuests.get(charId);
+    if (!quests) {
+      quests = new Map();
+      this.charQuests.set(charId, quests);
     }
 
-    if (userQuests.has(questId)) return null;
+    if (quests.has(questId)) return null;
 
     const initialState: PlayerQuestState = {
       questId,
@@ -72,23 +69,22 @@ export class QuestSystem {
       },
     });
 
-    userQuests.set(questId, initialState);
+    quests.set(questId, initialState);
     return initialState;
   }
 
   async updateProgress(
-    userId: string,
     charId: string,
     type: QuestType,
     target: string,
     amount: number = 1,
   ): Promise<PlayerQuestState[]> {
-    const userQuests = this.charQuests.get(userId);
-    if (!userQuests) return [];
+    const quests = this.charQuests.get(charId);
+    if (!quests) return [];
 
     const updatedQuests: PlayerQuestState[] = [];
 
-    for (const state of userQuests.values()) {
+    for (const state of quests.values()) {
       if (state.status !== "IN_PROGRESS") continue;
 
       const questDef = QUESTS[state.questId];
@@ -119,12 +115,8 @@ export class QuestSystem {
     return updatedQuests;
   }
 
-  async completeQuest(
-    userId: string,
-    charId: string,
-    questId: string,
-  ): Promise<Quest | null> {
-    const state = this.getQuestState(userId, questId);
+  async completeQuest(charId: string, questId: string): Promise<Quest | null> {
+    const state = this.getQuestState(charId, questId);
     if (!state || state.status !== "COMPLETED") return null;
 
     const questDef = QUESTS[questId];
@@ -140,10 +132,10 @@ export class QuestSystem {
     return questDef;
   }
 
-  getAvailableQuests(userId: string, npcId: string): string[] {
-    const userQuests = this.charQuests.get(userId) ?? new Map();
+  getAvailableQuests(charId: string, npcId: string): string[] {
+    const quests = this.charQuests.get(charId) ?? new Map();
     return Object.values(QUESTS)
-      .filter((q) => q.npcId === npcId && !userQuests.has(q.id))
+      .filter((q) => q.npcId === npcId && !quests.has(q.id))
       .map((q) => q.id);
   }
 }

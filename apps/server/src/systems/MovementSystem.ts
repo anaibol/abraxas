@@ -101,7 +101,7 @@ export class MovementSystem {
 
     // Log only for players
     if (entity instanceof Player) {
-      logger.info({
+      logger.debug({
         room: roomId,
         tick,
         clientId: entity.sessionId,

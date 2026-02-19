@@ -164,18 +164,19 @@ export class CombatSystem {
       return false;
     }
 
-    const dist = MathUtils.manhattanDist(caster.getPosition(), {
-      x: targetTileX,
-      y: targetTileY,
-    });
-    if (dist > spell.rangeTiles) {
-      sendToClient?.(ServerMessageType.InvalidTarget);
-      return false;
-    }
-
-    if (!this.hasLineOfSight(caster.getPosition(), { x: targetTileX, y: targetTileY })) {
-      sendToClient?.(ServerMessageType.InvalidTarget);
-      return false;
+    if (spell.rangeTiles > 0) {
+      const dist = MathUtils.manhattanDist(caster.getPosition(), {
+        x: targetTileX,
+        y: targetTileY,
+      });
+      if (dist > spell.rangeTiles) {
+        sendToClient?.(ServerMessageType.InvalidTarget);
+        return false;
+      }
+      if (!this.hasLineOfSight(caster.getPosition(), { x: targetTileX, y: targetTileY })) {
+        sendToClient?.(ServerMessageType.InvalidTarget);
+        return false;
+      }
     }
 
     if (caster instanceof Player) {
@@ -311,6 +312,12 @@ export class CombatSystem {
       return;
     }
 
+    // Self-target spells (rangeTiles === 0) always target the caster
+    if (spell.rangeTiles === 0) {
+      this.applySpellToTarget(attacker, attacker, spell, broadcast, onDeath, now);
+      return;
+    }
+
     const aoeRadius = spell.aoeRadius ?? 0;
     if (aoeRadius > 0) {
       const victims = this.spatial.findEntitiesInRadius(
@@ -320,14 +327,9 @@ export class CombatSystem {
       );
       for (const victim of victims) {
         if (victim.sessionId === attacker.sessionId) continue;
-        this.applySpellToTarget(
-          attacker,
-          victim,
-          spell,
-          broadcast,
-          onDeath,
-          now,
-        );
+        // Skip same-faction targets (player vs player AOE ok, but NPC won't hit NPC)
+        if (this.sameFaction(attacker, victim)) continue;
+        this.applySpellToTarget(attacker, victim, spell, broadcast, onDeath, now);
       }
     } else {
       const target = this.spatial.findEntityAtTile(
@@ -339,20 +341,15 @@ export class CombatSystem {
           x: target.tileX,
           y: target.tileY,
         });
-        if (dist > spell.rangeTiles) {
-          return;
-        }
-
-        this.applySpellToTarget(
-          attacker,
-          target,
-          spell,
-          broadcast,
-          onDeath,
-          now,
-        );
+        if (dist > spell.rangeTiles) return;
+        this.applySpellToTarget(attacker, target, spell, broadcast, onDeath, now);
       }
     }
+  }
+
+  private sameFaction(a: Entity, b: Entity): boolean {
+    // Both Player instances or both non-Player (NPC) instances
+    return (a instanceof Player) === (b instanceof Player);
   }
 
   private applySpellToTarget(
@@ -363,12 +360,32 @@ export class CombatSystem {
     onDeath: (entity: Entity, killerSessionId?: string) => void,
     now: number,
   ) {
-    if (this.buffSystem.isInvulnerable(target.sessionId, now)) return;
+    // Merchants are invulnerable
+    if ("type" in target && (target as { type: string }).type === "merchant") return;
+
+    const isSelfCast = attacker.sessionId === target.sessionId;
+    if (!isSelfCast && this.buffSystem.isInvulnerable(target.sessionId, now)) return;
 
     const scalingStatName = spell.scalingStat || "int";
     const scalingStatValue = this.boosted(attacker, scalingStatName, now);
 
-    if (spell.effect === "damage" || spell.baseDamage > 0) {
+    if (spell.effect === "stealth") {
+      this.buffSystem.applyStealth(target.sessionId, spell.durationMs ?? 5000, now);
+      broadcast(ServerMessageType.StealthApplied, {
+        sessionId: target.sessionId,
+        durationMs: spell.durationMs ?? 5000,
+      });
+    } else if (spell.effect === "dot") {
+      this.buffSystem.addDoT(
+        target.sessionId,
+        attacker.sessionId,
+        spell.id,
+        spell.dotDamage ?? spell.baseDamage,
+        spell.dotIntervalMs ?? 1000,
+        spell.dotDurationMs ?? spell.durationMs ?? 5000,
+        now,
+      );
+    } else if (spell.effect === "damage" || spell.baseDamage > 0) {
       const defenderInt = this.boosted(target, "int", now);
       const damage = calcSpellDamage(
         spell.baseDamage,
@@ -377,48 +394,49 @@ export class CombatSystem {
         defenderInt,
       );
       target.hp -= damage;
-      // Note: AttackHit is reused for spell hits in some systems,
-      // but CastHit/Damage are the specialized types.
       broadcast(ServerMessageType.Damage, {
         targetSessionId: target.sessionId,
         amount: damage,
         hpAfter: target.hp,
         type: "magic",
       });
-
       if (target.hp <= 0) {
         onDeath(target, attacker.sessionId);
       }
     } else if (spell.effect === "heal") {
-      const heal = calcHealAmount(
-        spell.baseDamage,
-        scalingStatValue,
-        spell.scalingRatio,
-      );
+      const heal = calcHealAmount(spell.baseDamage, scalingStatValue, spell.scalingRatio);
       target.hp = Math.min(target.maxHp, target.hp + heal);
       broadcast(ServerMessageType.Heal, {
         sessionId: target.sessionId,
         amount: heal,
         hpAfter: target.hp,
       });
-    }
-
-    if (spell.effect === "stun" || spell.buffStat === "stun") {
-      this.buffSystem.applyStun(
-        target.sessionId,
-        spell.durationMs || 1000,
-        now,
-      );
+    } else if (spell.effect === "stun" || spell.buffStat === "stun") {
+      this.buffSystem.applyStun(target.sessionId, spell.durationMs ?? 1000, now);
     } else if (spell.effect === "buff" || spell.buffStat) {
       this.buffSystem.addBuff(
         target.sessionId,
         spell.id,
-        spell.buffStat || "armor",
-        spell.buffAmount || 10,
-        spell.durationMs || 5000,
+        spell.buffStat ?? "armor",
+        spell.buffAmount ?? 10,
+        spell.durationMs ?? 5000,
         now,
       );
+      broadcast(ServerMessageType.BuffApplied, {
+        sessionId: target.sessionId,
+        spellId: spell.id,
+        durationMs: spell.durationMs ?? 5000,
+      });
     }
+
+    // Broadcast CastHit so clients play the spell visual effect
+    broadcast(ServerMessageType.CastHit, {
+      sessionId: attacker.sessionId,
+      spellId: spell.id,
+      targetTileX: target.tileX,
+      targetTileY: target.tileY,
+      fxId: spell.fxId,
+    });
   }
 
   private boosted(entity: Entity, stat: string, now: number): number {

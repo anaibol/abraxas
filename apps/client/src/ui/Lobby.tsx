@@ -22,32 +22,22 @@ const P = {
 };
 
 const CLASS_TYPES: readonly ClassType[] = [
-  "warrior",
-  "wizard",
-  "archer",
-  "assassin",
-  "paladin",
-  "druid",
+  "WARRIOR",
+  "MAGE",
+  "RANGER",
+  "ROGUE",
+  "CLERIC",
 ];
 
 const CLASS_INFO: Record<
   ClassType,
   { icon: string; color: string; desc: string }
 > = {
-  warrior: { icon: "\u2694\uFE0F", color: "#c41e3a", desc: "HP:180 STR:25" },
-  wizard: { icon: "\u2728", color: "#3355cc", desc: "INT:28 Mana:150" },
-  archer: { icon: "\uD83C\uDFF9", color: "#33aa44", desc: "AGI:26 Range:5" },
-  assassin: {
-    icon: "\uD83D\uDDE1\uFE0F",
-    color: "#9944cc",
-    desc: "AGI:24 SPD:8",
-  },
-  paladin: {
-    icon: "\uD83D\uDEE1\uFE0F",
-    color: "#d4a843",
-    desc: "HP:160 STR:20",
-  },
-  druid: { icon: "\uD83C\uDF3F", color: "#886633", desc: "INT:24 Mana:130" },
+  WARRIOR: { icon: "\u2694\uFE0F", color: "#c41e3a", desc: "HP:180 STR:25" },
+  MAGE:    { icon: "\u2728",       color: "#3355cc", desc: "INT:28 Mana:150" },
+  RANGER:  { icon: "\uD83C\uDFF9", color: "#33aa44", desc: "AGI:26 Range:5" },
+  ROGUE:   { icon: "\uD83D\uDDE1\uFE0F", color: "#9944cc", desc: "AGI:24 SPD:8" },
+  CLERIC:  { icon: "\uD83D\uDEE1\uFE0F", color: "#d4a843", desc: "HP:160 STR:20" },
 };
 
 const inputStyle = {
@@ -69,14 +59,14 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
   const [username, setUsername] = useState(getRandomName());
   const [password, setPassword] = useState("");
   const [charName, setCharName] = useState("");
-  const [classType, setClassType] = useState<ClassType>("warrior");
+  const [classType, setClassType] = useState<ClassType>("WARRIOR");
   const [error, setError] = useState("");
 
   // After a successful login, the server returns the character name + class.
   // We store them so the class_select screen can pre-fill and join correctly.
   const [resolvedCharName, setResolvedCharName] = useState("");
   const [resolvedCharId, setResolvedCharId] = useState("");
-  const [resolvedClass, setResolvedClass] = useState<ClassType>("warrior");
+  const [resolvedClass, setResolvedClass] = useState<ClassType>("WARRIOR");
   const [token, setToken] = useState("");
 
   const handleAuth = async () => {

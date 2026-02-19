@@ -1,18 +1,6 @@
-import type { TileMap } from "@abraxas/shared";
-import {
-  CLASS_STATS,
-  STARTING_EQUIPMENT,
-  PLAYER_RESPAWN_TIME_MS,
-  ITEMS,
-  BroadcastFn,
-  ServerMessageType,
-} from "@abraxas/shared";
+import type { TileMap, BroadcastFn } from "@abraxas/shared";
+import { PLAYER_RESPAWN_TIME_MS, ServerMessageType } from "@abraxas/shared";
 import type { Player } from "../schema/Player";
-import {
-  InventorySystem,
-  EQUIP_SLOT_MAP,
-  setEquipSlot,
-} from "./InventorySystem";
 
 interface PendingRespawn {
   sessionId: string;
@@ -22,10 +10,7 @@ interface PendingRespawn {
 export class RespawnSystem {
   private pending: PendingRespawn[] = [];
 
-  constructor(private inventorySystem: InventorySystem) {}
-
   queueRespawn(sessionId: string, now: number): void {
-    // Don't queue twice
     if (this.pending.some((p) => p.sessionId === sessionId)) return;
     this.pending.push({
       sessionId,
@@ -55,27 +40,16 @@ export class RespawnSystem {
       const player = getPlayer(entry.sessionId);
       if (!player) continue;
 
-      // Pick a random spawn point
       const spawn = map.spawns[Math.floor(Math.random() * map.spawns.length)];
 
-      const stats = CLASS_STATS[player.classType];
       player.tileX = spawn.x;
       player.tileY = spawn.y;
-      player.hp = stats.hp;
-      player.maxHp = stats.hp;
-      player.mana = stats.mana;
-      player.maxMana = stats.mana;
+      player.hp = player.maxHp;
+      player.mana = player.maxMana;
       player.alive = true;
       player.stealthed = false;
       player.stunned = false;
-      player.str = stats.str;
-      player.agi = stats.agi;
-      player.intStat = stats.int;
 
-      // Give starting equipment
-      this.giveStartingEquipment(player);
-
-      // Re-add to spatial grid at the new tile
       onRespawn?.(player);
 
       broadcast(ServerMessageType.Respawn, {
@@ -86,31 +60,5 @@ export class RespawnSystem {
     }
 
     this.pending = remaining;
-  }
-
-  private giveStartingEquipment(player: Player): void {
-    const startingGear = STARTING_EQUIPMENT[player.classType];
-    if (!startingGear) return;
-
-    player.gold = startingGear.gold;
-
-    for (const itemId of startingGear.items) {
-      const def = ITEMS[itemId];
-      if (!def) continue;
-
-      // Auto-equip if it's an equipment item and the slot is empty
-      if (def.slot !== "consumable") {
-        const slotKey = EQUIP_SLOT_MAP[def.slot];
-        if (slotKey && player[slotKey] === "") {
-          setEquipSlot(player, slotKey, itemId);
-          continue;
-        }
-      }
-      // Otherwise add to inventory
-      this.inventorySystem.addItem(player, itemId);
-    }
-
-    // Recalc stats with new equipment
-    this.inventorySystem.recalcStats(player);
   }
 }

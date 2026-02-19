@@ -134,7 +134,7 @@ export class GameScene extends Phaser.Scene {
 
     // Input setup
     const localPlayer = this.room.state.players.get(this.room.sessionId);
-    const classType = localPlayer?.classType ?? "warrior";
+    const classType = localPlayer?.classType ?? "WARRIOR";
     this.inputHandler = new InputHandler(
       this,
       this.network,

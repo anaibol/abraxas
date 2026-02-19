@@ -78,12 +78,12 @@ export class PlayerSprite {
     this.classType = classType;
     this.isLocal = isLocal;
 
-    const stats = CLASS_STATS[classType] || NPC_STATS[classType];
+    const stats = CLASS_STATS[classType] || (NPC_STATS as Record<string, typeof NPC_STATS[keyof typeof NPC_STATS]>)[classType];
     if (!stats) {
       console.warn(
         `No stats found for class/type: ${classType}, defaulting to warrior`,
       );
-      const defaultStats = CLASS_STATS.warrior;
+      const defaultStats = CLASS_STATS.WARRIOR;
       this.pixelsPerSecond = defaultStats.speedTilesPerSecond * TILE_SIZE;
       this.maxHp = defaultStats.hp;
       this.maxMana = defaultStats.mana;
@@ -102,7 +102,7 @@ export class PlayerSprite {
     const appearance =
       CLASS_APPEARANCE[classType] ??
       NPC_APPEARANCE[classType] ??
-      CLASS_APPEARANCE.warrior;
+      CLASS_APPEARANCE.WARRIOR;
     this.bodyEntry = this.resolver.getBodyEntry(appearance.bodyId)!;
     this.headEntry = this.resolver.getHeadEntry(appearance.headId)!;
 

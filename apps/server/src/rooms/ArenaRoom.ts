@@ -26,11 +26,11 @@ import {
   KILL_GOLD_BONUS,
   NPC_STATS,
   EXP_TABLE,
+  LEVEL_UP_STATS,
   NPC_DROPS,
   TileMap,
   Direction,
   ServerMessages,
-  ClassType,
   JoinOptions,
   InventoryEntry,
   EquipmentData,
@@ -64,7 +64,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
   private combat!: CombatSystem;
   private drops = new DropSystem();
   private inventorySystem = new InventorySystem();
-  private respawnSystem = new RespawnSystem(this.inventorySystem);
+  private respawnSystem = new RespawnSystem();
   private npcSystem!: NpcSystem;
   private social!: SocialSystem;
   private friends!: FriendsSystem;
@@ -208,6 +208,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         this.movement,
         this.combat,
         this.spatial,
+        this.buffSystem,
       );
 
       this.boundBroadcast = this.broadcast.bind(this);
@@ -430,7 +431,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         }
       }
 
-      const quests = await this.quests.loadCharQuests(auth.id, char.id);
+      const quests = await this.quests.loadCharQuests(char.id);
       client.send(ServerMessageType.QuestList, { quests });
 
       client.send(ServerMessageType.Welcome, {
@@ -551,6 +552,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       this.spatial.removeFromGrid(player);
     }
 
+    if (player) this.quests.removeChar(player.dbId);
     this.state.players.delete(client.sessionId);
     this.movement.removePlayer(client.sessionId);
     this.combat.removeEntity(client.sessionId);
@@ -608,6 +610,15 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     });
 
     this.drops.expireDrops(this.state.drops, now);
+
+    // Mana regeneration: 1% of maxMana per tick (~every 1s at 20 TPS)
+    if (this.state.tick % 20 === 0) {
+      for (const player of this.state.players.values()) {
+        if (player.alive && player.mana < player.maxMana) {
+          player.mana = Math.min(player.maxMana, player.mana + Math.max(1, Math.floor(player.maxMana * 0.01)));
+        }
+      }
+    }
 
     this.respawnSystem.tick(
       now,
@@ -676,7 +687,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     }
 
     this.quests
-      .updateProgress(player.userId, player.dbId, "kill", npc.type, 1)
+      .updateProgress(player.dbId, "kill", npc.type, 1)
       .then((updatedQuests) => {
         if (updatedQuests.length > 0) {
           const client = this.findClient(player.sessionId);
@@ -792,7 +803,10 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       player.xp -= player.maxXp;
       player.level++;
       player.maxXp = EXP_TABLE[player.level] ?? player.maxXp;
-      player.intStat += 2;
+      const gains = LEVEL_UP_STATS[player.classType] ?? { str: 1, agi: 1, int: 1 };
+      player.str += gains.str;
+      player.agi += gains.agi;
+      player.intStat += gains.int;
       player.hp = player.maxHp;
       player.mana = player.maxMana;
 

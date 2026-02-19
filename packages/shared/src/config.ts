@@ -223,6 +223,15 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 /** All valid NPC type keys, derived from NPC_STATS. */
 export const NPC_TYPES = Object.keys(NPC_STATS) as NpcType[];
 
+/** Stat gained per level-up, by class. */
+export const LEVEL_UP_STATS: Record<string, { str: number; agi: number; int: number }> = {
+  WARRIOR: { str: 3, agi: 1, int: 0 },
+  MAGE:    { str: 0, agi: 1, int: 3 },
+  RANGER:  { str: 1, agi: 3, int: 0 },
+  ROGUE:   { str: 1, agi: 3, int: 0 },
+  CLERIC:  { str: 1, agi: 0, int: 3 },
+};
+
 export const EXP_TABLE = [
   0, // Level 1
   100, // Level 2
@@ -651,10 +660,10 @@ export const QUESTS: Record<string, Quest> = {
     id: "slime_slayer",
     title: "Slime Slayer",
     description:
-      "The village is being overrun by slimes! Kill 5 slimes to help us out.",
-    npcId: "village_elder",
+      "The village is being overrun by goblins! Kill 5 of them to help us out.",
+    npcId: "merchant",
     requirements: [
-      { type: "kill", target: "goblin", count: 5 }, // Using goblin as a placeholder for slime
+      { type: "kill", target: "goblin", count: 5 },
     ],
     rewards: {
       exp: 200,
@@ -667,7 +676,7 @@ export const QUESTS: Record<string, Quest> = {
     title: "A New Arrival",
     description:
       "Welcome to Abraxas! Go talk to the Merchant to learn about trading.",
-    npcId: "village_elder",
+    npcId: "merchant",
     requirements: [{ type: "talk", target: "merchant", count: 1 }],
     rewards: {
       exp: 100,

@@ -16,6 +16,7 @@ import { Player } from "../schema/Player";
 import { GameState } from "../schema/GameState";
 import { MovementSystem } from "./MovementSystem";
 import { CombatSystem } from "./CombatSystem";
+import { BuffSystem } from "./BuffSystem";
 import { logger } from "../logger";
 import { SpatialLookup, Entity } from "../utils/SpatialLookup";
 
@@ -46,6 +47,7 @@ export class NpcSystem {
     private movementSystem: MovementSystem,
     private combatSystem: CombatSystem,
     private spatial: SpatialLookup,
+    private buffSystem: BuffSystem,
   ) {}
 
   spawnNpcs(count: number, map: TileMap): void {
@@ -57,8 +59,10 @@ export class NpcSystem {
       this.spawnNpc(type, map);
     }
 
-    // Spawn one Merchant near the first player spawn point
-    if (map.spawns.length > 0) {
+    // Spawn one Merchant near the first player spawn point, only if the map
+    // doesn't already place one via its NPC list
+    const mapHasMerchant = map.npcs?.some((n) => n.type === "merchant");
+    if (!mapHasMerchant && map.spawns.length > 0) {
       this.spawnNpcAt("merchant", map, map.spawns[0].x + 2, map.spawns[0].y);
     }
   }
@@ -508,6 +512,7 @@ export class NpcSystem {
   }
 
   handleDeath(npc: Npc): void {
+    this.buffSystem.removePlayer(npc.sessionId);
     this.respawns.push({
       type: npc.type,
       deadAt: Date.now(),

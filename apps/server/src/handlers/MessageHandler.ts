@@ -10,7 +10,6 @@ import { FriendsSystem } from "../systems/FriendsSystem";
 import {
   TileMap,
   Direction,
-  EquipmentSlot,
   ITEMS,
   MERCHANT_INVENTORY,
   QUESTS,
@@ -21,6 +20,7 @@ import {
   MathUtils,
 } from "@abraxas/shared";
 import { QuestSystem } from "../systems/QuestSystem";
+import { logger } from "../logger";
 
 type BroadcastCallback = <T extends ServerMessageType>(
   type: T,
@@ -168,17 +168,12 @@ export class MessageHandler {
           message: `${player.name} picked up ${drop.goldAmount} gold`,
         });
       } else {
+        const itemName = ITEMS[drop.itemId]?.name ?? drop.itemId;
         this.broadcast(ServerMessageType.Notification, {
-          message: `${player.name} picked up ${drop.itemId}`,
+          message: `${player.name} picked up ${itemName}`,
         });
         this.quests
-          .updateProgress(
-            player.userId,
-            player.dbId,
-            "collect",
-            drop.itemId,
-            drop.quantity,
-          )
+          .updateProgress(player.dbId, "collect", drop.itemId, drop.quantity)
           .then((updatedQuests) =>
             this.sendQuestUpdates(client, updatedQuests),
           );
@@ -232,14 +227,10 @@ export class MessageHandler {
   ): void {
     const player = this.getActivePlayer(client);
     if (!player) return;
-    if (this.inventorySystem.removeItem(player, data.itemId)) {
-      this.drops.spawnItemDrop(
-        this.state.drops,
-        player.tileX,
-        player.tileY,
-        data.itemId,
-        1,
-      );
+    const slot = player.inventory.find((s) => s.itemId === data.itemId);
+    const qty = data.quantity ?? slot?.quantity ?? 1;
+    if (this.inventorySystem.removeItem(player, data.itemId, qty)) {
+      this.drops.spawnItemDrop(this.state.drops, player.tileX, player.tileY, data.itemId, qty);
     }
   }
 
@@ -261,7 +252,7 @@ export class MessageHandler {
     }
 
     this.quests
-      .updateProgress(player.userId, player.dbId, "talk", npc.type, 1)
+      .updateProgress(player.dbId, "talk", npc.type, 1)
       .then((updatedQuests) => this.sendQuestUpdates(client, updatedQuests));
 
     if (npc.type === "merchant") {
@@ -271,10 +262,7 @@ export class MessageHandler {
       return;
     }
 
-    const availableQuests = this.quests.getAvailableQuests(
-      player.userId,
-      npc.type,
-    );
+    const availableQuests = this.quests.getAvailableQuests(player.dbId, npc.type);
     if (availableQuests.length > 0) {
       const questId = availableQuests[0];
       const questDef = QUESTS[questId];
@@ -289,7 +277,7 @@ export class MessageHandler {
       return;
     }
 
-    for (const state of this.quests.getCharQuestStates(player.userId)) {
+    for (const state of this.quests.getCharQuestStates(player.dbId)) {
       if (state.status !== "COMPLETED") continue;
       const questDef = QUESTS[state.questId];
       if (questDef?.npcId === npc.type) {
@@ -319,24 +307,21 @@ export class MessageHandler {
     client: Client,
     data: ClientMessages[ClientMessageType.QuestAccept],
   ): void {
-    const player = this.state.players.get(client.sessionId);
+    const player = this.getActivePlayer(client);
     if (!player) return;
 
     this.quests
-      .acceptQuest(player.userId, player.dbId, data.questId)
+      .acceptQuest(player.dbId, data.questId)
       .then((state) => {
         if (state) {
           client.send(ServerMessageType.QuestUpdate, { quest: state });
           client.send(ServerMessageType.Notification, {
-            message: `Quest Accepted: ${QUESTS[data.questId].title}`,
+            message: `Quest Accepted: ${QUESTS[data.questId]?.title ?? data.questId}`,
           });
         }
       })
       .catch((err) => {
-        console.error(
-          `Failed to accept quest ${data.questId} for player ${player.name}:`,
-          err,
-        );
+        logger.error({ message: `Failed to accept quest ${data.questId} for ${player.name}`, error: String(err) });
         this.sendError(client, "Failed to accept quest");
       });
   }
@@ -345,11 +330,11 @@ export class MessageHandler {
     client: Client,
     data: ClientMessages[ClientMessageType.QuestComplete],
   ): void {
-    const player = this.state.players.get(client.sessionId);
+    const player = this.getActivePlayer(client);
     if (!player) return;
 
     this.quests
-      .completeQuest(player.userId, player.dbId, data.questId)
+      .completeQuest(player.dbId, data.questId)
       .then((questDef) => {
         if (questDef) {
           this.gainXp(player, questDef.rewards.exp);
@@ -362,7 +347,7 @@ export class MessageHandler {
           }
 
           client.send(ServerMessageType.QuestUpdate, {
-            quest: this.quests.getQuestState(player.userId, data.questId)!,
+            quest: this.quests.getQuestState(player.dbId, data.questId)!,
           });
           client.send(ServerMessageType.Notification, {
             message: `Quest Completed: ${questDef.title} (+${questDef.rewards.exp} XP, +${questDef.rewards.gold} Gold)`,
@@ -370,10 +355,7 @@ export class MessageHandler {
         }
       })
       .catch((err) => {
-        console.error(
-          `Failed to complete quest ${data.questId} for player ${player.name}:`,
-          err,
-        );
+        logger.error({ message: `Failed to complete quest ${data.questId} for ${player.name}`, error: String(err) });
         this.sendError(client, "Failed to complete quest");
       });
   }

@@ -4,8 +4,6 @@ import { Drop } from "../schema/Drop";
 import { InventorySystem } from "./InventorySystem";
 import { DROP_EXPIRY_MS } from "@abraxas/shared";
 
-let dropCounter = 0;
-
 export class DropSystem {
   private inventorySystem?: InventorySystem;
 
@@ -19,7 +17,7 @@ export class DropSystem {
     tileY: number,
     itemType: string,
   ): Drop {
-    const id = `drop_${++dropCounter}`;
+    const id = crypto.randomUUID();
     const drop = new Drop();
     drop.id = id;
     drop.itemType = itemType;
