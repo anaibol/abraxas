@@ -1,5 +1,6 @@
 import { Box, Flex, Text, Button, VStack } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
+import { T } from "./tokens";
 
 interface DialogueOption {
     text: string;
@@ -15,15 +16,6 @@ interface QuestDialogueProps {
     onClose: () => void;
 }
 
-const COLORS = {
-  bg: "#0e0c14",
-  surface: "#14111e",
-  border: "#2e2840",
-  gold: "#d4a843",
-  goldDark: "#6e5a18",
-  font: "'Friz Quadrata', Georgia, serif",
-};
-
 export function QuestDialogue({ npcId, text, options, onAction, onClose }: QuestDialogueProps) {
     const { t } = useTranslation();
     return (
@@ -34,20 +26,20 @@ export function QuestDialogue({ npcId, text, options, onAction, onClose }: Quest
             justify="center"
             bg="rgba(0,0,0,0.7)"
             zIndex={200}
-            fontFamily={COLORS.font}
+            fontFamily={T.display}
         >
             <Box
                 w="450px"
-                bg={COLORS.bg}
+                bg={T.bg}
                 border="3px solid"
-                borderColor={COLORS.border}
+                borderColor={T.border}
                 boxShadow="0 0 30px rgba(0,0,0,0.8)"
                 borderRadius="4px"
                 overflow="hidden"
             >
                 {/* Header */}
-                <Box bg={COLORS.surface} px="4" py="2" borderBottom="2px solid" borderColor={COLORS.border}>
-                    <Text color={COLORS.gold} fontWeight="bold" fontSize="18px" textTransform="uppercase" letterSpacing="2px">
+                <Box bg={T.surface} px="4" py="2" borderBottom="2px solid" borderColor={T.border}>
+                    <Text color={T.gold} fontWeight="bold" fontSize="18px" textTransform="uppercase" letterSpacing="2px">
                         {t("npcs." + npcId)}
                     </Text>
                 </Box>
@@ -63,9 +55,9 @@ export function QuestDialogue({ npcId, text, options, onAction, onClose }: Quest
                             <Button
                                 key={i}
                                 variant="outline"
-                                borderColor={COLORS.goldDark}
-                                color={COLORS.gold}
-                                _hover={{ bg: COLORS.surface, borderColor: COLORS.gold }}
+                                borderColor={T.goldDark}
+                                color={T.gold}
+                                _hover={{ bg: T.surface, borderColor: T.gold }}
                                 onClick={() => {
                                     if (opt.action === "close") {
                                         onClose();

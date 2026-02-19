@@ -2,6 +2,7 @@ import { PlayerSprite } from "../entities/PlayerSprite";
 import type { CameraController } from "../systems/CameraController";
 import type { GameScene } from "../scenes/GameScene";
 import type { PlayerEntityState, NpcEntityState } from "@abraxas/shared";
+import { SPELLS } from "@abraxas/shared";
 
 export class SpriteManager {
 	private sprites = new Map<string, PlayerSprite>();
@@ -140,6 +141,48 @@ export class SpriteManager {
 
 		this.spawnProtectionTweens.set(sessionId, tween);
 	}
+
+  /**
+   * Applies a persistent visual state on the sprite that matches the spell's
+   * effect type (buff, debuff, poison, stun, invulnerable).
+   */
+  applySpellStateVisual(sessionId: string, spellId: string, durationMs: number) {
+    const sprite = this.sprites.get(sessionId);
+    if (!sprite) return;
+    const spell = SPELLS[spellId];
+    if (!spell) return;
+
+    switch (spell.effect) {
+      case "stun":
+        sprite.applyStun(durationMs);
+        break;
+      case "dot":
+        sprite.applyPoison(durationMs);
+        break;
+      case "buff":
+        sprite.applyBuff(durationMs);
+        break;
+      case "debuff":
+        sprite.applyDebuff(durationMs);
+        break;
+      case "leech":
+        sprite.applyDebuff(Math.min(durationMs, 1200));
+        break;
+      case "stealth":
+        sprite.applyBuff(durationMs);
+        break;
+      default:
+        break;
+    }
+  }
+
+  applyStunVisual(sessionId: string, durationMs: number) {
+    this.sprites.get(sessionId)?.applyStun(durationMs);
+  }
+
+  applyInvulnerableVisual(sessionId: string, durationMs: number) {
+    this.sprites.get(sessionId)?.applyInvulnerable(durationMs);
+  }
 
 	stopSpawnProtectionEffect(sessionId: string) {
 		const existing = this.spawnProtectionTweens.get(sessionId);

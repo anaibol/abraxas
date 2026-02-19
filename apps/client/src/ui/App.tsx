@@ -13,6 +13,7 @@ import { useConsoleMessages } from "../hooks/useConsoleMessages";
 import { useGameKeyboard } from "../hooks/useGameKeyboard";
 import { useTranslation } from "react-i18next";
 import { system } from "./theme";
+import { T, HEX } from "./tokens";
 import { Lobby } from "./Lobby";
 import { LoadingScreen } from "./LoadingScreen";
 import { Sidebar, type PlayerState } from "./Sidebar";
@@ -470,7 +471,7 @@ export function App() {
               parent: el,
               width: el.clientWidth,
               height: el.clientHeight,
-              backgroundColor: "#08080c",
+              backgroundColor: HEX.darkest,
               scene: [preloaderScene, gameScene],
               scale: {
                 mode: Phaser.Scale.RESIZE,
@@ -571,7 +572,7 @@ export function App() {
         {(toast) => (
           <ToastRoot
             key={toast.id}
-            bg={toast.type === "error" ? "#770000" : "#d4a843"}
+            bg={toast.type === "error" ? T.blood : T.gold}
             p="4"
             borderRadius="md"
           >
@@ -591,7 +592,7 @@ export function App() {
       {phase === "game" && mapData && (
         <>
           {isLoading && <LoadingScreen />}
-          <Flex pos="fixed" inset="0" bg="#08080c">
+          <Flex pos="fixed" inset="0" bg={T.darkest}>
             <Box
               ref={gameContainerRef}
               flex="1"
@@ -819,23 +820,24 @@ function DropQuantityDialog({
       onClick={onCancel}
     >
       <Box
-        bg="#0e0c14"
-        border="2px solid #2e2840"
+        bg={T.bg}
+        border="2px solid"
+        borderColor={T.border}
         borderRadius="4px"
         p="5"
         w="260px"
-        fontFamily="'Friz Quadrata', Georgia, serif"
+        fontFamily={T.display}
         onClick={(e) => e.stopPropagation()}
       >
-        <Box fontSize="13px" letterSpacing="3px" textTransform="uppercase" color="#d4a843" fontWeight="700" mb="1" textAlign="center">
+        <Box textStyle={T.sectionLabel} color={T.gold} mb="1" textAlign="center">
           Drop Item
         </Box>
-        <Box fontSize="14px" color="#c8b68a" textAlign="center" mb="3">
+        <Box textStyle={T.bodyText} color={T.goldText} textAlign="center" mb="3">
           {itemName}
         </Box>
 
         <Box mb="3">
-          <Box fontSize="11px" color="#6e5a18" letterSpacing="2px" textTransform="uppercase" mb="1">
+          <Box textStyle={T.statLabel} color={T.goldDark} letterSpacing="2px" mb="1">
             Quantity (1 – {maxQty})
           </Box>
           <input
@@ -852,11 +854,11 @@ function DropQuantityDialog({
             }}
             style={{
               width: "100%",
-              background: "#14111e",
-              border: "1px solid #2e2840",
+              background: HEX.surface,
+              border: `1px solid ${HEX.border}`,
               borderRadius: "2px",
-              color: "#c8b68a",
-              fontFamily: "'Consolas', monospace",
+              color: HEX.goldText,
+              fontFamily: "var(--chakra-fonts-mono)",
               fontSize: "14px",
               padding: "4px 8px",
               outline: "none",
@@ -866,10 +868,10 @@ function DropQuantityDialog({
         </Box>
 
         <Flex gap="2">
-          <Box as="button" flex="1" py="1.5" fontSize="13px" fontWeight="700" letterSpacing="1px" bg="#1a1628" border="1px solid #2e2840" borderRadius="2px" color="#c8b68a" cursor="pointer" fontFamily="'Friz Quadrata', Georgia, serif" onClick={onCancel}>
+          <Box as="button" flex="1" py="1.5" textStyle={T.bodyText} fontWeight="700" letterSpacing="1px" bg={T.raised} border="1px solid" borderColor={T.border} borderRadius="2px" color={T.goldText} cursor="pointer" fontFamily={T.display} onClick={onCancel}>
             Cancel
           </Box>
-          <Box as="button" flex="1" py="1.5" fontSize="13px" fontWeight="700" letterSpacing="1px" bg="#6e5a18" border="1px solid #d4a843" borderRadius="2px" color="#d4a843" cursor="pointer" fontFamily="'Friz Quadrata', Georgia, serif" onClick={confirm}>
+          <Box as="button" flex="1" py="1.5" textStyle={T.bodyText} fontWeight="700" letterSpacing="1px" bg={T.goldDark} border="1px solid" borderColor={T.gold} borderRadius="2px" color={T.gold} cursor="pointer" fontFamily={T.display} onClick={confirm}>
             Drop
           </Box>
         </Flex>

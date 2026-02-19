@@ -3,7 +3,7 @@ import { Box, Flex, Text, Grid, Button, Input, VStack, HStack } from "@chakra-ui
 import { ITEMS } from "@abraxas/shared";
 import type { TradeState } from "@abraxas/shared";
 import type { InventorySlot } from "./Sidebar";
-import { P } from "./palette";
+import { T, HEX } from "./tokens";
 
 
 const ITEM_ICONS: Record<string, string> = {
@@ -84,29 +84,29 @@ export function TradeWindow({
   const renderOfferSlots = (items: OfferItem[], gold: number, label: string, confirmed: boolean) => (
     <Box flex="1" minW="0">
       <Flex justify="space-between" align="center" mb="2">
-        <Text fontSize="12px" letterSpacing="2px" color={P.gold} textTransform="uppercase" fontWeight="700">{label}</Text>
+        <Text fontSize="12px" letterSpacing="2px" color={T.gold} textTransform="uppercase" fontWeight="700">{label}</Text>
         {confirmed && (
           <Text fontSize="11px" color="#44ff88" letterSpacing="1px" fontWeight="700">✓ CONFIRMED</Text>
         )}
       </Flex>
-      <Box minH="100px" bg={P.darkest} border="1px solid" borderColor={P.border} borderRadius="2px" p="2">
+      <Box minH="100px" bg={T.darkest} border="1px solid" borderColor={T.border} borderRadius="2px" p="2">
         {gold > 0 && (
-          <Flex align="center" gap="2" mb="1.5" p="1.5" bg={P.surface} borderRadius="2px">
+          <Flex align="center" gap="2" mb="1.5" p="1.5" bg={T.surface} borderRadius="2px">
             <Text fontSize="13px">🪙</Text>
-            <Text fontSize="12px" color={P.gold} fontFamily={P.mono}>{gold}g</Text>
+            <Text fontSize="12px" color={T.gold} fontFamily={T.mono}>{gold}g</Text>
           </Flex>
         )}
         {items.length === 0 && gold === 0 && (
-          <Text fontSize="12px" color={P.goldDark} textAlign="center" pt="3" fontStyle="italic">Nothing offered</Text>
+          <Text fontSize="12px" color={T.goldDark} textAlign="center" pt="3" fontStyle="italic">Nothing offered</Text>
         )}
         {items.map((item) => {
           const def = ITEMS[item.itemId];
           return (
-            <Flex key={item.itemId} align="center" gap="2" mb="1" p="1.5" bg={P.surface} borderRadius="2px">
+            <Flex key={item.itemId} align="center" gap="2" mb="1" p="1.5" bg={T.surface} borderRadius="2px">
               <Text fontSize="13px">{def ? (ITEM_ICONS[def.slot] || "✨") : "❓"}</Text>
-              <Text fontSize="12px" color={P.goldText} flex="1">{def?.name ?? item.itemId}</Text>
+              <Text fontSize="12px" color={T.goldText} flex="1">{def?.name ?? item.itemId}</Text>
               {item.quantity > 1 && (
-                <Text fontSize="11px" color={P.goldDark} fontFamily={P.mono}>×{item.quantity}</Text>
+                <Text fontSize="11px" color={T.goldDark} fontFamily={T.mono}>×{item.quantity}</Text>
               )}
             </Flex>
           );
@@ -127,20 +127,20 @@ export function TradeWindow({
     >
       <Box
         w="560px"
-        bg={P.bg}
+        bg={T.bg}
         border="2px solid"
-        borderColor={P.border}
+        borderColor={T.border}
         borderRadius="4px"
-        fontFamily={P.font}
+        fontFamily={T.display}
         boxShadow="0 8px 40px rgba(0,0,0,0.8)"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Title */}
-        <Box px="5" py="3" bg={P.surface} borderBottom="1px solid" borderBottomColor={P.border} textAlign="center">
-          <Text fontSize="13px" fontWeight="700" color={P.gold} letterSpacing="3px" textTransform="uppercase">
+        <Box px="5" py="3" bg={T.surface} borderBottom="1px solid" borderBottomColor={T.border} textAlign="center">
+          <Text fontSize="13px" fontWeight="700" color={T.gold} letterSpacing="3px" textTransform="uppercase">
             Trade
           </Text>
-          <Text fontSize="12px" color={P.goldDark} mt="0.5">
+          <Text fontSize="12px" color={T.goldDark} mt="0.5">
             {me.name} ↔ {them.name}
           </Text>
         </Box>
@@ -148,13 +148,13 @@ export function TradeWindow({
         {/* Offer panels */}
         <Flex gap="3" p="4">
           {renderOfferSlots(me.offer.items, me.offer.gold, "Your Offer", myConfirmed)}
-          <Box w="1px" bg={P.border} flexShrink={0} />
+          <Box w="1px" bg={T.border} flexShrink={0} />
           {renderOfferSlots(them.offer.items, them.offer.gold, `${them.name}'s Offer`, theirConfirmed)}
         </Flex>
 
         {/* Your gold input */}
-        <Box px="4" pb="3" borderTop="1px solid" borderTopColor={P.raised}>
-          <Text fontSize="11px" color={P.goldDark} letterSpacing="2px" textTransform="uppercase" mt="3" mb="1.5">
+        <Box px="4" pb="3" borderTop="1px solid" borderTopColor={T.raised}>
+          <Text fontSize="11px" color={T.goldDark} letterSpacing="2px" textTransform="uppercase" mt="3" mb="1.5">
             Offer Gold (you have {playerGold}g)
           </Text>
           <HStack gap="2">
@@ -165,22 +165,22 @@ export function TradeWindow({
               value={offerGold}
               onChange={(e) => handleGoldChange(Number(e.target.value))}
               size="xs"
-              bg={P.darkest}
-              borderColor={P.border}
-              color={P.gold}
-              fontFamily={P.mono}
+              bg={T.darkest}
+              borderColor={T.border}
+              color={T.gold}
+              fontFamily={T.mono}
               w="100px"
-              _focus={{ borderColor: P.gold }}
+              _focus={{ borderColor: T.gold }}
               disabled={myConfirmed}
             />
-            <Text fontSize="12px" color={P.goldDark}>gold</Text>
+            <Text fontSize="12px" color={T.goldDark}>gold</Text>
           </HStack>
         </Box>
 
         {/* Inventory — click to add items */}
         {!myConfirmed && (
           <Box px="4" pb="3">
-            <Text fontSize="11px" color={P.goldDark} letterSpacing="2px" textTransform="uppercase" mb="1.5">
+            <Text fontSize="11px" color={T.goldDark} letterSpacing="2px" textTransform="uppercase" mb="1.5">
               Add Items (click to add · click offer to remove)
             </Text>
             <Grid templateColumns="repeat(8, 1fr)" gap="1">
@@ -192,9 +192,9 @@ export function TradeWindow({
                   <Box
                     key={slot.slotIndex}
                     aspectRatio="1"
-                    bg={P.darkest}
+                    bg={T.darkest}
                     border="1px solid"
-                    borderColor={inOffer ? P.gold : P.border}
+                    borderColor={inOffer ? T.gold : T.border}
                     borderRadius="2px"
                     display="flex"
                     alignItems="center"
@@ -203,13 +203,13 @@ export function TradeWindow({
                     opacity={availableQty > 0 ? 1 : 0.4}
                     title={def ? `${def.name}${slot.quantity > 1 ? ` (${availableQty} available)` : ""}` : ""}
                     onClick={() => availableQty > 0 && addItem(slot)}
-                    _hover={availableQty > 0 ? { borderColor: P.gold, bg: P.surface } : {}}
+                    _hover={availableQty > 0 ? { borderColor: T.gold, bg: T.surface } : {}}
                     pos="relative"
                     fontSize="14px"
                   >
                     {def ? (ITEM_ICONS[def.slot] || "✨") : ""}
                     {slot.quantity > 1 && (
-                      <Text pos="absolute" bottom="0" right="1px" fontSize="10px" color="#fff" fontFamily={P.mono}>
+                      <Text pos="absolute" bottom="0" right="1px" fontSize="10px" color="#fff" fontFamily={T.mono}>
                         {slot.quantity}
                       </Text>
                     )}
@@ -220,7 +220,7 @@ export function TradeWindow({
             {/* Click items in offer to remove */}
             {offerItems.length > 0 && (
               <Box mt="2">
-                <Text fontSize="11px" color={P.goldDark} mb="1">Offered items (click to remove):</Text>
+                <Text fontSize="11px" color={T.goldDark} mb="1">Offered items (click to remove):</Text>
                 <HStack gap="1" flexWrap="wrap">
                   {offerItems.map((item) => {
                     const def = ITEMS[item.itemId];
@@ -228,12 +228,12 @@ export function TradeWindow({
                       <Box
                         key={item.itemId}
                         px="2" py="1"
-                        bg={P.surface}
-                        border="1px solid" borderColor={P.border}
+                        bg={T.surface}
+                        border="1px solid" borderColor={T.border}
                         borderRadius="2px"
                         cursor="pointer"
                         fontSize="12px"
-                        color={P.goldText}
+                        color={T.goldText}
                         onClick={() => removeItem(item.itemId)}
                         _hover={{ borderColor: "red.400", color: "red.400" }}
                       >
@@ -248,7 +248,7 @@ export function TradeWindow({
         )}
 
         {/* Actions */}
-        <Flex px="4" pb="4" gap="3" borderTop="1px solid" borderTopColor={P.raised} pt="3">
+        <Flex px="4" pb="4" gap="3" borderTop="1px solid" borderTopColor={T.raised} pt="3">
           {myConfirmed ? (
             <VStack flex="1" gap="1" align="stretch">
               <Text fontSize="12px" color="#44ff88" textAlign="center" fontWeight="700">
@@ -257,9 +257,9 @@ export function TradeWindow({
               <Button
                 size="xs"
                 variant="outline"
-                borderColor={P.blood}
+                borderColor={T.blood}
                 color="red.400"
-                _hover={{ bg: P.blood }}
+                _hover={{ bg: T.blood }}
                 onClick={onCancel}
               >
                 Cancel Trade
@@ -270,15 +270,15 @@ export function TradeWindow({
               <Button
                 flex="1"
                 size="sm"
-                bg={P.goldDark}
-                color={P.gold}
+                bg={T.goldDark}
+                color={T.gold}
                 border="1px solid"
-                borderColor={P.gold}
-                fontFamily={P.font}
+                borderColor={T.gold}
+                fontFamily={T.display}
                 fontWeight="700"
                 fontSize="13px"
                 letterSpacing="1px"
-                _hover={{ bg: P.gold, color: "#000" }}
+                _hover={{ bg: T.gold, color: "#000" }}
                 onClick={onConfirm}
               >
                 Confirm Trade
@@ -286,11 +286,11 @@ export function TradeWindow({
               <Button
                 size="sm"
                 variant="outline"
-                borderColor={P.blood}
+                borderColor={T.blood}
                 color="red.400"
-                fontFamily={P.font}
+                fontFamily={T.display}
                 fontSize="13px"
-                _hover={{ bg: P.blood }}
+                _hover={{ bg: T.blood }}
                 onClick={onCancel}
               >
                 Cancel

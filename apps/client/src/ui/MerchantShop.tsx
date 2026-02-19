@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Box, Flex, Text, Button, Grid, Input } from "@chakra-ui/react";
 import { ITEMS, type Item } from "@abraxas/shared";
-import { P } from "./palette";
+import { T, HEX } from "./tokens";
 import { useTranslation } from "react-i18next";
 
 interface MerchantShopProps {
@@ -22,8 +22,8 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
   const [quantity, setQuantity] = useState<number>(1);
 
   const handleQtyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = parseInt(e.target.value);
-    if (!isNaN(val)) {
+    const val = parseInt(e.target.value, 10);
+    if (!Number.isNaN(val)) {
       setQuantity(Math.max(1, Math.min(999, val)));
     }
   };
@@ -34,17 +34,17 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
       top="50%"
       left="50%"
       transform="translate(-50%, -50%)"
-      bg={P.bg}
+      bg={T.bg}
       backdropFilter="blur(10px)"
       border="1px solid"
-      borderColor={P.gold}
+      borderColor={T.gold}
       borderRadius="8px"
       p="6"
       minW="550px"
       maxH="85vh"
       overflowY="auto"
       boxShadow="0 0 60px rgba(0,0,0,0.9), inset 0 0 20px rgba(212, 168, 67, 0.1)"
-      fontFamily={P.font}
+      fontFamily={T.display}
       zIndex="200"
       animation="fadeIn 0.3s ease-out"
     >
@@ -55,19 +55,19 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
         }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: ${P.goldDark}; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: ${P.gold}; }
+        ::-webkit-scrollbar-thumb { background: ${HEX.goldDark}; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: ${HEX.gold}; }
       `}</style>
 
       <Flex justify="space-between" align="center" mb="6">
-        <Text color={P.gold} fontSize="24px" fontWeight="700" letterSpacing="3px" textShadow={`0 0 10px ${P.goldDark}`}>
+        <Text color={T.gold} fontSize="24px" fontWeight="700" letterSpacing="3px" textShadow={`0 0 10px ${HEX.goldDark}`}>
           {t("ui.merchant.title")}
         </Text>
         <Button 
           variant="ghost" 
           size="sm" 
           onClick={onClose} 
-          color={P.gold} 
+          color={T.gold} 
           p="0" 
           minW="32px"
           _hover={{ bg: "whiteAlpha.100", transform: "scale(1.1)" }}
@@ -77,13 +77,13 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
         </Button>
       </Flex>
 
-      <Flex mb="6" justify="space-between" bg="blackAlpha.400" p="3" borderRadius="4px" border="1px solid" borderColor={P.border}>
-        <Text color={P.goldDim} fontSize="14px" fontWeight="bold">
-          {t("ui.merchant.purse")}: <Text as="span" color={P.gold} fontSize="16px" ml="2">{playerGold.toLocaleString()} GP</Text>
+      <Flex mb="6" justify="space-between" bg="blackAlpha.400" p="3" borderRadius="4px" border="1px solid" borderColor={T.border}>
+        <Text color={T.goldDim} fontSize="14px" fontWeight="bold">
+          {t("ui.merchant.purse")}: <Text as="span" color={T.gold} fontSize="16px" ml="2">{playerGold.toLocaleString()} GP</Text>
         </Text>
       </Flex>
 
-      <Flex mb="6" borderBottom="1px solid" borderColor={P.border}>
+      <Flex mb="6" borderBottom="1px solid" borderColor={T.border}>
         <Box
           px="8"
           py="3"
@@ -91,10 +91,10 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
           fontWeight="bold"
           letterSpacing="1px"
           transition="all 0.3s"
-          color={tab === "buy" ? P.gold : P.goldDark}
+          color={tab === "buy" ? T.gold : T.goldDark}
           borderBottom={tab === "buy" ? "3px solid" : "none"}
-          borderColor={P.gold}
-          _hover={{ color: P.gold }}
+          borderColor={T.gold}
+          _hover={{ color: T.gold }}
           onClick={() => { setTab("buy"); setSelectedItem(null); setQuantity(1); }}
         >
           {t("ui.merchant.tab_buy")}
@@ -106,10 +106,10 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
           fontWeight="bold"
           letterSpacing="1px"
           transition="all 0.3s"
-          color={tab === "sell" ? P.gold : P.goldDark}
+          color={tab === "sell" ? T.gold : T.goldDark}
           borderBottom={tab === "sell" ? "3px solid" : "none"}
-          borderColor={P.gold}
-          _hover={{ color: P.gold }}
+          borderColor={T.gold}
+          _hover={{ color: T.gold }}
           onClick={() => { setTab("sell"); setSelectedItem(null); setQuantity(1); }}
         >
           {t("ui.merchant.tab_sell")}
@@ -127,13 +127,13 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
                 <Box
                   key={itemId}
                   p="3"
-                  bg={isSelected ? "whiteAlpha.100" : P.raised}
+                  bg={isSelected ? "whiteAlpha.100" : T.raised}
                   border="1px solid"
-                  borderColor={isSelected ? P.gold : P.border}
+                  borderColor={isSelected ? T.gold : T.border}
                   borderRadius="4px"
                   cursor="pointer"
                   transition="all 0.2s"
-                  _hover={{ borderColor: P.goldDim, transform: "translateY(-2px)", boxShadow: "0 4px 12px rgba(0,0,0,0.4)" }}
+                  _hover={{ borderColor: T.goldDim, transform: "translateY(-2px)", boxShadow: "0 4px 12px rgba(0,0,0,0.4)" }}
                   onClick={() => { setSelectedItem(item); setQuantity(1); }}
                 >
                   <Flex align="center">
@@ -143,12 +143,12 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
                       bg="#000" 
                       mr="4" 
                       border="1px solid" 
-                      borderColor={isSelected ? P.gold : P.border}
-                      boxShadow={isSelected ? `0 0 10px ${P.goldDark}` : "none"}
+                      borderColor={isSelected ? T.gold : T.border}
+                      boxShadow={isSelected ? `0 0 10px ${HEX.goldDark}` : "none"}
                     ></Box>
                     <Box>
                       <Text color="#fff" fontSize="13px" fontWeight="bold">{t(item.name)}</Text>
-                      <Text color={P.gold} fontSize="12px">{item.goldValue.toLocaleString()} GP</Text>
+                      <Text color={T.gold} fontSize="12px">{item.goldValue.toLocaleString()} GP</Text>
                     </Box>
                   </Flex>
                 </Box>
@@ -170,20 +170,20 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
                 <Box
                   key={`${invItem.itemId}-${idx}`}
                   p="3"
-                  bg={isSelected ? "whiteAlpha.100" : P.raised}
+                  bg={isSelected ? "whiteAlpha.100" : T.raised}
                   border="1px solid"
-                  borderColor={isSelected ? P.gold : P.border}
+                  borderColor={isSelected ? T.gold : T.border}
                   borderRadius="4px"
                   cursor="pointer"
                   transition="all 0.2s"
-                  _hover={{ borderColor: P.goldDim, transform: "translateY(-2px)" }}
+                  _hover={{ borderColor: T.goldDim, transform: "translateY(-2px)" }}
                   onClick={() => { setSelectedItem(item); setQuantity(1); }}
                 >
                   <Flex align="center">
-                    <Box w="40px" h="40px" bg="#000" mr="4" border="1px solid" borderColor={P.border}></Box>
+                    <Box w="40px" h="40px" bg="#000" mr="4" border="1px solid" borderColor={T.border}></Box>
                     <Box>
                       <Text color="#fff" fontSize="13px" fontWeight="bold">{t(item.name)} <Text as="span" color="whiteAlpha.600">(x{invItem.quantity})</Text></Text>
-                      <Text color={P.gold} fontSize="12px">{t("ui.merchant.value_label")}: {Math.floor(item.goldValue * 0.5).toLocaleString()} GP</Text>
+                      <Text color={T.gold} fontSize="12px">{t("ui.merchant.value_label")}: {Math.floor(item.goldValue * 0.5).toLocaleString()} GP</Text>
                     </Box>
                   </Flex>
                 </Box>
@@ -198,21 +198,21 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
           mt="8" 
           p="5" 
           border="1px solid" 
-          borderColor={P.gold} 
+          borderColor={T.gold} 
           borderRadius="6px" 
           bg="blackAlpha.600"
-          boxShadow={`0 0 20px ${P.goldDark}22`}
+          boxShadow={`0 0 20px ${HEX.goldDark}22`}
         >
           <Flex justify="space-between" align="start" mb="4">
             <Box>
-              <Text color={P.gold} fontSize="18px" fontWeight="bold" mb="1">{t(selectedItem.name)}</Text>
+              <Text color={T.gold} fontSize="18px" fontWeight="bold" mb="1">{t(selectedItem.name)}</Text>
               <Text color="whiteAlpha.600" fontSize="12px" letterSpacing="1px">
                 {selectedItem.slot.toUpperCase()} | {selectedItem.rarity.toUpperCase()}
               </Text>
             </Box>
             <Box textAlign="right">
               <Text color="#fff" fontSize="12px" mb="1">{t("ui.merchant.unit_price")}</Text>
-              <Text color={P.gold} fontSize="16px" fontWeight="bold">
+              <Text color={T.gold} fontSize="16px" fontWeight="bold">
                 {tab === "buy" ? selectedItem.goldValue : Math.floor(selectedItem.goldValue * 0.5)} GP
               </Text>
             </Box>
@@ -224,9 +224,9 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
               <Button 
                 size="sm" 
                 variant="outline" 
-                borderColor={P.goldDark} 
-                color={P.gold}
-                _hover={{ bg: P.goldDark, color: "white" }}
+                borderColor={T.goldDark} 
+                color={T.gold}
+                _hover={{ bg: T.goldDark, color: "white" }}
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
               >
                 -
@@ -240,16 +240,16 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
                 textAlign="center"
                 bg="transparent"
                 border="1px solid"
-                borderColor={P.goldDark}
+                borderColor={T.goldDark}
                 color="#fff"
-                _focus={{ borderColor: P.gold, boxShadow: "none" }}
+                _focus={{ borderColor: T.gold, boxShadow: "none" }}
               />
               <Button 
                 size="sm" 
                 variant="outline" 
-                borderColor={P.goldDark} 
-                color={P.gold}
-                _hover={{ bg: P.goldDark, color: "white" }}
+                borderColor={T.goldDark} 
+                color={T.gold}
+                _hover={{ bg: T.goldDark, color: "white" }}
                 onClick={() => setQuantity(Math.min(999, quantity + 1))}
               >
                 +
@@ -257,7 +257,7 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
             </Flex>
             <Box textAlign="right" ml="6">
               <Text color="whiteAlpha.600" fontSize="11px">{t("ui.merchant.total_cost")}</Text>
-              <Text color={P.gold} fontSize="20px" fontWeight="bold">
+              <Text color={T.gold} fontSize="20px" fontWeight="bold">
                 {(tab === "buy" ? selectedItem.goldValue * quantity : Math.floor(selectedItem.goldValue * 0.5) * quantity).toLocaleString()} GP
               </Text>
             </Box>
@@ -266,13 +266,13 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
           <Button
             w="100%"
             h="48px"
-            bg={P.goldDim}
+            bg={T.goldDim}
             color="#000"
             fontSize="16px"
             fontWeight="bold"
             letterSpacing="2px"
-            _hover={{ bg: P.gold, transform: "scale(1.02)" }}
-            _active={{ bg: P.goldDark, transform: "scale(0.98)" }}
+            _hover={{ bg: T.gold, transform: "scale(1.02)" }}
+            _active={{ bg: T.goldDark, transform: "scale(0.98)" }}
             transition="all 0.2s"
             onClick={() => {
               if (tab === "buy") onBuy(selectedItem.id, quantity);

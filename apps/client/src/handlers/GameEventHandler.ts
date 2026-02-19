@@ -1,6 +1,6 @@
 import type { Room } from "@colyseus/sdk";
 import type { ServerMessages } from "@abraxas/shared";
-import { ServerMessageType, SPAWN_PROTECTION_MS, ChatChannel } from "@abraxas/shared";
+import { ServerMessageType, SPAWN_PROTECTION_MS, ChatChannel, SPELLS } from "@abraxas/shared";
 import type { SpriteManager } from "../managers/SpriteManager";
 import type { EffectManager } from "../managers/EffectManager";
 import type { SoundManager } from "../assets/SoundManager";
@@ -145,21 +145,41 @@ export class GameEventHandler {
 	}
 
 	private onBuffApplied(data: ServerMessages["buff_applied"]) {
-		this.effectManager.showFloatingText(data.sessionId, "BUFF", "#d4a843");
+		const spell = SPELLS[data.spellId];
+		const durationMs = data.durationMs;
+		const effect = spell?.effect ?? "buff";
+
+		if (effect === "debuff") {
+			this.spriteManager.applySpellStateVisual(data.sessionId, data.spellId, durationMs);
+			this.effectManager.showFloatingText(data.sessionId, "WEAKENED", "#cc44ff");
+		} else if (effect === "stun") {
+			this.spriteManager.applyStunVisual(data.sessionId, durationMs);
+			this.effectManager.showFloatingText(data.sessionId, "STUNNED ✦", "#ffff44");
+		} else if (effect === "stealth") {
+			this.spriteManager.applySpellStateVisual(data.sessionId, data.spellId, durationMs);
+			this.effectManager.showFloatingText(data.sessionId, "STEALTH", "#aaddff");
+		} else if (data.spellId === "divine_shield") {
+			this.spriteManager.applyInvulnerableVisual(data.sessionId, durationMs);
+			this.effectManager.showFloatingText(data.sessionId, "INVULNERABLE", "#ffffff");
+		} else if (effect === "dot") {
+			this.spriteManager.applySpellStateVisual(data.sessionId, data.spellId, durationMs);
+			this.effectManager.showFloatingText(data.sessionId, "POISONED", "#44ff44");
+		} else {
+			this.spriteManager.applySpellStateVisual(data.sessionId, data.spellId, durationMs);
+			this.effectManager.showFloatingText(data.sessionId, "BUFFED ✦", "#ffdd44");
+		}
 	}
 
 	private onStunApplied(data: ServerMessages["stun_applied"]) {
-		this.effectManager.showFloatingText(
-			data.targetSessionId,
-			"STUNNED",
-			"#cccc33",
-		);
+		this.spriteManager.applyStunVisual(data.targetSessionId, data.durationMs ?? 1500);
+		this.effectManager.showFloatingText(data.targetSessionId, "STUNNED ✦", "#ffff44");
 		if (this.isSelf(data.targetSessionId)) {
-			this.onConsoleMessage?.("You are stunned!", "#cccc33");
+			this.onConsoleMessage?.("You are stunned!", "#ffff44");
 		}
 	}
 
 	private onStealthApplied(data: ServerMessages["stealth_applied"]) {
+		this.spriteManager.applySpellStateVisual(data.sessionId, "stealth", data.durationMs);
 		this.effectManager.showFloatingText(data.sessionId, "STEALTH", "#aaddff");
 	}
 

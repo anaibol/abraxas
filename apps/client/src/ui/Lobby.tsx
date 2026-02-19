@@ -5,7 +5,7 @@ import {
 } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import { type ClassType, getRandomName } from "@abraxas/shared";
-import { P } from "./palette";
+import { T, HEX } from "./tokens";
 import { useTranslation } from "react-i18next";
 
 type LobbyProps = {
@@ -82,13 +82,13 @@ const inputStyle = {
   bg: "rgba(8, 8, 12, 0.8)",
   border: "1px solid",
   borderRadius: "4px",
-  color: P.goldText,
-  fontFamily: P.font,
+  color: T.goldText,
+  fontFamily: T.display,
   fontSize: "14px",
   p: "2.5",
   outline: "none",
   transition: "all 0.2s",
-  _focus: { borderColor: P.gold, boxShadow: `0 0 10px ${P.gold}44` },
+  _focus: { borderColor: T.gold, boxShadow: `0 0 10px ${HEX.gold}44` },
 } as const;
 
 const CHAR_NAME_REGEX = /^[A-Z][a-z]*( [A-Z][a-z]*)*$/;
@@ -144,7 +144,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
 
   const labelStyle = {
     fontSize: "12px",
-    color: P.goldMuted,
+    color: T.goldMuted,
     letterSpacing: "2px",
     textTransform: "uppercase" as const,
     mb: "1.5",
@@ -248,17 +248,17 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
       animation={`${entrance} 0.5s ease-out`}
     >
       <Box
-        bg={P.bg}
+        bg={T.bg}
         border="1px solid"
-        borderColor={P.goldDim}
+        borderColor={T.goldDim}
         backdropFilter="blur(20px)"
         borderRadius="12px"
         p="12"
         minW={isCharSelectWide ? "540px" : "460px"}
         maxW="600px"
         w="100%"
-        boxShadow={`0 10px 50px rgba(0,0,0,0.8), 0 0 0 1px ${P.border}`}
-        fontFamily={P.font}
+        boxShadow={`0 10px 50px rgba(0,0,0,0.8), 0 0 0 1px ${HEX.border}`}
+        fontFamily={T.display}
         position="relative"
         overflow="hidden"
         transition="min-width 0.3s ease"
@@ -297,7 +297,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
           left="0"
           right="0"
           h="1px"
-          bg={`linear-gradient(90deg, transparent, ${P.gold}, transparent)`}
+          bg={`linear-gradient(90deg, transparent, ${HEX.gold}, transparent)`}
           backgroundSize="200% 100%"
           animation={`${shimmer} 3s linear infinite`}
         />
@@ -306,7 +306,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
           textAlign="center"
           fontSize="40px"
           fontWeight="900"
-          color={P.gold}
+          color={T.gold}
           letterSpacing="10px"
           textTransform="uppercase"
           animation={`${titleGlow} 4s infinite ease-in-out`}
@@ -317,7 +317,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
         <Text
           textAlign="center"
           fontSize="12px"
-          color={P.goldDark}
+          color={T.goldDark}
           letterSpacing="12px"
           textTransform="uppercase"
           mb="8"
@@ -328,7 +328,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
 
         <Box
           h="1px"
-          bg={`linear-gradient(90deg, transparent, ${P.border}, transparent)`}
+          bg={`linear-gradient(90deg, transparent, ${HEX.border}, transparent)`}
           mb="8"
         />
 
@@ -369,7 +369,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
             </Box>
 
             {error && (
-              <Text color={P.bloodBright} fontSize="12px" textAlign="center" py="2" fontWeight="600">
+              <Text color={T.bloodBright} fontSize="12px" textAlign="center" py="2" fontWeight="600">
                 {error}
               </Text>
             )}
@@ -378,32 +378,32 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
               mt="2"
               w="100%"
               h="50px"
-              bg={P.goldDim}
+              bg={T.goldDim}
               color="#08080c"
               type="submit"
-              fontFamily={P.font}
+              fontFamily={T.display}
               fontWeight="900"
               fontSize="16px"
               letterSpacing="4px"
               textTransform="uppercase"
               transition="all 0.2s"
-              _hover={{ bg: P.gold, transform: "translateY(-2px)", boxShadow: `0 5px 20px ${P.gold}44` }}
+              _hover={{ bg: T.gold, transform: "translateY(-2px)", boxShadow: `0 5px 20px ${HEX.gold}44` }}
               _active={{ transform: "translateY(0)" }}
             >
               {mode === "login" ? t("lobby.login") : t("lobby.register")}
             </Button>
 
             <Flex justify="center" gap="2" mt="2">
-              <Text fontSize="12px" color={P.goldMuted}>
+              <Text fontSize="12px" color={T.goldMuted}>
                 {mode === "login" ? t("lobby.new_to_arena") : t("lobby.already_combatant")}
               </Text>
               <Text
                 fontSize="12px"
-                color={P.gold}
+                color={T.gold}
                 fontWeight="700"
                 cursor="pointer"
                 borderBottom="1px solid transparent"
-                _hover={{ borderBottomColor: P.gold }}
+                _hover={{ borderBottomColor: T.gold }}
                 onClick={() => {
                   setMode(mode === "login" ? "register" : "login");
                   setError("");
@@ -420,7 +420,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
           <Box animation={`${entrance} 0.4s ease-out`}>
             <Flex justify="space-between" align="center" mb="5">
               <Text {...labelStyle} mb="0">{t("lobby.choose_champion")}</Text>
-              <Text fontSize="11px" color={P.goldDark}>
+              <Text fontSize="11px" color={T.goldDark}>
                 {t("lobby.characters_count", { count: characters.length, max: MAX_CHARACTERS })}
               </Text>
             </Flex>
@@ -434,7 +434,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                 gap="3"
               >
                 <Text fontSize="32px" opacity="0.4">⚔️</Text>
-                <Text fontSize="13px" color={P.goldMuted} textAlign="center">
+                <Text fontSize="13px" color={T.goldMuted} textAlign="center">
                   {t("lobby.no_champions")}
                 </Text>
               </Flex>
@@ -448,7 +448,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                       p="4"
                       bg="rgba(8, 8, 12, 0.4)"
                       border="1px solid"
-                      borderColor={P.border}
+                      borderColor={T.border}
                       borderRadius="8px"
                       cursor="pointer"
                       transition="all 0.2s"
@@ -472,12 +472,12 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                           <Text
                             fontSize="15px"
                             fontWeight="900"
-                            color={P.goldText}
+                            color={T.goldText}
                             letterSpacing="1px"
                           >
                             {char.name}
                           </Text>
-                          <Text fontSize="12px" color={P.goldDark} textTransform="uppercase" letterSpacing="1px">
+                          <Text fontSize="12px" color={T.goldDark} textTransform="uppercase" letterSpacing="1px">
                             {t(`classes.${char.class}.name`)}
                           </Text>
                         </Box>
@@ -490,7 +490,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                           border="1px solid"
                           borderColor={`${info.color}44`}
                           fontSize="11px"
-                          fontFamily={P.font}
+                          fontFamily={T.display}
                           fontWeight="700"
                         >
                           Lv {char.level}
@@ -505,11 +505,11 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
             <Button
               w="100%"
               h="44px"
-              bg={characters.length >= MAX_CHARACTERS ? P.goldDark : "transparent"}
+              bg={characters.length >= MAX_CHARACTERS ? T.goldDark : "transparent"}
               border="1px solid"
-              borderColor={characters.length >= MAX_CHARACTERS ? "transparent" : P.border}
-              color={characters.length >= MAX_CHARACTERS ? P.goldDark : P.goldMuted}
-              fontFamily={P.font}
+              borderColor={characters.length >= MAX_CHARACTERS ? "transparent" : T.border}
+              color={characters.length >= MAX_CHARACTERS ? T.goldDark : T.goldMuted}
+              fontFamily={T.display}
               fontWeight="700"
               fontSize="13px"
               letterSpacing="3px"
@@ -521,7 +521,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
               }}
               _hover={
                 characters.length < MAX_CHARACTERS
-                  ? { borderColor: P.gold, color: P.goldText }
+                  ? { borderColor: T.gold, color: T.goldText }
                   : {}
               }
             >
@@ -529,7 +529,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
             </Button>
 
             {connecting && (
-              <Text fontSize="11px" color={P.goldMuted} textAlign="center" mt="3">
+              <Text fontSize="11px" color={T.goldMuted} textAlign="center" mt="3">
                 {t("lobby.connecting")}
               </Text>
             )}
@@ -539,12 +539,12 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
               bg="transparent"
               variant="ghost"
               w="100%"
-              color={P.goldDark}
+              color={T.goldDark}
               fontSize="11px"
               letterSpacing="2px"
               textTransform="uppercase"
               onClick={resetToLogin}
-              _hover={{ color: P.goldMuted }}
+              _hover={{ color: T.goldMuted }}
             >
               {t("lobby.sign_out")}
             </Button>
@@ -573,9 +573,9 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                   aria-label="Random Name"
                   type="button"
                   variant="ghost"
-                  color={P.goldDim}
+                  color={T.goldDim}
                   onClick={handleRandomName}
-                  _hover={{ bg: "transparent", color: P.gold, transform: "rotate(15deg) scale(1.1)" }}
+                  _hover={{ bg: "transparent", color: T.gold, transform: "rotate(15deg) scale(1.1)" }}
                   _active={{ transform: "scale(0.95)" }}
                 >
                   <Text fontSize="20px">🎲</Text>
@@ -594,7 +594,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                     p="3"
                     bg={sel ? `${info.color}11` : "rgba(8, 8, 12, 0.4)"}
                     border="1px solid"
-                    borderColor={sel ? info.color : P.border}
+                    borderColor={sel ? info.color : T.border}
                     borderRadius="8px"
                     cursor="pointer"
                     transition="all 0.2s"
@@ -619,13 +619,13 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                         <Text
                           fontSize="13px"
                           fontWeight="900"
-                          color={sel ? P.goldText : P.goldMuted}
+                          color={sel ? T.goldText : T.goldMuted}
                           letterSpacing="2px"
                           textTransform="uppercase"
                         >
                           {t(`classes.${cls}.name`)}
                         </Text>
-                        <Text fontSize="12px" color={P.goldDark}>
+                        <Text fontSize="12px" color={T.goldDark}>
                           {t(`classes.${cls}.desc`)}
                         </Text>
                       </Box>
@@ -640,7 +640,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                       )}
                     </Flex>
                     {sel && (
-                      <Text mt="2" fontSize="11px" color={P.goldText} opacity="0.8" pl="35px">
+                      <Text mt="2" fontSize="11px" color={T.goldText} opacity="0.8" pl="35px">
                         {t(`classes.${cls}.longDesc`)}
                       </Text>
                     )}
@@ -650,7 +650,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
             </Grid>
 
             {error && (
-              <Text color={P.bloodBright} fontSize="12px" textAlign="center" py="2" fontWeight="600" mb="2">
+              <Text color={T.bloodBright} fontSize="12px" textAlign="center" py="2" fontWeight="600" mb="2">
                 {error}
               </Text>
             )}
@@ -658,16 +658,16 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
             <Button
               w="100%"
               h="50px"
-              bg={creating ? P.goldDark : P.goldDim}
+              bg={creating ? T.goldDark : T.goldDim}
               color="#08080c"
               loading={creating}
               onClick={handleCreateCharacter}
-              fontFamily={P.font}
+              fontFamily={T.display}
               fontWeight="900"
               fontSize="16px"
               letterSpacing="4px"
               textTransform="uppercase"
-              _hover={{ bg: P.gold, transform: "translateY(-2px)", boxShadow: `0 5px 20px ${P.gold}44` }}
+              _hover={{ bg: T.gold, transform: "translateY(-2px)", boxShadow: `0 5px 20px ${HEX.gold}44` }}
             >
               {t("lobby.create_character")}
             </Button>
@@ -677,7 +677,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
               bg="transparent"
               variant="ghost"
               w="100%"
-              color={P.goldMuted}
+              color={T.goldMuted}
               fontSize="12px"
               onClick={() => {
                 setError("");

@@ -1,5 +1,5 @@
 import { Box, Flex, Text, Grid } from "@chakra-ui/react";
-import { P } from "./palette";
+import { T, HEX } from "./tokens";
 
 export type KillStats = {
   npcKills: number;
@@ -21,16 +21,16 @@ type ScoreboardOverlayProps = {
 };
 
 
-const FONT = P.font;
+const FONT = T.display;
 // Aliases for values that were local to this file
 const SC = {
-  text: P.goldText,
-  textDim: P.goldMuted,
+  text: T.goldText,
+  textDim: T.goldMuted,
   textMuted: "#4a3e2a",
-  red: P.bloodBright,
+  red: T.bloodBright,
   green: "#44cc88",
-  surface: P.surface,
-  raised: P.raised,
+  surface: T.surface,
+  raised: T.raised,
 } as const;
 
 const CLASS_COLOR: Record<string, string> = {
@@ -61,12 +61,12 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
       fontSize="11px"
       letterSpacing="3px"
       textTransform="uppercase"
-      color={P.gold}
+      color={T.gold}
       fontWeight="700"
       fontFamily={FONT}
       pb="1"
       mb="2"
-      borderBottom={`1px solid ${P.border}`}
+      borderBottom={`1px solid ${HEX.border}`}
     >
       {children}
     </Box>
@@ -86,7 +86,7 @@ function LeaderboardRow({
   isMe: boolean;
   valueColor?: string;
 }) {
-  const rankColor = rank === 1 ? P.gold : rank === 2 ? "#c0c0c0" : rank === 3 ? "#cd7f32" : SC.textDim;
+  const rankColor = rank === 1 ? T.gold : rank === 2 ? "#c0c0c0" : rank === 3 ? "#cd7f32" : SC.textDim;
   return (
     <Flex
       align="center"
@@ -101,11 +101,11 @@ function LeaderboardRow({
       <Box w="16px" textAlign="center" fontSize="12px" fontWeight="700" color={rankColor} fontFamily={FONT} flexShrink={0}>
         {rank}
       </Box>
-      <Box flex="1" fontSize="13px" color={isMe ? P.gold : SC.text} fontFamily={FONT} overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis">
+      <Box flex="1" fontSize="13px" color={isMe ? T.gold : SC.text} fontFamily={FONT} overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis">
         {name}
-        {isMe && <Text as="span" color={P.goldDim} fontSize="11px" ml="1">(you)</Text>}
+        {isMe && <Text as="span" color={T.goldDim} fontSize="11px" ml="1">(you)</Text>}
       </Box>
-      <Box fontSize="13px" fontWeight="700" color={valueColor ?? SC.text} fontFamily={P.mono} flexShrink={0}>
+      <Box fontSize="13px" fontWeight="700" color={valueColor ?? SC.text} fontFamily={T.mono} flexShrink={0}>
         {value}
       </Box>
     </Flex>
@@ -149,8 +149,8 @@ export function ScoreboardOverlay({
       pointerEvents="none"
     >
       <Box
-        bg={P.bg}
-        border={`2px solid ${P.border}`}
+        bg={T.bg}
+        border={`2px solid ${HEX.border}`}
         borderRadius="4px"
         w="860px"
         maxW="95vw"
@@ -165,14 +165,14 @@ export function ScoreboardOverlay({
           px="6"
           py="3"
           bg={SC.surface}
-          borderBottom={`1px solid ${P.border}`}
+          borderBottom={`1px solid ${HEX.border}`}
           pos="relative"
         >
           <Box
             fontSize="14px"
             letterSpacing="6px"
             textTransform="uppercase"
-            color={P.gold}
+            color={T.gold}
             fontWeight="700"
             fontFamily={FONT}
           >
@@ -193,7 +193,7 @@ export function ScoreboardOverlay({
         {/* Body */}
         <Grid templateColumns="1fr 1fr 200px" gap="0" h="calc(85vh - 52px)" overflow="hidden">
           {/* NPC Kills */}
-          <Box px="4" py="4" borderRight={`1px solid ${P.border}`} overflowY="auto">
+          <Box px="4" py="4" borderRight={`1px solid ${HEX.border}`} overflowY="auto">
             <SectionTitle>Top NPC Hunters</SectionTitle>
             {npcRanking.length === 0 ? (
               <Box fontSize="12px" color={SC.textMuted} fontFamily={FONT} textAlign="center" mt="4">
@@ -224,14 +224,14 @@ export function ScoreboardOverlay({
                 borderRadius="2px"
                 border={`1px solid rgba(212,168,67,0.25)`}
               >
-                <Box w="16px" textAlign="center" fontSize="12px" fontWeight="700" color={P.gold} fontFamily={FONT}>
+                <Box w="16px" textAlign="center" fontSize="12px" fontWeight="700" color={T.gold} fontFamily={FONT}>
                   —
                 </Box>
-                <Box flex="1" fontSize="13px" color={P.gold} fontFamily={FONT} overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis">
+                <Box flex="1" fontSize="13px" color={T.gold} fontFamily={FONT} overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis">
                   {myName}
-                  <Text as="span" color={P.goldDim} fontSize="11px" ml="1">(you)</Text>
+                  <Text as="span" color={T.goldDim} fontSize="11px" ml="1">(you)</Text>
                 </Box>
-                <Box fontSize="13px" fontWeight="700" color={P.gold} fontFamily="'Consolas', monospace">
+                <Box fontSize="13px" fontWeight="700" color={T.gold} fontFamily={T.mono}>
                   Lv.{myLevel}
                 </Box>
               </Flex>
@@ -242,7 +242,7 @@ export function ScoreboardOverlay({
           </Box>
 
           {/* PVP Kills + Online Players */}
-          <Box px="4" py="4" borderRight={`1px solid ${P.border}`} overflowY="auto">
+          <Box px="4" py="4" borderRight={`1px solid ${HEX.border}`} overflowY="auto">
             <SectionTitle>Top PvP Warriors</SectionTitle>
             {pvpRanking.length === 0 ? (
               <Box fontSize="12px" color={SC.textMuted} fontFamily={FONT} textAlign="center" mt="4">
@@ -289,7 +289,7 @@ export function ScoreboardOverlay({
                   <Box
                     flex="1"
                     fontSize="13px"
-                    color={p.name === myName ? P.gold : SC.text}
+                    color={p.name === myName ? T.gold : SC.text}
                     fontFamily={FONT}
                     overflow="hidden"
                     whiteSpace="nowrap"
@@ -332,11 +332,11 @@ export function ScoreboardOverlay({
                       px="1.5"
                       py="0.5"
                       bg={SC.raised}
-                      border={`1px solid ${P.borderLight}`}
+                      border={`1px solid ${HEX.borderLight}`}
                       borderRadius="3px"
                       fontSize="11px"
-                      color={P.gold}
-                      fontFamily="'Consolas', monospace"
+                      color={T.gold}
+                      fontFamily={T.mono}
                       whiteSpace="nowrap"
                       flexShrink={0}
                       minW="fit-content"

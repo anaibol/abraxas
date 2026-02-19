@@ -1,6 +1,6 @@
 import { Box, Flex, Text, VStack, Progress } from "@chakra-ui/react";
 import { QUESTS, type PlayerQuestState } from "@abraxas/shared";
-import { P } from "./palette";
+import { T, HEX } from "./tokens";
 import { useTranslation } from "react-i18next";
 
 interface QuestLogProps {
@@ -13,9 +13,9 @@ export function QuestLog({ quests }: QuestLogProps) {
     const activeQuests = quests.filter(q => q.status === "IN_PROGRESS" || q.status === "COMPLETED");
 
     return (
-        <Box flex="1" overflow="auto" p="2.5" fontFamily={P.font}>
+        <Box flex="1" overflow="auto" p="2.5" fontFamily={T.display}>
             {activeQuests.length === 0 ? (
-                <Text textAlign="center" color={P.goldMuted} fontSize="11px" py="8" fontStyle="italic">
+                <Text textAlign="center" color={T.goldMuted} fontSize="11px" py="8" fontStyle="italic">
                     {t("ui.quests.no_active")}
                 </Text>
             ) : (
@@ -28,17 +28,17 @@ export function QuestLog({ quests }: QuestLogProps) {
                             <Box
                                 key={q.questId}
                                 p="3"
-                                bg={P.surface}
+                                bg={T.surface}
                                 border="1px solid"
-                                borderColor={q.status === "COMPLETED" ? P.gold : P.border}
+                                borderColor={q.status === "COMPLETED" ? T.gold : T.border}
                                 borderRadius="2px"
                                 position="relative"
                             >
                                 <Flex justify="space-between" align="center" mb="1">
-                                    <Text fontSize="13px" fontWeight="bold" color={P.gold}>
+                                    <Text fontSize="13px" fontWeight="bold" color={T.gold}>
                                         {t(def.title)}
                                     </Text>
-                                    <Text fontSize="11px" color={q.status === "COMPLETED" ? "#00ff00" : P.goldMuted} fontWeight="bold" textTransform="uppercase">
+                                    <Text fontSize="11px" color={q.status === "COMPLETED" ? "#00ff00" : T.goldMuted} fontWeight="bold" textTransform="uppercase">
                                         {q.status}
                                     </Text>
                                 </Flex>
@@ -54,16 +54,16 @@ export function QuestLog({ quests }: QuestLogProps) {
                                         
                                         return (
                                             <Box key={`${q.questId}-req-${i}`}>
-                                                <Flex justify="space-between" fontSize="11px" color={P.goldMuted} mb="0.5">
+                                                <Flex justify="space-between" fontSize="11px" color={T.goldMuted} mb="0.5">
                                                     <Text>
                                                         {req.type === "kill" 
                                                             ? t("ui.quests.kill_target", { target: t(`npcs.${req.target}`) }) 
                                                             : t("ui.quests.talk_to_target", { target: t(`npcs.${req.target}`) })}
                                                     </Text>
-                                                    <Text fontFamily={P.mono}>{current} / {req.count}</Text>
+                                                    <Text fontFamily={T.mono}>{current} / {req.count}</Text>
                                                 </Flex>
-                                                <Box h="4px" bg={P.bg} borderRadius="full" overflow="hidden">
-                                                    <Box h="100%" w={`${pct}%`} bg={pct === 100 ? "#00ff00" : P.goldDark} transition="width 0.3s" />
+                                                <Box h="4px" bg={T.bg} borderRadius="full" overflow="hidden">
+                                                    <Box h="100%" w={`${pct}%`} bg={pct === 100 ? "#00ff00" : T.goldDark} transition="width 0.3s" />
                                                 </Box>
                                             </Box>
                                         );
