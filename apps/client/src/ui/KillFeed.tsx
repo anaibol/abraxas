@@ -31,7 +31,7 @@ export function KillFeed({ entries }: KillFeedProps) {
           borderRadius="2px"
           fontFamily="'Friz Quadrata', Georgia, serif"
         >
-          <Text fontSize="10px" color="#c8b68a">
+          <Text fontSize="12px" color="#c8b68a">
             <Text as="span" color="#c41e3a" fontWeight="700">{entry.killerName}</Text>
             {" killed "}
             <Text as="span" color="#8a7a60" fontWeight="700">{entry.victimName}</Text>

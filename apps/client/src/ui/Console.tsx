@@ -117,7 +117,7 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage }: Co
             px="3"
             py="1"
             cursor="pointer"
-            fontSize="10px"
+            fontSize="12px"
             fontWeight="bold"
             letterSpacing="1px"
             bg={activeChannel === tab.id ? "rgba(255,255,255,0.1)" : "transparent"}
@@ -140,12 +140,12 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage }: Co
             <Text
                 key={msg.id}
                 color={msg.color || "white"}
-                fontSize="xs"
+                fontSize="13px"
                 mb={0.5}
                 lineHeight="1.2"
                 textShadow="1px 1px 0 #000"
             >
-            <span style={{ opacity: 0.4, fontSize: "10px" }}>[{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}]</span>{" "}
+            <span style={{ opacity: 0.4, fontSize: "11px" }}>[{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}]</span>{" "}
             {msg.text}
             </Text>
         ))}

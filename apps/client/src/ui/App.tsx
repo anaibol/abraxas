@@ -866,10 +866,10 @@ function DropQuantityDialog({
         </Box>
 
         <Flex gap="2">
-          <Box as="button" flex="1" py="1.5" fontSize="11px" fontWeight="700" letterSpacing="1px" bg="#1a1628" border="1px solid #2e2840" borderRadius="2px" color="#c8b68a" cursor="pointer" fontFamily="'Friz Quadrata', Georgia, serif" onClick={onCancel}>
+          <Box as="button" flex="1" py="1.5" fontSize="13px" fontWeight="700" letterSpacing="1px" bg="#1a1628" border="1px solid #2e2840" borderRadius="2px" color="#c8b68a" cursor="pointer" fontFamily="'Friz Quadrata', Georgia, serif" onClick={onCancel}>
             Cancel
           </Box>
-          <Box as="button" flex="1" py="1.5" fontSize="11px" fontWeight="700" letterSpacing="1px" bg="#6e5a18" border="1px solid #d4a843" borderRadius="2px" color="#d4a843" cursor="pointer" fontFamily="'Friz Quadrata', Georgia, serif" onClick={confirm}>
+          <Box as="button" flex="1" py="1.5" fontSize="13px" fontWeight="700" letterSpacing="1px" bg="#6e5a18" border="1px solid #d4a843" borderRadius="2px" color="#d4a843" cursor="pointer" fontFamily="'Friz Quadrata', Georgia, serif" onClick={confirm}>
             Drop
           </Box>
         </Flex>
