@@ -7,11 +7,11 @@ export function useConsoleMessages() {
   const idRef = useRef(0);
   const [messages, setMessages] = useState<ConsoleMessage[]>([]);
 
-  const add = useCallback((text: string, color?: string) => {
+  const add = useCallback((text: string, color?: string, channel?: ConsoleMessage["channel"]) => {
     setMessages((prev) => {
       const next = [
         ...prev,
-        { id: ++idRef.current, text, color, timestamp: Date.now() },
+        { id: ++idRef.current, text, color, channel, timestamp: Date.now() },
       ];
       return next.length > MAX_MESSAGES ? next.slice(next.length - MAX_MESSAGES) : next;
     });

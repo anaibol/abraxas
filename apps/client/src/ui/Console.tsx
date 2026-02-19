@@ -8,7 +8,7 @@ export interface ConsoleMessage {
   text: string;
   color?: string;
   timestamp: number;
-  channel?: "global" | "party" | "whisper" | "system";
+  channel?: "global" | "party" | "whisper" | "system" | "combat";
 }
 
 interface ConsoleProps {
@@ -18,7 +18,7 @@ interface ConsoleProps {
   prefillMessage?: string;
 }
 
-type Channel = "all" | "global" | "party" | "whisper" | "system";
+type Channel = "all" | "global" | "party" | "whisper" | "system" | "combat";
 
 const TABS: { id: Channel; labelKey: string; color: string }[] = [
   { id: "all", labelKey: "console.tab_all", color: "#ccc" },
@@ -26,6 +26,7 @@ const TABS: { id: Channel; labelKey: string; color: string }[] = [
   { id: "party", labelKey: "console.tab_party", color: "#77f" },
   { id: "whisper", labelKey: "console.tab_whisper", color: "#f7f" },
   { id: "system", labelKey: "console.tab_system", color: "#ff7" },
+  { id: "combat", labelKey: "console.tab_combat", color: "#f84" },
 ];
 
 export function Console({ messages, onSendChat, isChatOpen, prefillMessage }: ConsoleProps) {

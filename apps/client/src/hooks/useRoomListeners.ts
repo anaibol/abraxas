@@ -14,7 +14,7 @@ import { toaster } from "../ui/toaster";
 
 export type RoomListenerCallbacks = {
   t: (key: string, options?: Record<string, unknown>) => string;
-  addConsoleMessage: (text: string, color?: string) => void;
+  addConsoleMessage: (text: string, color?: string, channel?: "global" | "party" | "whisper" | "system" | "combat") => void;
   setShopData: (data: { npcId: string; inventory: string[] } | null) => void;
   setDialogueData: (data: { npcId: string; text: string; options: { text: string; action: string; data?: unknown }[] } | null) => void;
   setQuests: (fn: (prev: PlayerQuestState[]) => PlayerQuestState[]) => void;
@@ -71,7 +71,11 @@ export function useRoomListeners(
         data.channel === "party" ? "#aaaaff"
         : data.channel === "whisper" ? "#ff88ff"
         : "#ffffff";
-      addConsoleMessage(`${data.senderName}: ${data.message}`, color);
+      const channel =
+        data.channel === "party" ? "party"
+        : data.channel === "whisper" ? "whisper"
+        : "global";
+      addConsoleMessage(`${data.senderName}: ${data.message}`, color, channel);
     });
 
     on(ServerMessageType.OpenShop, (data) => setShopData(data));
@@ -176,7 +180,7 @@ export function useRoomListeners(
     });
 
     on(ServerMessageType.InvalidTarget, () => {
-      addConsoleMessage(t("game.invalid_target"), "#ff8888");
+      addConsoleMessage(t("game.invalid_target"), "#ff8888", "combat");
     });
 
     return () => {

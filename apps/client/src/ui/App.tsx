@@ -240,6 +240,7 @@ export function App() {
           height: welcome.mapHeight,
           tileSize: welcome.tileSize,
           collision: welcome.collision,
+          tileTypes: welcome.tileTypes,
           spawns: [],
         });
 

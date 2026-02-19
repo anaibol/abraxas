@@ -38,14 +38,25 @@ export const Minimap: FC<MinimapProps> = ({ map, players, npcs, currentPlayerId 
     const bgCtx = bgCanvas.getContext("2d");
     if (!bgCtx) return;
 
-    bgCtx.fillStyle = "#222";
+    // Tile colors mirror the game's bakeMapChunk palette
+    const TILE_COLORS: Record<number, string> = {
+      0: "#4a8c2a", // grass
+      1: "#484848", // wall / stone
+      2: "#2a5018", // tree
+      3: "#0c2a68", // water
+    };
+    const VOID_COLOR = "#1a1a1a";
+
+    bgCtx.fillStyle = VOID_COLOR;
     bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
-    bgCtx.fillStyle = "#444";
+
     for (let y = 0; y < map.height; y++) {
       for (let x = 0; x < map.width; x++) {
-        if (map.collision[y]?.[x] === 0) {
-          bgCtx.fillRect(x * scaleX, y * scaleY, scaleX, scaleY);
-        }
+        const tileType =
+          map.tileTypes?.[y]?.[x] ??
+          (map.collision[y]?.[x] === 1 ? 1 : 0);
+        bgCtx.fillStyle = TILE_COLORS[tileType] ?? TILE_COLORS[0];
+        bgCtx.fillRect(x * scaleX, y * scaleY, scaleX, scaleY);
       }
     }
 
@@ -57,18 +68,24 @@ export const Minimap: FC<MinimapProps> = ({ map, players, npcs, currentPlayerId 
 
       npcs?.forEach((npc) => {
         if (!npc.alive) return;
-        ctx.fillStyle = "red";
+        ctx.fillStyle = "#e03030";
         ctx.beginPath();
-        ctx.arc(npc.tileX * scaleX, npc.tileY * scaleY, 2, 0, Math.PI * 2);
+        ctx.arc(npc.tileX * scaleX + scaleX / 2, npc.tileY * scaleY + scaleY / 2, Math.max(2, scaleX), 0, Math.PI * 2);
         ctx.fill();
       });
 
       players?.forEach((player) => {
         if (!player.alive) return;
-        ctx.fillStyle = player.sessionId === currentPlayerId ? "lime" : "blue";
+        const isSelf = player.sessionId === currentPlayerId;
+        ctx.fillStyle = isSelf ? "#00ff66" : "#4488ff";
         ctx.beginPath();
-        ctx.arc(player.tileX * scaleX, player.tileY * scaleY, 3, 0, Math.PI * 2);
+        ctx.arc(player.tileX * scaleX + scaleX / 2, player.tileY * scaleY + scaleY / 2, Math.max(2.5, scaleX * 1.2), 0, Math.PI * 2);
         ctx.fill();
+        if (isSelf) {
+          ctx.strokeStyle = "#ffffff";
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        }
       });
 
       rafId = requestAnimationFrame(render);
@@ -85,8 +102,8 @@ export const Minimap: FC<MinimapProps> = ({ map, players, npcs, currentPlayerId 
         top: isMobile ? "12px" : undefined,
         bottom: isMobile ? undefined : "20px",
         right: isMobile ? "64px" : "20px",
-        border: "2px solid #555",
-        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        border: "2px solid rgba(212, 168, 67, 0.5)",
+        backgroundColor: "rgba(10, 8, 20, 0.85)",
         borderRadius: "4px",
         width: `${size}px`,
         height: `${size}px`,

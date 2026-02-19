@@ -1,8 +1,5 @@
 const LOG_LEVEL = process.env.LOG_LEVEL || "info";
 const LOG_FORMAT = process.env.LOG_FORMAT || "json";
-const LOG_CATEGORIES = process.env.LOG_CATEGORIES
-  ? new Set(process.env.LOG_CATEGORIES.split(",").map((c) => c.trim()))
-  : null;
 
 const LEVELS: Record<string, number> = {
   debug: 0,
@@ -13,10 +10,9 @@ const LEVELS: Record<string, number> = {
 
 const currentLevel = LEVELS[LOG_LEVEL] ?? 1;
 
-type LogEntry = {
+interface LogEntry {
   timestamp: string;
   level: "debug" | "info" | "warn" | "error";
-  category?: string;
   room?: string;
   tick?: number;
   clientId?: string;
@@ -29,64 +25,27 @@ type LogEntry = {
   message?: string;
   error?: unknown;
   [key: string]: unknown;
-};
+}
 
-type LogFields = string | Omit<LogEntry, "timestamp" | "level">;
-
-function log(level: LogEntry["level"], fields: LogFields) {
+function log(level: LogEntry["level"], fields: string | (Omit<LogEntry, "timestamp" | "level">)) {
   if ((LEVELS[level] ?? 0) < currentLevel) return;
-
-  const resolved = typeof fields === "string" ? { message: fields } : fields;
-
-  if (LOG_CATEGORIES && resolved.category && !LOG_CATEGORIES.has(resolved.category)) {
-    return;
-  }
 
   const entry: LogEntry = {
     timestamp: new Date().toISOString(),
     level,
-    ...resolved,
+    ...(typeof fields === "string" ? { message: fields } : fields),
   };
 
-  let output: string;
-  if (LOG_FORMAT === "json") {
-    output = JSON.stringify(entry);
-  } else {
-    const category = entry.category ? `[${entry.category.toUpperCase()}] ` : "";
-    const rest = { ...resolved } as Record<string, unknown>;
-    delete rest.message;
-    delete rest.category;
-    const extras = Object.keys(rest).length > 0 ? ` ${JSON.stringify(rest)}` : "";
-    output = `[${entry.timestamp}] ${entry.level.toUpperCase()} ${category}${entry.message ?? ""}${extras}`;
-  }
-
+  const output = LOG_FORMAT === "json" 
+    ? JSON.stringify(entry)
+    : `[${entry.timestamp}] ${entry.level.toUpperCase()} ${entry.message || ""} ${JSON.stringify(typeof fields === "object" ? fields : {})}`;
+  
   console.log(output);
 }
 
-type CategoryLogger = {
-  debug: (fields: LogFields) => void;
-  info: (fields: LogFields) => void;
-  warn: (fields: LogFields) => void;
-  error: (fields: LogFields) => void;
-};
-
-export function createCategoryLogger(category: string): CategoryLogger {
-  const withCategory = (fields: LogFields): LogFields =>
-    typeof fields === "string"
-      ? { message: fields, category }
-      : { ...fields, category };
-
-  return {
-    debug: (fields) => log("debug", withCategory(fields)),
-    info: (fields) => log("info", withCategory(fields)),
-    warn: (fields) => log("warn", withCategory(fields)),
-    error: (fields) => log("error", withCategory(fields)),
-  };
-}
-
 export const logger = {
-  debug: (fields: LogFields) => log("debug", fields),
-  info: (fields: LogFields) => log("info", fields),
-  warn: (fields: LogFields) => log("warn", fields),
-  error: (fields: LogFields) => log("error", fields),
+  debug: (fields: string | Omit<LogEntry, "timestamp" | "level">) => log("debug", fields),
+  info: (fields: string | Omit<LogEntry, "timestamp" | "level">) => log("info", fields),
+  warn: (fields: string | Omit<LogEntry, "timestamp" | "level">) => log("warn", fields),
+  error: (fields: string | Omit<LogEntry, "timestamp" | "level">) => log("error", fields),
 };
