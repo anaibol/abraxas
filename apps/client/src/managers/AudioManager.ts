@@ -4,18 +4,15 @@ export class AudioManager {
   private stream: MediaStream | null = null;
   private onDataAvailable: ((data: ArrayBuffer) => void) | null = null;
 
-  async init() {
+  async startRecording(onData: (data: ArrayBuffer) => void) {
     try {
-      this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      this.audioContext = new AudioContext();
+      if (!this.stream) {
+        this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      }
     } catch (err) {
-      console.error("Failed to initialize AudioManager:", err);
-      throw err;
+      console.error("Failed to access microphone:", err);
+      return;
     }
-  }
-
-  startRecording(onData: (data: ArrayBuffer) => void) {
-    if (!this.stream) return;
 
     this.onDataAvailable = onData;
     this.mediaRecorder = new MediaRecorder(this.stream);
@@ -63,9 +60,11 @@ export class AudioManager {
     this.stopRecording();
     if (this.stream) {
       this.stream.getTracks().forEach(track => track.stop());
+      this.stream = null;
     }
     if (this.audioContext) {
       this.audioContext.close();
+      this.audioContext = null;
     }
   }
 }

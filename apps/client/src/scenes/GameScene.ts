@@ -87,9 +87,6 @@ export class GameScene extends Phaser.Scene {
     this.soundManager.startMusic();
 
     this.audioManager = new AudioManager();
-    this.audioManager
-      .init()
-      .catch((err) => console.warn("Audio Context init failed:", err));
 
     this.network.onAudioData = (sessionId, data) => {
       this.audioManager.playAudioChunk(data);
