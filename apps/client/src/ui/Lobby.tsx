@@ -494,7 +494,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                           fontFamily={T.display}
                           fontWeight="700"
                         >
-                          Lv {char.level}
+                          {t("sidebar.inventory.level")} {char.level}
                         </Badge>
                       </Flex>
                     </Box>

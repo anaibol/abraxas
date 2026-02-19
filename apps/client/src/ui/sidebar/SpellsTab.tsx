@@ -113,7 +113,7 @@ export function SpellsTab({
 								}}
 								title={
 									isDisabled
-										? `Not enough mana (${spell.manaCost} required)`
+										? t("game.not_enough_mana_cost", { cost: spell.manaCost })
 										: spell.rangeTiles > 0
 											? t("sidebar.inventory.spell_click_hint")
 											: undefined

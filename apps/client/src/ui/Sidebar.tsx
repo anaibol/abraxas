@@ -16,12 +16,13 @@ import { useIsMobile } from "../hooks/useIsMobile";
 
 const SIDEBAR_TABS: readonly {
 	key: "inv" | "spells" | "quests" | "party" | "friends";
+	icon: string;
 }[] = [
-	{ key: "inv" },
-	{ key: "spells" },
-	{ key: "quests" },
-	{ key: "party" },
-	{ key: "friends" },
+	{ key: "inv",     icon: "⚔️" },
+	{ key: "spells",  icon: "📖" },
+	{ key: "quests",  icon: "📜" },
+	{ key: "party",   icon: "⚔️" },
+	{ key: "friends", icon: "👥" },
 ];
 
 export function Sidebar({
@@ -122,29 +123,41 @@ export function Sidebar({
 				</Text>
 			</Flex>
 
-			{/* Tabs */}
-			<Flex borderBottom="2px solid" borderBottomColor={T.border}>
-				{SIDEBAR_TABS.map(({ key }) => (
+		{/* Tabs */}
+		<Flex borderBottom="2px solid" borderBottomColor={T.border}>
+			{SIDEBAR_TABS.map(({ key, icon }) => (
+				<Flex
+					key={key}
+					flex="1"
+					direction="column"
+					align="center"
+					justify="center"
+					py="2"
+					gap="0.5"
+					bg={tab === key ? T.surface : T.darkest}
+					color={tab === key ? T.gold : T.goldDark}
+					borderBottom="2px solid"
+					borderBottomColor={tab === key ? T.gold : "transparent"}
+					mb="-2px"
+					cursor="pointer"
+					transition="all 0.12s"
+					_hover={{ color: T.goldText, bg: T.surface }}
+					onClick={() => setTab(key)}
+				>
+					<Box fontSize="16px" lineHeight="1">{icon}</Box>
 					<Box
-						key={key}
-						flex="1"
-						py="2.5"
-						textAlign="center"
-						bg={tab === key ? T.surface : T.darkest}
-						color={tab === key ? T.gold : T.goldDark}
-						borderBottom="2px solid"
-						borderBottomColor={tab === key ? T.gold : "transparent"}
-						mb="-2px"
-						textStyle={T.tabLabel}
-						cursor="pointer"
-						transition="all 0.12s"
-						_hover={{ color: T.goldText, bg: T.surface }}
-						onClick={() => setTab(key)}
+						fontFamily={T.display}
+						fontSize="9px"
+						fontWeight="700"
+						letterSpacing="0.5px"
+						textTransform="uppercase"
+						lineHeight="1"
 					>
 						{t(`sidebar.tabs.${key}`)}
 					</Box>
-				))}
-			</Flex>
+				</Flex>
+			))}
+		</Flex>
 
 			{/* Tab Content */}
 			<Box flex="1" overflow="auto">

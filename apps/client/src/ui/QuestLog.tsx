@@ -39,7 +39,7 @@ export function QuestLog({ quests }: QuestLogProps) {
                                         {t(def.title)}
                                     </Text>
                                     <Text fontSize="11px" color={q.status === "COMPLETED" ? "#00ff00" : T.goldMuted} fontWeight="bold" textTransform="uppercase">
-                                        {q.status}
+                                        {t(`quest_status.${q.status}`, { defaultValue: q.status })}
                                     </Text>
                                 </Flex>
                                 

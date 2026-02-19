@@ -179,7 +179,7 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage }: Co
                 outline: "none",
                 fontSize: "13px"
             }}
-            placeholder={activeChannel === "party" ? "Message Party..." : "Type message..."}
+            placeholder={activeChannel === "party" ? t("console.placeholder_party") : t("console.placeholder_default")}
           />
       </Box>
     </Box>
