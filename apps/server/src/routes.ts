@@ -63,6 +63,7 @@ export const registerEndpoint = createEndpoint(
                 },
               },
               inventory: { create: { size: 40 } },
+              bank: { create: {} },
             },
           },
         },
