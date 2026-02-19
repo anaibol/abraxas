@@ -22,7 +22,6 @@ import { SocialPanel } from "./SocialPanel";
 import type {
   ClassType,
   TileMap,
-  EquipmentSlot,
   PlayerQuestState,
   ServerMessages,
 } from "@abraxas/shared";
@@ -33,8 +32,8 @@ import { AudioManager } from "../managers/AudioManager";
 import Phaser from "phaser";
 import { PreloaderScene } from "../scenes/PreloaderScene";
 import { GameScene } from "../scenes/GameScene";
-import { GameState } from "../../../server/src/schema/GameState";
-import { Room } from "@colyseus/sdk";
+import type { GameState } from "../../../server/src/schema/GameState";
+import type { Room } from "@colyseus/sdk";
 
 const toaster = createToaster({
   placement: "top",
@@ -47,7 +46,7 @@ let consoleMsgId = 0;
 export function App() {
   const [phase, setPhase] = useState<"lobby" | "game">("lobby");
   const [connecting, setConnecting] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // New loading state
+  const [isLoading, setIsLoading] = useState(false);
   const [playerState, setPlayerState] = useState<PlayerState>({
     name: getRandomName(),
     classType: "warrior",
@@ -89,10 +88,8 @@ export function App() {
   const audioManagerRef = useRef<AudioManager | null>(null);
   const wasAliveRef = useRef(true);
 
-  // Ref to room state for minimap to access latest data without re-rendering App constantly
   const roomRef = useRef<Room<GameState> | null>(null);
 
-  // Track death/respawn
   useEffect(() => {
     if (!playerState.alive && wasAliveRef.current) {
       setShowDeath(true);
@@ -104,7 +101,6 @@ export function App() {
     wasAliveRef.current = playerState.alive;
   }, [playerState.alive]);
 
-  // Auto-remove old kill feed entries
   useEffect(() => {
     if (killFeed.length === 0) return;
     const timer = setTimeout(() => {
@@ -115,48 +111,27 @@ export function App() {
     return () => clearTimeout(timer);
   }, [killFeed]);
 
-  // Handle Chat Toggle
   useEffect(() => {
     if (phase !== "game") return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Enter") {
-        if (isChatOpen) {
-          // Close chat (sending handled by Console component if it was focused)
-          // But wait, if we are focused on input, this keydown might fire too?
-          // We should letting Console handle the send, and this just toggles state?
-          // If chat is open, enter sends and closes?
-        } else {
-          setIsChatOpen(true);
-        }
-      }
-      if (e.key === "Escape" && isChatOpen) {
-        setIsChatOpen(false);
-      }
+      if (e.key === "Enter" && !isChatOpen) setIsChatOpen(true);
+      if (e.key === "Escape" && isChatOpen) setIsChatOpen(false);
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [phase, isChatOpen]);
 
-  // When chat is open, we should probably disable game inputs?
-  // GameScene listens to keys. We might need to tell GameScene to ignore input.
-  // Or just rely on input focus stealing events?
-  // Phaser input usually keeps working unless we explicitly stop it.
-
   useEffect(() => {
     const game = phaserGameRef.current;
-    if (game) {
-      game.input.enabled = !isChatOpen;
-      if (isChatOpen) {
-        // Reset keys to avoid stuck inputs
-        // @ts-ignore
-        game.input.keyboard?.resetKeys();
-      }
+    if (!game) return;
+    game.input.enabled = !isChatOpen;
+    if (isChatOpen) {
+      (game.input.keyboard as Phaser.Input.Keyboard.KeyboardPlugin | null)?.resetKeys();
     }
   }, [isChatOpen]);
 
-  // Audio Hotkey Logic
   useEffect(() => {
     if (phase !== "game" || isChatOpen) return;
 
@@ -184,7 +159,6 @@ export function App() {
     };
   }, [phase, isChatOpen, isRecording]);
 
-  // Cleanup audio manager on unmount
   useEffect(() => {
     return () => {
       audioManagerRef.current?.cleanup();
@@ -202,12 +176,10 @@ export function App() {
       if (mapName) setIsLoading(true); // If warping, show loading
 
       try {
-        // Cleanup old game if exists
         if (phaserGameRef.current) {
           phaserGameRef.current.destroy(true);
           phaserGameRef.current = null;
         }
-        // Cleanup old network if exists
         if (networkRef.current) {
           networkRef.current.disconnect();
         }
@@ -219,7 +191,6 @@ export function App() {
 
         const welcome = network.getWelcomeData();
 
-        // Initialize Audio Manager
         if (!audioManagerRef.current) {
           const am = new AudioManager();
           try {
@@ -258,7 +229,6 @@ export function App() {
           },
         ]);
 
-        // Listen for chat
         network
           .getRoom()
           .onMessage(
@@ -284,7 +254,6 @@ export function App() {
             },
           );
 
-        // Listen for Shop
         network
           .getRoom()
           .onMessage(
@@ -294,7 +263,6 @@ export function App() {
             },
           );
 
-        // Listen for Dialogue
         network
           .getRoom()
           .onMessage(
@@ -304,7 +272,6 @@ export function App() {
             },
           );
 
-        // Listen for Quests
         network
           .getRoom()
           .onMessage(
@@ -333,7 +300,6 @@ export function App() {
             },
           );
 
-        // Listen for Party
         network
           .getRoom()
           .onMessage(
@@ -359,7 +325,6 @@ export function App() {
             },
           );
 
-        // Friend system listeners
         network
           .getRoom()
           .onMessage(
@@ -387,7 +352,6 @@ export function App() {
             },
           );
 
-        // Listen for audio
         network
           .getRoom()
           .onMessage(
@@ -510,8 +474,6 @@ export function App() {
       phaserGameRef.current?.destroy(true);
     };
   }, []);
-
-  // Minimap rendering helper
 
   return (
     <ChakraProvider value={system}>

@@ -107,7 +107,6 @@ export class GameScene extends Phaser.Scene {
     this.spriteManager = new SpriteManager(
       this,
       this.cameraController,
-      () => this.room.state,
       () => this.room.sessionId,
     );
     this.effectManager = new EffectManager(
@@ -146,17 +145,24 @@ export class GameScene extends Phaser.Scene {
     unsub(
       $state.onAdd("players", (player, sessionId) => {
         this.spriteManager.addPlayer(player, sessionId);
-        if (sessionId === this.room.sessionId) {
-          unsub($state.onChange(player, () => this.pushSidebarUpdate(player)));
-          this.pushSidebarUpdate(player);
-        }
+        this.spriteManager.syncPlayer(player, sessionId);
+        const isLocal = sessionId === this.room.sessionId;
+        unsub($state.onChange(player, () => {
+          this.spriteManager.syncPlayer(player, sessionId);
+          if (isLocal) this.pushSidebarUpdate(player);
+        }));
+        if (isLocal) this.pushSidebarUpdate(player);
       }),
       $state.onRemove("players", (_player, sessionId) => {
         this.spriteManager.removePlayer(sessionId);
       }),
       $state.onAdd("drops", (drop, id) => this.addDrop(drop, id)),
       $state.onRemove("drops", (_drop, id) => this.removeDrop(id)),
-      $state.onAdd("npcs", (npc, id) => this.spriteManager.addNpc(npc, id)),
+      $state.onAdd("npcs", (npc, id) => {
+        this.spriteManager.addNpc(npc, id);
+        this.spriteManager.syncNpc(npc, id);
+        unsub($state.onChange(npc, () => this.spriteManager.syncNpc(npc, id)));
+      }),
       $state.onRemove("npcs", (_npc, id) => this.spriteManager.removeNpc(id)),
     );
 
@@ -188,7 +194,7 @@ export class GameScene extends Phaser.Scene {
 
   update(time: number, delta: number) {
     this.inputHandler.update(time, () => this.getMouseTile());
-    this.spriteManager.update(time, delta);
+    this.spriteManager.update(delta);
 
     if (this.inputHandler.targeting) {
       const lp = this.room.state.players.get(this.room.sessionId);
@@ -198,8 +204,6 @@ export class GameScene extends Phaser.Scene {
 
     const localSprite = this.spriteManager.getSprite(this.room.sessionId);
     if (localSprite) this.cameraController.update(localSprite);
-
-    this.effectManager.update(time);
 
     if (this.debugText && localSprite) {
       this.debugText.setText(

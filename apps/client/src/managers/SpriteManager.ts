@@ -2,7 +2,6 @@ import { PlayerSprite } from "../entities/PlayerSprite";
 import type { CameraController } from "../systems/CameraController";
 import type { GameScene } from "../scenes/GameScene";
 import type { PlayerEntityState, NpcEntityState } from "@abraxas/shared";
-import type { GameState } from "../../../server/src/schema/GameState";
 
 export class SpriteManager {
   private sprites = new Map<string, PlayerSprite>();
@@ -10,7 +9,6 @@ export class SpriteManager {
   constructor(
     private scene: GameScene,
     private cameraController: CameraController,
-    private getCurrentRoomState: () => GameState | null | undefined,
     private getSessionId: () => string,
   ) {}
 
@@ -29,6 +27,20 @@ export class SpriteManager {
     if (isLocal) this.cameraController.follow(sprite);
   }
 
+  syncPlayer(player: PlayerEntityState, sessionId: string) {
+    const sprite = this.sprites.get(sessionId);
+    if (!sprite) return;
+    if (sprite.isLocal) {
+      sprite.reconcileServer(player.tileX, player.tileY);
+    } else {
+      sprite.setTilePosition(player.tileX, player.tileY);
+    }
+    sprite.setFacing(player.facing);
+    sprite.updateHpMana(player.hp, player.mana ?? 0);
+    sprite.updateEquipment(player.equipWeapon ?? "", player.equipShield ?? "", player.equipHelmet ?? "");
+    this.updateAlpha(sprite, player);
+  }
+
   removePlayer(sessionId: string) {
     const sprite = this.sprites.get(sessionId);
     if (sprite) {
@@ -37,21 +49,37 @@ export class SpriteManager {
     }
   }
 
-  addNpc(npc: NpcEntityState, sessionId: string) {
-    if (this.sprites.has(sessionId)) return;
+  addNpc(npc: NpcEntityState, id: string) {
+    if (this.sprites.has(id)) return;
     const sprite = this.createSprite({
-      sessionId,
+      sessionId: id,
       tileX: npc.tileX,
       tileY: npc.tileY,
       typeOrClass: npc.type,
       name: npc.name,
       isLocal: false,
     });
-    this.sprites.set(sessionId, sprite);
+    this.sprites.set(id, sprite);
   }
 
-  removeNpc(sessionId: string) {
-    this.removePlayer(sessionId);
+  syncNpc(npc: NpcEntityState, id: string) {
+    const sprite = this.sprites.get(id);
+    if (!sprite) return;
+    sprite.setTilePosition(npc.tileX, npc.tileY);
+    sprite.setFacing(npc.facing);
+    sprite.updateHpMana(npc.hp, 0);
+    this.updateAlpha(sprite, npc);
+  }
+
+  removeNpc(id: string) {
+    this.removePlayer(id);
+  }
+
+  /** Per-frame interpolation — all state-driven updates happen via syncPlayer/syncNpc. */
+  update(delta: number) {
+    for (const [, sprite] of this.sprites) {
+      sprite.update(delta);
+    }
   }
 
   getSprite(sessionId: string): PlayerSprite | undefined {
@@ -60,47 +88,6 @@ export class SpriteManager {
 
   getAllSprites(): Map<string, PlayerSprite> {
     return this.sprites;
-  }
-
-  update(time: number, delta: number) {
-    const state = this.getCurrentRoomState();
-    if (!state) return;
-
-    for (const [sessionId, sprite] of this.sprites) {
-      const player = state.players.get(sessionId);
-      const npc = state.npcs.get(sessionId);
-      const entity = player || npc;
-
-      if (entity) {
-        if (sprite.isLocal) {
-          sprite.reconcileServer(entity.tileX, entity.tileY);
-        } else {
-          sprite.setTilePosition(entity.tileX, entity.tileY);
-        }
-
-        sprite.setFacing(entity.facing);
-        const mana = player ? player.mana : 0;
-        sprite.updateHpMana(entity.hp, mana);
-
-        if (player) {
-          // It's a player
-          sprite.updateEquipment(
-            player.equipWeapon,
-            player.equipShield,
-            player.equipHelmet,
-          );
-        }
-
-        if (!entity.alive) {
-          this.setAlpha(sessionId, 0.3);
-        } else if (entity.stealthed && !sprite.isLocal) {
-          this.setAlpha(sessionId, 0.15);
-        } else if (entity.stealthed && sprite.isLocal) {
-          this.setAlpha(sessionId, 0.5);
-        }
-      }
-      sprite.update(delta);
-    }
   }
 
   flashSprite(sessionId: string) {
@@ -113,14 +100,12 @@ export class SpriteManager {
     const prev = sprite.container.alpha;
     sprite.container.setAlpha(toAlpha);
     this.scene.time.delayedCall(durationMs, () => {
-      if (sprite && sprite.container) sprite.container.setAlpha(prev);
+      if (sprite?.container) sprite.container.setAlpha(prev);
     });
   }
 
   setAlpha(sessionId: string, alpha: number) {
-    const sprite = this.sprites.get(sessionId);
-    if (!sprite) return;
-    sprite.container.setAlpha(alpha);
+    this.sprites.get(sessionId)?.container.setAlpha(alpha);
   }
 
   setSpeaking(sessionId: string, speaking: boolean, durationMs?: number) {
@@ -128,9 +113,17 @@ export class SpriteManager {
     if (!sprite) return;
     sprite.showSpeakingIndicator(speaking);
     if (speaking && durationMs) {
-      this.scene.time.delayedCall(durationMs, () =>
-        sprite.showSpeakingIndicator(false),
-      );
+      this.scene.time.delayedCall(durationMs, () => sprite.showSpeakingIndicator(false));
+    }
+  }
+
+  private updateAlpha(sprite: PlayerSprite, entity: { alive: boolean; stealthed: boolean }) {
+    if (!entity.alive) {
+      sprite.container.setAlpha(0.3);
+    } else if (entity.stealthed) {
+      sprite.container.setAlpha(sprite.isLocal ? 0.5 : 0.15);
+    } else {
+      sprite.container.setAlpha(1);
     }
   }
 
