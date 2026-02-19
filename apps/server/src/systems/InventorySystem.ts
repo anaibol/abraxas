@@ -9,7 +9,6 @@ import {
 } from "@abraxas/shared";
 import type { Player } from "../schema/Player";
 import { InventoryItem } from "../schema/InventoryItem";
-import { logger } from "../logger";
 
 /** The subset of Player property keys that hold equipment item IDs. */
 type EquipSlotKey =
@@ -226,7 +225,7 @@ export class InventorySystem {
     player.intStat = base.int + equip.int + lvl * levelBonus.int;
     player.armor = base.armor + equip.armor;
     player.maxHp = base.hp + equip.hp + lvl * levelBonus.hp;
-    player.maxMana = base.mana + equip.mana + lvl * levelBonus.mp;
+    player.maxMana = base.mana + equip.mana + lvl * levelBonus.mana;
     player.hp = Math.min(player.hp, player.maxHp);
     player.mana = Math.min(player.mana, player.maxMana);
   }

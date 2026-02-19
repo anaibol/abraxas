@@ -197,7 +197,7 @@ export function Sidebar({
 		state.maxMana > 0 ? Math.max(0, (state.mana / state.maxMana) * 100) : 0;
 	const hpColor = hpPct > 50 ? P.blood : hpPct > 25 ? "#8b5a1a" : "#5a0e0e";
 	const classSpells =
-		stats?.spells?.map((id: string) => SPELLS[id]).filter(Boolean) ?? [];
+		stats?.spells?.map((id) => SPELLS[id]).filter(Boolean) ?? [];
 
 	const sidebarPanel = (
 		<Flex

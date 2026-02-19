@@ -128,7 +128,7 @@ export class MessageHandler {
 
 	/** Resolves the target tile from explicit coords or falls back to the tile in front of the player. */
 	private resolveTarget(
-		player: { tileX: number; tileY: number; facing: number },
+		player: Player,
 		data: { targetTileX?: number; targetTileY?: number },
 	): { targetX: number; targetY: number } {
 		if (data.targetTileX !== undefined && data.targetTileY !== undefined) {
