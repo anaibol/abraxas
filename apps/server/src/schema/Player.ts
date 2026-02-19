@@ -1,8 +1,8 @@
 import { type, ArraySchema, view } from "@colyseus/schema";
 import { Char } from "./Char";
 import { InventoryItem } from "./InventoryItem";
-import { CLASS_STATS, SPELLS } from "@abraxas/shared";
-import type { ClassType, ClassStats, Spell } from "@abraxas/shared";
+import { CLASS_STATS, ABILITIES } from "@abraxas/shared";
+import type { ClassType, ClassStats, Ability } from "@abraxas/shared";
 
 export class Player extends Char {
 	// ── Shared (visible to all clients) ─────────────────────────────────────
@@ -42,7 +42,7 @@ export class Player extends Char {
 		return CLASS_STATS[this.classType];
 	}
 
-	getSpell(spellId: string): Spell | undefined {
-		return SPELLS[spellId];
+	getAbility(abilityId: string): Ability | undefined {
+		return ABILITIES[abilityId];
 	}
 }

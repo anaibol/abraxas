@@ -248,7 +248,7 @@ export class MessageHandler {
 		const { targetX, targetY } = this.resolveTarget(player, data);
 		this.ctx.systems.combat.tryCast(
 			player,
-			data.spellId,
+			data.abilityId,
 			targetX,
 			targetY,
 			this.ctx.broadcast,

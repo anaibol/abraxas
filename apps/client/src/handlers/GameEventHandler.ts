@@ -4,7 +4,7 @@ import {
 	ServerMessageType,
 	SPAWN_PROTECTION_MS,
 	ChatChannel,
-	SPELLS,
+	ABILITIES,
 	i18n,
 } from "@abraxas/shared";
 import type { SpriteManager } from "../managers/SpriteManager";
@@ -93,7 +93,7 @@ export class GameEventHandler {
 		const sprite = this.spriteManager.getSprite(data.sessionId);
 		if (sprite) {
 			this.spriteManager.pulseAlpha(data.sessionId, 0.8, 140);
-			this.effectManager.playCastWindup(data.sessionId, data.spellId);
+			this.effectManager.playCastWindup(data.sessionId, data.abilityId);
 			if (this.isSelf(data.sessionId))
 				this.onConsoleMessage?.(t("game.you_cast_spell"), "#aaaaff", "combat");
 		}
@@ -101,7 +101,7 @@ export class GameEventHandler {
 
 		this.effectManager.maybeLaunchProjectile(
 			data.sessionId,
-			data.spellId,
+			data.abilityId,
 			data.targetTileX,
 			data.targetTileY,
 		);
@@ -109,7 +109,7 @@ export class GameEventHandler {
 
 	private onCastHit(data: ServerMessages["cast_hit"]) {
 		this.effectManager.playSpellEffect(
-			data.spellId,
+			data.abilityId,
 			data.targetTileX,
 			data.targetTileY,
 		);
@@ -162,27 +162,27 @@ export class GameEventHandler {
 	}
 
 	private onBuffApplied(data: ServerMessages["buff_applied"]) {
-		const spell = SPELLS[data.spellId];
+		const ability = ABILITIES[data.abilityId];
 		const durationMs = data.durationMs;
-		const effect = spell?.effect ?? "buff";
+		const effect = ability?.effect ?? "buff";
 
 		if (effect === "debuff") {
-			this.spriteManager.applySpellStateVisual(data.sessionId, data.spellId, durationMs);
+			this.spriteManager.applySpellStateVisual(data.sessionId, data.abilityId, durationMs);
 			this.effectManager.showFloatingText(data.sessionId, t("game.buff_weakened"), "#cc44ff");
 		} else if (effect === "stun") {
 			this.spriteManager.applyStunVisual(data.sessionId, durationMs);
 			this.effectManager.showFloatingText(data.sessionId, `${t("game.buff_stunned")} ✦`, "#ffff44");
 		} else if (effect === "stealth") {
-			this.spriteManager.applySpellStateVisual(data.sessionId, data.spellId, durationMs);
+			this.spriteManager.applySpellStateVisual(data.sessionId, data.abilityId, durationMs);
 			this.effectManager.showFloatingText(data.sessionId, t("game.buff_stealth"), "#aaddff");
-		} else if (data.spellId === "divine_shield") {
+		} else if (data.abilityId === "divine_shield") {
 			this.spriteManager.applyInvulnerableVisual(data.sessionId, durationMs);
 			this.effectManager.showFloatingText(data.sessionId, t("game.buff_invulnerable"), "#ffffff");
 		} else if (effect === "dot") {
-			this.spriteManager.applySpellStateVisual(data.sessionId, data.spellId, durationMs);
+			this.spriteManager.applySpellStateVisual(data.sessionId, data.abilityId, durationMs);
 			this.effectManager.showFloatingText(data.sessionId, t("game.buff_poisoned"), "#44ff44");
 		} else {
-			this.spriteManager.applySpellStateVisual(data.sessionId, data.spellId, durationMs);
+			this.spriteManager.applySpellStateVisual(data.sessionId, data.abilityId, durationMs);
 			this.effectManager.showFloatingText(data.sessionId, `${t("game.buff_buffed")} ✦`, "#ffdd44");
 		}
 	}

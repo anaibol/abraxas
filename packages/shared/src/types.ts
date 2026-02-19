@@ -113,22 +113,23 @@ export interface NpcStats {
 	agi: number;
 	int: number;
 	speedTilesPerSecond: number;
-	meleeRange: number;
+	/** Range in tiles for the auto-attack. Values > 1 use ranged (AGI-scaling) formula. */
+	autoAttackRange: number;
 	meleeCooldownMs: number;
 	meleeWindupMs: number;
 	armor: number;
-	spells: string[];
+	abilities: string[];
 	expReward?: number;
 	/** NPC will not aggro players and does not move (e.g. merchants). */
 	passive?: boolean;
 	/** NPC flees when HP drops below 25%. */
 	fleesWhenLow?: boolean;
 	/**
-	 * Probability (0–1) that the NPC will attempt a spell cast on any given
-	 * attack tick when a spell is off cooldown. Lower values produce a more
-	 * natural mix of melee and spells. Defaults to 0.4 if omitted.
+	 * Probability (0–1) that the NPC will attempt an ability use on any given
+	 * attack tick when the ability is off cooldown. Lower values produce a more
+	 * natural mix of auto-attacks and abilities. Defaults to 0.4 if omitted.
 	 */
-	spellCastChance?: number;
+	abilityCastChance?: number;
 }
 
 /** Stats for player classes — extends NpcStats with a required mana pool. */
@@ -136,7 +137,7 @@ export interface ClassStats extends NpcStats {
 	mana: number;
 }
 
-export type SpellEffect =
+export type AbilityEffect =
 	| "damage"
 	| "heal"
 	| "dot"
@@ -152,7 +153,7 @@ export type SpellEffect =
 	| "aoe_heal"
 	| "summon";
 
-export type Spell = {
+export type Ability = {
 	id: string;
 	rangeTiles: number;
 	manaCost: number;
@@ -161,7 +162,13 @@ export type Spell = {
 	scalingRatio: number;
 	cooldownMs: number;
 	windupMs: number;
-	effect: SpellEffect;
+	effect: AbilityEffect;
+	/**
+	 * Determines the damage formula and mitigation used when this ability deals damage.
+	 * "physical" uses armor reduction (and dodge for melee-range abilities).
+	 * "magical" uses INT-based magic resistance.
+	 */
+	damageSchool: "physical" | "magical";
 	key: string;
 	fxId: number;
 	durationMs?: number;
@@ -174,6 +181,11 @@ export type Spell = {
 	/** Fraction of damage returned as healing to the caster (used by "leech" effect). */
 	leechRatio?: number;
 };
+
+/** @deprecated Use `Ability` instead. */
+export type Spell = Ability;
+/** @deprecated Use `AbilityEffect` instead. */
+export type SpellEffect = AbilityEffect;
 
 export interface InventoryEntry {
 	itemId: string;
@@ -320,13 +332,13 @@ export type ServerMessages = {
 	};
 	[ServerMessageType.CastStart]: {
 		sessionId: string;
-		spellId: string;
+		abilityId: string;
 		targetTileX: number;
 		targetTileY: number;
 	};
 	[ServerMessageType.CastHit]: {
 		sessionId: string;
-		spellId: string;
+		abilityId: string;
 		targetTileX: number;
 		targetTileY: number;
 		fxId: number;
@@ -350,7 +362,7 @@ export type ServerMessages = {
 	};
 	[ServerMessageType.BuffApplied]: {
 		sessionId: string;
-		spellId: string;
+		abilityId: string;
 		durationMs: number;
 	};
 	[ServerMessageType.StealthApplied]: { sessionId: string; durationMs: number };
@@ -483,7 +495,7 @@ export type ClientMessages = {
 	[ClientMessageType.Move]: { direction: Direction };
 	[ClientMessageType.Attack]: { targetTileX?: number; targetTileY?: number };
 	[ClientMessageType.Cast]: {
-		spellId: string;
+		abilityId: string;
 		targetTileX: number;
 		targetTileY: number;
 	};

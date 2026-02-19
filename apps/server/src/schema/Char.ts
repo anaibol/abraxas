@@ -4,7 +4,7 @@ import {
 	type BufferedAction,
 	type WindupAction,
 } from "@abraxas/shared";
-import type { NpcStats, Spell } from "@abraxas/shared";
+import type { NpcStats, Ability } from "@abraxas/shared";
 
 /**
  * Base schema shared by both Player and Npc.
@@ -53,8 +53,8 @@ export abstract class Char extends Schema {
 	/** Returns the combat stats for this entity (class or NPC stats). */
 	abstract getStats(): NpcStats | undefined;
 
-	/** Returns the spell definition if the entity can use it. */
-	abstract getSpell(spellId: string): Spell | undefined;
+	/** Returns the ability definition if the entity can use it. */
+	abstract getAbility(abilityId: string): Ability | undefined;
 
 	/** Returns the tile position as a plain object. */
 	getPosition() {

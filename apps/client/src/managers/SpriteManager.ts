@@ -3,7 +3,7 @@ import { PlayerSprite } from "../entities/PlayerSprite";
 import type { CameraController } from "../systems/CameraController";
 import type { GameScene } from "../scenes/GameScene";
 import type { PlayerEntityState, NpcEntityState } from "@abraxas/shared";
-import { SPELLS } from "@abraxas/shared";
+import { ABILITIES } from "@abraxas/shared";
 
 export class SpriteManager {
 	private sprites = new Map<string, PlayerSprite>();
@@ -170,7 +170,7 @@ export class SpriteManager {
 	) {
 		const sprite = this.sprites.get(sessionId);
 		if (!sprite) return;
-		const spell = SPELLS[spellId];
+		const spell = ABILITIES[spellId];
 		if (!spell) return;
 
 		switch (spell.effect) {

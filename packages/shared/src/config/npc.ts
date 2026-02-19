@@ -22,15 +22,15 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		agi: 10,
 		int: 5,
 		speedTilesPerSecond: 5,
-		meleeRange: 1,
+		autoAttackRange: 1,
 		meleeCooldownMs: 800,
 		meleeWindupMs: 200,
 		armor: 15,
 		// Berserker self-buff when health is low
-		spells: ["enrage"],
+		abilities: ["enrage"],
 		expReward: 80,
 		// Uses enrage tactically rather than on every opportunity
-		spellCastChance: 0.6,
+		abilityCastChance: 0.6,
 	},
 	skeleton: {
 		hp: 60,
@@ -38,15 +38,15 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		agi: 15,
 		int: 10,
 		speedTilesPerSecond: 6,
-		meleeRange: 1,
+		autoAttackRange: 1,
 		meleeCooldownMs: 600,
 		meleeWindupMs: 150,
 		armor: 10,
 		// Skeleton mage variant: fires shadow bolts at range
-		spells: ["shadow_bolt"],
+		abilities: ["shadow_bolt"],
 		expReward: 40,
 		// Regularly uses shadow bolt but still mixes in melee
-		spellCastChance: 0.55,
+		abilityCastChance: 0.55,
 	},
 	goblin: {
 		hp: 40,
@@ -54,16 +54,16 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		agi: 18,
 		int: 5,
 		speedTilesPerSecond: 7,
-		meleeRange: 1,
+		autoAttackRange: 1,
 		meleeCooldownMs: 700,
 		meleeWindupMs: 120,
 		armor: 5,
 		// Throws a small fire splash
-		spells: ["fire_breath"],
+		abilities: ["fire_breath"],
 		expReward: 20,
 		fleesWhenLow: true,
 		// Fire breath is an occasional trick, not a primary attack
-		spellCastChance: 0.45,
+		abilityCastChance: 0.45,
 	},
 	wolf: {
 		hp: 80,
@@ -71,11 +71,11 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		agi: 20,
 		int: 5,
 		speedTilesPerSecond: 8,
-		meleeRange: 1,
+		autoAttackRange: 1,
 		meleeCooldownMs: 600,
 		meleeWindupMs: 120,
 		armor: 8,
-		spells: [],
+		abilities: [],
 		expReward: 60,
 		fleesWhenLow: true,
 	},
@@ -85,11 +85,11 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		agi: 10,
 		int: 10,
 		speedTilesPerSecond: 0,
-		meleeRange: 0,
+		autoAttackRange: 0,
 		meleeCooldownMs: 0,
 		meleeWindupMs: 0,
 		armor: 100,
-		spells: [],
+		abilities: [],
 		passive: true,
 	},
 	spider: {
@@ -98,16 +98,16 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		agi: 25,
 		int: 5,
 		speedTilesPerSecond: 8,
-		meleeRange: 1,
+		autoAttackRange: 1,
 		meleeCooldownMs: 700,
 		meleeWindupMs: 100,
 		armor: 2,
 		// Poison bite (DoT) + web shot (stun)
-		spells: ["poison_bite", "web_shot"],
+		abilities: ["poison_bite", "web_shot"],
 		expReward: 35,
 		fleesWhenLow: true,
-		// Spells are occasional — relies mostly on quick melee
-		spellCastChance: 0.4,
+		// Abilities are occasional — relies mostly on quick auto-attacks
+		abilityCastChance: 0.4,
 	},
 	ghost: {
 		hp: 70,
@@ -115,15 +115,15 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		agi: 10,
 		int: 20,
 		speedTilesPerSecond: 4,
-		meleeRange: 1,
+		autoAttackRange: 1,
 		meleeCooldownMs: 1000,
 		meleeWindupMs: 200,
 		armor: 0,
 		// Life drain (leech) + wail to weaken nearby enemies
-		spells: ["soul_drain", "banshee_wail"],
+		abilities: ["soul_drain", "banshee_wail"],
 		expReward: 55,
-		// Heavily spell-focused fighter
-		spellCastChance: 0.55,
+		// Heavily ability-focused fighter
+		abilityCastChance: 0.55,
 	},
 	lich: {
 		hp: 500,
@@ -131,15 +131,15 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		agi: 10,
 		int: 40,
 		speedTilesPerSecond: 2.5,
-		meleeRange: 1,
+		autoAttackRange: 1,
 		meleeCooldownMs: 1500,
 		meleeWindupMs: 500,
 		armor: 25,
 		// Full boss toolkit: ranged nuke, AoE bolt, frost slow, summons
-		spells: ["shadow_bolt", "frost_breath", "banshee_wail", "summon_skeleton"],
+		abilities: ["shadow_bolt", "frost_breath", "banshee_wail", "summon_skeleton"],
 		expReward: 500,
-		// Boss aggressively rotates its full spell kit
-		spellCastChance: 0.7,
+		// Boss aggressively rotates its full ability kit
+		abilityCastChance: 0.7,
 	},
 	banker: {
 		hp: 100,
@@ -147,11 +147,11 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		agi: 5,
 		int: 5,
 		speedTilesPerSecond: 0,
-		meleeRange: 1,
+		autoAttackRange: 1,
 		meleeCooldownMs: 1000,
 		meleeWindupMs: 200,
 		armor: 100,
-		spells: [],
+		abilities: [],
 		passive: true,
 	},
 };

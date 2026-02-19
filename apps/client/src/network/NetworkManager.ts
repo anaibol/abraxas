@@ -196,8 +196,8 @@ export class NetworkManager {
     this._send(ClientMessageType.Attack, { targetTileX, targetTileY });
   }
 
-  sendCast(spellId: string, targetTileX: number, targetTileY: number) {
-    this._send(ClientMessageType.Cast, { spellId, targetTileX, targetTileY });
+  sendCast(abilityId: string, targetTileX: number, targetTileY: number) {
+    this._send(ClientMessageType.Cast, { abilityId, targetTileX, targetTileY });
   }
 
   sendPickup(dropId: string) {

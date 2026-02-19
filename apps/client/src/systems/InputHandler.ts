@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import type { NetworkManager } from "../network/NetworkManager";
-import { Direction, CLASS_STATS, SPELLS } from "@abraxas/shared";
+import { Direction, CLASS_STATS, ABILITIES } from "@abraxas/shared";
 
 const KEY_TO_DIRECTION: Record<number, Direction> = {
   [Phaser.Input.Keyboard.KeyCodes.UP]: Direction.UP,
@@ -9,7 +9,7 @@ const KEY_TO_DIRECTION: Record<number, Direction> = {
   [Phaser.Input.Keyboard.KeyCodes.RIGHT]: Direction.RIGHT,
 };
 
-const SPELL_KEY_CODES: Record<string, number> = {
+const ABILITY_KEY_CODES: Record<string, number> = {
   Q: Phaser.Input.Keyboard.KeyCodes.Q,
   W: Phaser.Input.Keyboard.KeyCodes.W,
   E: Phaser.Input.Keyboard.KeyCodes.E,
@@ -23,7 +23,7 @@ type TargetingState =
 export class InputHandler {
   private scene: Phaser.Scene;
   private network: NetworkManager;
-  private meleeRange: number;
+  private autoAttackRange: number;
   private moveKeys: Record<number, Phaser.Input.Keyboard.Key> = {};
   private ctrlKey!: Phaser.Input.Keyboard.Key;
   private escKey!: Phaser.Input.Keyboard.Key;
@@ -85,7 +85,7 @@ export class InputHandler {
     const stats = CLASS_STATS[classType];
     const speed = stats.speedTilesPerSecond;
     this.moveIntervalMs = 1000 / speed;
-    this.meleeRange = stats.meleeRange;
+    this.autoAttackRange = stats.autoAttackRange;
 
     scene.input.on("pointerdown", this.onPointerDown);
 
@@ -103,15 +103,15 @@ export class InputHandler {
       this.escKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
       this.pttKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.V);
 
-      for (const spellId of stats.spells) {
-        const spell = SPELLS[spellId];
-        if (!spell) continue;
-        const keyCode = SPELL_KEY_CODES[spell.key];
+      for (const abilityId of stats.abilities) {
+        const ability = ABILITIES[abilityId];
+        if (!ability) continue;
+        const keyCode = ABILITY_KEY_CODES[ability.key];
         if (keyCode != null) {
           this.spellKeys.push({
             key: scene.input.keyboard.addKey(keyCode),
-            spellId: spell.id,
-            rangeTiles: spell.rangeTiles,
+            spellId: ability.id,
+            rangeTiles: ability.rangeTiles,
           });
         }
       }
@@ -225,8 +225,8 @@ export class InputHandler {
   }
 
   handleAttackInput() {
-    if (this.meleeRange > 1) {
-      this.enterTargeting({ mode: "attack", rangeTiles: this.meleeRange });
+    if (this.autoAttackRange > 1) {
+      this.enterTargeting({ mode: "attack", rangeTiles: this.autoAttackRange });
     } else {
       this.network.sendAttack();
     }

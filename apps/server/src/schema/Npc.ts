@@ -1,8 +1,8 @@
 import { type } from "@colyseus/schema";
 import { Char } from "./Char";
-import { NPC_STATS, SPELLS } from "@abraxas/shared";
+import { NPC_STATS, ABILITIES } from "@abraxas/shared";
 import { NpcState } from "@abraxas/shared";
-import type { NpcType, NpcStats, Spell } from "@abraxas/shared";
+import type { NpcType, NpcStats, Ability } from "@abraxas/shared";
 
 export class Npc extends Char {
   @type("string") type: NpcType = "orc";
@@ -23,7 +23,7 @@ export class Npc extends Char {
     return NPC_STATS[this.type];
   }
 
-  getSpell(spellId: string): Spell | undefined {
-    return SPELLS[spellId];
+  getAbility(abilityId: string): Ability | undefined {
+    return ABILITIES[abilityId];
   }
 }

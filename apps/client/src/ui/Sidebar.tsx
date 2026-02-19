@@ -2,7 +2,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import { Box, Flex, Text } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
-import { CLASS_STATS, SPELLS } from "@abraxas/shared";
+import { CLASS_STATS, ABILITIES } from "@abraxas/shared";
 import { T, HEX } from "./tokens";
 import { QuestLog } from "./QuestLog";
 import { CharacterHeader } from "./sidebar/CharacterHeader";
@@ -61,7 +61,7 @@ export function Sidebar({
 
 	const stats = CLASS_STATS[state.classType];
 	const classSpells =
-		stats?.spells?.map((id) => SPELLS[id]).filter(Boolean) ?? [];
+		stats?.abilities?.map((id) => ABILITIES[id]).filter(Boolean) ?? [];
 
 	const sidebarPanel = (
 		<Flex

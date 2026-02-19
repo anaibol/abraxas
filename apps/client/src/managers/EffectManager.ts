@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { TILE_SIZE, SPELLS } from "@abraxas/shared";
+import { TILE_SIZE, ABILITIES } from "@abraxas/shared";
 import type { SpriteManager } from "./SpriteManager";
 import { FONTS } from "../ui/tokens";
 
@@ -1437,7 +1437,7 @@ export class EffectManager {
 			multi_shot: 0xaaff44,
 		};
 		if (PER_SPELL[spellId]) return PER_SPELL[spellId];
-		const spell = SPELLS[spellId];
+		const spell = ABILITIES[spellId];
 		if (!spell) return 0xaaaaff;
 		if (spell.effect === "heal" || spell.effect === "aoe_heal") return 0x44ff88;
 		if (spell.effect === "stun") return 0xffff44;
@@ -1489,7 +1489,7 @@ export class EffectManager {
 		targetTileX: number,
 		targetTileY: number,
 	) {
-		const spell = SPELLS[spellId];
+		const spell = ABILITIES[spellId];
 		if (!spell || spell.rangeTiles <= 1) return;
 
 		const sprite = this.spriteManager.getSprite(casterSessionId);

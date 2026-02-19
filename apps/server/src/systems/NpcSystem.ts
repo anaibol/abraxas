@@ -1,7 +1,7 @@
 import {
   NPC_STATS,
   NPC_TYPES,
-  SPELLS,
+  ABILITIES,
   TileMap,
   Direction,
   NpcType,
@@ -219,8 +219,8 @@ export class NpcSystem {
       return;
     }
 
-    if (dist <= stats.meleeRange) {
-      if (stats.meleeRange > 1 && dist < Math.max(2, stats.meleeRange / 2)) {
+    if (dist <= stats.autoAttackRange) {
+      if (stats.autoAttackRange > 1 && dist < Math.max(2, stats.autoAttackRange / 2)) {
         const awayDir = this.getAwayDirection(npc, target);
         this.movementSystem.tryMove(npc, awayDir, map, now, tickCount, roomId);
       }
@@ -246,13 +246,13 @@ export class NpcSystem {
     }
 
     const dist = MathUtils.manhattanDist(npc.getPosition(), target.getPosition());
-    if (dist > stats.meleeRange) {
+    if (dist > stats.autoAttackRange) {
       npc.state = NpcState.CHASE;
       return;
     }
 
     npc.facing = MathUtils.getDirection(npc.getPosition(), target.getPosition());
-    if (stats.spells.length > 0 && this.tryUseSpell(npc, now, broadcast)) return;
+    if (stats.abilities.length > 0 && this.tryUseAbility(npc, now, broadcast)) return;
 
     this.combatSystem.tryAttack(npc, target.tileX, target.tileY, broadcast, now);
   }
@@ -310,33 +310,33 @@ export class NpcSystem {
     return Math.abs(dx) >= Math.abs(dy) ? (dx >= 0 ? Direction.RIGHT : Direction.LEFT) : (dy > 0 ? Direction.DOWN : Direction.UP);
   }
 
-  private tryUseSpell(npc: Npc, now: number, broadcast: BroadcastFn): boolean {
+  private tryUseAbility(npc: Npc, now: number, broadcast: BroadcastFn): boolean {
     const stats = NPC_STATS[npc.type];
-    if (!stats?.spells.length) return false;
+    if (!stats?.abilities.length) return false;
     const target = this.spatial.findEntityBySessionId(npc.targetId);
     if (!target || !target.alive) return false;
 
     // Emergency heal takes priority regardless of the cast-chance roll.
     if (npc.hp / npc.maxHp < 0.3) {
-      const healId = stats.spells.find((id) => SPELLS[id]?.effect === "heal");
+      const healId = stats.abilities.find((id) => ABILITIES[id]?.effect === "heal");
       if (healId) return this.combatSystem.tryCast(npc, healId, npc.tileX, npc.tileY, broadcast, now);
     }
 
-    // Probability gate: only attempt a spell a fraction of eligible ticks so
-    // NPCs mix in melee rather than spamming abilities at maximum cooldown rate.
-    const spellCastChance = stats.spellCastChance ?? 0.4;
-    if (Math.random() > spellCastChance) return false;
+    // Probability gate: only attempt an ability a fraction of eligible ticks so
+    // NPCs mix in auto-attacks rather than spamming abilities at maximum cooldown rate.
+    const abilityCastChance = stats.abilityCastChance ?? 0.4;
+    if (Math.random() > abilityCastChance) return false;
 
-    // Only pick from spells that are currently off cooldown; ignore ones still
-    // on cooldown rather than wasting the roll and falling through to melee.
-    const available = stats.spells.filter((id) => {
+    // Only pick from abilities that are currently off cooldown; ignore ones still
+    // on cooldown rather than wasting the roll and falling through to auto-attack.
+    const available = stats.abilities.filter((id) => {
       const cd = npc.spellCooldowns.get(id) ?? 0;
       return now >= cd;
     });
     if (!available.length) return false;
 
-    const spellId = available[Math.floor(Math.random() * available.length)];
-    return this.combatSystem.tryCast(npc, spellId, target.tileX, target.tileY, broadcast, now);
+    const abilityId = available[Math.floor(Math.random() * available.length)];
+    return this.combatSystem.tryCast(npc, abilityId, target.tileX, target.tileY, broadcast, now);
   }
 
   handleDeath(npc: Npc): void {

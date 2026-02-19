@@ -9,12 +9,12 @@ export interface BufferedAction {
 }
 
 export interface WindupAction {
-  type: "melee" | "spell";
+  type: "melee" | "ranged" | "ability";
   completeAtMs: number;
   attackerSessionId: string;
   targetTileX: number;
   targetTileY: number;
-  spellId?: string;
+  abilityId?: string;
 }
 
 export interface EntityCombatState {

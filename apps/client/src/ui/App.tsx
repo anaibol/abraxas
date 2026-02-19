@@ -35,7 +35,7 @@ import type {
   TradeState,
   Direction,
 } from "@abraxas/shared";
-import { getRandomName, ServerMessageType, ITEMS, CLASS_STATS, SPELLS } from "@abraxas/shared";
+import { getRandomName, ServerMessageType, ITEMS, CLASS_STATS, ABILITIES } from "@abraxas/shared";
 import { QuestDialogue } from "./QuestDialogue";
 import { MobileControls } from "./MobileControls";
 import { useIsMobile } from "../hooks/useIsMobile";
@@ -355,11 +355,11 @@ export function App() {
   const mobileSpells = useMemo(() => {
     const classStats = CLASS_STATS[playerState.classType?.toUpperCase() ?? "WARRIOR"];
     if (!classStats) return [];
-    return classStats.spells
-      .map((spellId) => {
-        const spell = SPELLS[spellId];
-        if (!spell) return null;
-        return { key: spell.key, spellId: spell.id, rangeTiles: spell.rangeTiles };
+    return classStats.abilities
+      .map((abilityId) => {
+        const ability = ABILITIES[abilityId];
+        if (!ability) return null;
+        return { key: ability.key, spellId: ability.id, rangeTiles: ability.rangeTiles };
       })
       .filter(Boolean) as { key: string; spellId: string; rangeTiles: number }[];
   }, [playerState.classType]);
