@@ -97,8 +97,7 @@ class GameTransport extends BunWebSockets {
 		super.bindRouter(router);
 	}
 
-	// biome-ignore lint/suspicious/noExplicitAny: raw Bun WS has no public type
-	override async onConnection(rawClient: any): Promise<void> {
+	override async onConnection(rawClient: { data: { url: string } }): Promise<void> {
 		// Strip query string so the roomId regex in super.onConnection matches.
 		rawClient.data.url = rawClient.data.url.split("?")[0];
 		return super.onConnection(rawClient);

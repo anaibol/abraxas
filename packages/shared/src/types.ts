@@ -97,6 +97,8 @@ export interface TileMap {
 	height: number;
 	tileSize: number;
 	collision: number[][];
+	/** Visual tile type per cell: 0=grass, 1=wall, 2=tree, 3=water */
+	tileTypes?: number[][];
 	spawns: { x: number; y: number }[];
 	npcCount?: number;
 	merchantCount?: number;
@@ -302,6 +304,7 @@ export type ServerMessages = {
 		mapHeight: number;
 		tileSize: number;
 		collision: number[][];
+		tileTypes?: number[][];
 	};
 	[ServerMessageType.AttackStart]: { sessionId: string; facing: Direction };
 	[ServerMessageType.AttackHit]: {

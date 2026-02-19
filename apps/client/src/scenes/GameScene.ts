@@ -5,7 +5,7 @@ import type { WelcomeData } from "@abraxas/shared";
 import { InputHandler } from "../systems/InputHandler";
 import { CameraController } from "../systems/CameraController";
 import { SoundManager } from "../assets/SoundManager";
-import { TILE_SIZE, DIRECTION_DELTA } from "@abraxas/shared";
+import { TILE_SIZE, DIRECTION_DELTA, ITEMS, i18n } from "@abraxas/shared";
 import type { Direction } from "@abraxas/shared";
 import type { PlayerState } from "../ui/Sidebar";
 import { SpriteManager } from "../managers/SpriteManager";
@@ -56,6 +56,10 @@ export class GameScene extends Phaser.Scene {
 			arc: Phaser.GameObjects.Arc;
 			tween: Phaser.Tweens.Tween;
 			emitter: Phaser.GameObjects.Particles.ParticleEmitter;
+			label: Phaser.GameObjects.Text;
+			color: number;
+			tileX: number;
+			tileY: number;
 		}
 	>();
 	private handleVisibilityChange = () => {
@@ -238,6 +242,16 @@ export class GameScene extends Phaser.Scene {
 			this.updateTargetingOverlay();
 		}
 
+		// Show drop labels only within 5 tiles of the local player (Diablo 2-style)
+		const lp = this.room.state.players.get(this.room.sessionId);
+		if (lp) {
+			for (const [, v] of this.dropVisuals) {
+				const dist =
+					Math.abs(v.tileX - lp.tileX) + Math.abs(v.tileY - lp.tileY);
+				v.label.setVisible(dist <= 5);
+			}
+		}
+
 		const localSprite = this.spriteManager.getSprite(this.room.sessionId);
 		if (this.debugText && localSprite) {
 			this.debugText.setText(
@@ -395,31 +409,98 @@ export class GameScene extends Phaser.Scene {
 		}));
 	}
 
+	private generateTileTextures() {
+		if (!this.textures.exists("tile-tree")) {
+			const g = this.add.graphics();
+			// Forest floor base
+			g.fillStyle(0x2d5a1b, 1);
+			g.fillRect(0, 0, 32, 32);
+			// Foliage
+			g.fillStyle(0x236b14, 1);
+			g.fillCircle(16, 13, 11);
+			// Top highlight
+			g.fillStyle(0x1a5210, 0.8);
+			g.fillCircle(15, 10, 7);
+			// Trunk
+			g.fillStyle(0x5c3d1e, 1);
+			g.fillRect(13, 22, 6, 9);
+			g.generateTexture("tile-tree", 32, 32);
+			g.destroy();
+		}
+
+		if (!this.textures.exists("tile-water")) {
+			const g = this.add.graphics();
+			// Deep water
+			g.fillStyle(0x1a4a8a, 1);
+			g.fillRect(0, 0, 32, 32);
+			// Mid water
+			g.fillStyle(0x2868b8, 0.65);
+			g.fillRect(0, 0, 32, 32);
+			// Wave highlights
+			g.fillStyle(0x5090d0, 0.35);
+			g.fillRect(2, 6, 10, 2);
+			g.fillRect(16, 10, 8, 2);
+			g.fillRect(4, 20, 12, 2);
+			g.fillRect(18, 24, 8, 2);
+			// Shimmer at bottom
+			g.fillStyle(0x80c0ff, 0.15);
+			g.fillRect(0, 28, 32, 4);
+			g.generateTexture("tile-water", 32, 32);
+			g.destroy();
+		}
+	}
+
 	private drawMap() {
-		const { mapWidth, mapHeight, collision } = this.welcome;
+		const { mapWidth, mapHeight, collision, tileTypes } = this.welcome;
+
+		this.generateTileTextures();
 
 		const grassTex = this.textures.get("tile-grass");
 		for (let v = 0; v < 4; v++) {
 			grassTex.add(v, 0, v * 32, 0, 32, 32);
 		}
-
 		const wallTex = this.textures.get("tile-wall");
 		wallTex.add(1, 0, 0, 0, 32, 32);
 
-		for (let y = 0; y < mapHeight; y++) {
-			for (let x = 0; x < mapWidth; x++) {
-				const isWall = collision[y]?.[x] === 1;
-				const px = x * TILE_SIZE;
-				const py = y * TILE_SIZE;
+		// Render tiles in 100×100 chunks via RenderTexture for performance.
+		// Each chunk is drawn once into a single GPU texture (≤3200×3200 px).
+		const CHUNK = 100;
+		const half = TILE_SIZE / 2; // stamp() uses center-origin by default
 
-				if (isWall) {
-					this.add.image(px, py, "tile-wall", 1).setOrigin(0, 0).setDepth(0);
-				} else {
-					const variant = ((x * 7 + y * 13) & 0x7fffffff) % 4;
-					this.add
-						.image(px, py, "tile-grass", variant)
-						.setOrigin(0, 0)
-						.setDepth(0);
+		for (let cy = 0; cy < mapHeight; cy += CHUNK) {
+			for (let cx = 0; cx < mapWidth; cx += CHUNK) {
+				const chW = Math.min(CHUNK, mapWidth - cx);
+				const chH = Math.min(CHUNK, mapHeight - cy);
+
+				const rt = this.add
+					.renderTexture(cx * TILE_SIZE, cy * TILE_SIZE, chW * TILE_SIZE, chH * TILE_SIZE)
+					.setOrigin(0, 0)
+					.setDepth(0);
+
+				for (let ty = cy; ty < cy + chH; ty++) {
+					for (let tx = cx; tx < cx + chW; tx++) {
+						const type =
+							tileTypes?.[ty]?.[tx] ??
+							(collision[ty]?.[tx] === 1 ? 1 : 0);
+						const px = (tx - cx) * TILE_SIZE + half;
+						const py = (ty - cy) * TILE_SIZE + half;
+
+						switch (type) {
+							case 1:
+								rt.stamp("tile-wall", 1, px, py);
+								break;
+							case 2:
+								rt.stamp("tile-tree", 0, px, py);
+								break;
+							case 3:
+								rt.stamp("tile-water", 0, px, py);
+								break;
+							default: {
+								const variant = ((tx * 7 + ty * 13) & 0x7fffffff) % 4;
+								rt.stamp("tile-grass", variant, px, py);
+							}
+						}
+					}
 				}
 			}
 		}
@@ -462,20 +543,22 @@ export class GameScene extends Phaser.Scene {
 	private addDrop(drop: Drop, id: string) {
 		const px = drop.tileX * TILE_SIZE + TILE_SIZE / 2;
 		const py = drop.tileY * TILE_SIZE + TILE_SIZE / 2;
+		const color = this.dropColor(drop);
+		const isRare = drop.itemType === "item" && ITEMS[drop.itemId]?.rarity === "rare";
 
-		const arc = this.add.circle(px, py, 6, 0xffcc00).setDepth(5);
+		const arc = this.add.circle(px, py, isRare ? 7 : 6, color).setDepth(5);
 
-		// Gentle bob
+		// Gentle bob — rare items bob a bit more dramatically
 		const tween = this.tweens.add({
 			targets: arc,
-			y: py - 4,
-			duration: 900,
+			y: py - (isRare ? 6 : 4),
+			duration: isRare ? 700 : 900,
 			yoyo: true,
 			repeat: -1,
 			ease: "Sine.InOut",
 		});
 
-		// Lazy-create a tiny sparkle texture shared across all drops
+		// Lazy-create sparkle texture
 		if (!this.textures.exists("drop-spark")) {
 			const g = this.add.graphics();
 			g.fillStyle(0xffffff, 1);
@@ -485,31 +568,61 @@ export class GameScene extends Phaser.Scene {
 		}
 
 		const emitter = this.add.particles(px, py, "drop-spark", {
-			tint: [0xffcc00, 0xffee88, 0xffffff],
+			tint: [color, 0xffffff],
 			speed: { min: 8, max: 22 },
 			angle: { min: 0, max: 360 },
 			scale: { start: 0.55, end: 0 },
 			alpha: { start: 0.85, end: 0 },
 			lifespan: { min: 380, max: 780 },
-			quantity: 1,
-			frequency: 180,
+			quantity: isRare ? 2 : 1,
+			frequency: isRare ? 100 : 180,
 			gravityY: -18,
 		});
 		emitter.setDepth(6);
 
-		this.dropVisuals.set(id, { arc, tween, emitter });
+		// Item name label — hidden until player is within range (shown in update())
+		const labelStr = this.dropLabelText(drop);
+		const labelColor = this.dropLabelColor(drop);
+		const label = this.add
+			.text(px, py + 10, labelStr, {
+				fontSize: isRare ? "9px" : "8px",
+				color: labelColor,
+				stroke: "#000000",
+				strokeThickness: 3,
+				fontFamily: "'Courier New', Courier, monospace",
+				fontStyle: isRare ? "bold" : "normal",
+			})
+			.setOrigin(0.5, 0)
+			.setDepth(7)
+			.setVisible(false);
+
+		// Landing effect only for freshly spawned drops (not pre-existing when player joins)
+		const ageMs = Date.now() - drop.spawnedAt;
+		if (ageMs < 3000 && this.effectManager) {
+			this.effectManager.playDropLanded(drop.tileX, drop.tileY, color);
+		}
+
+		this.dropVisuals.set(id, {
+			arc,
+			tween,
+			emitter,
+			label,
+			color,
+			tileX: drop.tileX,
+			tileY: drop.tileY,
+		});
 	}
 
 	private removeDrop(id: string) {
 		const visual = this.dropVisuals.get(id);
 		if (!visual) return;
 
-		const { arc, tween, emitter } = visual;
+		const { arc, tween, emitter, label, color } = visual;
 
-		// Pickup burst at the coin position
+		// Colored pickup burst matching item rarity/type
 		if (this.textures.exists("drop-spark")) {
 			const burst = this.add.particles(arc.x, arc.y, "drop-spark", {
-				tint: [0xffcc00, 0xffee88, 0xffffff],
+				tint: [color, 0xffffff],
 				speed: { min: 30, max: 90 },
 				angle: { min: 0, max: 360 },
 				scale: { start: 0.65, end: 0 },
@@ -523,7 +636,68 @@ export class GameScene extends Phaser.Scene {
 
 		tween.stop();
 		emitter.destroy();
+		label.destroy();
 		arc.destroy();
 		this.dropVisuals.delete(id);
+	}
+
+	/** Circle color for a drop based on item type and rarity — like Diablo 2. */
+	private dropColor(drop: Drop): number {
+		if (drop.itemType === "gold") return 0xffcc00;
+		const item = ITEMS[drop.itemId];
+		if (!item) return 0xffffff;
+		if (item.slot === "consumable") {
+			const e = item.consumeEffect;
+			if (e?.healHp && !e?.healMana) return 0xff3333;  // health potion — red
+			if (e?.healMana && !e?.healHp) return 0x4466ff;  // mana potion — blue
+			return 0xaaffaa;                                  // other consumable — green
+		}
+		switch (item.rarity) {
+			case "common":   return 0xdddddd;
+			case "uncommon": return 0x4488ff;
+			case "rare":     return 0xffaa00;
+			default:         return 0xffffff;
+		}
+	}
+
+	/** CSS color string for the drop name label, matching Diablo 2 rarity conventions. */
+	private dropLabelColor(drop: Drop): string {
+		if (drop.itemType === "gold") return "#ffcc00";
+		const item = ITEMS[drop.itemId];
+		if (!item) return "#ffffff";
+		if (item.slot === "consumable") {
+			const e = item.consumeEffect;
+			if (e?.healHp && !e?.healMana) return "#ff6666";
+			if (e?.healMana && !e?.healHp) return "#6699ff";
+			return "#aaffaa";
+		}
+		switch (item.rarity) {
+			case "common":   return "#dddddd";
+			case "uncommon": return "#6699ff";
+			case "rare":     return "#ffbb44";
+			default:         return "#ffffff";
+		}
+	}
+
+	/** Human-readable label for a drop — "Iron Sword", "42 Gold", "Health Potion (x3)", etc. */
+	private dropLabelText(drop: Drop): string {
+		if (drop.itemType === "gold") return `${drop.goldAmount} Gold`;
+		const item = ITEMS[drop.itemId];
+		if (!item) return drop.itemId;
+		// Resolve i18n key → actual name; fall back to humanising the item ID
+		let name: string;
+		try {
+			const translated = i18n.t(item.name);
+			name = translated !== item.name ? translated : "";
+		} catch {
+			name = "";
+		}
+		if (!name) {
+			name = drop.itemId
+				.split("_")
+				.map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+				.join(" ");
+		}
+		return drop.quantity > 1 ? `${name} (${drop.quantity})` : name;
 	}
 }

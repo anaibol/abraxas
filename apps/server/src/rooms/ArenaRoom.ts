@@ -1,4 +1,5 @@
 import {
+	type ClientMessages,
 	type ClientMessageType,
 	type JoinOptions,
 	ServerMessageType,
@@ -141,8 +142,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 			this.messageHandler.registerHandlers(
 				<T extends ClientMessageType>(
 					type: T,
-					// biome-ignore lint/suspicious/noExplicitAny: Colyseus onMessage is typed as any
-					handler: (client: Client, message: any) => void,
+					handler: (client: Client, message: ClientMessages[T]) => void,
 				) => {
 					this.onMessage(type, handler);
 				},
@@ -295,6 +295,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 			mapHeight: this.map.height,
 			tileSize: this.map.tileSize,
 			collision: this.map.collision,
+			tileTypes: this.map.tileTypes,
 		});
 	}
 

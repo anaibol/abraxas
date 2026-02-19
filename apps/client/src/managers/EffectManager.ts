@@ -1026,8 +1026,24 @@ export class EffectManager {
 		this.floatText(px, py - 56, "✦ LEVEL UP! ✦", "#ffff00", "18px");
 	}
 
-	/** Mint flash + rising sparkles when a player respawns at a tile. */
-	playRespawn(targetSessionId: string) {
+  /**
+   * Brief ring + spark burst at the tile where a new item/gold just landed.
+   * Color matches the item's rarity / type so players can spot rare drops at a glance.
+   */
+  playDropLanded(tileX: number, tileY: number, color: number) {
+    this.ensureTextures();
+    const px = tileX * TILE_SIZE + TILE_SIZE / 2;
+    const py = tileY * TILE_SIZE + TILE_SIZE / 2;
+    this.ring(px, py, color, 8, 3, 300, 0.65, 2);
+    this.burst(px, py, TEX.SPARK, {
+      colors: [color, 0xffffff],
+      count: 8, speed: { min: 20, max: 55 },
+      scale: { start: 0.4, end: 0 }, lifespan: { min: 200, max: 450 }, radius: 6,
+    });
+  }
+
+  /** Mint flash + rising sparkles when a player respawns at a tile. */
+  playRespawn(targetSessionId: string) {
 		const sprite = this.spriteManager.getSprite(targetSessionId);
 		if (!sprite) return;
 		this.ensureTextures();
@@ -1305,5 +1321,101 @@ export class EffectManager {
 			ease: "Power1",
 			onComplete: () => text.destroy(),
 		});
+	}
+
+	/**
+	 * Animates a projectile particle traveling from a caster sprite to a target
+	 * tile over `durationMs` milliseconds. On arrival it plays the impact burst.
+	 * Used for visually representing ranged NPC spells (shadow bolts, web shots…).
+	 */
+	playProjectile(
+		casterSessionId: string,
+		spellId: string,
+		targetTileX: number,
+		targetTileY: number,
+		durationMs: number,
+	) {
+		const sprite = this.spriteManager.getSprite(casterSessionId);
+		if (!sprite) return;
+		this.ensureTextures();
+
+		const sx = sprite.renderX;
+		const sy = sprite.renderY - TILE_SIZE * 0.4;
+		const tx = targetTileX * TILE_SIZE + TILE_SIZE / 2;
+		const ty = targetTileY * TILE_SIZE + TILE_SIZE / 2;
+
+		const dist = Math.sqrt((tx - sx) ** 2 + (ty - sy) ** 2);
+		if (dist < 4) return; // caster is at target, skip
+
+		const { color, texKey, size } = this.projectileStyle(spellId);
+
+		// Glowing orb that travels source → target
+		const orb = this.scene.add.graphics();
+		orb.setDepth(16);
+		orb.setBlendMode(Phaser.BlendModes.ADD);
+
+		// Core glow
+		for (let r = size; r >= 1; r--) {
+			orb.fillStyle(color, 1 - (r - 1) / size);
+			orb.fillCircle(0, 0, r);
+		}
+		orb.setPosition(sx, sy);
+
+		// Trailing particle emitter that follows the orb
+		const trail = this.scene.add.particles(sx, sy, texKey, {
+			speed: { min: 2, max: 12 },
+			scale: { start: 0.45, end: 0 },
+			lifespan: { min: 120, max: 280 },
+			tint: [color],
+			blendMode: Phaser.BlendModes.ADD,
+			alpha: { start: 0.8, end: 0 },
+			frequency: 18,
+		});
+		trail.setDepth(15);
+
+		const proxy = { t: 0 };
+		this.scene.tweens.add({
+			targets: proxy,
+			t: 1,
+			duration: durationMs,
+			ease: "Linear",
+			onUpdate: () => {
+				const px = sx + (tx - sx) * proxy.t;
+				const py = sy + (ty - sy) * proxy.t;
+				orb.setPosition(px, py);
+				trail.setPosition(px, py);
+			},
+			onComplete: () => {
+				orb.destroy();
+				trail.destroy();
+			},
+		});
+	}
+
+	private projectileStyle(spellId: string): { color: number; texKey: string; size: number } {
+		switch (spellId) {
+			case "shadow_bolt":
+				return { color: 0x8800ff, texKey: TEX.CIRCLE, size: 7 };
+			case "fireball":
+				return { color: 0xff5500, texKey: TEX.CIRCLE, size: 8 };
+			case "ice_bolt":
+				return { color: 0x44ccff, texKey: TEX.SHARD, size: 6 };
+			case "web_shot":
+				return { color: 0xbbbbaa, texKey: TEX.SPARK, size: 5 };
+			case "poison_arrow":
+			case "poison_bite":
+				return { color: 0x44ff44, texKey: TEX.CIRCLE, size: 5 };
+			case "aimed_shot":
+			case "multi_shot":
+				return { color: 0xffdd44, texKey: TEX.SHARD, size: 5 };
+			case "soul_drain":
+				return { color: 0x8844cc, texKey: TEX.CIRCLE, size: 6 };
+			case "holy_strike":
+			case "holy_bolt":
+			case "smite":
+				return { color: 0xffffaa, texKey: TEX.STAR, size: 7 };
+			default:
+				return { color: this.spellWindupColor(spellId), texKey: TEX.CIRCLE, size: 6 };
+		}
 	}
 }
