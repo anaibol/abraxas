@@ -13,9 +13,8 @@ export class SpatialLookup {
   private grid = new Map<string, Set<string>>();
 
   constructor(private state: GameState) {
-    // Initialize grid with current state if any
-    this.state.players.forEach((p) => this.addToGrid(p));
-    this.state.npcs.forEach((n) => this.addToGrid(n));
+    for (const p of this.state.players.values()) this.addToGrid(p);
+    for (const n of this.state.npcs.values()) this.addToGrid(n);
   }
 
   private getKey(x: number, y: number): string {
@@ -25,8 +24,8 @@ export class SpatialLookup {
   /** Clears and rebuilds the grid from the current state — call after devMode state restore. */
   rebuild(): void {
     this.grid.clear();
-    this.state.players.forEach((p) => this.addToGrid(p));
-    this.state.npcs.forEach((n) => this.addToGrid(n));
+    for (const p of this.state.players.values()) this.addToGrid(p);
+    for (const n of this.state.npcs.values()) this.addToGrid(n);
   }
 
   addToGrid(entity: Entity) {
@@ -35,10 +34,12 @@ export class SpatialLookup {
       return;
     }
     const key = this.getKey(entity.tileX, entity.tileY);
-    if (!this.grid.has(key)) {
-      this.grid.set(key, new Set());
+    let cell = this.grid.get(key);
+    if (!cell) {
+      cell = new Set();
+      this.grid.set(key, cell);
     }
-    this.grid.get(key)!.add(entity.sessionId);
+    cell.add(entity.sessionId);
   }
 
   removeFromGrid(entity: Entity) {

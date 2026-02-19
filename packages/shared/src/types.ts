@@ -517,13 +517,11 @@ export type ClientMessages = {
 	[ClientMessageType.Meditate]: {};
 };
 
-export interface BroadcastFn {
-	<T extends keyof ServerMessages>(
-		type: T,
-		data: ServerMessages[T],
-		options?: { except?: any; exceptSessionId?: string },
-	): void;
-}
+export type BroadcastFn = <T extends keyof ServerMessages>(
+	type: T,
+	data: ServerMessages[T],
+	options?: { except?: unknown; exceptSessionId?: string },
+) => void;
 
 export interface StatBonuses {
 	str: number;

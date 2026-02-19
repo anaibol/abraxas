@@ -78,12 +78,8 @@ export class CombatSystem {
 		onDeath: (entity: Entity, killerSessionId?: string) => void,
 		onSummon?: (caster: Entity, spellId: string, x: number, y: number) => void,
 	) {
-		if (this.activeWindups.size > 0) {
-			// console.log(`[CombatSystem] Processing ${this.activeWindups.size} windups`);
-		}
 		for (const [sessionId, windup] of this.activeWindups.entries()) {
 			if (now >= windup.completeAtMs) {
-				// console.log(`[CombatSystem] Resolving windup for ${sessionId}`);
 				this.activeWindups.delete(sessionId);
 				this.resolveWindup(windup, broadcast, onDeath, now, onSummon);
 			}

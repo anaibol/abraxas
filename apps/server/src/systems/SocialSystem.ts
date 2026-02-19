@@ -64,7 +64,7 @@ export class SocialSystem {
       client.send(ServerMessageType.Notification, {
         message: "social.invited_to_party",
         templateData: { name: target.name },
-      } as any);
+      });
     }
   }
 
@@ -98,7 +98,7 @@ export class SocialSystem {
     this.broadcastToParty(partyId, ServerMessageType.Notification, {
       message: "social.joined_party",
       templateData: { name: player.name },
-    } as any);
+    });
   }
 
   /** Sends an empty PartyUpdate to signal the client they are no longer in a party. */
@@ -124,7 +124,7 @@ export class SocialSystem {
     this.broadcastToParty(partyId, ServerMessageType.Notification, {
       message: "social.left_party",
       templateData: { name: player.name },
-    } as any);
+    });
     this.broadcastPartyUpdate(partyId);
     this.sendPartyLeft(client);
   }
@@ -175,7 +175,7 @@ export class SocialSystem {
           this.broadcastToParty(party.id, ServerMessageType.Notification, {
             message: "social.new_leader",
             templateData: { name: newLeader.name },
-          } as any);
+          });
         }
       }
     }
