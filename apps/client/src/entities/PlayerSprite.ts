@@ -197,8 +197,10 @@ export class PlayerSprite {
       new Phaser.Geom.Rectangle(-TILE_SIZE / 2, -TILE_SIZE, TILE_SIZE, TILE_SIZE * 2),
       Phaser.Geom.Rectangle.Contains,
     );
-    this.container.on("pointerover", () => { this.hpBarBg.setVisible(true); this.hpBar.setVisible(true); });
-    this.container.on("pointerout", () => { this.hpBarBg.setVisible(false); this.hpBar.setVisible(false); });
+    if (!isLocal) {
+      this.container.on("pointerover", () => { this.hpBarBg.setVisible(true); this.hpBar.setVisible(true); });
+      this.container.on("pointerout", () => { this.hpBarBg.setVisible(false); this.hpBar.setVisible(false); });
+    }
 
     this.resolver.ensureAnimation(scene, bodyGrhId, "body");
   }
