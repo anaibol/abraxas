@@ -38,7 +38,9 @@ import type {
 import { getRandomName, ServerMessageType, ITEMS, CLASS_STATS, ABILITIES } from "@abraxas/shared";
 import { QuestDialogue } from "./QuestDialogue";
 import { MobileControls } from "./MobileControls";
+import { SettingsModal } from "./SettingsModal";
 import { useIsMobile } from "../hooks/useIsMobile";
+import { useGameSettings } from "../hooks/useGameSettings";
 import { NetworkManager } from "../network/NetworkManager";
 import { Menu, MessageCircle } from "lucide-react";
 import { AudioManager } from "../managers/AudioManager";
@@ -110,6 +112,8 @@ export function App() {
   const [playerContextMenu, setPlayerContextMenu] = useState<PlayerContextTarget | null>(null);
   const isMobile = useIsMobile();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const { settings: gameSettingsState } = useGameSettings();
 
   const [room, setRoom] = useState<Room<GameState> | null>(null);
   const roomRef = useRef<Room<GameState> | null>(null);
@@ -333,6 +337,19 @@ export function App() {
     [addConsoleMessage, resetConsoleMessages, t],
   );
 
+  const handleLogout = useCallback(() => {
+    networkRef.current?.disconnect();
+    networkRef.current = null;
+    phaserGameRef.current?.destroy(true);
+    phaserGameRef.current = null;
+    roomRef.current = null;
+    setRoom(null);
+    localStorage.removeItem("abraxas_token");
+    setPhase("lobby");
+    setIsSidebarOpen(false);
+    setShowSettings(false);
+  }, []);
+
   const handleSpellClick = useCallback((spellId: string, rangeTiles: number) => {
     const game = phaserGameRef.current;
     if (!game) return;
@@ -439,7 +456,7 @@ export function App() {
               overflow="hidden"
               pos="relative"
             >
-              {roomRef.current && (
+              {roomRef.current && gameSettingsState.showMinimap && (
                 <Minimap
                   map={mapData}
                   players={roomRef.current.state?.players}
@@ -496,6 +513,8 @@ export function App() {
                 onSpellClick={handleSpellClick}
                 pendingSpellId={pendingSpellId}
                 onClose={isMobile ? () => setIsSidebarOpen(false) : undefined}
+                onSettings={() => setShowSettings(true)}
+                onLogout={handleLogout}
               />
             )}
             {shopData && (
@@ -606,6 +625,9 @@ export function App() {
               onConfirm={() => networkRef.current?.sendTradeConfirm()}
               onCancel={() => networkRef.current?.sendTradeCancel()}
             />
+          )}
+          {showSettings && (
+            <SettingsModal onClose={() => setShowSettings(false)} />
           )}
         </>
       )}

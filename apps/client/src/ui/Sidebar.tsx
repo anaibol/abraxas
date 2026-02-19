@@ -50,6 +50,8 @@ export function Sidebar({
 	onSpellClick,
 	pendingSpellId,
 	onClose,
+	onSettings,
+	onLogout,
 }: SidebarProps) {
 	const isMobile = useIsMobile();
 	const { t } = useTranslation();
@@ -208,10 +210,12 @@ export function Sidebar({
 				)}
 			</Box>
 
-		{/* Footer */}
-		<SidebarFooter
-			state={state}
-		/>
+	{/* Footer */}
+	<SidebarFooter
+		state={state}
+		onSettings={onSettings}
+		onLogout={onLogout}
+	/>
 		</Flex>
 	);
 

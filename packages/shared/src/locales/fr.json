@@ -126,7 +126,19 @@
     "friend_request": "{{targetName}} veut être votre ami",
     "trade_requested": "{{name}} veut commercer avec vous"
   },
+  "settings": {
+    "title": "Paramètres",
+    "section": {
+      "audio": "Audio",
+      "interface": "Interface"
+    },
+    "music_volume": "Volume de la Musique",
+    "sfx_volume": "Effets Sonores",
+    "show_minimap": "Afficher la Minicarte"
+  },
   "sidebar": {
+    "settings": "Paramètres",
+    "logout": "Déconnexion",
     "tabs": {
       "inv": "Inv",
       "spells": "Sorts",

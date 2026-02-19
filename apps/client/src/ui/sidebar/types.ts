@@ -64,4 +64,6 @@ export interface SidebarProps {
 	onSpellClick?: (spellId: string, rangeTiles: number) => void;
 	pendingSpellId?: string | null;
 	onClose?: () => void;
+	onSettings?: () => void;
+	onLogout?: () => void;
 }

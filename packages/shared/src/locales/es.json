@@ -126,7 +126,19 @@
     "friend_request": "{{targetName}} quiere ser tu amigo",
     "trade_requested": "{{name}} quiere comerciar contigo"
   },
+  "settings": {
+    "title": "Ajustes",
+    "section": {
+      "audio": "Audio",
+      "interface": "Interfaz"
+    },
+    "music_volume": "Volumen de Música",
+    "sfx_volume": "Efectos de Sonido",
+    "show_minimap": "Mostrar Minimapa"
+  },
   "sidebar": {
+    "settings": "Ajustes",
+    "logout": "Salir",
     "tabs": {
       "inv": "Inv",
       "spells": "Hechizos",

@@ -126,7 +126,19 @@
     "friend_request": "{{targetName}} wants to be your friend",
     "trade_requested": "{{name}} wants to trade with you"
   },
+  "settings": {
+    "title": "Settings",
+    "section": {
+      "audio": "Audio",
+      "interface": "Interface"
+    },
+    "music_volume": "Music Volume",
+    "sfx_volume": "Sound Effects",
+    "show_minimap": "Show Minimap"
+  },
   "sidebar": {
+    "settings": "Settings",
+    "logout": "Logout",
     "tabs": {
       "inv": "Inv",
       "spells": "Spells",
