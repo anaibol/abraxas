@@ -148,7 +148,7 @@ export function Sidebar({
   const classSpells = stats?.spells?.map((id: string) => SPELLS[id]).filter(Boolean) ?? [];
 
   return (
-    <Flex w="320px" h="100%" direction="column" bg={P.bg} borderLeft="3px solid" borderColor={P.border} flexShrink={0} overflow="hidden" userSelect="none" fontFamily={P.font}>
+    <Flex w="380px" h="100%" direction="column" bg={P.bg} borderLeft="3px solid" borderColor={P.border} flexShrink={0} overflow="hidden" userSelect="none" fontFamily={P.font}>
       {/* Header */}
       <Box px="4" pt="3.5" pb="2.5" bg={P.surface} borderBottom="1px solid" borderBottomColor={P.border} textAlign="center">
         <Text fontSize="16px" fontWeight="700" color={P.gold} letterSpacing="2px" textShadow="0 0 12px rgba(180,140,50,0.25)">
