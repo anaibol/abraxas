@@ -1,12 +1,10 @@
-import Phaser from "phaser";
+import type Phaser from "phaser";
 
 export class SoundManager {
-  private scene: Phaser.Scene;
   private music: Phaser.Sound.BaseSound | null = null;
 
-  constructor(scene: Phaser.Scene) {
-    this.scene = scene;
-  }
+  constructor(private scene: Phaser.Scene) {}
+
   private play(key: string, opts?: Phaser.Types.Sound.SoundConfig) {
     try {
       this.scene.sound.play(key, opts);

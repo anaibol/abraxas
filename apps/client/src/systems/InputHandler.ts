@@ -56,7 +56,6 @@ export class InputHandler {
     scene: Phaser.Scene,
     network: NetworkManager,
     classType: string,
-    _tileSize: number,
     onLocalMove?: (direction: Direction) => void,
     onEnterTargeting?: (rangeTiles: number) => void,
     onExitTargeting?: () => void,
@@ -203,7 +202,8 @@ export class InputHandler {
     }
 
     if (leftClicked) {
-      this.onInteract?.(getMouseTile().x, getMouseTile().y);
+      const tile = getMouseTile();
+      this.onInteract?.(tile.x, tile.y);
     }
 
     for (const { key, spellId, rangeTiles } of this.spellKeys) {
@@ -224,5 +224,13 @@ export class InputHandler {
 
   destroy() {
     this.scene.input.off("pointerdown", this.onPointerDown);
+    const kb = this.scene.input.keyboard;
+    if (kb) {
+      for (const key of Object.values(this.moveKeys)) kb.removeKey(key);
+      kb.removeKey(this.ctrlKey);
+      kb.removeKey(this.escKey);
+      kb.removeKey(this.pttKey);
+      for (const { key } of this.spellKeys) kb.removeKey(key);
+    }
   }
 }

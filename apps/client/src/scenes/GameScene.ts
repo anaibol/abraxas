@@ -77,9 +77,6 @@ export class GameScene extends Phaser.Scene {
       this.resolver = resolver;
     }
 
-    const worldW = this.welcome.mapWidth * TILE_SIZE;
-    const worldH = this.welcome.mapHeight * TILE_SIZE;
-
     this.collisionGrid = this.welcome.collision;
     this.drawMap();
 
@@ -95,11 +92,7 @@ export class GameScene extends Phaser.Scene {
 
     this.input.mouse?.disableContextMenu();
 
-    this.cameraController = new CameraController(
-      this.cameras.main,
-      worldW,
-      worldH,
-    );
+    this.cameraController = new CameraController(this.cameras.main);
 
     this.spriteManager = new SpriteManager(
       this,
@@ -118,7 +111,6 @@ export class GameScene extends Phaser.Scene {
       this,
       this.network,
       classType,
-      TILE_SIZE,
       (direction) => this.onLocalMove(direction),
       (rangeTiles) => this.onEnterTargeting(rangeTiles),
       () => this.onExitTargeting(),
@@ -213,8 +205,6 @@ export class GameScene extends Phaser.Scene {
     }
 
     const localSprite = this.spriteManager.getSprite(this.room.sessionId);
-    if (localSprite) this.cameraController.update(localSprite);
-
     if (this.debugText && localSprite) {
       this.debugText.setText(
         `X: ${localSprite.predictedTileX} Y: ${localSprite.predictedTileY}`,
@@ -225,6 +215,9 @@ export class GameScene extends Phaser.Scene {
   shutdown() {
     for (const unsub of this.stateUnsubscribers) unsub();
     this.stateUnsubscribers = [];
+    this.inputHandler.destroy();
+    this.soundManager.stopMusic();
+    this.audioManager.cleanup();
   }
 
   private onEnterTargeting(rangeTiles: number) {
