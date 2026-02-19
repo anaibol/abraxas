@@ -5,7 +5,6 @@ import type { WelcomeData } from "@abraxas/shared";
 import { InputHandler } from "../systems/InputHandler";
 import { CameraController } from "../systems/CameraController";
 import { SoundManager } from "../assets/SoundManager";
-import { AoGrhResolver } from "../assets/AoGrhResolver";
 import { TILE_SIZE, DIRECTION_DELTA } from "@abraxas/shared";
 import type { Direction } from "@abraxas/shared";
 import type { PlayerState } from "../ui/Sidebar";
@@ -32,8 +31,6 @@ export class GameScene extends Phaser.Scene {
 	private onPttChange?: (recording: boolean) => void;
 	private room!: Room<GameState>;
 	private welcome!: WelcomeData;
-	private resolver!: AoGrhResolver;
-
 	private spriteManager!: SpriteManager;
 	private effectManager!: EffectManager;
 	private inputHandler!: InputHandler;
@@ -87,11 +84,6 @@ export class GameScene extends Phaser.Scene {
 	create() {
 		this.room = this.network.getRoom();
 		this.welcome = this.network.getWelcomeData();
-		const resolver = this.registry.get("aoResolver");
-		if (resolver instanceof AoGrhResolver) {
-			this.resolver = resolver;
-		}
-
 		this.collisionGrid = this.welcome.collision;
 		this.drawMap();
 

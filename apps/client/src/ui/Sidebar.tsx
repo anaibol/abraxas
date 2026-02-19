@@ -1159,48 +1159,48 @@ function PartyTab({
 								</Text>
 							</HStack>
 							<HStack gap="1">
-								{member.sessionId !== leaderId && (
+							{member.sessionId !== leaderId && (
+								<Button
+									size="xs"
+									variant="ghost"
+									p="0"
+									h="auto"
+									minW="auto"
+									color={P.gold}
+									fontSize="12px"
+									onClick={() => onTradeRequest?.(member.sessionId)}
+								>
+									{t("sidebar.social.trade")}
+								</Button>
+							)}
+							{leaderId === partyMembers[0]?.sessionId &&
+								member.sessionId !== leaderId && (
 									<Button
 										size="xs"
 										variant="ghost"
 										p="0"
 										h="auto"
 										minW="auto"
-										color={P.gold}
-										fontSize="10px"
-										onClick={() => onTradeRequest?.(member.sessionId)}
+										color="red.400"
+										fontSize="12px"
+										onClick={() => onPartyKick?.(member.sessionId)}
 									>
-										{t("sidebar.social.trade")}
+										{t("sidebar.social.kick")}
 									</Button>
 								)}
-								{leaderId === partyMembers[0]?.sessionId &&
-									member.sessionId !== leaderId && (
-										<Button
-											size="xs"
-											variant="ghost"
-											p="0"
-											h="auto"
-											minW="auto"
-											color="red.400"
-											fontSize="10px"
-											onClick={() => onPartyKick?.(member.sessionId)}
-										>
-											{t("sidebar.social.kick")}
-										</Button>
-									)}
 							</HStack>
 						</Flex>
 					))}
-					<Button
-						mt="1"
-						size="xs"
-						variant="outline"
-						borderColor={P.blood}
-						color="red.400"
-						_hover={{ bg: P.blood }}
-						fontSize="10px"
-						onClick={onPartyLeave}
-					>
+				<Button
+					mt="1"
+					size="xs"
+					variant="outline"
+					borderColor={P.blood}
+					color="red.400"
+					_hover={{ bg: P.blood }}
+					fontSize="12px"
+					onClick={onPartyLeave}
+				>
 						{t("sidebar.party.leave")}
 					</Button>
 				</VStack>
@@ -1301,6 +1301,33 @@ function FriendsTab({
 								</Text>
 							</HStack>
 							<HStack gap="1">
+							<Button
+								size="xs"
+								variant="ghost"
+								p="0"
+								h="auto"
+								minW="auto"
+								color={P.gold}
+								fontSize="12px"
+								onClick={() => onWhisper?.(friend.name)}
+							>
+								{t("sidebar.social.whisper")}
+							</Button>
+							{friend.online && (
+								<Button
+									size="xs"
+									variant="ghost"
+									p="0"
+									h="auto"
+									minW="auto"
+									color="blue.400"
+									fontSize="12px"
+									onClick={() => onPartyInvite?.(friend.id)}
+								>
+									{t("sidebar.social.party_invite")}
+								</Button>
+							)}
+							{friend.online && (
 								<Button
 									size="xs"
 									variant="ghost"
@@ -1308,52 +1335,25 @@ function FriendsTab({
 									h="auto"
 									minW="auto"
 									color={P.gold}
-									fontSize="10px"
-									onClick={() => onWhisper?.(friend.name)}
+									fontSize="12px"
+									onClick={() => onTradeRequest?.(friend.id)}
 								>
-									{t("sidebar.social.whisper")}
+									{t("sidebar.social.trade")}
 								</Button>
-								{friend.online && (
-									<Button
-										size="xs"
-										variant="ghost"
-										p="0"
-										h="auto"
-										minW="auto"
-										color="blue.400"
-										fontSize="10px"
-										onClick={() => onPartyInvite?.(friend.id)}
-									>
-										{t("sidebar.social.party_invite")}
-									</Button>
-								)}
-								{friend.online && (
-									<Button
-										size="xs"
-										variant="ghost"
-										p="0"
-										h="auto"
-										minW="auto"
-										color={P.gold}
-										fontSize="10px"
-										onClick={() => onTradeRequest?.(friend.id)}
-									>
-										{t("sidebar.social.trade")}
-									</Button>
-								)}
+							)}
 							</HStack>
 						</Flex>
 					))}
 				</VStack>
 				{pendingFriendRequests.length > 0 && (
 					<VStack align="stretch" gap="1">
-						<Text
-							fontSize="9px"
-							letterSpacing="2px"
-							color={P.goldDark}
-							textTransform="uppercase"
-						>
-							{t("sidebar.friends.pending_requests")}
+					<Text
+						fontSize="11px"
+						letterSpacing="2px"
+						color={P.goldDark}
+						textTransform="uppercase"
+					>
+						{t("sidebar.friends.pending_requests")}
 						</Text>
 						{pendingFriendRequests.map((req) => (
 							<Flex
@@ -1369,16 +1369,16 @@ function FriendsTab({
 								<Text fontSize="12px" color={P.goldText}>
 									{req.name}
 								</Text>
-								<Button
-									size="xs"
-									variant="ghost"
-									p="0"
-									h="auto"
-									minW="auto"
-									color="green.400"
-									fontSize="10px"
-									onClick={() => onFriendAccept?.(req.id)}
-								>
+							<Button
+								size="xs"
+								variant="ghost"
+								p="0"
+								h="auto"
+								minW="auto"
+								color="green.400"
+								fontSize="12px"
+								onClick={() => onFriendAccept?.(req.id)}
+							>
 									{t("sidebar.friends.accept")}
 								</Button>
 							</Flex>
