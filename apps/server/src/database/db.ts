@@ -1,26 +1,21 @@
 import { PrismaClient } from "../generated/prisma";
 import { PrismaLibSql } from "@prisma/adapter-libsql";
-import { createClient } from "@libsql/client";
 import "dotenv/config";
-import { resolve } from "path";
 
-const DEFAULT_DB_PATH = "file:../../dev.db";
-const dbPath = process.env.DATABASE_URL || DEFAULT_DB_PATH;
+const databaseUrl = process.env.DATABASE_URL;
 
-let url = dbPath;
-if (dbPath === DEFAULT_DB_PATH) {
-  // Resolve default path relative to this file to ensure it hits apps/server/dev.db
-  // regardless of where the script is run from (CWD)
-  const relativePath = dbPath.replace("file:", "");
-  url = `file://${resolve(import.meta.dir, "..", "..", relativePath)}`;
+if (!databaseUrl) {
+	throw new Error("DATABASE_URL is not set");
 }
 
 const adapter = new PrismaLibSql({
-  url,
-  authToken: process.env.TURSO_AUTH_TOKEN,
+	url: process.env.DATABASE_URL ?? "",
 });
 
 export const prisma = new PrismaClient({
-  adapter,
-  log: process.env.NODE_ENV === "production" ? ["warn", "error"] : ["query", "info", "warn", "error"],
+	adapter,
+	log:
+		process.env.NODE_ENV === "production"
+			? ["warn", "error"]
+			: ["query", "info", "warn", "error"],
 });
