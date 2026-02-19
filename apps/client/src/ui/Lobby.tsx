@@ -289,6 +289,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                 <Text {...labelStyle}>Secret Key</Text>
                 <Input
                   type="password"
+                  autoComplete="current-password"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
