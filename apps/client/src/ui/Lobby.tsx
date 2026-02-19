@@ -227,7 +227,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                 <Text {...labelStyle}>Character Name</Text>
                 <Input
                   value={charName}
-                  onChange={(e) => setCharName(e.target.value)}
+                  onChange={(e) => setCharName(sanitizeCharName(e.target.value))}
                   onBlur={() => setCharName((n) => formatCharName(n))}
                   placeholder="Dark Knight"
                   maxLength={20}
