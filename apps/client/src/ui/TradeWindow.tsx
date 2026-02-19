@@ -84,9 +84,9 @@ export function TradeWindow({
   const renderOfferSlots = (items: OfferItem[], gold: number, label: string, confirmed: boolean) => (
     <Box flex="1" minW="0">
       <Flex justify="space-between" align="center" mb="2">
-        <Text fontSize="10px" letterSpacing="2px" color={P.gold} textTransform="uppercase" fontWeight="700">{label}</Text>
+        <Text fontSize="12px" letterSpacing="2px" color={P.gold} textTransform="uppercase" fontWeight="700">{label}</Text>
         {confirmed && (
-          <Text fontSize="9px" color="#44ff88" letterSpacing="1px" fontWeight="700">✓ CONFIRMED</Text>
+          <Text fontSize="11px" color="#44ff88" letterSpacing="1px" fontWeight="700">✓ CONFIRMED</Text>
         )}
       </Flex>
       <Box minH="100px" bg={P.darkest} border="1px solid" borderColor={P.border} borderRadius="2px" p="2">
@@ -97,16 +97,16 @@ export function TradeWindow({
           </Flex>
         )}
         {items.length === 0 && gold === 0 && (
-          <Text fontSize="10px" color={P.goldDark} textAlign="center" pt="3" fontStyle="italic">Nothing offered</Text>
+          <Text fontSize="12px" color={P.goldDark} textAlign="center" pt="3" fontStyle="italic">Nothing offered</Text>
         )}
         {items.map((item) => {
           const def = ITEMS[item.itemId];
           return (
             <Flex key={item.itemId} align="center" gap="2" mb="1" p="1.5" bg={P.surface} borderRadius="2px">
               <Text fontSize="13px">{def ? (ITEM_ICONS[def.slot] || "✨") : "❓"}</Text>
-              <Text fontSize="11px" color={P.goldText} flex="1">{def?.name ?? item.itemId}</Text>
+              <Text fontSize="12px" color={P.goldText} flex="1">{def?.name ?? item.itemId}</Text>
               {item.quantity > 1 && (
-                <Text fontSize="9px" color={P.goldDark} fontFamily={P.mono}>×{item.quantity}</Text>
+                <Text fontSize="11px" color={P.goldDark} fontFamily={P.mono}>×{item.quantity}</Text>
               )}
             </Flex>
           );
@@ -140,7 +140,7 @@ export function TradeWindow({
           <Text fontSize="13px" fontWeight="700" color={P.gold} letterSpacing="3px" textTransform="uppercase">
             Trade
           </Text>
-          <Text fontSize="10px" color={P.goldDark} mt="0.5">
+          <Text fontSize="12px" color={P.goldDark} mt="0.5">
             {me.name} ↔ {them.name}
           </Text>
         </Box>
@@ -154,7 +154,7 @@ export function TradeWindow({
 
         {/* Your gold input */}
         <Box px="4" pb="3" borderTop="1px solid" borderTopColor={P.raised}>
-          <Text fontSize="9px" color={P.goldDark} letterSpacing="2px" textTransform="uppercase" mt="3" mb="1.5">
+          <Text fontSize="11px" color={P.goldDark} letterSpacing="2px" textTransform="uppercase" mt="3" mb="1.5">
             Offer Gold (you have {playerGold}g)
           </Text>
           <HStack gap="2">
@@ -173,14 +173,14 @@ export function TradeWindow({
               _focus={{ borderColor: P.gold }}
               disabled={myConfirmed}
             />
-            <Text fontSize="10px" color={P.goldDark}>gold</Text>
+            <Text fontSize="12px" color={P.goldDark}>gold</Text>
           </HStack>
         </Box>
 
         {/* Inventory — click to add items */}
         {!myConfirmed && (
           <Box px="4" pb="3">
-            <Text fontSize="9px" color={P.goldDark} letterSpacing="2px" textTransform="uppercase" mb="1.5">
+            <Text fontSize="11px" color={P.goldDark} letterSpacing="2px" textTransform="uppercase" mb="1.5">
               Add Items (click to add · click offer to remove)
             </Text>
             <Grid templateColumns="repeat(8, 1fr)" gap="1">
@@ -209,7 +209,7 @@ export function TradeWindow({
                   >
                     {def ? (ITEM_ICONS[def.slot] || "✨") : ""}
                     {slot.quantity > 1 && (
-                      <Text pos="absolute" bottom="0" right="1px" fontSize="7px" color="#fff" fontFamily={P.mono}>
+                      <Text pos="absolute" bottom="0" right="1px" fontSize="10px" color="#fff" fontFamily={P.mono}>
                         {slot.quantity}
                       </Text>
                     )}
@@ -220,7 +220,7 @@ export function TradeWindow({
             {/* Click items in offer to remove */}
             {offerItems.length > 0 && (
               <Box mt="2">
-                <Text fontSize="9px" color={P.goldDark} mb="1">Offered items (click to remove):</Text>
+                <Text fontSize="11px" color={P.goldDark} mb="1">Offered items (click to remove):</Text>
                 <HStack gap="1" flexWrap="wrap">
                   {offerItems.map((item) => {
                     const def = ITEMS[item.itemId];
@@ -232,7 +232,7 @@ export function TradeWindow({
                         border="1px solid" borderColor={P.border}
                         borderRadius="2px"
                         cursor="pointer"
-                        fontSize="10px"
+                        fontSize="12px"
                         color={P.goldText}
                         onClick={() => removeItem(item.itemId)}
                         _hover={{ borderColor: "red.400", color: "red.400" }}
@@ -251,7 +251,7 @@ export function TradeWindow({
         <Flex px="4" pb="4" gap="3" borderTop="1px solid" borderTopColor={P.raised} pt="3">
           {myConfirmed ? (
             <VStack flex="1" gap="1" align="stretch">
-              <Text fontSize="10px" color="#44ff88" textAlign="center" fontWeight="700">
+              <Text fontSize="12px" color="#44ff88" textAlign="center" fontWeight="700">
                 ✓ You confirmed. Waiting for {them.name}…
               </Text>
               <Button
@@ -276,7 +276,7 @@ export function TradeWindow({
                 borderColor={P.gold}
                 fontFamily={P.font}
                 fontWeight="700"
-                fontSize="11px"
+                fontSize="13px"
                 letterSpacing="1px"
                 _hover={{ bg: P.gold, color: "#000" }}
                 onClick={onConfirm}
@@ -289,7 +289,7 @@ export function TradeWindow({
                 borderColor={P.blood}
                 color="red.400"
                 fontFamily={P.font}
-                fontSize="11px"
+                fontSize="13px"
                 _hover={{ bg: P.blood }}
                 onClick={onCancel}
               >

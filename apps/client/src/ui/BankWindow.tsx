@@ -74,7 +74,7 @@ export function BankWindow({
           >
             {t("ui.bank.title")}
           </Text>
-          <Text color={P.goldDark} fontSize="10px" letterSpacing="4px" textTransform="uppercase">
+          <Text color={P.goldDark} fontSize="12px" letterSpacing="4px" textTransform="uppercase">
             {t("ui.bank.subtitle")}
           </Text>
         </Box>

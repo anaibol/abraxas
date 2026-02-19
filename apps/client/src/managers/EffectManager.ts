@@ -246,7 +246,7 @@ export class EffectManager {
   showFloatingText(sessionId: string, text: string, color: string) {
     const sprite = this.spriteManager.getSprite(sessionId);
     if (!sprite) return;
-    this.floatText(sprite.renderX, sprite.renderY - 40, text, color, "10px");
+    this.floatText(sprite.renderX, sprite.renderY - 40, text, color, "12px");
   }
 
   // ── Internals ───────────────────────────────────────────────────────────────

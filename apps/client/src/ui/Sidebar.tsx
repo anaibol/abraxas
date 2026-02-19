@@ -707,16 +707,16 @@ function InventoryTab({
 								<Text fontSize="16px">
 									{def ? ITEM_ICONS[def.slot] || "\u2728" : ""}
 								</Text>
-							{!def && (
-								<Text
-									fontSize="9px"
-									color={P.goldDark}
-									position="absolute"
-									bottom="1px"
-								>
-									{slot.slice(0, 3).toUpperCase()}
-								</Text>
-							)}
+						{!def && (
+							<Text
+								fontSize="10px"
+								color={P.goldDark}
+								position="absolute"
+								bottom="1px"
+							>
+								{slot.slice(0, 3).toUpperCase()}
+							</Text>
+						)}
 							</Box>
 						);
 					})}

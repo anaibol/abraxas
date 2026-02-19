@@ -98,14 +98,14 @@ function LeaderboardRow({
       borderRadius="2px"
       border={isMe ? `1px solid rgba(212,168,67,0.25)` : "1px solid transparent"}
     >
-      <Box w="16px" textAlign="center" fontSize="10px" fontWeight="700" color={rankColor} fontFamily={FONT} flexShrink={0}>
+      <Box w="16px" textAlign="center" fontSize="12px" fontWeight="700" color={rankColor} fontFamily={FONT} flexShrink={0}>
         {rank}
       </Box>
-      <Box flex="1" fontSize="11px" color={isMe ? P.gold : SC.text} fontFamily={FONT} overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis">
+      <Box flex="1" fontSize="13px" color={isMe ? P.gold : SC.text} fontFamily={FONT} overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis">
         {name}
-        {isMe && <Text as="span" color={P.goldDim} fontSize="9px" ml="1">(you)</Text>}
+        {isMe && <Text as="span" color={P.goldDim} fontSize="11px" ml="1">(you)</Text>}
       </Box>
-      <Box fontSize="11px" fontWeight="700" color={valueColor ?? SC.text} fontFamily={P.mono} flexShrink={0}>
+      <Box fontSize="13px" fontWeight="700" color={valueColor ?? SC.text} fontFamily={P.mono} flexShrink={0}>
         {value}
       </Box>
     </Flex>
@@ -169,7 +169,7 @@ export function ScoreboardOverlay({
           pos="relative"
         >
           <Box
-            fontSize="12px"
+            fontSize="14px"
             letterSpacing="6px"
             textTransform="uppercase"
             color={P.gold}
@@ -181,7 +181,7 @@ export function ScoreboardOverlay({
           <Box
             pos="absolute"
             right="4"
-            fontSize="9px"
+            fontSize="11px"
             color={SC.textMuted}
             letterSpacing="2px"
             fontFamily={FONT}
@@ -196,7 +196,7 @@ export function ScoreboardOverlay({
           <Box px="4" py="4" borderRight={`1px solid ${P.border}`} overflowY="auto">
             <SectionTitle>Top NPC Hunters</SectionTitle>
             {npcRanking.length === 0 ? (
-              <Box fontSize="10px" color={SC.textMuted} fontFamily={FONT} textAlign="center" mt="4">
+              <Box fontSize="12px" color={SC.textMuted} fontFamily={FONT} textAlign="center" mt="4">
                 No kills recorded yet
               </Box>
             ) : (
@@ -224,18 +224,18 @@ export function ScoreboardOverlay({
                 borderRadius="2px"
                 border={`1px solid rgba(212,168,67,0.25)`}
               >
-                <Box w="16px" textAlign="center" fontSize="10px" fontWeight="700" color={P.gold} fontFamily={FONT}>
+                <Box w="16px" textAlign="center" fontSize="12px" fontWeight="700" color={P.gold} fontFamily={FONT}>
                   —
                 </Box>
-                <Box flex="1" fontSize="11px" color={P.gold} fontFamily={FONT} overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis">
+                <Box flex="1" fontSize="13px" color={P.gold} fontFamily={FONT} overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis">
                   {myName}
-                  <Text as="span" color={P.goldDim} fontSize="9px" ml="1">(you)</Text>
+                  <Text as="span" color={P.goldDim} fontSize="11px" ml="1">(you)</Text>
                 </Box>
-                <Box fontSize="11px" fontWeight="700" color={P.gold} fontFamily="'Consolas', monospace">
+                <Box fontSize="13px" fontWeight="700" color={P.gold} fontFamily="'Consolas', monospace">
                   Lv.{myLevel}
                 </Box>
               </Flex>
-              <Box fontSize="9px" color={SC.textMuted} textAlign="center" mt="2" fontFamily={FONT}>
+              <Box fontSize="11px" color={SC.textMuted} textAlign="center" mt="2" fontFamily={FONT}>
                 Level is private — only you can see yours
               </Box>
             </Box>
@@ -245,7 +245,7 @@ export function ScoreboardOverlay({
           <Box px="4" py="4" borderRight={`1px solid ${P.border}`} overflowY="auto">
             <SectionTitle>Top PvP Warriors</SectionTitle>
             {pvpRanking.length === 0 ? (
-              <Box fontSize="10px" color={SC.textMuted} fontFamily={FONT} textAlign="center" mt="4">
+              <Box fontSize="12px" color={SC.textMuted} fontFamily={FONT} textAlign="center" mt="4">
                 No PvP kills recorded yet
               </Box>
             ) : (
@@ -265,7 +265,7 @@ export function ScoreboardOverlay({
             <Box mt="5">
               <SectionTitle>
                 Online Players
-                <Text as="span" color={SC.textDim} fontSize="9px" ml="2">({onlinePlayers.length})</Text>
+                <Text as="span" color={SC.textDim} fontSize="11px" ml="2">({onlinePlayers.length})</Text>
               </SectionTitle>
               {onlinePlayers.map((p) => (
                 <Flex
@@ -288,7 +288,7 @@ export function ScoreboardOverlay({
                   />
                   <Box
                     flex="1"
-                    fontSize="11px"
+                    fontSize="13px"
                     color={p.name === myName ? P.gold : SC.text}
                     fontFamily={FONT}
                     overflow="hidden"
@@ -298,7 +298,7 @@ export function ScoreboardOverlay({
                     {p.name}
                   </Box>
                   <Box
-                    fontSize="9px"
+                    fontSize="11px"
                     color={CLASS_COLOR[p.classType.toUpperCase()] ?? SC.textDim}
                     fontFamily={FONT}
                     letterSpacing="1px"
@@ -317,7 +317,7 @@ export function ScoreboardOverlay({
             {Object.entries(keybindsByCategory).map(([category, binds]) => (
               <Box key={category} mb="4">
                 <Box
-                  fontSize="8px"
+                  fontSize="10px"
                   letterSpacing="2px"
                   textTransform="uppercase"
                   color={SC.textDim}
@@ -334,7 +334,7 @@ export function ScoreboardOverlay({
                       bg={SC.raised}
                       border={`1px solid ${P.borderLight}`}
                       borderRadius="3px"
-                      fontSize="9px"
+                      fontSize="11px"
                       color={P.gold}
                       fontFamily="'Consolas', monospace"
                       whiteSpace="nowrap"
@@ -343,7 +343,7 @@ export function ScoreboardOverlay({
                     >
                       {kb.key}
                     </Box>
-                    <Box fontSize="10px" color={SC.textDim} fontFamily={FONT}>
+                    <Box fontSize="12px" color={SC.textDim} fontFamily={FONT}>
                       {kb.label}
                     </Box>
                   </Flex>

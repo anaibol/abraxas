@@ -35,15 +35,15 @@ export function QuestLog({ quests }: QuestLogProps) {
                                 position="relative"
                             >
                                 <Flex justify="space-between" align="center" mb="1">
-                                    <Text fontSize="12px" fontWeight="bold" color={P.gold}>
+                                    <Text fontSize="13px" fontWeight="bold" color={P.gold}>
                                         {t(def.title)}
                                     </Text>
-                                    <Text fontSize="9px" color={q.status === "COMPLETED" ? "#00ff00" : P.goldMuted} fontWeight="bold" textTransform="uppercase">
+                                    <Text fontSize="11px" color={q.status === "COMPLETED" ? "#00ff00" : P.goldMuted} fontWeight="bold" textTransform="uppercase">
                                         {q.status}
                                     </Text>
                                 </Flex>
                                 
-                                <Text fontSize="10px" color="whiteAlpha.800" mb="2" fontStyle="italic">
+                                <Text fontSize="12px" color="whiteAlpha.800" mb="2" fontStyle="italic">
                                     {t(def.description)}
                                 </Text>
 
@@ -54,7 +54,7 @@ export function QuestLog({ quests }: QuestLogProps) {
                                         
                                         return (
                                             <Box key={`${q.questId}-req-${i}`}>
-                                                <Flex justify="space-between" fontSize="9px" color={P.goldMuted} mb="0.5">
+                                                <Flex justify="space-between" fontSize="11px" color={P.goldMuted} mb="0.5">
                                                     <Text>
                                                         {req.type === "kill" 
                                                             ? t("ui.quests.kill_target", { target: t(`npcs.${req.target}`) }) 
@@ -71,7 +71,7 @@ export function QuestLog({ quests }: QuestLogProps) {
                                 </VStack>
 
                                 {q.status === "COMPLETED" && (
-                                    <Text fontSize="9px" color="#00ff00" mt="2" textAlign="center" fontWeight="bold">
+                                    <Text fontSize="11px" color="#00ff00" mt="2" textAlign="center" fontWeight="bold">
                                         {t("ui.quests.turn_in_hint", { name: t(`npcs.${def.npcId}`) })}
                                     </Text>
                                 )}

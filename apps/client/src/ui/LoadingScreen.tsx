@@ -139,7 +139,7 @@ export function LoadingScreen() {
 
         <Flex direction="column" gap="1" maxW="400px">
           <Text 
-            fontSize="10px" 
+            fontSize="12px" 
             color={P.goldDark} 
             fontFamily={P.font} 
             letterSpacing="2px"

@@ -143,7 +143,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
   }, []);
 
   const labelStyle = {
-    fontSize: "10px",
+    fontSize: "12px",
     color: P.goldMuted,
     letterSpacing: "2px",
     textTransform: "uppercase" as const,
@@ -477,7 +477,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                           >
                             {char.name}
                           </Text>
-                          <Text fontSize="11px" color={P.goldDark} textTransform="uppercase" letterSpacing="1px">
+                          <Text fontSize="12px" color={P.goldDark} textTransform="uppercase" letterSpacing="1px">
                             {t(`classes.${char.class}.name`)}
                           </Text>
                         </Box>
@@ -625,7 +625,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                         >
                           {t(`classes.${cls}.name`)}
                         </Text>
-                        <Text fontSize="11px" color={P.goldDark}>
+                        <Text fontSize="12px" color={P.goldDark}>
                           {t(`classes.${cls}.desc`)}
                         </Text>
                       </Box>
