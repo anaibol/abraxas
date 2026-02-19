@@ -54,6 +54,11 @@
       "name": "Cleric",
       "desc": "HP:160 STR:20",
       "longDesc": "A holy defender who blends combat with divine protection."
+    },
+    "PALADIN": {
+      "name": "Paladin",
+      "desc": "HP:230 Armor:12",
+      "longDesc": "An armored holy warrior who combines devastating melee with divine healing and protection."
     }
   },
   "game": {
@@ -408,6 +413,26 @@
     "smite": {
       "name": "Smite",
       "desc": "Launch a holy bolt at an enemy target."
+    },
+    "judgment": {
+      "name": "Judgment",
+      "desc": "A consecrated melee blow that sears enemies with divine force."
+    },
+    "lay_on_hands": {
+      "name": "Lay on Hands",
+      "desc": "Channel the Light to restore a large amount of your health."
+    },
+    "consecration": {
+      "name": "Consecration",
+      "desc": "Radiate holy fire, scorching all enemies in the area around you."
+    },
+    "aura_of_protection": {
+      "name": "Aura of Protection",
+      "desc": "Envelop yourself in divine plate, massively boosting armor for 8s."
+    },
+    "holy_bolt": {
+      "name": "Holy Bolt",
+      "desc": "Launch a concentrated bolt of divine light at a distant enemy."
     }
   },
   "ui": {

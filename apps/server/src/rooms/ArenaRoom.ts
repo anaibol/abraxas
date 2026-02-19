@@ -47,7 +47,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 	private movement!: MovementSystem;
 	private buffSystem = new BuffSystem();
 	private combat!: CombatSystem;
-	private drops = new DropSystem();
+	private drops!: DropSystem;
 	private inventorySystem = new InventorySystem();
 	private respawnSystem = new RespawnSystem();
 	private npcSystem!: NpcSystem;
@@ -70,7 +70,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 				throw new Error(`Failed to load map: ${this.roomMapName}`);
 			this.map = loadedMap;
 
-			this.drops.setInventorySystem(this.inventorySystem);
+			this.drops = new DropSystem(this.inventorySystem);
 			this.spatial = new SpatialLookup(this.state);
 			this.movement = new MovementSystem(this.spatial);
 			this.combat = new CombatSystem(this.state, this.spatial, this.buffSystem, this.map);
