@@ -11,6 +11,7 @@ import {
 	type TileMap,
 	type TradeState,
 } from "@abraxas/shared";
+import { spiralSearch } from "../utils/spawnUtils";
 import type { Client } from "@colyseus/core";
 import { logger } from "../logger";
 import type { GameState } from "../schema/GameState";
@@ -324,10 +325,27 @@ export class MessageHandler {
 		const slot = player.inventory.find((s) => s.itemId === data.itemId);
 		const qty = data.quantity ?? slot?.quantity ?? 1;
 		if (this.ctx.systems.inventory.removeItem(player, data.itemId, qty)) {
+			// Find the nearest tile that isn't already occupied by another drop
+			const tile =
+				spiralSearch(player.tileX, player.tileY, 20, (x, y) => {
+					if (
+						x < 0 ||
+						x >= this.ctx.map.width ||
+						y < 0 ||
+						y >= this.ctx.map.height
+					)
+						return false;
+					if (this.ctx.map.collision[y]?.[x] === 1) return false;
+					for (const drop of this.ctx.state.drops.values()) {
+						if (drop.tileX === x && drop.tileY === y) return false;
+					}
+					return true;
+				}) ?? { x: player.tileX, y: player.tileY };
+
 			this.ctx.systems.drops.spawnItemDrop(
 				this.ctx.state.drops,
-				player.tileX,
-				player.tileY,
+				tile.x,
+				tile.y,
 				data.itemId,
 				qty,
 			);

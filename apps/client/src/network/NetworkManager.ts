@@ -163,8 +163,8 @@ export class NetworkManager {
     this._send(ClientMessageType.UseItem, { itemId });
   }
 
-  sendDropItem(itemId: string) {
-    this._send(ClientMessageType.DropItem, { itemId });
+  sendDropItem(itemId: string, quantity?: number) {
+    this._send(ClientMessageType.DropItem, { itemId, quantity });
   }
 
   sendChat(message: string) {

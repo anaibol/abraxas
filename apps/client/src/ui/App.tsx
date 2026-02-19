@@ -8,7 +8,7 @@ import {
   ToastCloseTrigger,
 } from "@chakra-ui/react";
 import { Box, Flex } from "@chakra-ui/react";
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useId } from "react";
 import { system } from "./theme";
 import { Lobby } from "./Lobby";
 import { LoadingScreen } from "./LoadingScreen";
@@ -18,7 +18,6 @@ import { KillFeed, type KillFeedEntry } from "./KillFeed";
 import { Console, type ConsoleMessage } from "./Console";
 import { Minimap } from "./Minimap";
 import { MerchantShop } from "./MerchantShop";
-import { SocialPanel } from "./SocialPanel";
 import { BankWindow } from "./BankWindow";
 import type {
   ClassType,
@@ -560,29 +559,16 @@ export function App() {
               onUnequip={(slot) => networkRef.current?.sendUnequip(slot)}
               onUseItem={(itemId) => networkRef.current?.sendUseItem(itemId)}
               onDropItem={(itemId) => networkRef.current?.sendDropItem(itemId)}
+              partyId={partyData?.partyId ?? ""}
+              leaderId={partyData?.leaderId ?? ""}
+              partyMembers={partyData?.members || []}
+              onPartyInvite={(sid: string) => networkRef.current?.sendPartyInvite(sid)}
+              onPartyLeave={() => networkRef.current?.sendPartyLeave()}
+              onPartyKick={(sid: string) => networkRef.current?.sendPartyKick(sid)}
+              friends={friendsData}
+              onFriendRequest={(name: string) => networkRef.current?.sendFriendRequest(name)}
+              onWhisper={() => setIsChatOpen(true)}
             />
-            <Box pos="absolute" top="20px" left="20px" zIndex={80}>
-              <SocialPanel
-                partyId={partyData?.partyId ?? ""}
-                leaderId={partyData?.leaderId ?? ""}
-                partyMembers={partyData?.members || []}
-                onPartyInvite={(sid: string) =>
-                  networkRef.current?.sendPartyInvite(sid)
-                }
-                onPartyLeave={() => networkRef.current?.sendPartyLeave()}
-                onPartyKick={(sid: string) =>
-                  networkRef.current?.sendPartyKick(sid)
-                }
-                friends={friendsData}
-                onFriendRequest={(name: string) =>
-                  networkRef.current?.sendFriendRequest(name)
-                }
-                onFriendAccept={(rid: string) =>
-                  networkRef.current?.sendFriendAccept(rid)
-                }
-                onWhisper={() => setIsChatOpen(true)}
-              />
-            </Box>
             {shopData && (
               <MerchantShop
                 npcId={shopData.npcId}

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, Flex, Text, Grid } from "@chakra-ui/react";
+import { Box, Flex, Text, Grid, Input, Button, VStack, HStack } from "@chakra-ui/react";
 import { CLASS_STATS, SPELLS, ITEMS, EQUIPMENT_SLOTS, type EquipmentSlot, type PlayerQuestState } from "@abraxas/shared";
 import { QuestLog } from "./QuestLog";
 
@@ -76,6 +76,9 @@ const SPELL_ICONS: Record<string, string> = {
   shapeshift: "\uD83D\uDC3B",
 };
 
+type PartyMember = { sessionId: string; name: string };
+type Friend = { id: string; name: string; online: boolean };
+
 interface SidebarProps {
   state: PlayerState;
   isRecording?: boolean;
@@ -84,6 +87,19 @@ interface SidebarProps {
   onUseItem?: (itemId: string) => void;
   onDropItem?: (itemId: string) => void;
   quests: PlayerQuestState[];
+  partyId?: string;
+  leaderId?: string;
+  partyMembers?: PartyMember[];
+  onPartyInvite?: (sessionId: string) => void;
+  onPartyLeave?: () => void;
+  onPartyKick?: (sessionId: string) => void;
+  friends?: Friend[];
+  onFriendRequest?: (name: string) => void;
+  onWhisper?: (name: string) => void;
+  /** The currently selected inventory item id (controlled from parent). */
+  selectedItemId?: string | null;
+  /** Called when the player selects or deselects an inventory slot. */
+  onSelectItem?: (itemId: string | null) => void;
 }
 
 const RARITY_COLORS: Record<string, string> = {
@@ -101,14 +117,24 @@ const ITEM_ICONS: Record<string, string> = {
   consumable: "\uD83E\uDDEA",
 };
 
-const SIDEBAR_TABS: readonly { key: "inv" | "spells" | "quests"; label: string }[] = [
-  { key: "inv", label: "\u2694 Inventory" },
+const SIDEBAR_TABS: readonly { key: "inv" | "spells" | "quests" | "party" | "friends"; label: string }[] = [
+  { key: "inv", label: "\u2694 Inv" },
   { key: "spells", label: "\uD83D\uDCD6 Spells" },
   { key: "quests", label: "\uD83D\uDCDC Quests" },
+  { key: "party", label: "\u2694\uFE0F Party" },
+  { key: "friends", label: "\uD83D\uDC65 Friends" },
 ];
 
-export function Sidebar({ state, isRecording, onEquip, onUnequip, onUseItem, onDropItem, quests }: SidebarProps) {
-  const [tab, setTab] = useState<"inv" | "spells" | "quests">("inv");
+export function Sidebar({
+  state, isRecording, onEquip, onUnequip, onUseItem, onDropItem, quests,
+  partyId = "", leaderId = "", partyMembers = [],
+  onPartyInvite, onPartyLeave, onPartyKick,
+  friends = [], onFriendRequest, onWhisper,
+  selectedItemId, onSelectItem,
+}: SidebarProps) {
+  const [tab, setTab] = useState<"inv" | "spells" | "quests" | "party" | "friends">("inv");
+  const [inviteId, setInviteId] = useState("");
+  const [friendName, setFriendName] = useState("");
   const stats = CLASS_STATS[state.classType];
   const hpPct = state.maxHp > 0 ? Math.max(0, (state.hp / state.maxHp) * 100) : 0;
   const manaPct = state.maxMana > 0 ? Math.max(0, (state.mana / state.maxMana) * 100) : 0;
@@ -207,23 +233,39 @@ export function Sidebar({ state, isRecording, onEquip, onUnequip, onUseItem, onD
             {Array.from({ length: 24 }, (_, i) => {
               const invItem = state.inventory?.find((it) => it.slotIndex === i);
               const def = invItem ? ITEMS[invItem.itemId] : null;
+              const isSelected = !!invItem && invItem.itemId === selectedItemId;
               return (
                 <Box
                   key={i}
                   aspectRatio="1"
-                  bg={P.darkest}
-                  border="1px solid"
-                  borderColor={def ? (RARITY_COLORS[def.rarity] || P.border) : P.border}
+                  bg={isSelected ? P.surface : P.darkest}
+                  border="2px solid"
+                  borderColor={
+                    isSelected
+                      ? P.gold
+                      : def
+                        ? (RARITY_COLORS[def.rarity] || P.border)
+                        : P.border
+                  }
                   borderRadius="2px"
                   transition="all 0.1s"
                   cursor={def ? "pointer" : "default"}
-                  title={def ? `${def.name}${invItem && invItem.quantity > 1 ? ` x${invItem.quantity}` : ""}\nClick: ${def.consumeEffect ? "Use" : "Equip"}` : ""}
-                  _hover={def ? { borderColor: P.gold, bg: P.surface } : { borderColor: P.gold, bg: P.surface }}
+                  title={
+                    def
+                      ? `${def.name}${invItem && invItem.quantity > 1 ? ` x${invItem.quantity}` : ""}\nClick: Select · Dbl-click: ${def.consumeEffect ? "Use" : "Equip"} · T: Drop`
+                      : ""
+                  }
+                  _hover={def ? { borderColor: P.gold, bg: P.surface } : {}}
                   display="flex"
                   alignItems="center"
                   justifyContent="center"
                   position="relative"
                   onClick={() => {
+                    if (!def || !invItem) return;
+                    // Toggle selection: clicking again deselects
+                    onSelectItem?.(isSelected ? null : invItem.itemId);
+                  }}
+                  onDoubleClick={() => {
                     if (!def || !invItem) return;
                     if (def.consumeEffect) {
                       onUseItem?.(invItem.itemId);
@@ -235,6 +277,15 @@ export function Sidebar({ state, isRecording, onEquip, onUnequip, onUseItem, onD
                   {def && <Text fontSize="16px">{ITEM_ICONS[def.slot] || "\u2728"}</Text>}
                   {invItem && invItem.quantity > 1 && (
                     <Text fontSize="8px" color="#fff" position="absolute" bottom="0" right="1px" fontFamily={P.mono}>{invItem.quantity}</Text>
+                  )}
+                  {isSelected && (
+                    <Box
+                      position="absolute"
+                      bottom="0" left="0" right="0"
+                      h="2px"
+                      bg={P.gold}
+                      borderRadius="0 0 2px 2px"
+                    />
                   )}
                 </Box>
               );
@@ -284,6 +335,129 @@ export function Sidebar({ state, isRecording, onEquip, onUnequip, onUseItem, onD
       {/* Quests */}
       {tab === "quests" && <QuestLog quests={quests} />}
 
+      {/* Party */}
+      {tab === "party" && (
+        <Box flex="1" overflow="auto" p="3">
+          {!partyId ? (
+            <VStack align="stretch" gap="3">
+              <Text fontSize="11px" color={P.goldDark} fontStyle="italic">Not in a party. Invite someone to start one.</Text>
+              <HStack gap="2">
+                <Input
+                  placeholder="Session ID"
+                  size="xs"
+                  value={inviteId}
+                  onChange={(e) => setInviteId(e.target.value)}
+                  bg={P.darkest}
+                  borderColor={P.border}
+                  color={P.goldText}
+                  fontSize="11px"
+                  fontFamily={P.mono}
+                  _focus={{ borderColor: P.gold }}
+                />
+                <Button
+                  size="xs"
+                  bg={P.raised}
+                  color={P.gold}
+                  borderColor={P.border}
+                  border="1px solid"
+                  _hover={{ bg: P.surface, borderColor: P.gold }}
+                  onClick={() => { onPartyInvite?.(inviteId); setInviteId(""); }}
+                >
+                  Invite
+                </Button>
+              </HStack>
+            </VStack>
+          ) : (
+            <VStack align="stretch" gap="2">
+              <Text fontSize="9px" color={P.goldDark} letterSpacing="2px" textTransform="uppercase">Party ID: <Box as="span" color={P.gold} fontFamily={P.mono}>{partyId}</Box></Text>
+              {partyMembers.map((member) => (
+                <Flex key={member.sessionId} justify="space-between" align="center" p="2" bg={P.darkest} border="1px solid" borderColor={P.border} borderRadius="2px">
+                  <HStack gap="2">
+                    <Box w="6px" h="6px" borderRadius="full" bg="green.400" flexShrink={0} />
+                    <Text fontSize="12px" color={member.sessionId === leaderId ? P.gold : P.goldText} fontWeight={member.sessionId === leaderId ? "700" : "400"}>
+                      {member.name}{member.sessionId === leaderId ? " (L)" : ""}
+                    </Text>
+                  </HStack>
+                  {leaderId === partyMembers[0]?.sessionId && member.sessionId !== leaderId && (
+                    <Button size="xs" variant="ghost" p="0" h="auto" minW="auto" color="red.400" fontSize="10px" onClick={() => onPartyKick?.(member.sessionId)}>
+                      [Kick]
+                    </Button>
+                  )}
+                </Flex>
+              ))}
+              <Button
+                mt="1"
+                size="xs"
+                variant="outline"
+                borderColor={P.blood}
+                color="red.400"
+                _hover={{ bg: P.blood }}
+                fontSize="10px"
+                onClick={onPartyLeave}
+              >
+                Leave Party
+              </Button>
+            </VStack>
+          )}
+        </Box>
+      )}
+
+      {/* Friends */}
+      {tab === "friends" && (
+        <Box flex="1" overflow="auto" p="3">
+          <VStack align="stretch" gap="3">
+            <HStack gap="2">
+              <Input
+                placeholder="Friend name"
+                size="xs"
+                value={friendName}
+                onChange={(e) => setFriendName(e.target.value)}
+                bg={P.darkest}
+                borderColor={P.border}
+                color={P.goldText}
+                fontSize="11px"
+                fontFamily={P.mono}
+                _focus={{ borderColor: P.gold }}
+              />
+              <Button
+                size="xs"
+                bg={P.raised}
+                color={P.gold}
+                borderColor={P.border}
+                border="1px solid"
+                _hover={{ bg: P.surface, borderColor: P.gold }}
+                onClick={() => { onFriendRequest?.(friendName); setFriendName(""); }}
+              >
+                Add
+              </Button>
+            </HStack>
+            <VStack align="stretch" gap="1">
+              {friends.length === 0 && (
+                <Text fontSize="11px" color={P.goldDark} textAlign="center" fontStyle="italic" py="4">No friends yet.</Text>
+              )}
+              {friends.map((friend) => (
+                <Flex key={friend.id} justify="space-between" align="center" p="2" bg={P.darkest} border="1px solid" borderColor={P.border} borderRadius="2px">
+                  <HStack gap="2">
+                    <Box w="6px" h="6px" borderRadius="full" bg={friend.online ? "green.400" : "gray.600"} flexShrink={0} />
+                    <Text fontSize="12px" color={friend.online ? P.goldText : P.goldDark}>{friend.name}</Text>
+                  </HStack>
+                  <HStack gap="1">
+                    <Button size="xs" variant="ghost" p="0" h="auto" minW="auto" color={P.gold} fontSize="10px" onClick={() => onWhisper?.(friend.name)}>
+                      [W]
+                    </Button>
+                    {friend.online && (
+                      <Button size="xs" variant="ghost" p="0" h="auto" minW="auto" color="blue.400" fontSize="10px" onClick={() => onPartyInvite?.(friend.id)}>
+                        [P]
+                      </Button>
+                    )}
+                  </HStack>
+                </Flex>
+              ))}
+            </VStack>
+          </VStack>
+        </Box>
+      )}
+
       {/* Stats — pinned to bottom */}
       <Box mt="auto" flexShrink={0} borderTop="2px solid" borderTopColor={P.border} bg={P.darkest}>
         <Box h="1px" bg={`linear-gradient(90deg, transparent, ${P.gold}, transparent)`} />
@@ -320,6 +494,8 @@ export function Sidebar({ state, isRecording, onEquip, onUnequip, onUseItem, onD
       <Flex px="3" py="2" gap="2" justify="center" flexWrap="wrap" borderTop="1px solid" borderTopColor={P.raised} bg={P.bg}>
         <KeyHint keys="Arrows" action="Move" />
         <KeyHint keys="Ctrl" action="Melee" />
+        <KeyHint keys="A" action="Pickup" />
+        <KeyHint keys="T" action="Drop" />
         {classSpells.map((spell) => (
           <KeyHint key={spell.id} keys={`${spell.key}${spell.rangeTiles > 0 ? "+Click" : ""}`} action={spell.id.split("_")[0]} />
         ))}
