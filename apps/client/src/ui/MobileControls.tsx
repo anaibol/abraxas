@@ -2,6 +2,7 @@ import { Box } from "@chakra-ui/react";
 import { useCallback, useRef } from "react";
 import { Direction } from "@abraxas/shared";
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Swords } from "lucide-react";
+import { T, HEX } from "./tokens";
 
 type SpellSlot = {
   key: string;
@@ -129,7 +130,7 @@ function ActionButton({
       justifyContent="center"
       fontSize={fontSize}
       fontWeight="700"
-      fontFamily="'Friz Quadrata', Georgia, serif"
+      fontFamily={T.display}
       letterSpacing="0.5px"
       color={color}
       userSelect="none"

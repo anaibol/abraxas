@@ -1,5 +1,6 @@
 import { Box, Text, HStack } from "@chakra-ui/react";
 import { useEffect, useRef, useState, useMemo } from "react";
+import { T, HEX } from "./tokens";
 
 export interface ConsoleMessage {
   id: number;
@@ -101,7 +102,7 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage }: Co
       border="1px solid rgba(255,255,255,0.1)"
       borderRadius="4px"
       color="white"
-      fontFamily="'Friz Quadrata', Georgia, serif"
+      fontFamily={T.display}
       fontSize="14px"
       overflow="hidden"
       pointerEvents={isChatOpen ? "auto" : "none"}

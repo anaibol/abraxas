@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Flex, Text } from "@chakra-ui/react";
 import { PLAYER_RESPAWN_TIME_MS } from "@abraxas/shared";
+import { T, HEX } from "./tokens";
 
 interface DeathOverlayProps {
   visible: boolean;
@@ -36,8 +37,8 @@ export function DeathOverlay({ visible, deathTime }: DeathOverlayProps) {
       <Text
         fontSize="64px"
         fontWeight="700"
-        color="#c41e3a"
-        fontFamily="'Friz Quadrata', Georgia, serif"
+        color=T.bloodBright
+        fontFamily={T.display}
         letterSpacing="12px"
         textShadow="0 0 40px rgba(200,30,60,0.5)"
       >
@@ -45,8 +46,8 @@ export function DeathOverlay({ visible, deathTime }: DeathOverlayProps) {
       </Text>
       <Text
         fontSize="18px"
-        color="#8a7a60"
-        fontFamily="'Friz Quadrata', Georgia, serif"
+        color=T.goldMuted
+        fontFamily={T.display}
         letterSpacing="4px"
         mt="4"
       >
