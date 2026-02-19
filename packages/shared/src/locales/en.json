@@ -1,0 +1,68 @@
+{
+  "lobby": {
+    "title": "Abraxas",
+    "subtitle": "Arena",
+    "choose_champion": "Choose Your Champion",
+    "characters_count": "{{count}}/{{max}} characters",
+    "no_champions": "No champions yet. Create your first character to enter the arena.",
+    "new_character": "New Character",
+    "character_name": "Character Name",
+    "character_name_placeholder": "E.g. Valerius the Bold",
+    "select_path": "Select Your Path",
+    "create_character": "Create Character",
+    "back": "Back",
+    "login": "Login",
+    "register": "Register",
+    "email_address": "Email Address",
+    "secret_key": "Secret Key",
+    "new_to_arena": "New to the Arena?",
+    "create_account": "Create Account",
+    "already_combatant": "Already a combatant?",
+    "sign_in": "Sign In",
+    "sign_out": "Sign Out",
+    "connecting": "Connecting...",
+    "error": {
+      "char_name_required": "Character name is required",
+      "char_name_invalid": "Each word must start with a capital letter and contain only letters (e.g. Dark Knight)",
+      "auth_failed": "Authentication failed",
+      "network_error": "Network error"
+    }
+  },
+  "classes": {
+    "WARRIOR": {
+      "name": "Warrior",
+      "desc": "HP:180 STR:25",
+      "longDesc": "A master of close-quarters combat with high survivability."
+    },
+    "MAGE": {
+      "name": "Mage",
+      "desc": "INT:28 Mana:150",
+      "longDesc": "Wields destructive arcane power from a distance."
+    },
+    "RANGER": {
+      "name": "Ranger",
+      "desc": "AGI:26 Range:5",
+      "longDesc": "Swift and precise, striking foes before they can react."
+    },
+    "ROGUE": {
+      "name": "Rogue",
+      "desc": "AGI:24 SPD:8",
+      "longDesc": "A shadowy assassin specializing in speed and critical strikes."
+    },
+    "CLERIC": {
+      "name": "Cleric",
+      "desc": "HP:160 STR:20",
+      "longDesc": "A holy defender who blends combat with divine protection."
+    }
+  },
+  "game": {
+    "welcome": "Welcome to Abraxas!",
+    "traveling": "Traveling to {{map}}...",
+    "not_enough_mana": "Not enough mana",
+    "class_restricted": "Your class cannot use that spell",
+    "invalid_target": "Invalid target",
+    "inventory_full": "Inventory full",
+    "item_not_found": "Item not found",
+    "restricted_to": "Restricted to {{classes}}"
+  }
+}

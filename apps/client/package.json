@@ -13,9 +13,11 @@
     "@chakra-ui/react": "^3.33.0",
     "@colyseus/sdk": "^0.17.33",
     "@emotion/react": "^11.14.0",
+    "i18next": "^25.8.11",
     "phaser": "beta",
     "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "react-dom": "^19.2.4",
+    "react-i18next": "^16.5.4"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",

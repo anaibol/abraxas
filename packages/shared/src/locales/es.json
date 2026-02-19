@@ -1,0 +1,68 @@
+{
+  "lobby": {
+    "title": "Abraxas",
+    "subtitle": "Arena",
+    "choose_champion": "Elige a tu campeón",
+    "characters_count": "{{count}}/{{max}} personajes",
+    "no_champions": "Aún no hay campeones. Crea tu primer personaje para entrar en la arena.",
+    "new_character": "Nuevo Personaje",
+    "character_name": "Nombre del Personaje",
+    "character_name_placeholder": "E.g. Valerius el Valiente",
+    "select_path": "Selecciona tu Camino",
+    "create_character": "Crear Personaje",
+    "back": "Volver",
+    "login": "Iniciar Sesión",
+    "register": "Registrarse",
+    "email_address": "Correo Electrónico",
+    "secret_key": "Llave Secreta",
+    "new_to_arena": "¿Nuevo en la Arena?",
+    "create_account": "Crear Cuenta",
+    "already_combatant": "¿Ya eres un combatiente?",
+    "sign_in": "Identificarse",
+    "sign_out": "Cerrar Sesión",
+    "connecting": "Conectando...",
+    "error": {
+      "char_name_required": "El nombre del personaje es obligatorio",
+      "char_name_invalid": "Cada palabra debe comenzar con mayúscula y contener solo letras (ej. Caballero Oscuro)",
+      "auth_failed": "Autenticación fallida",
+      "network_error": "Error de red"
+    }
+  },
+  "classes": {
+    "WARRIOR": {
+      "name": "Guerrero",
+      "desc": "HP:180 STR:25",
+      "longDesc": "Un maestro del combate cuerpo a cuerpo con alta supervivencia."
+    },
+    "MAGE": {
+      "name": "Mago",
+      "desc": "INT:28 Mana:150",
+      "longDesc": "Empuña un poder arcano destructivo desde la distancia."
+    },
+    "RANGER": {
+      "name": "Explorador",
+      "desc": "AGI:26 Rango:5",
+      "longDesc": "Rápido y preciso, golpeando a los enemigos antes de que puedan reaccionar."
+    },
+    "ROGUE": {
+      "name": "Pícaro",
+      "desc": "AGI:24 VEL:8",
+      "longDesc": "Un asesino sombrío especializado en velocidad y golpes críticos."
+    },
+    "CLERIC": {
+      "name": "Clérigo",
+      "desc": "HP:160 STR:20",
+      "longDesc": "Un defensor sagrado que combina el combate con la protección divina."
+    }
+  },
+  "game": {
+    "welcome": "¡Bienvenido a Abraxas!",
+    "traveling": "Viajando a {{map}}...",
+    "not_enough_mana": "No hay suficiente maná",
+    "class_restricted": "Tu clase no puede usar ese hechizo",
+    "invalid_target": "Objetivo inválido",
+    "inventory_full": "Inventario lleno",
+    "item_not_found": "Objeto no encontrado",
+    "restricted_to": "Restringido a {{classes}}"
+  }
+}

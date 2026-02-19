@@ -6,3 +6,4 @@ export * from "./loot";
 export * from "./buffs";
 export * from "./utils/MathUtils";
 export * from "./utils/names";
+export * from "./i18n";

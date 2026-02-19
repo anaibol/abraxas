@@ -1,0 +1,68 @@
+{
+  "lobby": {
+    "title": "Abraxas",
+    "subtitle": "Arena",
+    "choose_champion": "Choisissez votre Champion",
+    "characters_count": "{{count}}/{{max}} personnages",
+    "no_champions": "Pas encore de champions. Créez votre premier personnage pour entrer dans l'arène.",
+    "new_character": "Nouveau Personnage",
+    "character_name": "Nom du Personnage",
+    "character_name_placeholder": "Ex: Valerius le Hardi",
+    "select_path": "Sélectionnez votre Voie",
+    "create_character": "Créer le Personnage",
+    "back": "Retour",
+    "login": "Connexion",
+    "register": "S'inscrire",
+    "email_address": "Adresse E-mail",
+    "secret_key": "Clé Secrète",
+    "new_to_arena": "Nouveau dans l'Arène ?",
+    "create_account": "Créer un Compte",
+    "already_combatant": "Déjà un combattant ?",
+    "sign_in": "S'identifier",
+    "sign_out": "Déconnexion",
+    "connecting": "Connexion...",
+    "error": {
+      "char_name_required": "Le nombre du personnage est requis",
+      "char_name_invalid": "Chaque mot doit commencer par une majuscule et ne contenir que des lettres (ex: Chevalier Noir)",
+      "auth_failed": "Échec de l'authentification",
+      "network_error": "Erreur réseau"
+    }
+  },
+  "classes": {
+    "WARRIOR": {
+      "name": "Guerrier",
+      "desc": "PV:180 FOR:25",
+      "longDesc": "Un maître du combat au corps à corps avec une grande survivabilité."
+    },
+    "MAGE": {
+      "name": "Mage",
+      "desc": "INT:28 Mana:150",
+      "longDesc": "Manie un pouvoir arcane destructeur à distance."
+    },
+    "RANGER": {
+      "name": "Rôdeur",
+      "desc": "AGI:26 Portée:5",
+      "longDesc": "Rapide et précis, frappant les ennemis avant qu'ils ne puissent réagir."
+    },
+    "ROGUE": {
+      "name": "Voleur",
+      "desc": "AGI:24 VIT:8",
+      "longDesc": "Un assassin de l'ombre spécialisé dans la vitesse et les coups critiques."
+    },
+    "CLERIC": {
+      "name": "Clerc",
+      "desc": "PV:160 FOR:20",
+      "longDesc": "Un défenseur sacré qui allie combat et protection divine."
+    }
+  },
+  "game": {
+    "welcome": "Bienvenue sur Abraxas !",
+    "traveling": "Voyage vers {{map}}...",
+    "not_enough_mana": "Pas assez de mana",
+    "class_restricted": "Votre classe ne peut pas utiliser ce sort",
+    "invalid_target": "Cible invalide",
+    "inventory_full": "Inventaire plein",
+    "item_not_found": "Objet non trouvé",
+    "restricted_to": "Restreint à {{classes}}"
+  }
+}

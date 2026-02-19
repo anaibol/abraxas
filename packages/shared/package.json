@@ -8,5 +8,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./maps/*": "./src/maps/*"
+  },
+  "dependencies": {
+    "i18next": "^25.8.11"
   }
 }
