@@ -1,7 +1,7 @@
 import { Client } from "@colyseus/core";
 import { Player } from "../schema/Player";
 import { GameState } from "../schema/GameState";
-import { PersistenceService } from "./PersistenceService";
+import { FullCharacter, PersistenceService } from "./PersistenceService";
 import { InventorySystem } from "../systems/InventorySystem";
 import { SpatialLookup } from "../utils/SpatialLookup";
 import { QuestSystem } from "../systems/QuestSystem";
@@ -13,6 +13,7 @@ import {
   ITEMS,
   InventoryEntry,
   EquipmentData,
+  ClassType,
 } from "@abraxas/shared";
 import { InventoryItem } from "../schema/InventoryItem";
 import { logger } from "../logger";
@@ -26,7 +27,7 @@ export class PlayerService {
     private friends: FriendsSystem,
   ) {}
 
-  async createPlayer(client: Client, char: any, userId: string): Promise<Player> {
+  async createPlayer(client: Client, char: FullCharacter, userId: string): Promise<Player> {
     const player = new Player();
     player.sessionId = client.sessionId;
     player.dbId = char.id;
@@ -47,9 +48,9 @@ export class PlayerService {
       player.intStat = stats.int;
     }
 
-    player.gold = Number(char.gold ?? 0);
+    player.gold = char.gold;
     player.level = char.level;
-    player.xp = Number(char.exp ?? 0);
+    player.xp = char.exp;
     player.maxXp = EXP_TABLE[player.level] ?? 100;
 
     if (char.inventory?.slots) {

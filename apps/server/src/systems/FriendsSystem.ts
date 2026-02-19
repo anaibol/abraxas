@@ -164,7 +164,7 @@ export class FriendsSystem {
       include: { characters: { take: 1 } },
     });
 
-    const friends = users.map((user: any) => ({
+    const friends = users.map((user) => ({
       id: user.id,
       name: user.characters[0]?.name ?? "Unknown",
       online: this.onlineUsers.has(user.id),

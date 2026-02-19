@@ -1,9 +1,9 @@
 import { Player } from "../schema/Player";
-import { EXP_TABLE, ServerMessageType } from "@abraxas/shared";
+import { EXP_TABLE, ServerMessageType, BroadcastFn } from "@abraxas/shared";
 
 export class LevelService {
   constructor(
-    private broadcast: (type: any, data?: any) => void,
+    private broadcast: BroadcastFn,
     private recalcStats: (player: Player) => void,
   ) {}
 

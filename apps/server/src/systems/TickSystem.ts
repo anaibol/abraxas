@@ -2,7 +2,7 @@ import { Client } from "@colyseus/core";
 import { GameState } from "../schema/GameState";
 import { Player } from "../schema/Player";
 import { Npc } from "../schema/Npc";
-import { TileMap, ServerMessageType, NPC_STATS, NPC_DROPS } from "@abraxas/shared";
+import { TileMap, ServerMessageType, NPC_STATS, NPC_DROPS, BroadcastFn } from "@abraxas/shared";
 import { SpatialLookup, Entity } from "../utils/SpatialLookup";
 import { BuffSystem } from "../systems/BuffSystem";
 import { NpcSystem } from "../systems/NpcSystem";
@@ -24,7 +24,7 @@ export interface TickOptions {
     quests: QuestSystem;
     spatial: SpatialLookup;
   };
-  broadcast: (type: ServerMessageType, data?: any) => void;
+  broadcast: BroadcastFn;
   onEntityDeath: (entity: Entity, killerSessionId?: string) => void;
   onSummon: (caster: Entity, spellId: string, x: number, y: number) => void;
   gainXp: (player: Player, amount: number) => void;
