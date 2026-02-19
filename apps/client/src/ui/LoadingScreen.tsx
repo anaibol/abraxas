@@ -88,9 +88,9 @@ export function LoadingScreen() {
           <svg width="60" height="60" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#d4a843" />
+                <stop offset="0%" stopColor={HEX.gold} />
                 <stop offset="50%" stopColor="#f7e0a3" />
-                <stop offset="100%" stopColor="#b8962e" />
+                <stop offset="100%" stopColor={HEX.goldDim} />
               </linearGradient>
               <filter id="glow">
                 <feGaussianBlur stdDeviation="3" result="blur" />
@@ -106,7 +106,7 @@ export function LoadingScreen() {
             {/* Arcane Details */}
             <path 
               d="M35 75L40 68M65 75L60 68M50 25L50 30" 
-              stroke="#d4a843" 
+              stroke={HEX.gold} 
               strokeWidth="2" 
               strokeLinecap="round" 
             />
