@@ -487,6 +487,8 @@
     "quests": {
       "title": "MISIONES",
       "no_active": "No hay misiones activas",
+      "available": "Disponibles",
+      "see_npc": "Ver a {{name}}",
       "turn_in_hint": "Habla con {{name}} para entregar",
       "kill_target": "Mata {{target}}s",
       "talk_to_target": "Habla con {{target}}",
@@ -534,12 +536,20 @@
       "open_chat": "Abrir chat",
       "close_chat": "Cerrar chat / Cancelar",
       "push_to_talk": "Pulsar para hablar (voz)",
-      "scoreboard": "Marcador"
+      "scoreboard": "Marcador",
+      "meditate": "Meditar (regenerar maná)",
+      "toggle_music": "Activar/desactivar música"
     }
   },
   "death": {
     "you_died": "HAS MUERTO",
     "respawning": "Reapareciendo en {{count}}s"
+  },
+  "context_menu": {
+    "whisper": "💬 Susurrar",
+    "add_friend": "➕ Añadir amigo",
+    "party_invite": "⚔️ Invitar al grupo",
+    "trade": "🤝 Comerciar"
   },
   "kill_feed": {
     "killed": "mató a"

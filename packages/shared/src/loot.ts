@@ -1,20 +1,21 @@
 import type { ClassType } from "./types";
 
 /** Consumables every class always keeps on death (full stack preserved). */
-const BASIC_CONSUMABLES = ["health_potion", "mana_potion"] as const;
+const BASIC_CONSUMABLES = ["great_health_potion", "great_mana_potion"] as const;
 
 /**
  * Basic items each class always keeps on death.
+ * Aligned with STARTING_EQUIPMENT so players always respawn with their core gear.
  * Non-stackable items keep 1 copy; stackable consumables keep the full stack.
  * Stored as Sets so `.has()` calls at death time are O(1) with no allocation.
  */
 export const BASIC_ITEMS_BY_CLASS: Record<ClassType, ReadonlySet<string>> = {
-  WARRIOR: new Set(["iron_sword", "tunic", ...BASIC_CONSUMABLES]),
-  MAGE:    new Set(["magic_staff", "mage_robes", ...BASIC_CONSUMABLES]),
-  RANGER:  new Set(["short_bow", "tunic", ...BASIC_CONSUMABLES]),
-  ROGUE:   new Set(["dagger", "tunic", ...BASIC_CONSUMABLES]),
-  CLERIC:  new Set(["holy_mace", "tunic", ...BASIC_CONSUMABLES]),
-  PALADIN: new Set(["holy_mace", "tunic", ...BASIC_CONSUMABLES]),
+  WARRIOR: new Set(["flame_blade", "plate_armor", "iron_shield", "crown_of_thorns", "ring_of_strength", ...BASIC_CONSUMABLES]),
+  MAGE:    new Set(["staff_of_storms", "mage_robes", "wizard_hat", "ring_of_intellect", ...BASIC_CONSUMABLES]),
+  RANGER:  new Set(["elven_bow", "shadow_cloak", "iron_helmet", "ring_of_agility", ...BASIC_CONSUMABLES]),
+  ROGUE:   new Set(["venom_blades", "shadow_cloak", "iron_helmet", "ring_of_agility", ...BASIC_CONSUMABLES]),
+  CLERIC:  new Set(["blessed_hammer", "plate_armor", "iron_shield", "crown_of_thorns", "ring_of_vitality", ...BASIC_CONSUMABLES]),
+  PALADIN: new Set(["blessed_hammer", "plate_armor", "iron_shield", "crown_of_thorns", "ring_of_strength", ...BASIC_CONSUMABLES]),
 };
 
 /** Potions every class starts with (3× HP + 3× mana). */

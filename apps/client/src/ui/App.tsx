@@ -45,6 +45,7 @@ import { AudioManager } from "../managers/AudioManager";
 import Phaser from "phaser";
 import { PreloaderScene } from "../scenes/PreloaderScene";
 import { GameScene } from "../scenes/GameScene";
+import { PlayerContextMenu, type PlayerContextTarget } from "./PlayerContextMenu";
 import type { GameState } from "../../../server/src/schema/GameState";
 import type { Room } from "@colyseus/sdk";
 
@@ -106,6 +107,7 @@ export function App() {
   const [showScoreboard, setShowScoreboard] = useState(false);
   const [killStats, setKillStats] = useState<Record<string, KillStats>>({});
   const [pendingSpellId, setPendingSpellId] = useState<string | null>(null);
+  const [playerContextMenu, setPlayerContextMenu] = useState<PlayerContextTarget | null>(null);
   const isMobile = useIsMobile();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -303,6 +305,9 @@ export function App() {
                 setConnecting(false);
               },
               (recording) => setIsRecording(recording),
+              (sessionId, name, screenX, screenY) => {
+                setPlayerContextMenu({ sessionId, name, screenX, screenY });
+              },
             );
 
             const preloaderScene = new PreloaderScene();
@@ -611,6 +616,18 @@ export function App() {
             />
           )}
         </>
+      )}
+
+      {/* Player context menu */}
+      {playerContextMenu && (
+        <PlayerContextMenu
+          target={playerContextMenu}
+          onWhisper={(name) => { setChatPrefill(`/w ${name} `); setIsChatOpen(true); }}
+          onFriendRequest={(_, name) => networkRef.current?.sendFriendRequest(name)}
+          onPartyInvite={(sid) => networkRef.current?.sendPartyInvite(sid)}
+          onTradeRequest={(sid) => networkRef.current?.sendTradeRequest(sid)}
+          onClose={() => setPlayerContextMenu(null)}
+        />
       )}
 
       {/* Drop quantity dialog */}

@@ -54,6 +54,8 @@ const KEYBINDS: { key: string; labelKey: string; categoryKey: string }[] = [
   { categoryKey: "social", key: "Esc", labelKey: "close_chat" },
   { categoryKey: "social", key: "V (hold)", labelKey: "push_to_talk" },
   { categoryKey: "ui", key: "Tab", labelKey: "scoreboard" },
+  { categoryKey: "ui", key: "M", labelKey: "meditate" },
+  { categoryKey: "ui", key: "`", labelKey: "toggle_music" },
 ];
 
 function SectionTitle({ children }: { children: React.ReactNode }) {

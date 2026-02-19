@@ -38,20 +38,26 @@ export class InputHandler {
   private onEnterTargeting?: (rangeTiles: number) => void;
   private onExitTargeting?: () => void;
   private onInteract?: (tileX: number, tileY: number) => void;
+  private onRightClickTile?: (tileX: number, tileY: number, screenX: number, screenY: number) => void;
   private onPttStart?: () => void;
   private onPttEnd?: () => void;
   private pttKey!: Phaser.Input.Keyboard.Key;
-  private meditateKey!: Phaser.Input.Keyboard.Key;
-  private onMeditateToggle?: () => void;
 
   targeting: TargetingState | null = null;
 
   private pendingLeftClick = false;
   private pendingRightClick = false;
 
+  private lastRightClickScreenX = 0;
+  private lastRightClickScreenY = 0;
+
   private readonly onPointerDown = (pointer: Phaser.Input.Pointer) => {
     if (pointer.leftButtonDown()) this.pendingLeftClick = true;
-    if (pointer.rightButtonDown()) this.pendingRightClick = true;
+    if (pointer.rightButtonDown()) {
+      this.pendingRightClick = true;
+      this.lastRightClickScreenX = pointer.x;
+      this.lastRightClickScreenY = pointer.y;
+    }
   };
 
   constructor(
@@ -64,7 +70,7 @@ export class InputHandler {
     onInteract?: (tileX: number, tileY: number) => void,
     onPttStart?: () => void,
     onPttEnd?: () => void,
-    onMeditateToggle?: () => void,
+    onRightClickTile?: (tileX: number, tileY: number, screenX: number, screenY: number) => void,
   ) {
     this.scene = scene;
     this.network = network;
@@ -74,7 +80,7 @@ export class InputHandler {
     this.onInteract = onInteract;
     this.onPttStart = onPttStart;
     this.onPttEnd = onPttEnd;
-    this.onMeditateToggle = onMeditateToggle;
+    this.onRightClickTile = onRightClickTile;
 
     const stats = CLASS_STATS[classType];
     const speed = stats.speedTilesPerSecond;
@@ -96,7 +102,6 @@ export class InputHandler {
       this.ctrlKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.CTRL);
       this.escKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
       this.pttKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.V);
-      this.meditateKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.T);
 
       for (const spellId of stats.spells) {
         const spell = SPELLS[spellId];
@@ -137,10 +142,6 @@ export class InputHandler {
       } else if (Phaser.Input.Keyboard.JustUp(this.pttKey)) {
         this.onPttEnd?.();
       }
-    }
-
-    if (this.meditateKey && Phaser.Input.Keyboard.JustDown(this.meditateKey)) {
-      this.onMeditateToggle?.();
     }
 
     for (const [keyCode, key] of Object.entries(this.moveKeys)) {
@@ -203,6 +204,11 @@ export class InputHandler {
       this.onInteract?.(tile.x, tile.y);
     }
 
+    if (rightClicked) {
+      const tile = getMouseTile();
+      this.onRightClickTile?.(tile.x, tile.y, this.lastRightClickScreenX, this.lastRightClickScreenY);
+    }
+
     for (const { key, spellId, rangeTiles } of this.spellKeys) {
       if (Phaser.Input.Keyboard.JustDown(key)) {
         this.handleSpellKey(spellId, rangeTiles);
@@ -248,7 +254,6 @@ export class InputHandler {
       kb.removeKey(this.ctrlKey);
       kb.removeKey(this.escKey);
       kb.removeKey(this.pttKey);
-      if (this.meditateKey) kb.removeKey(this.meditateKey);
       for (const { key } of this.spellKeys) kb.removeKey(key);
     }
   }

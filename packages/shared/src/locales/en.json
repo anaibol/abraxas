@@ -487,6 +487,8 @@
     "quests": {
       "title": "QUESTS",
       "no_active": "No active quests",
+      "available": "Available",
+      "see_npc": "See {{name}}",
       "turn_in_hint": "Talk to {{name}} to turn in",
       "kill_target": "Kill {{target}}s",
       "talk_to_target": "Talk to {{target}}",
@@ -534,12 +536,20 @@
       "open_chat": "Open chat",
       "close_chat": "Close chat / Cancel",
       "push_to_talk": "Push to talk (voice)",
-      "scoreboard": "Scoreboard"
+      "scoreboard": "Scoreboard",
+      "meditate": "Meditate (regenerate mana)",
+      "toggle_music": "Toggle music mute"
     }
   },
   "death": {
     "you_died": "YOU DIED",
     "respawning": "Respawning in {{count}}s"
+  },
+  "context_menu": {
+    "whisper": "💬 Whisper",
+    "add_friend": "➕ Add Friend",
+    "party_invite": "⚔️ Invite to Party",
+    "trade": "🤝 Trade"
   },
   "kill_feed": {
     "killed": "killed"

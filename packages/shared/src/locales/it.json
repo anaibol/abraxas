@@ -487,6 +487,8 @@
     "quests": {
       "title": "MISSIONI",
       "no_active": "Nessuna missione attiva",
+      "available": "Disponibili",
+      "see_npc": "Parla con {{name}}",
       "turn_in_hint": "Parla con {{name}} per consegnare",
       "kill_target": "Uccidi {{target}}",
       "talk_to_target": "Parla con {{target}}",
@@ -534,12 +536,20 @@
       "open_chat": "Apri chat",
       "close_chat": "Chiudi chat / Annulla",
       "push_to_talk": "Premi per parlare (voce)",
-      "scoreboard": "Classifica"
+      "scoreboard": "Classifica",
+      "meditate": "Meditare (rigenerare mana)",
+      "toggle_music": "Attiva/disattiva musica"
     }
   },
   "death": {
     "you_died": "SEI MORTO",
     "respawning": "Ricomparsa in {{count}}s"
+  },
+  "context_menu": {
+    "whisper": "💬 Sussurrare",
+    "add_friend": "➕ Aggiungi amico",
+    "party_invite": "⚔️ Invita nel gruppo",
+    "trade": "🤝 Scambiare"
   },
   "kill_feed": {
     "killed": "ha ucciso"

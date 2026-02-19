@@ -20,6 +20,7 @@ import type { Drop } from "../../../server/src/schema/Drop";
 type StateCallback = (state: PlayerState) => void;
 type KillFeedCallback = (killer: string, victim: string) => void;
 export type ConsoleCallback = (text: string, color?: string) => void;
+export type PlayerRightClickCallback = (sessionId: string, name: string, screenX: number, screenY: number) => void;
 
 export class GameScene extends Phaser.Scene {
 	private network: NetworkManager;
@@ -29,6 +30,7 @@ export class GameScene extends Phaser.Scene {
 	private onReady?: () => void;
 	private onError?: (message: string) => void;
 	private onPttChange?: (recording: boolean) => void;
+	private onPlayerRightClick?: PlayerRightClickCallback;
 	private room!: Room<GameState>;
 	private welcome!: WelcomeData;
 	private spriteManager!: SpriteManager;
@@ -84,6 +86,7 @@ export class GameScene extends Phaser.Scene {
 		onReady?: () => void,
 		onError?: (message: string) => void,
 		onPttChange?: (recording: boolean) => void,
+		onPlayerRightClick?: PlayerRightClickCallback,
 	) {
 		super({ key: "GameScene" });
 		this.network = network;
@@ -94,6 +97,7 @@ export class GameScene extends Phaser.Scene {
 		this.onReady = onReady;
 		this.onError = onError;
 		this.onPttChange = onPttChange;
+		this.onPlayerRightClick = onPlayerRightClick;
 	}
 
 	create() {
@@ -108,7 +112,7 @@ export class GameScene extends Phaser.Scene {
 		this.soundManager.startMusic();
 
 		this.muteKey = this.input.keyboard?.addKey(
-			Phaser.Input.Keyboard.KeyCodes.M,
+			Phaser.Input.Keyboard.KeyCodes.BACKTICK,
 		);
 		this.muteKey?.on("down", () => {
 			this.soundManager.toggleMute();
@@ -161,7 +165,15 @@ export class GameScene extends Phaser.Scene {
 				this.audioManager.stopRecording();
 				this.onPttChange?.(false);
 			},
-			() => this.network.sendMeditate(),
+			(tileX, tileY, screenX, screenY) => {
+				for (const [sessionId, player] of this.room.state.players) {
+					if (sessionId === this.room.sessionId) continue;
+					if (player.tileX === tileX && player.tileY === tileY && player.alive) {
+						this.onPlayerRightClick?.(sessionId, player.name, screenX, screenY);
+						return;
+					}
+				}
+			},
 		);
 
 		const $state = Callbacks.get(this.room);
@@ -351,7 +363,7 @@ export class GameScene extends Phaser.Scene {
 
 			for (let dy = -range; dy <= range; dy++) {
 				for (let dx = -range; dx <= range; dx++) {
-					if (Math.abs(dx) + Math.abs(dy) > range) continue;
+					if (Math.sqrt(dx * dx + dy * dy) > range + 0.5) continue;
 					const tx = cx + dx;
 					const ty = cy + dy;
 					if (
