@@ -9,6 +9,8 @@ import {
 } from "@chakra-ui/react";
 import { Box, Flex } from "@chakra-ui/react";
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import { useConsoleMessages } from "../hooks/useConsoleMessages";
+import { useGameKeyboard } from "../hooks/useGameKeyboard";
 import { useTranslation } from "react-i18next";
 import { system } from "./theme";
 import { Lobby } from "./Lobby";
