@@ -66,29 +66,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
   private quests = new QuestSystem();
 
   // ── Message Handlers ───────────────────────────────────────────────────
-  messages: Messages<ArenaRoom> = {
-    [ClientMessageType.Move]: validate(z.object({ direction: z.number() }), (client, data) => this.messageHandler.handleMove(client, data.direction)),
-    [ClientMessageType.Attack]: validate(z.object({ targetTileX: z.number().optional(), targetTileY: z.number().optional() }), (client, data) => this.messageHandler.handleAttack(client, data)),
-    [ClientMessageType.Cast]: validate(z.object({ spellId: z.string(), targetTileX: z.number(), targetTileY: z.number() }), (client, data) => this.messageHandler.handleCast(client, data)),
-    [ClientMessageType.Pickup]: validate(z.object({ dropId: z.string() }), (client, data) => this.messageHandler.handlePickup(client, data)),
-    [ClientMessageType.Equip]: validate(z.object({ itemId: z.string() }), (client, data) => this.messageHandler.handleEquip(client, data)),
-    [ClientMessageType.Unequip]: validate(z.object({ slot: z.enum(EQUIPMENT_SLOTS) }), (client, data) => this.messageHandler.handleUnequip(client, data)),
-    [ClientMessageType.UseItem]: validate(z.object({ itemId: z.string() }), (client, data) => this.messageHandler.handleUseItem(client, data)),
-    [ClientMessageType.DropItem]: validate(z.object({ itemId: z.string(), quantity: z.number().int().positive().optional() }), (client, data) => this.messageHandler.handleDropItem(client, data)),
-    [ClientMessageType.Interact]: validate(z.object({ npcId: z.string() }), (client, data) => this.messageHandler.handleInteract(client, data)),
-    [ClientMessageType.BuyItem]: validate(z.object({ itemId: z.string(), quantity: z.number() }), (client, data) => this.messageHandler.handleBuyItem(client, data)),
-    [ClientMessageType.SellItem]: validate(z.object({ itemId: z.string(), quantity: z.number(), npcId: z.string().optional() }), (client, data) => this.messageHandler.handleSellItem(client, data)),
-    [ClientMessageType.QuestAccept]: validate(z.object({ questId: z.string() }), (client, data) => this.messageHandler.handleQuestAccept(client, data)),
-    [ClientMessageType.QuestComplete]: validate(z.object({ questId: z.string() }), (client, data) => this.messageHandler.handleQuestComplete(client, data)),
-    [ClientMessageType.Chat]: validate(z.object({ message: z.string() }), (client, data) => this.messageHandler.handleChat(client, data)),
-    [ClientMessageType.FriendRequest]: validate(z.object({ targetName: z.string() }), (client, data) => this.messageHandler.handleFriendRequest(client, data)),
-    [ClientMessageType.FriendAccept]: validate(z.object({ requesterId: z.string() }), (client, data) => this.messageHandler.handleFriendAccept(client, data)),
-    [ClientMessageType.PartyInvite]: validate(z.object({ targetSessionId: z.string() }), (client, data) => this.messageHandler.handlePartyInvite(client, data)),
-    [ClientMessageType.PartyAccept]: validate(z.object({ partyId: z.string() }), (client, data) => this.messageHandler.handlePartyAccept(client, data)),
-    [ClientMessageType.PartyLeave]: (client: Client) => this.messageHandler.handlePartyLeave(client),
-    [ClientMessageType.PartyKick]: validate(z.object({ targetSessionId: z.string() }), (client, data) => this.messageHandler.handlePartyKick(client, data)),
-    [ClientMessageType.Audio]: (client: Client, data: ArrayBuffer) => this.messageHandler.handleAudio(client, data),
-  };
+
 
   async onCreate(options: JoinOptions & { mapName?: string }) {
     try {
@@ -165,6 +143,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       this.onMessage(ClientMessageType.FriendAccept, (c, d) => this.messageHandler.handleFriendAccept(c, d));
       this.onMessage(ClientMessageType.QuestAccept, (c, d) => this.messageHandler.handleQuestAccept(c, d));
       this.onMessage(ClientMessageType.QuestComplete, (c, d) => this.messageHandler.handleQuestComplete(c, d));
+      this.onMessage(ClientMessageType.Audio, (c, d: ArrayBuffer) => this.messageHandler.handleAudio(c, d));
 
       this.tickSystem = new TickSystem({
         state: this.state,
