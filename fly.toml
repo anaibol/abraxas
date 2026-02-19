@@ -2,6 +2,7 @@ app = 'abraxas-5wboyw'
 primary_region = 'gru'
 
 [build]
+  dockerfile = "Dockerfile"
 
 [env]
 STATIC_DIR = "/app/apps/client/dist"
