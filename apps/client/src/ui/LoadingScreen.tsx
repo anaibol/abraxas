@@ -84,17 +84,43 @@ export function LoadingScreen() {
           borderRadius="full"
           animation={`${spin} 8s linear infinite reverse`}
         />
-        <Flex
-          pos="absolute"
-          inset="0"
-          align="center"
-          justify="center"
-          fontSize="32px"
-          color={P.gold}
-          textShadow={`0 0 15px ${P.gold}`}
+        <Box 
+          pos="absolute" 
+          inset="0" 
+          display="flex" 
+          alignItems="center" 
+          justifyContent="center" 
+          animation={`${pulse} 4s infinite ease-in-out`}
         >
-          A
-        </Flex>
+          <svg width="60" height="60" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#d4a843" />
+                <stop offset="50%" stopColor="#f7e0a3" />
+                <stop offset="100%" stopColor="#b8962e" />
+              </linearGradient>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+            </defs>
+            {/* Inner "A" Shape */}
+            <path 
+              d="M50 15L20 85H32L38 70H62L68 85H80L50 15ZM50 35L58 55H42L50 35Z" 
+              fill="url(#goldGradient)" 
+              filter="url(#glow)"
+            />
+            {/* Arcane Details */}
+            <path 
+              d="M35 75L40 68M65 75L60 68M50 25L50 30" 
+              stroke="#d4a843" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+            />
+            {/* Outer Circular Accents */}
+            <circle cx="50" cy="50" r="45" stroke="#d4a843" strokeWidth="0.5" strokeDasharray="4 8" opacity="0.5" />
+          </svg>
+        </Box>
       </Box>
 
       <Box textAlign="center" zIndex="1" px="10">
