@@ -9,8 +9,6 @@ import { prisma } from "../database/db";
 export class QuestSystem {
   /** userId → questId → state */
   private charQuests = new Map<string, Map<string, PlayerQuestState>>();
-  /** questId (code) → DB quest.id — avoids repeated lookups per progress update */
-  private questIdCache = new Map<string, string>();
 
   async loadCharQuests(
     userId: string,
@@ -29,7 +27,6 @@ export class QuestSystem {
         status: dbQuest.status,
         progress: dbQuest.progressJson as Record<string, number> ?? {},
       });
-      this.questIdCache.set(code, dbQuest.quest.id);
     }
     this.charQuests.set(userId, questStates);
     return Array.from(questStates.values());
@@ -59,16 +56,6 @@ export class QuestSystem {
 
     if (userQuests.has(questId)) return null;
 
-    let dbQuestId = this.questIdCache.get(questId);
-    if (!dbQuestId) {
-      const dbQuest = await prisma.questDef.findUnique({
-        where: { code: questId },
-      });
-      if (!dbQuest) return null;
-      dbQuestId = dbQuest.id;
-      this.questIdCache.set(questId, dbQuestId);
-    }
-
     const initialState: PlayerQuestState = {
       questId,
       status: "IN_PROGRESS",
@@ -77,8 +64,8 @@ export class QuestSystem {
 
     await prisma.characterQuest.create({
       data: {
-        characterId: charId,
-        questId: dbQuestId,
+        character: { connect: { id: charId } },
+        quest: { connect: { code: questId } },
         status: "IN_PROGRESS",
         progressJson: initialState.progress,
       },
@@ -116,32 +103,14 @@ export class QuestSystem {
 
       state.progress[target] = Math.min(relevantReq.count, current + amount);
 
-      const allMet = questDef.requirements.every(
-        (req) => (state.progress[req.target] || 0) >= req.count,
-      );
-      if (allMet) {
+      if (questDef.requirements.every((req) => (state.progress[req.target] || 0) >= req.count)) {
         state.status = "COMPLETED";
       }
 
-      let dbQuestId = this.questIdCache.get(state.questId);
-      if (!dbQuestId) {
-        const dbQuest = await prisma.questDef.findUnique({
-          where: { code: state.questId },
-        });
-        if (dbQuest) {
-          dbQuestId = dbQuest.id;
-          this.questIdCache.set(state.questId, dbQuestId);
-        }
-      }
-
-      if (dbQuestId) {
-        await prisma.characterQuest.update({
-          where: {
-            characterId_questId: { characterId: charId, questId: dbQuestId },
-          },
-          data: { status: state.status, progressJson: state.progress },
-        });
-      }
+      await prisma.characterQuest.updateMany({
+        where: { characterId: charId, quest: { code: state.questId } },
+        data: { status: state.status, progressJson: state.progress },
+      });
 
       updatedQuests.push(state);
     }
@@ -162,25 +131,10 @@ export class QuestSystem {
 
     state.status = "TURNED_IN";
 
-    let dbQuestId = this.questIdCache.get(questId);
-    if (!dbQuestId) {
-      const dbQuest = await prisma.questDef.findUnique({
-        where: { code: questId },
-      });
-      if (dbQuest) {
-        dbQuestId = dbQuest.id;
-        this.questIdCache.set(questId, dbQuestId);
-      }
-    }
-
-    if (dbQuestId) {
-      await prisma.characterQuest.update({
-        where: {
-          characterId_questId: { characterId: charId, questId: dbQuestId },
-        },
-        data: { status: "TURNED_IN" },
-      });
-    }
+    await prisma.characterQuest.updateMany({
+      where: { characterId: charId, quest: { code: questId } },
+      data: { status: "TURNED_IN" },
+    });
 
     return questDef;
   }

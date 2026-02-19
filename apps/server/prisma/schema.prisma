@@ -237,7 +237,7 @@ model CharacterSkill {
   @@index([characterId])
 }
 
-model QuestDef {
+model Quest {
   id          String  @id @default(cuid())
   code        String  @unique
   name        String
@@ -253,7 +253,7 @@ model CharacterQuest {
   character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
 
   questId String
-  quest   QuestDef @relation(fields: [questId], references: [id], onDelete: Restrict)
+  quest   Quest @relation(fields: [questId], references: [id], onDelete: Restrict)
 
   status       QuestStatus @default(NOT_STARTED)
   progressJson Json?
