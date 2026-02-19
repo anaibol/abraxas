@@ -17,7 +17,7 @@ COPY tsconfig.json ./
 RUN bun run --cwd apps/client build
 
 # Generate Prisma Client
-RUN bunx prisma generate --schema apps/server/prisma/schema.prisma
+RUN cd apps/server && bunx prisma generate
 
 # Production stage
 FROM oven/bun:1-slim
