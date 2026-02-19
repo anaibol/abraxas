@@ -130,6 +130,7 @@
     "title": "Paramètres",
     "section": {
       "audio": "Audio",
+      "language": "Langue",
       "interface": "Interface"
     },
     "music_volume": "Volume de la Musique",

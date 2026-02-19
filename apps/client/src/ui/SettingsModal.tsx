@@ -1,8 +1,15 @@
 import { Box, Flex, Text } from "@chakra-ui/react";
-import { X, Volume2, Music, Map as MapIcon } from "lucide-react";
+import { X, Volume2, Music, Map as MapIcon, Languages } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useGameSettings } from "../hooks/useGameSettings";
 import { T, HEX } from "./tokens";
+
+const LANGUAGES: { code: string; label: string; flag: string }[] = [
+  { code: "en", label: "English",  flag: "🇬🇧" },
+  { code: "es", label: "Español",  flag: "🇪🇸" },
+  { code: "fr", label: "Français", flag: "🇫🇷" },
+  { code: "it", label: "Italiano", flag: "🇮🇹" },
+];
 
 type SettingsModalProps = {
   onClose: () => void;
@@ -126,6 +133,57 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
                 value={settings.sfxVolume}
                 onChange={(v) => updateSettings({ sfxVolume: v })}
               />
+            </Flex>
+          </Box>
+
+          {/* Divider */}
+          <Box h="1px" bg={T.border} />
+
+          {/* Section: Language */}
+          <Box>
+            <Flex align="center" gap="2" mb="3">
+              <Box color={T.goldDark}><Languages size={13} /></Box>
+              <Text
+                textStyle={T.sectionLabel}
+                color={T.goldDark}
+                letterSpacing="2px"
+                fontSize="10px"
+                textTransform="uppercase"
+              >
+                {t("settings.section.language")}
+              </Text>
+            </Flex>
+
+            <Flex gap="2" flexWrap="wrap">
+              {LANGUAGES.map(({ code, label, flag }) => {
+                const isActive = i18n.language === code || i18n.language.startsWith(code);
+                return (
+                  <Box
+                    key={code}
+                    as="button"
+                    px="3"
+                    py="1.5"
+                    borderRadius="6px"
+                    border="1px solid"
+                    borderColor={isActive ? T.gold : T.border}
+                    bg={isActive ? T.surface : T.raised}
+                    color={isActive ? T.gold : T.goldDark}
+                    fontFamily={T.display}
+                    fontSize="11px"
+                    fontWeight="700"
+                    letterSpacing="0.5px"
+                    cursor="pointer"
+                    transition="all 0.12s"
+                    _hover={{ borderColor: T.gold, color: T.goldText }}
+                    onClick={() => {
+                      i18n.changeLanguage(code);
+                      localStorage.setItem("abraxas_lang", code);
+                    }}
+                  >
+                    {flag} {label}
+                  </Box>
+                );
+              })}
             </Flex>
           </Box>
 
