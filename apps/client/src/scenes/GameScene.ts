@@ -185,13 +185,38 @@ export class GameScene extends Phaser.Scene {
 				this.spriteManager.addPlayer(player, sessionId);
 				this.spriteManager.syncPlayer(player, sessionId);
 				const isLocal = sessionId === this.room.sessionId;
+
+				// Phaser sprite sync: fires on any property change (position, hp, facing…)
 				const onChangeUnsub = $state.onChange(player, () => {
 					this.spriteManager.syncPlayer(player, sessionId);
-					if (isLocal) this.pushSidebarUpdate(player);
 				});
 				playerOnChangeUnsubs.set(sessionId, onChangeUnsub);
 				unsub(onChangeUnsub);
-				if (isLocal) this.pushSidebarUpdate(player);
+
+				if (isLocal) {
+					this.pushSidebarUpdate(player);
+
+					// React sidebar sync: use per-field listen() so that movement
+					// (tileX/tileY changes every step) does NOT trigger React re-renders.
+					// Only the fields actually displayed in the sidebar are observed here.
+					for (const field of [
+						"hp", "maxHp", "mana", "maxMana", "alive",
+						"str", "agi", "intStat", "gold", "stealthed", "stunned",
+						"level", "xp", "maxXp",
+						"equipWeapon", "equipArmor", "equipShield", "equipHelmet", "equipRing",
+					] as const) {
+						unsub($state.listen(player, field, () => this.pushSidebarUpdate(player)));
+					}
+
+					// Inventory: item add/remove and per-item quantity changes
+					unsub(
+						$state.onAdd(player, "inventory", (item) => {
+							this.pushSidebarUpdate(player);
+							unsub($state.onChange(item, () => this.pushSidebarUpdate(player)));
+						}),
+						$state.onRemove(player, "inventory", () => this.pushSidebarUpdate(player)),
+					);
+				}
 			}),
 			$state.onRemove("players", (_player, sessionId) => {
 				playerOnChangeUnsubs.get(sessionId)?.();
