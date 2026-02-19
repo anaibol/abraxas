@@ -14,6 +14,7 @@
     "@colyseus/sdk": "^0.17.33",
     "@emotion/react": "^11.14.0",
     "i18next": "^25.8.11",
+    "lucide-react": "^0.575.0",
     "phaser": "4.0.0-rc.6",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",

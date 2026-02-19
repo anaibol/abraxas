@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { X } from "lucide-react";
 import { Box, Flex, Text, Grid, Input, Button, VStack, HStack } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 import { CLASS_STATS, SPELLS, ITEMS, EQUIPMENT_SLOTS, type EquipmentSlot, type PlayerQuestState } from "@abraxas/shared";
@@ -186,12 +187,11 @@ export function Sidebar({
           display="flex"
           alignItems="center"
           justifyContent="center"
-          fontSize="16px"
           color={P.gold}
           cursor="pointer"
           onPointerDown={(e) => { e.preventDefault(); onClose?.(); }}
         >
-          ✕
+          <X size={18} />
         </Box>
       )}
       {/* Header */}

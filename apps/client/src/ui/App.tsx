@@ -33,6 +33,7 @@ import { getRandomName, ServerMessageType, ITEMS, CLASS_STATS, SPELLS, type Dire
 import { QuestDialogue } from "./QuestDialogue";
 import { MobileControls } from "./MobileControls";
 import { NetworkManager } from "../network/NetworkManager";
+import { Menu, MessageCircle } from "lucide-react";
 import { AudioManager } from "../managers/AudioManager";
 import Phaser from "phaser";
 import { PreloaderScene } from "../scenes/PreloaderScene";
@@ -800,12 +801,11 @@ export function App() {
                   display="flex"
                   alignItems="center"
                   justifyContent="center"
-                  fontSize="20px"
                   color="rgba(212, 168, 67, 0.9)"
                   cursor="pointer"
                   onPointerDown={(e) => { e.preventDefault(); setIsSidebarOpen((v) => !v); }}
                 >
-                  ☰
+                  <Menu size={22} />
                 </Box>
               )}
             </Box>
@@ -920,11 +920,11 @@ export function App() {
               display="flex"
               alignItems="center"
               justifyContent="center"
-              fontSize="18px"
+              color="rgba(212, 168, 67, 0.9)"
               cursor="pointer"
               onPointerDown={(e) => { e.preventDefault(); setIsChatOpen(true); }}
             >
-              💬
+              <MessageCircle size={20} />
             </Box>
           )}
           {/* Mobile movement and action controls */}

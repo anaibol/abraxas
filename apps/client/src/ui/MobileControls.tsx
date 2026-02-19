@@ -1,6 +1,7 @@
 import { Box } from "@chakra-ui/react";
 import { useCallback, useRef } from "react";
 import { Direction } from "@abraxas/shared";
+import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Swords } from "lucide-react";
 
 type SpellSlot = {
   key: string;
@@ -21,14 +22,21 @@ const BTN_BORDER = "1px solid rgba(212, 168, 67, 0.35)";
 const BTN_ACTIVE_BG = "rgba(212, 168, 67, 0.25)";
 const BTN_ACTIVE_BORDER = "1px solid rgba(212, 168, 67, 0.8)";
 
+const DIRECTION_ICONS = {
+  [Direction.UP]: ChevronUp,
+  [Direction.DOWN]: ChevronDown,
+  [Direction.LEFT]: ChevronLeft,
+  [Direction.RIGHT]: ChevronRight,
+} as const;
+
 type DPadButtonProps = {
-  label: string;
   direction: Direction;
   style?: React.CSSProperties;
   onMove: (direction: Direction) => void;
 };
 
-function DPadButton({ label, direction, style, onMove }: DPadButtonProps) {
+function DPadButton({ direction, style, onMove }: DPadButtonProps) {
+  const Icon = DIRECTION_ICONS[direction];
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const activeRef = useRef(false);
 
@@ -65,7 +73,6 @@ function DPadButton({ label, direction, style, onMove }: DPadButtonProps) {
       display="flex"
       alignItems="center"
       justifyContent="center"
-      fontSize="22px"
       color="rgba(212, 168, 67, 0.9)"
       userSelect="none"
       cursor="pointer"
@@ -76,7 +83,7 @@ function DPadButton({ label, direction, style, onMove }: DPadButtonProps) {
       onPointerCancel={stop}
       _active={{ bg: BTN_ACTIVE_BG, border: BTN_ACTIVE_BORDER }}
     >
-      {label}
+      <Icon size={28} />
     </Box>
   );
 }
@@ -165,27 +172,17 @@ export function MobileControls({ onMove, onAttack, onSpell, spells }: MobileCont
         pointerEvents="auto"
         flexShrink="0"
       >
-        {/* Up */}
         <DPadButton
-          label="▲"
           direction={Direction.UP}
           onMove={onMove}
-          style={{
-            top: 0,
-            left: `${dpadCenterSize + dpadGap}px`,
-          }}
+          style={{ top: 0, left: `${dpadCenterSize + dpadGap}px` }}
         />
-        {/* Left */}
         <DPadButton
-          label="◀"
           direction={Direction.LEFT}
           onMove={onMove}
-          style={{
-            top: `${dpadCenterSize + dpadGap}px`,
-            left: 0,
-          }}
+          style={{ top: `${dpadCenterSize + dpadGap}px`, left: 0 }}
         />
-        {/* Center (neutral, decorative) */}
+        {/* Center decorative */}
         <Box
           position="absolute"
           w={BTN_SIZE}
@@ -198,9 +195,7 @@ export function MobileControls({ onMove, onAttack, onSpell, spells }: MobileCont
             left: `${dpadCenterSize + dpadGap}px`,
           }}
         />
-        {/* Right */}
         <DPadButton
-          label="▶"
           direction={Direction.RIGHT}
           onMove={onMove}
           style={{
@@ -208,9 +203,7 @@ export function MobileControls({ onMove, onAttack, onSpell, spells }: MobileCont
             left: `${(dpadCenterSize + dpadGap) * 2}px`,
           }}
         />
-        {/* Down */}
         <DPadButton
-          label="▼"
           direction={Direction.DOWN}
           onMove={onMove}
           style={{
@@ -247,16 +240,24 @@ export function MobileControls({ onMove, onAttack, onSpell, spells }: MobileCont
         )}
 
         {/* Attack button */}
-        <ActionButton
-          label="ATTACK"
-          onAction={onAttack}
+        <Box
           w="130px"
           h={BTN_SIZE}
-          color="rgba(220, 80, 80, 0.95)"
           bg="rgba(30, 8, 8, 0.8)"
           border="1px solid rgba(220, 80, 80, 0.5)"
-          fontSize="13px"
-        />
+          borderRadius="8px"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          gap="6px"
+          color="rgba(220, 80, 80, 0.95)"
+          userSelect="none"
+          cursor="pointer"
+          onPointerDown={(e: React.PointerEvent) => { e.preventDefault(); onAttack(); }}
+          _active={{ bg: BTN_ACTIVE_BG, border: BTN_ACTIVE_BORDER }}
+        >
+          <Swords size={20} />
+        </Box>
       </Box>
     </Box>
   );
