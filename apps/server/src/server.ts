@@ -72,9 +72,10 @@ async function serveStatic(
 	});
 }
 
-// Extends BunWebSockets only to add SPA fallback for non-API routes.
-// The URL parsing bug (url.pathname + url.search) is already fixed in
-// @colyseus/bun-websockets@0.17.7, so no listen() override is needed.
+// Extends BunWebSockets to add SPA static-file fallback for non-API routes,
+// and to fix a Linux-specific build of @colyseus/bun-websockets that stores
+// `pathname + search` in rawClient.data.url instead of just `pathname`, which
+// breaks the roomId regex inside the default onConnection.
 class GameTransport extends BunWebSockets {
 	constructor(private readonly staticDir?: string) {
 		super();
@@ -94,6 +95,13 @@ class GameTransport extends BunWebSockets {
 		};
 
 		super.bindRouter(router);
+	}
+
+	// biome-ignore lint/suspicious/noExplicitAny: raw Bun WS has no public type
+	override async onConnection(rawClient: any): Promise<void> {
+		// Strip query string so the roomId regex in super.onConnection matches.
+		rawClient.data.url = rawClient.data.url.split("?")[0];
+		return super.onConnection(rawClient);
 	}
 }
 

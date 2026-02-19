@@ -30,8 +30,8 @@ import { QuestSystem } from "../systems/QuestSystem";
 import { RespawnSystem } from "../systems/RespawnSystem";
 import { SocialSystem } from "../systems/SocialSystem";
 import { TickSystem } from "../systems/TickSystem";
-import { TradeSystem } from "../systems/TradeSystem";
 import { BankSystem } from "../systems/BankSystem";
+import { TradeSystem } from "../systems/TradeSystem";
 import { type Entity, SpatialLookup } from "../utils/SpatialLookup";
 
 export class ArenaRoom extends Room<{ state: GameState }> {
@@ -177,10 +177,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 
 			this.setSimulationInterval((dt) => this.tickSystem.tick(dt), TICK_MS);
 
-			logger.info({
-				room: this.roomId,
-				message: "onCreate completed successfully",
-			});
+			logger.info({ room: this.roomId, message: "onCreate completed successfully" });
 		} catch (e: unknown) {
 			logger.error({ message: `[ArenaRoom] onCreate error: ${e}` });
 			throw e;
@@ -227,6 +224,13 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 				char,
 				auth.id,
 			);
+			// Assign spawn point for Arena
+			const spawnIndex = this.state.players.size;
+			const spawn = this.map.spawns[spawnIndex % this.map.spawns.length];
+			if (spawn) {
+				player.tileX = spawn.x;
+				player.tileY = spawn.y;
+			}
 			this.state.players.set(client.sessionId, player);
 			client.view = new StateView();
 			client.view.add(player);
@@ -251,7 +255,6 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 			});
 		} catch (e: unknown) {
 			logger.error({ message: `[ArenaRoom] onJoin error: ${e}` });
-
 			throw e;
 		}
 	}
