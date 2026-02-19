@@ -309,7 +309,6 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 			await this.playerService.cleanupPlayer(player, this.roomMapName);
 			await this.bankSystem.closeBank(player);
 		}
-		this.movement.removePlayer(client.sessionId);
 		this.combat.removeEntity(client.sessionId);
 		this.buffSystem.removePlayer(client.sessionId);
 		this.respawnSystem.removePlayer(client.sessionId);

@@ -61,8 +61,6 @@ export class TickSystem {
 			},
 			broadcast,
 			(p) => this.opts.onEntityDeath(p),
-			roomId,
-			state.tick,
 		);
 
 		// 2. NPCs

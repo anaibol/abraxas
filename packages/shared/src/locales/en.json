@@ -306,49 +306,108 @@
   },
   "spells": {
     "war_cry": {
-      "name": "War Cry"
+      "name": "War Cry",
+      "desc": "Bellow a battle cry, boosting your STR for 8s."
     },
     "shield_bash": {
-      "name": "Shield Bash"
+      "name": "Shield Bash",
+      "desc": "Slam your shield into a foe, stunning them for 2s."
+    },
+    "whirlwind": {
+      "name": "Whirlwind",
+      "desc": "Spin your weapon, damaging all adjacent enemies."
+    },
+    "battle_shout": {
+      "name": "Battle Shout",
+      "desc": "Shout that reduces armor of all nearby enemies for 6s."
     },
     "fireball": {
-      "name": "Fireball"
+      "name": "Fireball",
+      "desc": "Hurl a blazing bolt at a distant target."
     },
     "ice_bolt": {
-      "name": "Ice Bolt"
+      "name": "Ice Bolt",
+      "desc": "A shard of ice that pierces through magical defenses."
     },
     "thunderstorm": {
-      "name": "Thunderstorm"
+      "name": "Thunderstorm",
+      "desc": "Call down lightning at a location, hitting all nearby enemies."
     },
     "mana_shield": {
-      "name": "Mana Shield"
+      "name": "Mana Shield",
+      "desc": "Convert mana into a protective arcane shell (+armor for 6s)."
+    },
+    "frost_nova": {
+      "name": "Frost Nova",
+      "desc": "Explosion of frost that damages all enemies around you."
+    },
+    "arcane_surge": {
+      "name": "Arcane Surge",
+      "desc": "Channel immense arcane power into a devastating bolt."
     },
     "multi_shot": {
-      "name": "Multi Shot"
+      "name": "Multi Shot",
+      "desc": "Loose a volley of arrows hitting enemies in a small area."
     },
     "poison_arrow": {
-      "name": "Poison Arrow"
+      "name": "Poison Arrow",
+      "desc": "Arrow coated in toxin that poisons the target over 5s."
     },
     "evasion": {
-      "name": "Evasion"
+      "name": "Evasion",
+      "desc": "Drastically increase AGI and dodge chance for 5s."
+    },
+    "aimed_shot": {
+      "name": "Aimed Shot",
+      "desc": "A carefully aimed shot from across the entire battlefield."
+    },
+    "mark_target": {
+      "name": "Mark Target",
+      "desc": "Mark an enemy, reducing their armor for 8s."
     },
     "backstab": {
-      "name": "Backstab"
+      "name": "Backstab",
+      "desc": "A vicious stab dealing massive damage, doubled from stealth."
     },
     "stealth": {
-      "name": "Stealth"
+      "name": "Stealth",
+      "desc": "Vanish from sight, becoming invisible for 6s."
     },
     "envenom": {
-      "name": "Envenom"
+      "name": "Envenom",
+      "desc": "Coat your blade in venom, poisoning the target over 6s."
+    },
+    "smoke_bomb": {
+      "name": "Smoke Bomb",
+      "desc": "Throw a smoke bomb that stuns nearby enemies for 1.5s."
+    },
+    "hemorrhage": {
+      "name": "Hemorrhage",
+      "desc": "Drain life from a foe, healing yourself for half the damage."
     },
     "holy_strike": {
-      "name": "Holy Strike"
+      "name": "Holy Strike",
+      "desc": "A blessed melee blow that smites your enemy with holy light."
     },
     "heal": {
-      "name": "Heal"
+      "name": "Heal",
+      "desc": "Channel divine energy to restore your own health."
     },
     "divine_shield": {
-      "name": "Divine Shield"
+      "name": "Divine Shield",
+      "desc": "Surround yourself in holy light, becoming invulnerable for 4s."
+    },
+    "holy_nova": {
+      "name": "Holy Nova",
+      "desc": "Burst of holy light that heals all nearby allies."
+    },
+    "curse": {
+      "name": "Curse",
+      "desc": "Afflict an enemy with a dark curse, lowering their INT for 10s."
+    },
+    "smite": {
+      "name": "Smite",
+      "desc": "Launch a holy bolt at an enemy target."
     }
   },
   "ui": {

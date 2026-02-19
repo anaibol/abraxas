@@ -126,6 +126,18 @@ export class MessageHandler {
 		client.send(ServerMessageType.Error, { message });
 	}
 
+	/** Resolves the target tile from explicit coords or falls back to the tile in front of the player. */
+	private resolveTarget(
+		player: { tileX: number; tileY: number; facing: number },
+		data: { targetTileX?: number; targetTileY?: number },
+	): { targetX: number; targetY: number } {
+		if (data.targetTileX !== undefined && data.targetTileY !== undefined) {
+			return { targetX: data.targetTileX, targetY: data.targetTileY };
+		}
+		const delta = DIRECTION_DELTA[player.facing];
+		return { targetX: player.tileX + delta.dx, targetY: player.tileY + delta.dy };
+	}
+
 	/**
 	 * Returns true if `a` is within `range` tiles of `b` (Manhattan distance).
 	 * Sends an error to the client and returns false if not.
@@ -211,16 +223,7 @@ export class MessageHandler {
 	): void {
 		const player = this.getActivePlayer(client);
 		if (!player) return;
-
-		let targetX = data.targetTileX;
-		let targetY = data.targetTileY;
-
-		if (targetX === undefined || targetY === undefined) {
-			const delta = DIRECTION_DELTA[player.facing];
-			targetX = player.tileX + delta.dx;
-			targetY = player.tileY + delta.dy;
-		}
-
+		const { targetX, targetY } = this.resolveTarget(player, data);
 		this.ctx.systems.combat.tryAttack(
 			player,
 			targetX,
@@ -237,16 +240,7 @@ export class MessageHandler {
 	): void {
 		const player = this.getActivePlayer(client);
 		if (!player) return;
-
-		let targetX = data.targetTileX;
-		let targetY = data.targetTileY;
-
-		if (targetX === undefined || targetY === undefined) {
-			const delta = DIRECTION_DELTA[player.facing];
-			targetX = player.tileX + delta.dx;
-			targetY = player.tileY + delta.dy;
-		}
-
+		const { targetX, targetY } = this.resolveTarget(player, data);
 		this.ctx.systems.combat.tryCast(
 			player,
 			data.spellId,
@@ -513,15 +507,20 @@ export class MessageHandler {
 			});
 	}
 
-	private isNearMerchant(player: Player): boolean {
+	/** Returns true if the player is within `range` Manhattan tiles of any living NPC with the given type. */
+	private isNearNpcType(
+		player: Player,
+		npcType: string,
+		range = 3,
+	): boolean {
 		return Array.from(this.ctx.state.npcs.values()).some(
 			(n) =>
-				n.type === "merchant" &&
+				n.type === npcType &&
 				n.alive &&
 				MathUtils.manhattanDist(
 					{ x: player.tileX, y: player.tileY },
 					{ x: n.tileX, y: n.tileY },
-				) <= 3,
+				) <= range,
 		);
 	}
 
@@ -532,7 +531,7 @@ export class MessageHandler {
 		const player = this.getActivePlayer(client);
 		if (!player) return;
 
-		if (!this.isNearMerchant(player)) {
+		if (!this.isNearNpcType(player, "merchant")) {
 			this.sendError(client, "game.too_far_merchant");
 			return;
 		}

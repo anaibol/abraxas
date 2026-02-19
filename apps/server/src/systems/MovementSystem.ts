@@ -4,10 +4,6 @@ import { logger } from "../logger";
 import { SpatialLookup, Entity } from "../utils/SpatialLookup";
 import { Player } from "../schema/Player";
 
-interface EntityTimers {
-	lastMoveMs: number;
-}
-
 export interface MoveResult {
 	success: boolean;
 	warp?: {
@@ -19,10 +15,6 @@ export interface MoveResult {
 
 export class MovementSystem {
 	constructor(private spatial: SpatialLookup) {}
-
-	removePlayer(_sessionId: string): void {
-		// No-op: timers are now part of the Char entity
-	}
 
 	/**
 	 * Attempts to move an entity in a direction.

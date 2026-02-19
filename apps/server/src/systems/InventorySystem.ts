@@ -27,21 +27,14 @@ const EQUIP_SLOT_MAP: Record<EquipmentSlot, EquipSlotKey> = {
   ring: "equipRing",
 };
 
-/** Set a single equipment slot on a player. */
-function setEquipSlot(
-  player: Player,
-  slotKey: EquipSlotKey,
-  value: string,
-): void {
-  player[slotKey] = value;
-}
-
-/** Get the item ID in a single equipment slot (empty string = nothing equipped). */
-function getEquipSlot(player: Player, slotKey: EquipSlotKey): string {
-  return player[slotKey];
-}
-
 export class InventorySystem {
+  private findItem(player: Player, itemId: string): InventoryItem | undefined {
+    for (const item of player.inventory) {
+      if (item.itemId === itemId) return item;
+    }
+    return undefined;
+  }
+
   addItem(
     player: Player,
     itemId: string,
@@ -56,11 +49,10 @@ export class InventorySystem {
 
     // For stackable items, try to stack first
     if (def.stackable) {
-      for (const item of player.inventory) {
-        if (item.itemId === itemId) {
-          item.quantity += quantity;
-          return true;
-        }
+      const existing = this.findItem(player, itemId);
+      if (existing) {
+        existing.quantity += quantity;
+        return true;
       }
     }
 
@@ -86,25 +78,15 @@ export class InventorySystem {
   }
 
   removeItem(player: Player, itemId: string, quantity: number = 1): boolean {
-    for (let i = 0; i < player.inventory.length; i++) {
-      const item = player.inventory[i];
-      if (item && item.itemId === itemId) {
-        if (item.quantity > quantity) {
-          item.quantity -= quantity;
-        } else {
-          player.inventory.splice(i, 1);
-        }
-        return true;
-      }
+    const item = this.findItem(player, itemId);
+    if (!item) return false;
+    if (item.quantity > quantity) {
+      item.quantity -= quantity;
+    } else {
+      const idx = player.inventory.indexOf(item);
+      player.inventory.splice(idx, 1);
     }
-    return false;
-  }
-
-  private findItem(player: Player, itemId: string): InventoryItem | undefined {
-    for (const item of player.inventory) {
-      if (item.itemId === itemId) return item;
-    }
-    return undefined;
+    return true;
   }
 
   equipItem(
@@ -141,8 +123,7 @@ export class InventorySystem {
     }
 
     // After the consumable check above, def.slot is narrowed to EquipmentSlot
-    const currentItem = getEquipSlot(player, slotKey);
-    if (currentItem) {
+    if (player[slotKey]) {
       if (player.inventory.length >= MAX_INVENTORY_SLOTS) {
         onError?.("game.inventory_full");
         return false;
@@ -151,7 +132,7 @@ export class InventorySystem {
     }
 
     if (this.removeItem(player, itemId)) {
-      setEquipSlot(player, slotKey, itemId);
+      player[slotKey] = itemId;
       this.recalcStats(player);
       return true;
     }
@@ -166,12 +147,12 @@ export class InventorySystem {
     const slotKey = EQUIP_SLOT_MAP[slot];
     if (!slotKey) return false;
 
-    const itemId = getEquipSlot(player, slotKey);
+    const itemId = player[slotKey];
     if (!itemId) return false;
 
     if (!this.addItem(player, itemId, 1, onError)) return false;
 
-    setEquipSlot(player, slotKey, "");
+    player[slotKey] = "";
     this.recalcStats(player);
     return true;
   }
@@ -216,7 +197,7 @@ export class InventorySystem {
     };
 
     for (const slotKey of Object.values(EQUIP_SLOT_MAP)) {
-      const itemId = getEquipSlot(player, slotKey);
+      const itemId = player[slotKey];
       if (!itemId) continue;
       const def = ITEMS[itemId];
       if (!def) continue;

@@ -139,8 +139,6 @@ export class BuffSystem {
 		getPlayer: (sessionId: string) => Player | undefined,
 		broadcast: BroadcastFn,
 		onDeath: (player: Player) => void,
-		roomId: string,
-		tick: number,
 	): void {
 		for (const [sessionId, s] of this.state.entries()) {
 			const player = getPlayer(sessionId);
