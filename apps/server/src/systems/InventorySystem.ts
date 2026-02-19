@@ -130,7 +130,7 @@ export class InventorySystem {
 
     // Check item is in inventory
     if (!this.findItem(player, itemId)) {
-      onError?.("Item not found");
+      onError?.("game.item_not_found");
       return false;
     }
 
@@ -187,7 +187,7 @@ export class InventorySystem {
       return false;
     }
     if (!this.findItem(player, itemId)) {
-      onError?.("Item not found");
+      onError?.("game.item_not_found");
       return false;
     }
 

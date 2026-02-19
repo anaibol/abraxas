@@ -56,6 +56,11 @@
     }
   },
   "game": {
+    "item_not_found": "Objeto no encontrado",
+    "invalid_item": "Objeto inválido",
+    "cannot_equip_consumable": "No se puede equipar un consumible",
+    "invalid_equip_slot": "Ranura de equipo inválida",
+    "item_not_usable": "Objeto no usable",
     "restricted_to": "Restringido a {{classes}}"
   },
   "social": {

@@ -56,7 +56,12 @@
     }
   },
   "game": {
-    "restricted_to": "Restreint à {{classes}}"
+    "restricted_to": "Restreint à {{classes}}",
+    "item_not_found": "Objet non trouvé",
+    "invalid_item": "Objet invalide",
+    "cannot_equip_consumable": "Impossible d'équiper un consommable",
+    "invalid_equip_slot": "Emplacement d'équipement invalide",
+    "item_not_usable": "Objet non utilisable"
   },
   "social": {
     "already_in_party": "Le joueur est déjà dans un groupe",

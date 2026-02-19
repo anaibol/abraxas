@@ -56,6 +56,11 @@
     }
   },
   "game": {
+    "item_not_found": "Item not found",
+    "invalid_item": "Invalid item",
+    "cannot_equip_consumable": "Cannot equip consumable",
+    "invalid_equip_slot": "Invalid equipment slot",
+    "item_not_usable": "Item not usable",
     "restricted_to": "Restricted to {{classes}}"
   },
   "social": {
