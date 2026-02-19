@@ -14,6 +14,7 @@ import {
   type DirectionEntry,
   type BodyEntry,
 } from "../assets/AoGrhResolver";
+import { FONTS } from "../ui/tokens";
 
 const DIR_NAME_MAP: Record<number, "down" | "up" | "left" | "right"> = {
   [Direction.DOWN]: "down",

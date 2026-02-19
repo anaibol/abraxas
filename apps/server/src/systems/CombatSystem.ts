@@ -468,7 +468,14 @@ export class CombatSystem {
 		if (spell.rangeTiles === 0) {
 			const aoeRadius = spell.aoeRadius ?? 0;
 			if (aoeRadius > 0) {
-				// AoE originating from caster position
+				// Play the main AoE effect once at the caster tile — not once per victim.
+				broadcast(ServerMessageType.CastHit, {
+					sessionId: attacker.sessionId,
+					spellId: spell.id,
+					targetTileX: attacker.tileX,
+					targetTileY: attacker.tileY,
+					fxId: spell.fxId,
+				});
 				const victims = this.spatial.findEntitiesInRadius(
 					attacker.tileX,
 					attacker.tileY,
@@ -477,15 +484,9 @@ export class CombatSystem {
 				for (const victim of victims) {
 					if (victim.sessionId === attacker.sessionId) continue;
 					if (this.sameFaction(attacker, victim)) continue;
-					this.applySpellToTarget(attacker, victim, spell, broadcast, onDeath, now);
+					// Suppress per-victim CastHit; the main one was already broadcast above.
+					this.applySpellToTarget(attacker, victim, spell, broadcast, onDeath, now, true);
 				}
-				broadcast(ServerMessageType.CastHit, {
-					sessionId: attacker.sessionId,
-					spellId: spell.id,
-					targetTileX: attacker.tileX,
-					targetTileY: attacker.tileY,
-					fxId: spell.fxId,
-				});
 			} else {
 				this.applySpellToTarget(attacker, attacker, spell, broadcast, onDeath, now);
 			}
@@ -494,6 +495,14 @@ export class CombatSystem {
 
 		const aoeRadius = spell.aoeRadius ?? 0;
 		if (aoeRadius > 0) {
+			// Play the main AoE effect once at the intended target tile regardless of hits.
+			broadcast(ServerMessageType.CastHit, {
+				sessionId: attacker.sessionId,
+				spellId: spell.id,
+				targetTileX: windup.targetTileX,
+				targetTileY: windup.targetTileY,
+				fxId: spell.fxId,
+			});
 			const victims = this.spatial.findEntitiesInRadius(
 				windup.targetTileX,
 				windup.targetTileY,
@@ -514,14 +523,8 @@ export class CombatSystem {
 					continue;
 				}
 
-				this.applySpellToTarget(
-					attacker,
-					victim,
-					spell,
-					broadcast,
-					onDeath,
-					now,
-				);
+				// Suppress per-victim CastHit; the main one was already broadcast above.
+				this.applySpellToTarget(attacker, victim, spell, broadcast, onDeath, now, true);
 			}
 		} else {
 			const target = this.spatial.findEntityAtTile(
@@ -534,14 +537,7 @@ export class CombatSystem {
 					y: target.tileY,
 				});
 				if (dist > spell.rangeTiles) return;
-				this.applySpellToTarget(
-					attacker,
-					target,
-					spell,
-					broadcast,
-					onDeath,
-					now,
-				);
+				this.applySpellToTarget(attacker, target, spell, broadcast, onDeath, now);
 			}
 		}
 	}
@@ -566,6 +562,8 @@ export class CombatSystem {
 		broadcast: BroadcastFn,
 		onDeath: (entity: Entity, killerSessionId?: string) => void,
 		now: number,
+		/** When true, skips the CastHit broadcast (AoE callers broadcast it once themselves). */
+		suppressCastHit = false,
 	) {
 		// Merchants are invulnerable
 		if ("type" in target && (target as { type: string }).type === "merchant")
@@ -589,15 +587,22 @@ export class CombatSystem {
 				durationMs: spell.durationMs ?? 5000,
 			});
 		} else if (spell.effect === "dot") {
+			const dotDuration = spell.dotDurationMs ?? spell.durationMs ?? 5000;
 			this.buffSystem.addDoT(
 				target.sessionId,
 				attacker.sessionId,
 				spell.id,
 				spell.dotDamage ?? spell.baseDamage,
 				spell.dotIntervalMs ?? 1000,
-				spell.dotDurationMs ?? spell.durationMs ?? 5000,
+				dotDuration,
 				now,
 			);
+			// Notify the client so it can show the poison/dot visual state.
+			broadcast(ServerMessageType.BuffApplied, {
+				sessionId: target.sessionId,
+				spellId: spell.id,
+				durationMs: dotDuration,
+			});
 		} else if (spell.effect === "leech") {
 			// Deal damage to target, then heal caster for a fraction of that damage.
 			const defenderInt = this.boosted(target, "int", now);
@@ -695,14 +700,17 @@ export class CombatSystem {
 			});
 		}
 
-		// Broadcast CastHit so clients play the spell visual effect
-		broadcast(ServerMessageType.CastHit, {
-			sessionId: attacker.sessionId,
-			spellId: spell.id,
-			targetTileX: target.tileX,
-			targetTileY: target.tileY,
-			fxId: spell.fxId,
-		});
+		// Broadcast CastHit so clients play the spell visual effect.
+		// AoE callers already broadcast this once at the target tile; skip per-victim duplicates.
+		if (!suppressCastHit) {
+			broadcast(ServerMessageType.CastHit, {
+				sessionId: attacker.sessionId,
+				spellId: spell.id,
+				targetTileX: target.tileX,
+				targetTileY: target.tileY,
+				fxId: spell.fxId,
+			});
+		}
 	}
 
 	private boosted(entity: Entity, stat: string, now: number): number {
