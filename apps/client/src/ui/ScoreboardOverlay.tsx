@@ -307,7 +307,7 @@ export function ScoreboardOverlay({
                     letterSpacing="1px"
                     flexShrink={0}
                   >
-                    {p.classType}
+                    {t(`classes.${p.classType}.name`)}
                   </Box>
                 </Flex>
               ))}
