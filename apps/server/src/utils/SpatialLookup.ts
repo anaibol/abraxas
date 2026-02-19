@@ -145,4 +145,22 @@ export class SpatialLookup {
     }
     return false;
   }
+
+  /** Finds the nearest attackable player within a radius, or null if none. */
+  findNearestPlayer(cx: number, cy: number, radius: number): Player | null {
+    const entities = this.findEntitiesInRadius(cx, cy, radius);
+    let nearest: Player | null = null;
+    let minDist = Infinity;
+
+    for (const entity of entities) {
+      if (entity instanceof Player && entity.isAttackable()) {
+        const dist = MathUtils.manhattanDist({ x: cx, y: cy }, entity.getPosition());
+        if (dist < minDist) {
+          minDist = dist;
+          nearest = entity;
+        }
+      }
+    }
+    return nearest;
+  }
 }

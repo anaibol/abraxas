@@ -157,19 +157,7 @@ export class NpcSystem {
 
   /** Finds the nearest attackable player within AGGRO_RANGE, or null if none. */
   private scanForAggroTarget(npc: Npc): Player | null {
-    const entities = this.spatial.findEntitiesInRadius(npc.tileX, npc.tileY, AGGRO_RANGE);
-    let nearest: Player | null = null;
-    let minDist = Infinity;
-    for (const entity of entities) {
-      if (entity instanceof Player && entity.isAttackable()) {
-        const dist = MathUtils.manhattanDist(npc.getPosition(), entity.getPosition());
-        if (dist < minDist) {
-          minDist = dist;
-          nearest = entity;
-        }
-      }
-    }
-    return nearest;
+    return this.spatial.findNearestPlayer(npc.tileX, npc.tileY, AGGRO_RANGE);
   }
 
   private updateIdle(npc: Npc, tickCount: number): void {
@@ -303,21 +291,18 @@ export class NpcSystem {
     const dx = tx - npc.tileX;
     const dy = ty - npc.tileY;
 
-    let primaryDir: Direction;
-    if (Math.abs(dx) > Math.abs(dy)) {
-      primaryDir = dx > 0 ? Direction.RIGHT : Direction.LEFT;
-    } else {
-      primaryDir = dy > 0 ? Direction.DOWN : Direction.UP;
-    }
+    if (dx === 0 && dy === 0) return;
+
+    // Determine primary and secondary directions based on distance
+    const primaryDir = Math.abs(dx) > Math.abs(dy)
+      ? (dx > 0 ? Direction.RIGHT : Direction.LEFT)
+      : (dy > 0 ? Direction.DOWN : Direction.UP);
 
     const result = this.movementSystem.tryMove(npc, primaryDir, map, now, tickCount, roomId);
-    if (!result.success) {
-      let altDir: Direction;
-      if (primaryDir === Direction.LEFT || primaryDir === Direction.RIGHT) {
-        altDir = dy > 0 ? Direction.DOWN : Direction.UP;
-      } else {
-        altDir = dx > 0 ? Direction.RIGHT : Direction.LEFT;
-      }
+    if (!result.success && (dx !== 0 && dy !== 0)) {
+      const altDir = (primaryDir === Direction.LEFT || primaryDir === Direction.RIGHT)
+        ? (dy > 0 ? Direction.DOWN : Direction.UP)
+        : (dx > 0 ? Direction.RIGHT : Direction.LEFT);
       this.movementSystem.tryMove(npc, altDir, map, now, tickCount, roomId);
     }
   }

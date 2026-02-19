@@ -38,15 +38,13 @@ export class MovementSystem {
 
 		// Movement timing check (15ms jitter tolerance)
 		if (now - entity.lastMoveMs < moveIntervalMs - 15) {
-			if (entity instanceof Player) {
-				logger.debug({
-					room: roomId,
-					tick,
-					clientId: entity.sessionId,
-					intent: "move",
-					result: "too_fast",
-				});
-			}
+			logger.debug({
+				room: roomId,
+				tick,
+				entityId: entity.sessionId,
+				intent: "move",
+				result: "too_fast",
+			});
 			return { success: false };
 		}
 
@@ -80,17 +78,15 @@ export class MovementSystem {
 			entity.lastMoveMs = now;
 		}
 
-		if (entity instanceof Player) {
-			logger.debug({
-				room: roomId,
-				tick,
-				clientId: entity.sessionId,
-				intent: "move",
-				result: "ok",
-				posBefore,
-				posAfter: { x: newX, y: newY },
-			});
-		}
+		logger.debug({
+			room: roomId,
+			tick,
+			entityId: entity.sessionId,
+			intent: "move",
+			result: "ok",
+			posBefore,
+			posAfter: { x: newX, y: newY },
+		});
 
 		// Warp detection
 		const warp = map.warps?.find((w) => w.x === newX && w.y === newY);
