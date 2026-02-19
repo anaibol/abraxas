@@ -41,10 +41,18 @@ export class SpriteManager {
 	}
 
 	removePlayer(sessionId: string) {
-		const sprite = this.sprites.get(sessionId);
+		this.stopSpawnProtectionEffect(sessionId);
+		this.removeEntity(sessionId);
+	}
+
+	removeNpc(id: string) {
+		this.removeEntity(id);
+	}
+
+	private removeEntity(id: string) {
+		const sprite = this.sprites.get(id);
 		if (sprite) {
-			this.stopSpawnProtectionEffect(sessionId);
-			this.sprites.delete(sessionId);
+			this.sprites.delete(id);
 			sprite.destroy();
 		}
 	}

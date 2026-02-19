@@ -61,7 +61,7 @@ export const ITEMS: Record<string, Item> = {
     rarity: "common",
     stats: { str: 5 },
     goldValue: 20,
-    requiredClass: ["WARRIOR", "CLERIC"],
+    requiredClass: ["WARRIOR", "CLERIC", "PALADIN"],
     aoWeaponId: 14,
   },
   steel_sword: {
@@ -71,7 +71,7 @@ export const ITEMS: Record<string, Item> = {
     rarity: "uncommon",
     stats: { str: 10 },
     goldValue: 60,
-    requiredClass: ["WARRIOR", "CLERIC"],
+    requiredClass: ["WARRIOR", "CLERIC", "PALADIN"],
     aoWeaponId: 21,
   },
   flame_blade: {
@@ -201,7 +201,7 @@ export const ITEMS: Record<string, Item> = {
     rarity: "common",
     stats: { str: 4, int: 3 },
     goldValue: 25,
-    requiredClass: ["CLERIC"],
+    requiredClass: ["CLERIC", "PALADIN"],
     aoWeaponId: 4,
   },
   blessed_hammer: {
@@ -211,7 +211,7 @@ export const ITEMS: Record<string, Item> = {
     rarity: "uncommon",
     stats: { str: 8, int: 8 },
     goldValue: 90,
-    requiredClass: ["CLERIC"],
+    requiredClass: ["CLERIC", "PALADIN"],
     aoWeaponId: 15,
   },
   elder_staff: {
@@ -267,7 +267,7 @@ export const ITEMS: Record<string, Item> = {
     rarity: "uncommon",
     stats: { armor: 8, hp: 30 },
     goldValue: 50,
-    requiredClass: ["WARRIOR", "CLERIC"],
+    requiredClass: ["WARRIOR", "CLERIC", "PALADIN"],
   },
   plate_armor: {
     id: "plate_armor",
@@ -276,7 +276,7 @@ export const ITEMS: Record<string, Item> = {
     rarity: "rare",
     stats: { armor: 15, hp: 60, str: 5 },
     goldValue: 200,
-    requiredClass: ["WARRIOR"],
+    requiredClass: ["WARRIOR", "PALADIN"],
   },
   mage_robes: {
     id: "mage_robes",
