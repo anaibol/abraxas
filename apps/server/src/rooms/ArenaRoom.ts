@@ -265,6 +265,28 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 		}
 	}
 
+	onReconnect(client: Client) {
+		const player = this.state.players.get(client.sessionId);
+		if (!player) return;
+
+		client.view = new StateView();
+		client.view.add(player);
+
+		if (player.userId) {
+			this.friends.setUserOnline(player.userId, client.sessionId);
+		}
+
+		client.send(ServerMessageType.Welcome, {
+			sessionId: client.sessionId,
+			tileX: player.tileX,
+			tileY: player.tileY,
+			mapWidth: this.map.width,
+			mapHeight: this.map.height,
+			tileSize: this.map.tileSize,
+			collision: this.map.collision,
+		});
+	}
+
 	async onLeave(client: Client) {
 		await this.removePlayer(client);
 	}

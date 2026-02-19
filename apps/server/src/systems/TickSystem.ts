@@ -1,15 +1,15 @@
-import { Client } from "@colyseus/core";
-import { GameState } from "../schema/GameState";
-import { Player } from "../schema/Player";
-import { Npc } from "../schema/Npc";
-import { TileMap, ServerMessageType, ServerMessages, NPC_STATS, NPC_DROPS, BroadcastFn } from "@abraxas/shared";
-import { SpatialLookup, Entity } from "../utils/SpatialLookup";
-import { BuffSystem } from "../systems/BuffSystem";
-import { NpcSystem } from "../systems/NpcSystem";
-import { CombatSystem } from "../systems/CombatSystem";
-import { DropSystem } from "../systems/DropSystem";
-import { RespawnSystem } from "../systems/RespawnSystem";
-import { QuestSystem } from "../systems/QuestSystem";
+import type { Client } from "@colyseus/core";
+import type { GameState } from "../schema/GameState";
+import type { Player } from "../schema/Player";
+import type { Npc } from "../schema/Npc";
+import { ServerMessageType, NPC_STATS, NPC_DROPS, type TileMap, type ServerMessages, type BroadcastFn } from "@abraxas/shared";
+import type { SpatialLookup, Entity } from "../utils/SpatialLookup";
+import type { BuffSystem } from "../systems/BuffSystem";
+import type { NpcSystem } from "../systems/NpcSystem";
+import type { CombatSystem } from "../systems/CombatSystem";
+import type { DropSystem } from "../systems/DropSystem";
+import type { RespawnSystem } from "../systems/RespawnSystem";
+import type { QuestSystem } from "../systems/QuestSystem";
 
 interface TickOptions {
   state: GameState;
@@ -28,7 +28,7 @@ interface TickOptions {
   onEntityDeath: (entity: Entity, killerSessionId?: string) => void;
   onSummon: (caster: Entity, spellId: string, x: number, y: number) => void;
   gainXp: (player: Player, amount: number) => void;
-  sendQuestUpdates: (client: Client, updates: any[]) => void;
+  sendQuestUpdates: (client: Client, updates: Awaited<ReturnType<QuestSystem["updateProgress"]>>) => void;
   findClient: (sid: string) => Client | undefined;
 }
 
@@ -113,7 +113,7 @@ export class TickSystem {
 
     if (killerSessionId) {
       const killer = state.players.get(killerSessionId);
-      if (killer && killer.alive) {
+      if (killer?.alive) {
         this.handleNpcKillRewards(killer, npc);
       }
     }
