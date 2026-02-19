@@ -1,7 +1,5 @@
 import { resolve } from "path";
-import { defineRoom } from "@colyseus/core";
 import { createGameServer } from "./server";
-import { ArenaRoom } from "./rooms/ArenaRoom";
 import type { TileMap } from "@abraxas/shared";
 
 const mapName = process.env.MAP || "arena";
@@ -23,7 +21,6 @@ const server = await createGameServer({
 	port,
 	map,
 	staticDir,
-	rooms: { arena: defineRoom(ArenaRoom) },
 });
 
 console.log(`[Abraxas] Server listening on ws://localhost:${port}`);
