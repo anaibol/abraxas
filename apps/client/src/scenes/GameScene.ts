@@ -39,6 +39,7 @@ export class GameScene extends Phaser.Scene {
 	private cameraController!: CameraController;
 	private soundManager!: SoundManager;
 	private audioManager!: AudioManager;
+	private gameEventHandler!: GameEventHandler;
 
 	private collisionGrid: number[][] = [];
 	private stateUnsubscribers: (() => void)[] = [];
@@ -174,7 +175,7 @@ export class GameScene extends Phaser.Scene {
 			}),
 		);
 
-		new GameEventHandler(
+		this.gameEventHandler = new GameEventHandler(
 			this.room,
 			this.spriteManager,
 			this.effectManager,
@@ -183,7 +184,8 @@ export class GameScene extends Phaser.Scene {
 			this.onConsoleMessage,
 			this.onKillFeed,
 			this.onError,
-		).setupListeners();
+		);
+		this.gameEventHandler.setupListeners();
 
 		if (import.meta.env.DEV) {
 			this.debugText = this.add.text(10, 10, "", {
@@ -219,6 +221,7 @@ export class GameScene extends Phaser.Scene {
 	}
 
 	shutdown() {
+		this.gameEventHandler.destroy();
 		for (const unsub of this.stateUnsubscribers) unsub();
 		this.stateUnsubscribers = [];
 		this.inputHandler.destroy();
