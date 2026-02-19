@@ -631,9 +631,6 @@ export class PlayerSprite {
   }
 
   destroy() {
-    this.bodySprite.stop();
-    this.weaponSprite?.stop();
-    this.shieldSprite?.stop();
     this.container.destroy();
   }
 }
