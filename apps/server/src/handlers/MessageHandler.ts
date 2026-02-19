@@ -51,7 +51,6 @@ export interface RoomContext {
   broadcast: BroadcastCallback;
   isTileOccupied: (x: number, y: number, excludeId: string) => boolean;
   findClientByName: (name: string) => Client | undefined;
-  gainXp: (player: Player, amount: number) => void;
 }
 
 export class MessageHandler {
@@ -333,11 +332,29 @@ export class MessageHandler {
     const player = this.getActivePlayer(client);
     if (!player) return;
 
+    // Require player to be near the quest's NPC to turn in
+    const questDef = QUESTS[data.questId];
+    if (questDef) {
+      const isNearNpc = Array.from(this.ctx.state.npcs.values()).some(
+        (n) =>
+          n.type === questDef.npcId &&
+          n.alive &&
+          MathUtils.manhattanDist(
+            { x: player.tileX, y: player.tileY },
+            { x: n.tileX, y: n.tileY },
+          ) <= 3,
+      );
+      if (!isNearNpc) {
+        this.sendError(client, "You must be near the quest NPC to complete this quest");
+        return;
+      }
+    }
+
     this.ctx.systems.quests
       .completeQuest(player.dbId, data.questId)
       .then((questDef) => {
         if (questDef) {
-          this.ctx.gainXp(player, questDef.rewards.exp);
+          this.ctx.services.level.gainXp(player, questDef.rewards.exp);
           player.gold += questDef.rewards.gold;
 
           if (questDef.rewards.items) {
@@ -384,10 +401,24 @@ export class MessageHandler {
       return;
     }
 
+    // Validate item is actually sold by this merchant
+    const merchantStock = MERCHANT_INVENTORY.general_store ?? [];
+    if (!merchantStock.includes(data.itemId)) {
+      this.sendError(client, "That item is not available here");
+      return;
+    }
+
     const itemDef = ITEMS[data.itemId];
     if (!itemDef) return;
 
-    const quantity = data.quantity ?? 1;
+    const quantity = Math.max(1, data.quantity ?? 1);
+
+    // Prevent bulk buying non-stackable items
+    if (!itemDef.stackable && quantity > 1) {
+      this.sendError(client, "You can only buy one of that item at a time");
+      return;
+    }
+
     const totalCost = itemDef.goldValue * quantity;
     if (player.gold < totalCost) {
       this.sendError(client, "Not enough gold");
@@ -421,7 +452,15 @@ export class MessageHandler {
     const itemDef = ITEMS[data.itemId];
     if (!itemDef) return;
 
-    const quantity = data.quantity ?? 1;
+    // Cap quantity to what the player actually has in inventory
+    const slot = player.inventory.find((s) => s.itemId === data.itemId);
+    if (!slot) {
+      this.sendError(client, "Item not found in inventory");
+      return;
+    }
+    const quantity = Math.min(data.quantity ?? 1, slot.quantity);
+    if (quantity <= 0) return;
+
     const sellValue = Math.floor(itemDef.goldValue * 0.5) * quantity;
 
     if (this.ctx.systems.inventory.removeItem(player, data.itemId, quantity)) {

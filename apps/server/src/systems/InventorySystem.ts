@@ -1,6 +1,7 @@
 import {
   ITEMS,
   CLASS_STATS,
+  LEVEL_UP_STATS,
   type EquipmentSlot,
   MAX_INVENTORY_SLOTS,
   StatBonuses,
@@ -234,12 +235,15 @@ export class InventorySystem {
     const base = CLASS_STATS[player.classType];
     if (!base) return;
 
+    const lvl = Math.max(0, player.level - 1);
+    const levelBonus = LEVEL_UP_STATS[player.classType] ?? LEVEL_UP_STATS.WARRIOR;
     const equip = this.getEquipmentBonuses(player);
-    player.str = base.str + equip.str;
-    player.agi = base.agi + equip.agi;
-    player.intStat = base.int + equip.int;
-    player.maxHp = base.hp + equip.hp;
-    player.maxMana = base.mana + equip.mana;
+
+    player.str = base.str + equip.str + lvl * levelBonus.str;
+    player.agi = base.agi + equip.agi + lvl * levelBonus.agi;
+    player.intStat = base.int + equip.int + lvl * levelBonus.int;
+    player.maxHp = base.hp + equip.hp + lvl * levelBonus.hp;
+    player.maxMana = base.mana + equip.mana + lvl * levelBonus.mp;
     player.hp = Math.min(player.hp, player.maxHp);
     player.mana = Math.min(player.mana, player.maxMana);
   }

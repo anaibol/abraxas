@@ -20,7 +20,7 @@ export class Player extends Char {
   @view() @type("int16") maxMana: number = 0;
 
   /** Economy — no other player should see your gold */
-  @view() @type("uint16") gold: number = 0;
+  @view() @type("uint32") gold: number = 0;
 
   /** Progression — XP is private */
   @view() @type("uint8") level: number = 1;

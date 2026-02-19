@@ -40,6 +40,7 @@ export class RespawnSystem {
       const player = getPlayer(entry.sessionId);
       if (!player) continue;
 
+      if (!map.spawns || map.spawns.length === 0) continue;
       const spawn = map.spawns[Math.floor(Math.random() * map.spawns.length)];
 
       player.tileX = spawn.x;

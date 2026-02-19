@@ -74,7 +74,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     [ClientMessageType.Equip]: validate(z.object({ itemId: z.string() }), (client, data) => this.messageHandler.handleEquip(client, data)),
     [ClientMessageType.Unequip]: validate(z.object({ slot: z.enum(EQUIPMENT_SLOTS) }), (client, data) => this.messageHandler.handleUnequip(client, data)),
     [ClientMessageType.UseItem]: validate(z.object({ itemId: z.string() }), (client, data) => this.messageHandler.handleUseItem(client, data)),
-    [ClientMessageType.DropItem]: validate(z.object({ itemId: z.string() }), (client, data) => this.messageHandler.handleDropItem(client, data)),
+    [ClientMessageType.DropItem]: validate(z.object({ itemId: z.string(), quantity: z.number().int().positive().optional() }), (client, data) => this.messageHandler.handleDropItem(client, data)),
     [ClientMessageType.Interact]: validate(z.object({ npcId: z.string() }), (client, data) => this.messageHandler.handleInteract(client, data)),
     [ClientMessageType.BuyItem]: validate(z.object({ itemId: z.string(), quantity: z.number() }), (client, data) => this.messageHandler.handleBuyItem(client, data)),
     [ClientMessageType.SellItem]: validate(z.object({ itemId: z.string(), quantity: z.number(), npcId: z.string().optional() }), (client, data) => this.messageHandler.handleSellItem(client, data)),
@@ -110,7 +110,10 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       this.friends = new FriendsSystem(this.state, (sid) => this.findClient(sid));
 
       this.playerService = new PlayerService(this.state, this.inventorySystem, this.spatial, this.quests, this.friends);
-      this.levelService = new LevelService(this.broadcast.bind(this));
+      this.levelService = new LevelService(
+        this.broadcast.bind(this),
+        (p) => this.inventorySystem.recalcStats(p),
+      );
 
       const findClientByName = (name: string) => {
         const player = Array.from(this.state.players.values()).find((p) => p.name === name);
@@ -139,7 +142,6 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         broadcast: this.broadcast.bind(this),
         isTileOccupied: this.spatial.isTileOccupied.bind(this.spatial),
         findClientByName,
-        gainXp: (player, amount) => this.levelService.gainXp(player, amount),
       });
 
       this.tickSystem = new TickSystem({
@@ -284,10 +286,6 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     }
     this.broadcast(ServerMessageType.Death, { sessionId: player.sessionId, killerSessionId });
     this.respawnSystem.queueRespawn(player.sessionId, Date.now());
-  }
-
-  private gainXp(player: Player, amount: number) {
-    this.levelService.gainXp(player, amount);
   }
 
   private findClient(sid: string): Client | undefined {

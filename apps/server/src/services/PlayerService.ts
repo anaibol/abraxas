@@ -86,6 +86,10 @@ export class PlayerService {
           }
         }
       }
+      // Recalculate stats now that equipment is applied (accounts for level bonuses too)
+      this.inventorySystem.recalcStats(player);
+      player.hp = Math.min(player.hp, player.maxHp);
+      player.mana = Math.min(player.mana, player.maxMana);
     }
 
     return player;

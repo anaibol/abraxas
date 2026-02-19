@@ -1,3 +1,4 @@
+import { Client } from "@colyseus/core";
 import { GameState } from "../schema/GameState";
 import { Player } from "../schema/Player";
 import { Npc } from "../schema/Npc";
@@ -23,12 +24,12 @@ export interface TickOptions {
     quests: QuestSystem;
     spatial: SpatialLookup;
   };
-  broadcast: (type: any, data?: any) => void;
+  broadcast: (type: ServerMessageType, data?: any) => void;
   onEntityDeath: (entity: Entity, killerSessionId?: string) => void;
   onSummon: (caster: Entity, spellId: string, x: number, y: number) => void;
   gainXp: (player: Player, amount: number) => void;
-  sendQuestUpdates: (client: any, updates: any) => void;
-  findClient: (sid: string) => any;
+  sendQuestUpdates: (client: Client, updates: any[]) => void;
+  findClient: (sid: string) => Client | undefined;
 }
 
 export class TickSystem {
@@ -57,7 +58,6 @@ export class TickSystem {
       deltaTime,
       map,
       now,
-      (x, y, ex) => systems.spatial.isTileOccupied(x, y, ex),
       state.tick,
       roomId,
       broadcast,
@@ -127,7 +127,7 @@ export class TickSystem {
   private handleNpcKillRewards(player: Player, npc: Npc) {
     const { systems } = this.opts;
     const stats = NPC_STATS[npc.type];
-    if (stats && stats.expReward) {
+    if (stats && typeof stats.expReward === "number") {
       this.opts.gainXp(player, stats.expReward);
     }
 

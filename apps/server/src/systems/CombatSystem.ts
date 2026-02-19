@@ -143,6 +143,8 @@ export class CombatSystem {
     now: number,
     sendToClient?: SendToClientFn,
   ): boolean {
+    if (this.buffSystem.isStunned(attacker.sessionId, now)) return false;
+
     const cs = this.getEntityState(attacker.sessionId);
     const stats = attacker.getStats()!;
 
@@ -193,6 +195,7 @@ export class CombatSystem {
       targetTileY,
     };
 
+    cs.lastGcdMs = now;
     this.activeWindups.set(attacker.sessionId, windup);
     broadcast(ServerMessageType.AttackStart, {
       sessionId: attacker.sessionId,
@@ -211,9 +214,20 @@ export class CombatSystem {
     now: number,
     sendToClient?: SendToClientFn,
   ): boolean {
+    if (this.buffSystem.isStunned(caster.sessionId, now)) return false;
+
     const cs = this.getEntityState(caster.sessionId);
     const spell = SPELLS[spellId];
     if (!spell) return false;
+
+    // Class restriction: players may only cast spells assigned to their class
+    if (caster instanceof Player) {
+      const classStats = caster.getStats();
+      if (classStats && !classStats.spells.includes(spellId)) {
+        sendToClient?.(ServerMessageType.Notification, { message: "Your class cannot use that spell" });
+        return false;
+      }
+    }
 
     if (now < cs.lastGcdMs + GCD_MS || this.activeWindups.has(caster.sessionId)) {
       cs.bufferedAction = {
@@ -389,6 +403,13 @@ export class CombatSystem {
     // Handle summon spells
     if (spell.id.startsWith("summon_") && onSummon) {
       onSummon(attacker, spell.id, windup.targetTileX, windup.targetTileY);
+      broadcast(ServerMessageType.CastHit, {
+        sessionId: attacker.sessionId,
+        spellId: spell.id,
+        targetTileX: windup.targetTileX,
+        targetTileY: windup.targetTileY,
+        fxId: spell.fxId,
+      });
       return;
     }
 
@@ -501,6 +522,10 @@ export class CombatSystem {
       });
     } else if (spell.effect === "stun" || spell.buffStat === "stun") {
       this.buffSystem.applyStun(target.sessionId, spell.durationMs ?? 1000, now);
+      broadcast(ServerMessageType.StunApplied, {
+        targetSessionId: target.sessionId,
+        durationMs: spell.durationMs ?? 1000,
+      });
     } else if (spell.effect === "buff" || spell.buffStat) {
       this.buffSystem.addBuff(
         target.sessionId,
@@ -527,7 +552,7 @@ export class CombatSystem {
     });
   }
 
-  private boosted(entity: Entity, stat: string, now: number): number {
+  boosted(entity: Entity, stat: string, now: number): number {
     let base = 0;
     if (stat === "str") base = entity.str;
     else if (stat === "agi") base = entity.agi;
@@ -535,9 +560,5 @@ export class CombatSystem {
 
     const bonus = this.buffSystem.getBuffBonus(entity.sessionId, stat, now);
     return base + bonus;
-  }
-
-  cancelWindup(sessionId: string) {
-    this.activeWindups.delete(sessionId);
   }
 }
