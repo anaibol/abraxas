@@ -2,7 +2,6 @@ import { createRoot } from "react-dom/client";
 import { I18nextProvider } from "react-i18next";
 import { i18n } from "@abraxas/shared";
 import { App } from "./ui/App";
-import "./index.css";
 
 const savedLang = localStorage.getItem("abraxas_lang");
 if (savedLang) {
