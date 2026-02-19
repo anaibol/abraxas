@@ -409,97 +409,130 @@ export class GameScene extends Phaser.Scene {
 		}));
 	}
 
-	private generateTileTextures() {
-		if (!this.textures.exists("tile-tree")) {
-			const g = this.add.graphics();
-			// Forest floor base
-			g.fillStyle(0x2d5a1b, 1);
-			g.fillRect(0, 0, 32, 32);
-			// Foliage
-			g.fillStyle(0x236b14, 1);
-			g.fillCircle(16, 13, 11);
-			// Top highlight
-			g.fillStyle(0x1a5210, 0.8);
-			g.fillCircle(15, 10, 7);
-			// Trunk
-			g.fillStyle(0x5c3d1e, 1);
-			g.fillRect(13, 22, 6, 9);
-			g.generateTexture("tile-tree", 32, 32);
-			g.destroy();
-		}
-
-		if (!this.textures.exists("tile-water")) {
-			const g = this.add.graphics();
-			// Deep water
-			g.fillStyle(0x1a4a8a, 1);
-			g.fillRect(0, 0, 32, 32);
-			// Mid water
-			g.fillStyle(0x2868b8, 0.65);
-			g.fillRect(0, 0, 32, 32);
-			// Wave highlights
-			g.fillStyle(0x5090d0, 0.35);
-			g.fillRect(2, 6, 10, 2);
-			g.fillRect(16, 10, 8, 2);
-			g.fillRect(4, 20, 12, 2);
-			g.fillRect(18, 24, 8, 2);
-			// Shimmer at bottom
-			g.fillStyle(0x80c0ff, 0.15);
-			g.fillRect(0, 28, 32, 4);
-			g.generateTexture("tile-water", 32, 32);
-			g.destroy();
-		}
-	}
-
+	/** Draws the entire map onto a single persistent Graphics object. */
 	private drawMap() {
 		const { mapWidth, mapHeight, collision, tileTypes } = this.welcome;
+		const T = TILE_SIZE;
+		const g = this.add.graphics().setDepth(0);
 
-		this.generateTileTextures();
+		// ── Grass background (one rect covering the whole map) ──────────────────
+		g.fillStyle(0x4a8c2a, 1);
+		g.fillRect(0, 0, mapWidth * T, mapHeight * T);
 
-		const grassTex = this.textures.get("tile-grass");
-		for (let v = 0; v < 4; v++) {
-			grassTex.add(v, 0, v * 32, 0, 32, 32);
-		}
-		const wallTex = this.textures.get("tile-wall");
-		wallTex.add(1, 0, 0, 0, 32, 32);
+		// ── Per-tile variation and non-grass tiles ───────────────────────────────
+		for (let ty = 0; ty < mapHeight; ty++) {
+			for (let tx = 0; tx < mapWidth; tx++) {
+				const type =
+					tileTypes?.[ty]?.[tx] ??
+					(collision[ty]?.[tx] === 1 ? 1 : 0);
+				const px = tx * T;
+				const py = ty * T;
+				const h = ((tx * 2246822519 + ty * 3266489917) >>> 0);
 
-		// Render tiles in 100×100 chunks via RenderTexture for performance.
-		// Each chunk is drawn once into a single GPU texture (≤3200×3200 px).
-		const CHUNK = 100;
-		const half = TILE_SIZE / 2; // stamp() uses center-origin by default
-
-		for (let cy = 0; cy < mapHeight; cy += CHUNK) {
-			for (let cx = 0; cx < mapWidth; cx += CHUNK) {
-				const chW = Math.min(CHUNK, mapWidth - cx);
-				const chH = Math.min(CHUNK, mapHeight - cy);
-
-				const rt = this.add
-					.renderTexture(cx * TILE_SIZE, cy * TILE_SIZE, chW * TILE_SIZE, chH * TILE_SIZE)
-					.setOrigin(0, 0)
-					.setDepth(0);
-
-				for (let ty = cy; ty < cy + chH; ty++) {
-					for (let tx = cx; tx < cx + chW; tx++) {
-						const type =
-							tileTypes?.[ty]?.[tx] ??
-							(collision[ty]?.[tx] === 1 ? 1 : 0);
-						const px = (tx - cx) * TILE_SIZE + half;
-						const py = (ty - cy) * TILE_SIZE + half;
-
-						switch (type) {
-							case 1:
-								rt.stamp("tile-wall", 1, px, py);
-								break;
-							case 2:
-								rt.stamp("tile-tree", 0, px, py);
-								break;
-							case 3:
-								rt.stamp("tile-water", 0, px, py);
-								break;
-							default: {
-								const variant = ((tx * 7 + ty * 13) & 0x7fffffff) % 4;
-								rt.stamp("tile-grass", variant, px, py);
-							}
+				switch (type) {
+					case 0: {
+						// Subtle grass texture: 1–2 random patches per tile
+						const shade = h % 3;
+						if (shade === 0) {
+							g.fillStyle(0x3e7a1e, 0.45);
+							g.fillRect(px + (h & 7), py + ((h >> 4) & 7), 10, 8);
+						} else if (shade === 1) {
+							g.fillStyle(0x5aaa2c, 0.35);
+							g.fillRect(px + ((h >> 2) & 15), py + ((h >> 6) & 15), 8, 6);
 						}
+						// Occasional bright blade highlights
+						if ((h >> 8) % 7 === 0) {
+							g.fillStyle(0x72cc40, 0.5);
+							g.fillRect(px + ((h >> 10) & 27), py + ((h >> 14) & 27), 2, 4);
+						}
+						break;
+					}
+					case 1: {
+						// Stone wall – dark base + brick layers
+						g.fillStyle(0x484848, 1);
+						g.fillRect(px, py, T, T);
+						// Lighter stone face
+						g.fillStyle(0x606060, 1);
+						// Row 1 bricks
+						g.fillRect(px + 1, py + 1, 14, 6);
+						g.fillRect(px + 17, py + 1, 14, 6);
+						// Row 2 bricks (offset)
+						g.fillRect(px + 1, py + 9, 8, 6);
+						g.fillRect(px + 11, py + 9, 10, 6);
+						g.fillRect(px + 23, py + 9, 8, 6);
+						// Row 3 bricks
+						g.fillRect(px + 1, py + 17, 14, 6);
+						g.fillRect(px + 17, py + 17, 14, 6);
+						// Row 4 bricks (offset)
+						g.fillRect(px + 1, py + 25, 8, 5);
+						g.fillRect(px + 11, py + 25, 10, 5);
+						g.fillRect(px + 23, py + 25, 8, 5);
+						// Mortar (dark)
+						g.fillStyle(0x2c2c2c, 1);
+						g.fillRect(px, py, T, 1);
+						g.fillRect(px, py + 8, T, 2);
+						g.fillRect(px, py + 16, T, 2);
+						g.fillRect(px, py + 24, T, 2);
+						g.fillRect(px + 15, py, 2, 9);
+						g.fillRect(px + 9, py + 8, 2, 9);
+						g.fillRect(px + 21, py + 8, 2, 9);
+						g.fillRect(px + 15, py + 16, 2, 9);
+						g.fillRect(px + 9, py + 24, 2, 8);
+						g.fillRect(px + 21, py + 24, 2, 8);
+						// Subtle top-left highlight on each brick face
+						g.fillStyle(0x7a7a7a, 0.5);
+						g.fillRect(px + 1, py + 1, 14, 1);
+						g.fillRect(px + 1, py + 1, 1, 6);
+						g.fillRect(px + 17, py + 1, 14, 1);
+						g.fillRect(px + 17, py + 1, 1, 6);
+						break;
+					}
+					case 2: {
+						// Tree – forest floor + canopy + trunk
+						g.fillStyle(0x2a5018, 1);
+						g.fillRect(px, py, T, T);
+						// Drop shadow
+						g.fillStyle(0x1a3a10, 0.55);
+						g.fillCircle(px + 16, py + 19, 12);
+						// Main foliage
+						g.fillStyle(0x2c7c18, 1);
+						g.fillCircle(px + 16, py + 13, 11);
+						// Highlight clusters
+						g.fillStyle(0x3a9820, 0.85);
+						g.fillCircle(px + 12, py + 10, 7);
+						g.fillCircle(px + 20, py + 10, 7);
+						// Top bright spot
+						g.fillStyle(0x50c030, 0.65);
+						g.fillCircle(px + 14, py + 8, 5);
+						// Trunk
+						g.fillStyle(0x46280c, 1);
+						g.fillRect(px + 13, py + 21, 6, 11);
+						g.fillStyle(0x624014, 0.6);
+						g.fillRect(px + 13, py + 21, 2, 11);
+						break;
+					}
+					case 3: {
+						// Water – deep blue with animated-looking waves
+						g.fillStyle(0x0c2a68, 1);
+						g.fillRect(px, py, T, T);
+						// Mid-layer
+						g.fillStyle(0x1848b0, 0.7);
+						g.fillRect(px, py, T, T);
+						// Lighter band
+						g.fillStyle(0x2860cc, 0.5);
+						g.fillRect(px, py + 10, T, 10);
+						// Waves
+						g.fillStyle(0x58a0e8, 0.55);
+						g.fillRect(px + 2, py + 5, 12, 2);
+						g.fillRect(px + 18, py + 8, 10, 2);
+						g.fillRect(px + 4, py + 17, 14, 2);
+						g.fillRect(px + 20, py + 22, 8, 2);
+						g.fillRect(px + 1, py + 26, 10, 2);
+						// Shimmer
+						g.fillStyle(0xa0d4ff, 0.28);
+						g.fillRect(px + 6, py + 5, 3, 1);
+						g.fillRect(px + 22, py + 9, 2, 1);
+						break;
 					}
 				}
 			}

@@ -94,6 +94,8 @@
     "trade_cancelled": "Intercambio cancelado: {{reason}}",
     "item_used": "Usado: {{item}}",
     "invalid_target": "Objetivo inválido",
+    "connection_failed": "Conexión fallida",
+    "connection_failed_desc": "No se pudo conectar al servidor. ¿Está en ejecución?",
     "trade_cancelled_by_player": "El jugador canceló el intercambio",
     "pong": "¡Pong! {{rtt}}ms"
   },
@@ -107,7 +109,9 @@
     "left_party": "{{name}} ha abandonado el grupo",
     "leader_only_kick": "Solo el líder puede expulsar jugadores",
     "kicked_from_party": "Has sido expulsado del grupo",
-    "new_leader": "{{name}} es ahora el líder del grupo"
+    "new_leader": "{{name}} es ahora el líder del grupo",
+    "friend_request": "{{targetName}} quiere ser tu amigo",
+    "trade_requested": "{{name}} quiere comerciar contigo"
   },
   "sidebar": {
     "tabs": {
@@ -440,6 +444,19 @@
       "name": "Perno Sagrado",
       "desc": "Lanza un rayo concentrado de luz divina a un enemigo distante."
     }
+  },
+  "item_slot": {
+    "weapon": "Arma",
+    "armor": "Armadura",
+    "shield": "Escudo",
+    "helmet": "Casco",
+    "ring": "Anillo",
+    "consumable": "Consumible"
+  },
+  "item_rarity": {
+    "common": "Común",
+    "uncommon": "Poco común",
+    "rare": "Raro"
   },
   "ui": {
     "merchant": {

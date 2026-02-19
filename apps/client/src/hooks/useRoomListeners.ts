@@ -98,7 +98,7 @@ export function useRoomListeners(
 
     on(ServerMessageType.PartyInvited, (data) => {
       toaster.create({
-        title: t("sidebar.party.tabs.party"),
+        title: t("sidebar.tabs.party"),
         description: t("social.invited_to_party", { name: data.inviterName }),
         action: {
           label: t("sidebar.friends.accept"),
@@ -129,7 +129,7 @@ export function useRoomListeners(
 
     on(ServerMessageType.TradeRequested, (data) => {
       toaster.create({
-        title: t("sidebar.party.trade"),
+        title: t("trade.title"),
         description: t("social.trade_requested", { name: data.requesterName }),
         type: "info",
         action: {

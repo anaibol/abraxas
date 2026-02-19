@@ -295,7 +295,7 @@ export function App() {
               },
               (message: string) => {
                 toaster.create({
-                  title: "Error",
+                  title: t("lobby.error.title"),
                   description: message,
                   type: "error",
                   duration: 3000,
@@ -327,8 +327,8 @@ export function App() {
         setConnecting(false);
         setIsLoading(false);
         toaster.create({
-          title: "Connection Failed",
-          description: "Failed to connect to server. Is it running?",
+          title: t("game.connection_failed"),
+          description: t("game.connection_failed_desc"),
           type: "error",
         });
       }

@@ -94,6 +94,8 @@
     "trade_cancelled": "Scambio annullato: {{reason}}",
     "item_used": "Usato: {{item}}",
     "invalid_target": "Obiettivo non valido",
+    "connection_failed": "Connessione fallita",
+    "connection_failed_desc": "Impossibile connettersi al server. È in esecuzione?",
     "trade_cancelled_by_player": "Il giocatore ha annullato lo scambio",
     "pong": "Pong! {{rtt}}ms"
   },
@@ -107,7 +109,9 @@
     "left_party": "{{name}} ha lasciato il gruppo",
     "leader_only_kick": "Solo il leader può cacciare i giocatori",
     "kicked_from_party": "Sei stato cacciato dal gruppo",
-    "new_leader": "{{name}} è ora il leader del gruppo"
+    "new_leader": "{{name}} è ora il leader del gruppo",
+    "friend_request": "{{targetName}} vuole essere tuo amico",
+    "trade_requested": "{{name}} vuole commerciare con te"
   },
   "sidebar": {
     "tabs": {
@@ -440,6 +444,19 @@
       "name": "Dardo Sacro",
       "desc": "Lancia un dardo concentrato di luce divina a un nemico distante."
     }
+  },
+  "item_slot": {
+    "weapon": "Arma",
+    "armor": "Armatura",
+    "shield": "Scudo",
+    "helmet": "Elmo",
+    "ring": "Anello",
+    "consumable": "Consumabile"
+  },
+  "item_rarity": {
+    "common": "Comune",
+    "uncommon": "Non comune",
+    "rare": "Raro"
   },
   "ui": {
     "merchant": {

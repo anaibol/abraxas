@@ -94,6 +94,8 @@
     "trade_cancelled": "Échange annulé : {{reason}}",
     "item_used": "Utilisé : {{item}}",
     "invalid_target": "Cible invalide",
+    "connection_failed": "Connexion échouée",
+    "connection_failed_desc": "Impossible de se connecter au serveur. Est-il en cours d'exécution ?",
     "trade_cancelled_by_player": "Le joueur a annulé l'échange",
     "pong": "Pong ! {{rtt}}ms"
   },
@@ -107,7 +109,9 @@
     "left_party": "{{name}} a quitté le groupe",
     "leader_only_kick": "Seul le chef peut exclure des joueurs",
     "kicked_from_party": "Vous avez été exclu du groupe",
-    "new_leader": "{{name}} est maintenant le chef de groupe"
+    "new_leader": "{{name}} est maintenant le chef de groupe",
+    "friend_request": "{{targetName}} veut être votre ami",
+    "trade_requested": "{{name}} veut commercer avec vous"
   },
   "sidebar": {
     "tabs": {
@@ -440,6 +444,19 @@
       "name": "Éclair Sacré",
       "desc": "Lance un éclair concentré de lumière divine sur un ennemi distant."
     }
+  },
+  "item_slot": {
+    "weapon": "Arme",
+    "armor": "Armure",
+    "shield": "Bouclier",
+    "helmet": "Casque",
+    "ring": "Anneau",
+    "consumable": "Consommable"
+  },
+  "item_rarity": {
+    "common": "Commun",
+    "uncommon": "Peu commun",
+    "rare": "Rare"
   },
   "ui": {
     "merchant": {

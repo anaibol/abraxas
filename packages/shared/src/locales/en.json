@@ -94,6 +94,8 @@
     "trade_cancelled": "Trade cancelled: {{reason}}",
     "item_used": "Used: {{item}}",
     "invalid_target": "Invalid target",
+    "connection_failed": "Connection Failed",
+    "connection_failed_desc": "Failed to connect to server. Is it running?",
     "trade_cancelled_by_player": "Player cancelled the trade",
     "pong": "Pong! {{rtt}}ms"
   },
@@ -107,7 +109,9 @@
     "left_party": "{{name}} left the party",
     "leader_only_kick": "Only the leader can kick players",
     "kicked_from_party": "You were kicked from the party",
-    "new_leader": "{{name}} is now the party leader"
+    "new_leader": "{{name}} is now the party leader",
+    "friend_request": "{{targetName}} wants to be your friend",
+    "trade_requested": "{{name}} wants to trade with you"
   },
   "sidebar": {
     "tabs": {
@@ -440,6 +444,19 @@
       "name": "Holy Bolt",
       "desc": "Launch a concentrated bolt of divine light at a distant enemy."
     }
+  },
+  "item_slot": {
+    "weapon": "Weapon",
+    "armor": "Armor",
+    "shield": "Shield",
+    "helmet": "Helmet",
+    "ring": "Ring",
+    "consumable": "Consumable"
+  },
+  "item_rarity": {
+    "common": "Common",
+    "uncommon": "Uncommon",
+    "rare": "Rare"
   },
   "ui": {
     "merchant": {

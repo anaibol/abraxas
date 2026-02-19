@@ -40,9 +40,6 @@ export class PreloaderScene extends Phaser.Scene {
     this.load.json("idx-cascos", "indices/cascos.json");
     this.load.json("idx-fxs", "indices/fxs.json");
 
-    this.load.image("tile-grass", "graficos/12052.webp");
-    this.load.image("tile-wall", "graficos/12046.webp");
-
     this.load.audio("sfx-step1", "audio/sonidos/23.webm");
     this.load.audio("sfx-step2", "audio/sonidos/24.webm");
     this.load.audio("sfx-attack", "audio/sonidos/2.webm");
