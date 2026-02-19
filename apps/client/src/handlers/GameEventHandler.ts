@@ -1,6 +1,11 @@
 import type { Room } from "@colyseus/sdk";
 import type { ServerMessages } from "@abraxas/shared";
-import { ServerMessageType, SPAWN_PROTECTION_MS, ChatChannel, SPELLS } from "@abraxas/shared";
+import {
+	ServerMessageType,
+	SPAWN_PROTECTION_MS,
+	ChatChannel,
+	SPELLS,
+} from "@abraxas/shared";
 import type { SpriteManager } from "../managers/SpriteManager";
 import type { EffectManager } from "../managers/EffectManager";
 import type { SoundManager } from "../assets/SoundManager";
@@ -58,7 +63,11 @@ export class GameEventHandler {
 	}
 
 	private onChat(data: ServerMessages[ServerMessageType.Chat]) {
-		if (data.channel === ChatChannel.Whisper || data.channel === ChatChannel.System) return;
+		if (
+			data.channel === ChatChannel.Whisper ||
+			data.channel === ChatChannel.System
+		)
+			return;
 		this.spriteManager.showChatBubble(data.senderId, data.message);
 	}
 
@@ -88,6 +97,7 @@ export class GameEventHandler {
 		const sprite = this.spriteManager.getSprite(data.sessionId);
 		if (sprite) {
 			this.spriteManager.pulseAlpha(data.sessionId, 0.8, 140);
+			this.effectManager.playCastWindup(data.sessionId, data.spellId);
 			if (this.isSelf(data.sessionId))
 				this.onConsoleMessage?.("You cast a spell!", "#aaaaff");
 		}
@@ -95,7 +105,11 @@ export class GameEventHandler {
 	}
 
 	private onCastHit(data: ServerMessages["cast_hit"]) {
-		this.effectManager.playSpellEffect(data.spellId, data.targetTileX, data.targetTileY);
+		this.effectManager.playSpellEffect(
+			data.spellId,
+			data.targetTileX,
+			data.targetTileY,
+		);
 	}
 
 	private onDamage(data: ServerMessages["damage"]) {
@@ -110,6 +124,8 @@ export class GameEventHandler {
 	private onDeath(data: ServerMessages["death"]) {
 		const sprite = this.spriteManager.getSprite(data.sessionId);
 		if (sprite) {
+			this.effectManager.playDeath(data.sessionId);
+			this.spriteManager.playDeathAnimation(data.sessionId);
 			this.spriteManager.setAlpha(data.sessionId, 0.3);
 		}
 		if (this.isSelf(data.sessionId)) {
@@ -123,6 +139,7 @@ export class GameEventHandler {
 		const sprite = this.spriteManager.getSprite(data.sessionId);
 		if (sprite) {
 			sprite.setTilePosition(data.tileX, data.tileY);
+			this.effectManager.playRespawn(data.sessionId);
 			this.spriteManager.startSpawnProtectionEffect(
 				data.sessionId,
 				SPAWN_PROTECTION_MS,
@@ -150,36 +167,83 @@ export class GameEventHandler {
 		const effect = spell?.effect ?? "buff";
 
 		if (effect === "debuff") {
-			this.spriteManager.applySpellStateVisual(data.sessionId, data.spellId, durationMs);
-			this.effectManager.showFloatingText(data.sessionId, "WEAKENED", "#cc44ff");
+			this.spriteManager.applySpellStateVisual(
+				data.sessionId,
+				data.spellId,
+				durationMs,
+			);
+			this.effectManager.showFloatingText(
+				data.sessionId,
+				"WEAKENED",
+				"#cc44ff",
+			);
 		} else if (effect === "stun") {
 			this.spriteManager.applyStunVisual(data.sessionId, durationMs);
-			this.effectManager.showFloatingText(data.sessionId, "STUNNED ✦", "#ffff44");
+			this.effectManager.showFloatingText(
+				data.sessionId,
+				"STUNNED ✦",
+				"#ffff44",
+			);
 		} else if (effect === "stealth") {
-			this.spriteManager.applySpellStateVisual(data.sessionId, data.spellId, durationMs);
+			this.spriteManager.applySpellStateVisual(
+				data.sessionId,
+				data.spellId,
+				durationMs,
+			);
 			this.effectManager.showFloatingText(data.sessionId, "STEALTH", "#aaddff");
 		} else if (data.spellId === "divine_shield") {
 			this.spriteManager.applyInvulnerableVisual(data.sessionId, durationMs);
-			this.effectManager.showFloatingText(data.sessionId, "INVULNERABLE", "#ffffff");
+			this.effectManager.showFloatingText(
+				data.sessionId,
+				"INVULNERABLE",
+				"#ffffff",
+			);
 		} else if (effect === "dot") {
-			this.spriteManager.applySpellStateVisual(data.sessionId, data.spellId, durationMs);
-			this.effectManager.showFloatingText(data.sessionId, "POISONED", "#44ff44");
+			this.spriteManager.applySpellStateVisual(
+				data.sessionId,
+				data.spellId,
+				durationMs,
+			);
+			this.effectManager.showFloatingText(
+				data.sessionId,
+				"POISONED",
+				"#44ff44",
+			);
 		} else {
-			this.spriteManager.applySpellStateVisual(data.sessionId, data.spellId, durationMs);
-			this.effectManager.showFloatingText(data.sessionId, "BUFFED ✦", "#ffdd44");
+			this.spriteManager.applySpellStateVisual(
+				data.sessionId,
+				data.spellId,
+				durationMs,
+			);
+			this.effectManager.showFloatingText(
+				data.sessionId,
+				"BUFFED ✦",
+				"#ffdd44",
+			);
 		}
 	}
 
 	private onStunApplied(data: ServerMessages["stun_applied"]) {
-		this.spriteManager.applyStunVisual(data.targetSessionId, data.durationMs ?? 1500);
-		this.effectManager.showFloatingText(data.targetSessionId, "STUNNED ✦", "#ffff44");
+		this.spriteManager.applyStunVisual(
+			data.targetSessionId,
+			data.durationMs ?? 1500,
+		);
+		this.effectManager.showFloatingText(
+			data.targetSessionId,
+			"STUNNED ✦",
+			"#ffff44",
+		);
 		if (this.isSelf(data.targetSessionId)) {
 			this.onConsoleMessage?.("You are stunned!", "#ffff44");
 		}
 	}
 
 	private onStealthApplied(data: ServerMessages["stealth_applied"]) {
-		this.spriteManager.applySpellStateVisual(data.sessionId, "stealth", data.durationMs);
+		this.spriteManager.applySpellStateVisual(
+			data.sessionId,
+			"stealth",
+			data.durationMs,
+		);
 		this.effectManager.showFloatingText(data.sessionId, "STEALTH", "#aaddff");
 	}
 
@@ -188,11 +252,15 @@ export class GameEventHandler {
 	}
 
 	private onInvalidTarget() {
-		this.effectManager.showFloatingText(this.room.sessionId, "Invalid target", "#ff8800");
+		this.effectManager.showFloatingText(
+			this.room.sessionId,
+			"Invalid target",
+			"#ff8800",
+		);
 	}
 
 	private onLevelUp(data: ServerMessages["level_up"]) {
-		this.effectManager.showFloatingText(data.sessionId, "LEVEL UP!", "#ffff00");
+		this.effectManager.playLevelUp(data.sessionId);
 	}
 
 	private onNotification(data: ServerMessages["notification"]) {

@@ -277,7 +277,7 @@ export class NpcSystem {
   }
 
   private updateReturn(npc: Npc, map: TileMap, now: number, tickCount: number, roomId: string): void {
-    const dist = Math.abs(npc.spawnX - npc.tileX) + Math.abs(npc.spawnY - npc.tileY);
+    const dist = MathUtils.manhattanDist(npc.getPosition(), { x: npc.spawnX, y: npc.spawnY });
     if (dist === 0) {
       npc.hp = npc.maxHp;
       npc.state = NpcState.IDLE;
@@ -293,10 +293,7 @@ export class NpcSystem {
 
     if (dx === 0 && dy === 0) return;
 
-    // Determine primary and secondary directions based on distance
-    const primaryDir = Math.abs(dx) > Math.abs(dy)
-      ? (dx > 0 ? Direction.RIGHT : Direction.LEFT)
-      : (dy > 0 ? Direction.DOWN : Direction.UP);
+    const primaryDir = MathUtils.getDirection(npc.getPosition(), { x: tx, y: ty });
 
     const result = this.movementSystem.tryMove(npc, primaryDir, map, now, tickCount, roomId);
     if (!result.success && (dx !== 0 && dy !== 0)) {

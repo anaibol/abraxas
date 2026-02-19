@@ -50,7 +50,14 @@ export class GameScene extends Phaser.Scene {
 
 	private muteKey?: Phaser.Input.Keyboard.Key;
 	private debugText?: Phaser.GameObjects.Text;
-	private dropGraphics = new Map<string, Phaser.GameObjects.Arc>();
+	private dropVisuals = new Map<
+		string,
+		{
+			arc: Phaser.GameObjects.Arc;
+			tween: Phaser.Tweens.Tween;
+			emitter: Phaser.GameObjects.Particles.ParticleEmitter;
+		}
+	>();
 	private handleVisibilityChange = () => {
 		if (document.visibilityState === "visible") {
 			const webAudio = this.sound as Phaser.Sound.WebAudioSoundManager;
@@ -92,7 +99,9 @@ export class GameScene extends Phaser.Scene {
 		this.soundManager = new SoundManager(this);
 		this.soundManager.startMusic();
 
-		this.muteKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.M);
+		this.muteKey = this.input.keyboard?.addKey(
+			Phaser.Input.Keyboard.KeyCodes.M,
+		);
 		this.muteKey?.on("down", () => {
 			this.soundManager.toggleMute();
 		});
@@ -135,7 +144,9 @@ export class GameScene extends Phaser.Scene {
 				if (targetNpcId) this.network.sendInteract(targetNpcId);
 			},
 			() => {
-				this.audioManager.startRecording((data) => this.network.sendAudio(data));
+				this.audioManager.startRecording((data) =>
+					this.network.sendAudio(data),
+				);
 				this.onPttChange?.(true);
 			},
 			() => {
@@ -236,7 +247,10 @@ export class GameScene extends Phaser.Scene {
 	}
 
 	shutdown() {
-		document.removeEventListener("visibilitychange", this.handleVisibilityChange);
+		document.removeEventListener(
+			"visibilitychange",
+			this.handleVisibilityChange,
+		);
 		this.gameEventHandler.destroy();
 		for (const unsub of this.stateUnsubscribers) unsub();
 		this.stateUnsubscribers = [];
@@ -448,14 +462,68 @@ export class GameScene extends Phaser.Scene {
 	private addDrop(drop: Drop, id: string) {
 		const px = drop.tileX * TILE_SIZE + TILE_SIZE / 2;
 		const py = drop.tileY * TILE_SIZE + TILE_SIZE / 2;
-		this.dropGraphics.set(id, this.add.circle(px, py, 6, 0xffcc00).setDepth(5));
+
+		const arc = this.add.circle(px, py, 6, 0xffcc00).setDepth(5);
+
+		// Gentle bob
+		const tween = this.tweens.add({
+			targets: arc,
+			y: py - 4,
+			duration: 900,
+			yoyo: true,
+			repeat: -1,
+			ease: "Sine.InOut",
+		});
+
+		// Lazy-create a tiny sparkle texture shared across all drops
+		if (!this.textures.exists("drop-spark")) {
+			const g = this.add.graphics();
+			g.fillStyle(0xffffff, 1);
+			g.fillCircle(2, 2, 2);
+			g.generateTexture("drop-spark", 4, 4);
+			g.destroy();
+		}
+
+		const emitter = this.add.particles(px, py, "drop-spark", {
+			tint: [0xffcc00, 0xffee88, 0xffffff],
+			speed: { min: 8, max: 22 },
+			angle: { min: 0, max: 360 },
+			scale: { start: 0.55, end: 0 },
+			alpha: { start: 0.85, end: 0 },
+			lifespan: { min: 380, max: 780 },
+			quantity: 1,
+			frequency: 180,
+			gravityY: -18,
+		});
+		emitter.setDepth(6);
+
+		this.dropVisuals.set(id, { arc, tween, emitter });
 	}
 
 	private removeDrop(id: string) {
-		const g = this.dropGraphics.get(id);
-		if (g) {
-			g.destroy();
-			this.dropGraphics.delete(id);
+		const visual = this.dropVisuals.get(id);
+		if (!visual) return;
+
+		const { arc, tween, emitter } = visual;
+
+		// Pickup burst at the coin position
+		if (this.textures.exists("drop-spark")) {
+			const burst = this.add.particles(arc.x, arc.y, "drop-spark", {
+				tint: [0xffcc00, 0xffee88, 0xffffff],
+				speed: { min: 30, max: 90 },
+				angle: { min: 0, max: 360 },
+				scale: { start: 0.65, end: 0 },
+				alpha: { start: 1, end: 0 },
+				lifespan: { min: 200, max: 460 },
+			});
+			burst.setDepth(6);
+			burst.explode(16);
+			this.time.delayedCall(520, () => burst.destroy());
 		}
+
+		tween.stop();
+		emitter.destroy();
+		arc.destroy();
+		this.dropVisuals.delete(id);
 	}
 }

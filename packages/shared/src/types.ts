@@ -19,7 +19,13 @@ export const EQUIPMENT_SLOTS = [
 	"ring",
 ] as const;
 export type EquipmentSlot = (typeof EQUIPMENT_SLOTS)[number];
-export type ClassType = "WARRIOR" | "MAGE" | "ROGUE" | "CLERIC" | "RANGER" | "PALADIN";
+export type ClassType =
+	| "WARRIOR"
+	| "MAGE"
+	| "ROGUE"
+	| "CLERIC"
+	| "RANGER"
+	| "PALADIN";
 export type NpcType =
 	| "orc"
 	| "skeleton"
@@ -365,7 +371,11 @@ export type ServerMessages = {
 	[ServerMessageType.OpenShop]: { npcId: string; inventory: string[] };
 	[ServerMessageType.BuyItem]: { itemId: string; quantity: number };
 	[ServerMessageType.SellItem]: { itemId: string; quantity: number };
-	[ServerMessageType.Error]: { message: string; templateData?: Record<string, any>; silent?: boolean };
+	[ServerMessageType.Error]: {
+		message: string;
+		templateData?: Record<string, any>;
+		silent?: boolean;
+	};
 	[ServerMessageType.FriendRequest]: { targetName: string };
 	[ServerMessageType.FriendInvited]: {
 		requesterId: string;
@@ -520,7 +530,8 @@ export type ClientMessages = {
 export type BroadcastFn = <T extends keyof ServerMessages>(
 	type: T,
 	data: ServerMessages[T],
-	options?: { except?: unknown; exceptSessionId?: string },
+	// biome-ignore lint/suspicious/noExplicitAny: Colyseus Client type requires any here
+	options?: { except?: any; exceptSessionId?: string },
 ) => void;
 
 export interface StatBonuses {

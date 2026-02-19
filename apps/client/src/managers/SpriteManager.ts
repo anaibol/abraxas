@@ -1,3 +1,4 @@
+import Phaser from "phaser";
 import { PlayerSprite } from "../entities/PlayerSprite";
 import type { CameraController } from "../systems/CameraController";
 import type { GameScene } from "../scenes/GameScene";
@@ -17,7 +18,15 @@ export class SpriteManager {
 	addPlayer(player: PlayerEntityState, sessionId: string) {
 		if (this.sprites.has(sessionId)) return;
 		const isLocal = sessionId === this.getSessionId();
-		const sprite = new PlayerSprite(this.scene, sessionId, player.tileX, player.tileY, player.classType, player.name, isLocal);
+		const sprite = new PlayerSprite(
+			this.scene,
+			sessionId,
+			player.tileX,
+			player.tileY,
+			player.classType,
+			player.name,
+			isLocal,
+		);
 		this.sprites.set(sessionId, sprite);
 		if (isLocal) this.cameraController.follow(sprite);
 	}
@@ -60,7 +69,15 @@ export class SpriteManager {
 
 	addNpc(npc: NpcEntityState, id: string) {
 		if (this.sprites.has(id)) return;
-		const sprite = new PlayerSprite(this.scene, id, npc.tileX, npc.tileY, npc.type, npc.name, false);
+		const sprite = new PlayerSprite(
+			this.scene,
+			id,
+			npc.tileX,
+			npc.tileY,
+			npc.type,
+			npc.name,
+			false,
+		);
 		this.sprites.set(id, sprite);
 	}
 
@@ -106,11 +123,11 @@ export class SpriteManager {
 		this.sprites.get(sessionId)?.container.setAlpha(alpha);
 	}
 
-  showChatBubble(sessionId: string, message: string) {
-    this.sprites.get(sessionId)?.showChatBubble(message);
-  }
+	showChatBubble(sessionId: string, message: string) {
+		this.sprites.get(sessionId)?.showChatBubble(message);
+	}
 
-  setSpeaking(sessionId: string, speaking: boolean, durationMs?: number) {
+	setSpeaking(sessionId: string, speaking: boolean, durationMs?: number) {
 		const sprite = this.sprites.get(sessionId);
 		if (!sprite) return;
 		sprite.showSpeakingIndicator(speaking);
@@ -142,47 +159,78 @@ export class SpriteManager {
 		this.spawnProtectionTweens.set(sessionId, tween);
 	}
 
-  /**
-   * Applies a persistent visual state on the sprite that matches the spell's
-   * effect type (buff, debuff, poison, stun, invulnerable).
-   */
-  applySpellStateVisual(sessionId: string, spellId: string, durationMs: number) {
-    const sprite = this.sprites.get(sessionId);
-    if (!sprite) return;
-    const spell = SPELLS[spellId];
-    if (!spell) return;
+	/**
+	 * Applies a persistent visual state on the sprite that matches the spell's
+	 * effect type (buff, debuff, poison, stun, invulnerable).
+	 */
+	applySpellStateVisual(
+		sessionId: string,
+		spellId: string,
+		durationMs: number,
+	) {
+		const sprite = this.sprites.get(sessionId);
+		if (!sprite) return;
+		const spell = SPELLS[spellId];
+		if (!spell) return;
 
-    switch (spell.effect) {
-      case "stun":
-        sprite.applyStun(durationMs);
-        break;
-      case "dot":
-        sprite.applyPoison(durationMs);
-        break;
-      case "buff":
-        sprite.applyBuff(durationMs);
-        break;
-      case "debuff":
-        sprite.applyDebuff(durationMs);
-        break;
-      case "leech":
-        sprite.applyDebuff(Math.min(durationMs, 1200));
-        break;
-      case "stealth":
-        sprite.applyBuff(durationMs);
-        break;
-      default:
-        break;
-    }
-  }
+		switch (spell.effect) {
+			case "stun":
+				sprite.applyStun(durationMs);
+				break;
+			case "dot":
+				sprite.applyPoison(durationMs);
+				break;
+			case "buff":
+				sprite.applyBuff(durationMs);
+				break;
+			case "debuff":
+				sprite.applyDebuff(durationMs);
+				break;
+			case "leech":
+				sprite.applyDebuff(Math.min(durationMs, 1200));
+				break;
+			case "stealth":
+				sprite.applyBuff(durationMs);
+				break;
+			default:
+				break;
+		}
+	}
 
-  applyStunVisual(sessionId: string, durationMs: number) {
-    this.sprites.get(sessionId)?.applyStun(durationMs);
-  }
+	applyStunVisual(sessionId: string, durationMs: number) {
+		this.sprites.get(sessionId)?.applyStun(durationMs);
+	}
 
-  applyInvulnerableVisual(sessionId: string, durationMs: number) {
-    this.sprites.get(sessionId)?.applyInvulnerable(durationMs);
-  }
+	applyInvulnerableVisual(sessionId: string, durationMs: number) {
+		this.sprites.get(sessionId)?.applyInvulnerable(durationMs);
+	}
+
+	/** Squash-and-crumple tween played when an entity dies. */
+	playDeathAnimation(sessionId: string) {
+		const sprite = this.sprites.get(sessionId);
+		if (!sprite?.container) return;
+		const container = sprite.container;
+
+		this.scene.tweens.add({
+			targets: container,
+			scaleX: 1.2,
+			scaleY: 0.7,
+			angle: Phaser.Math.Between(-14, 14),
+			duration: 200,
+			ease: "Power2.Out",
+			onComplete: () => {
+				if (!container.scene) return;
+				this.scene.tweens.add({
+					targets: container,
+					scaleX: 1,
+					scaleY: 1,
+					angle: 0,
+					duration: 180,
+					ease: "Back.Out",
+				});
+			},
+		});
+	}
 
 	stopSpawnProtectionEffect(sessionId: string) {
 		const existing = this.spawnProtectionTweens.get(sessionId);
@@ -206,5 +254,4 @@ export class SpriteManager {
 			sprite.container.setAlpha(1);
 		}
 	}
-
 }
