@@ -1,18 +1,15 @@
-import React from "react";
 import { Box, Flex, Text } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
-import { CLASS_STATS, type Spell } from "@abraxas/shared";
+import { CLASS_STATS } from "@abraxas/shared";
 import { T, HEX } from "../tokens";
-import { type PlayerState } from "./types";
+import type { PlayerState } from "./types";
 
 interface SidebarFooterProps {
 	state: PlayerState;
-	classSpells: Spell[];
 }
 
 export function SidebarFooter({
 	state,
-	classSpells,
 }: SidebarFooterProps) {
 	const { t } = useTranslation();
 	const hpPct =
@@ -117,34 +114,8 @@ export function SidebarFooter({
 					>
 						{state.mana}/{state.maxMana}
 					</Flex>
-				</Box>
 			</Box>
-
-			{/* Keybinds — hidden on mobile since controls are on-screen */}
-			<Flex
-				display={{ base: "none", md: "flex" }}
-				px="3"
-				py="2"
-				gap="2"
-				justify="center"
-				flexWrap="wrap"
-				borderTop="1px solid"
-				borderTopColor={T.raised}
-				bg={T.bg}
-			>
-				<KeyHint keys="Arrows" action={t("controls.move")} />
-				<KeyHint keys="Ctrl" action={t("controls.melee")} />
-				<KeyHint keys="A" action={t("controls.pickup")} />
-				<KeyHint keys="T" action={t("controls.drop")} />
-				<KeyHint keys="M" action={t("controls.meditate")} />
-				{classSpells.map((spell) => (
-					<KeyHint
-						key={spell.id}
-						keys={`${spell.key}${spell.rangeTiles > 0 ? "+Click" : ""}`}
-						action={t(`spells.${spell.id}.name`)}
-					/>
-				))}
-			</Flex>
+		</Box>
 		</Box>
 	);
 }
@@ -159,21 +130,5 @@ function StatChip({ label, value }: { label: string; value: number }) {
 				{value}
 			</Text>
 		</Box>
-	);
-}
-
-function KeyHint({ keys, action }: { keys: string; action: string }) {
-	return (
-		<Flex align="center" gap="1" textStyle={T.bodyMuted} color={T.goldDark}>
-			<Box
-				layerStyle={T.goldBadge}
-				bg={T.surface}
-				textStyle={T.badgeText}
-				color={T.goldMuted}
-			>
-				{keys}
-			</Box>
-			{action}
-		</Flex>
 	);
 }

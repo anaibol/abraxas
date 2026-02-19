@@ -40,7 +40,17 @@ export function useRoomListeners(
       setKillStats, networkRef,
     } = cb;
 
-    room.onMessage(ServerMessageType.KillFeed, (data: ServerMessages[ServerMessageType.KillFeed]) => {
+    // Collect individual unsubscribers so cleanup only removes these handlers
+    // and never touches handlers registered by GameEventHandler or NetworkManager.
+    const unsubs: (() => void)[] = [];
+    const on = <T extends keyof ServerMessages>(
+      type: T,
+      handler: (data: ServerMessages[T]) => void,
+    ) => {
+      unsubs.push(room.onMessage(type, handler));
+    };
+
+    on(ServerMessageType.KillFeed, (data) => {
       const isPvp = room.state.players.has(data.victimSessionId);
       if (data.killerName) {
         setKillStats((prev) => {
@@ -56,7 +66,7 @@ export function useRoomListeners(
       }
     });
 
-    room.onMessage(ServerMessageType.Chat, (data: ServerMessages[ServerMessageType.Chat]) => {
+    on(ServerMessageType.Chat, (data) => {
       const color =
         data.channel === "party" ? "#aaaaff"
         : data.channel === "whisper" ? "#ff88ff"
@@ -64,11 +74,9 @@ export function useRoomListeners(
       addConsoleMessage(`${data.senderName}: ${data.message}`, color);
     });
 
-    room.onMessage(ServerMessageType.OpenShop, (data: ServerMessages[ServerMessageType.OpenShop]) => {
-      setShopData(data);
-    });
+    on(ServerMessageType.OpenShop, (data) => setShopData(data));
 
-    room.onMessage(ServerMessageType.OpenDialogue, (data: ServerMessages[ServerMessageType.OpenDialogue]) => {
+    on(ServerMessageType.OpenDialogue, (data) => {
       setDialogueData({
         ...data,
         text: t(data.text),
@@ -76,7 +84,7 @@ export function useRoomListeners(
       });
     });
 
-    room.onMessage(ServerMessageType.QuestUpdate, (data: ServerMessages[ServerMessageType.QuestUpdate]) => {
+    on(ServerMessageType.QuestUpdate, (data) => {
       setQuests((prev) => {
         const idx = prev.findIndex((q) => q.questId === data.quest.questId);
         if (idx >= 0) {
@@ -88,7 +96,7 @@ export function useRoomListeners(
       });
     });
 
-    room.onMessage(ServerMessageType.PartyInvited, (data: ServerMessages[ServerMessageType.PartyInvited]) => {
+    on(ServerMessageType.PartyInvited, (data) => {
       toaster.create({
         title: t("sidebar.party.tabs.party"),
         description: t("social.invited_to_party", { name: data.inviterName }),
@@ -99,11 +107,11 @@ export function useRoomListeners(
       });
     });
 
-    room.onMessage(ServerMessageType.PartyUpdate, (data: ServerMessages[ServerMessageType.PartyUpdate]) => {
+    on(ServerMessageType.PartyUpdate, (data) => {
       setPartyData(data.partyId ? data : null);
     });
 
-    room.onMessage(ServerMessageType.FriendInvited, (data: ServerMessages[ServerMessageType.FriendInvited]) => {
+    on(ServerMessageType.FriendInvited, (data) => {
       toaster.create({
         title: t("sidebar.tabs.friends"),
         description: t("social.friend_request", { targetName: data.requesterName }),
@@ -115,15 +123,11 @@ export function useRoomListeners(
       });
     });
 
-    room.onMessage(ServerMessageType.BankOpened, () => {
-      setBankData({ items: [] });
-    });
+    on(ServerMessageType.BankOpened, () => setBankData({ items: [] }));
 
-    room.onMessage(ServerMessageType.BankSync, (data: ServerMessages[ServerMessageType.BankSync]) => {
-      setBankData({ items: data.items });
-    });
+    on(ServerMessageType.BankSync, (data) => setBankData({ items: data.items }));
 
-    room.onMessage(ServerMessageType.TradeRequested, (data: ServerMessages[ServerMessageType.TradeRequested]) => {
+    on(ServerMessageType.TradeRequested, (data) => {
       toaster.create({
         title: t("sidebar.party.trade"),
         description: t("social.trade_requested", { name: data.requesterName }),
@@ -135,34 +139,32 @@ export function useRoomListeners(
       });
     });
 
-    room.onMessage(ServerMessageType.TradeStarted, (_data: ServerMessages[ServerMessageType.TradeStarted]) => {
+    on(ServerMessageType.TradeStarted, (_data) => {
       // TradeStateUpdate will immediately follow with the initial state
     });
 
-    room.onMessage(ServerMessageType.TradeStateUpdate, (data: ServerMessages[ServerMessageType.TradeStateUpdate]) => {
-      setTradeData(data);
-    });
+    on(ServerMessageType.TradeStateUpdate, (data) => setTradeData(data));
 
-    room.onMessage(ServerMessageType.TradeCompleted, () => {
+    on(ServerMessageType.TradeCompleted, () => {
       setTradeData(null);
       addConsoleMessage(t("game.trade_completed"), "#44ff88");
     });
 
-    room.onMessage(ServerMessageType.TradeCancelled, (data: ServerMessages[ServerMessageType.TradeCancelled]) => {
+    on(ServerMessageType.TradeCancelled, (data) => {
       setTradeData(null);
       addConsoleMessage(t("game.trade_cancelled", { reason: t(data.reason) }), "#ff8844");
     });
 
-    room.onMessage(ServerMessageType.ItemUsed, (data: ServerMessages[ServerMessageType.ItemUsed]) => {
+    on(ServerMessageType.ItemUsed, (data) => {
       const itemName = ITEMS[data.itemId]?.name ?? data.itemId;
       addConsoleMessage(t("game.item_used", { item: itemName }), "#aaffcc");
     });
 
-    room.onMessage(ServerMessageType.Notification, (data: ServerMessages[ServerMessageType.Notification]) => {
+    on(ServerMessageType.Notification, (data) => {
       addConsoleMessage(t(data.message, data.templateData), "#ffffaa");
     });
 
-    room.onMessage(ServerMessageType.Error, (data: ServerMessages[ServerMessageType.Error]) => {
+    on(ServerMessageType.Error, (data) => {
       addConsoleMessage(t(data.message, data.templateData), "#ffaaaa");
       if (!data.silent) {
         toaster.create({
@@ -173,12 +175,12 @@ export function useRoomListeners(
       }
     });
 
-    room.onMessage(ServerMessageType.InvalidTarget, () => {
+    on(ServerMessageType.InvalidTarget, () => {
       addConsoleMessage(t("game.invalid_target"), "#ff8888");
     });
 
     return () => {
-      room.removeAllListeners();
+      for (const unsub of unsubs) unsub();
     };
   }, [room, network, cb]);
 }

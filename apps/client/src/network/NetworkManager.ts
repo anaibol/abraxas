@@ -19,7 +19,7 @@ import { GameState } from "../../../server/src/schema/GameState";
  *
  * This alias makes that intentional constraint explicit and keeps it in one place.
  */
-type ClientRoom = Room<any, GameState>; // eslint-disable-line @typescript-eslint/no-explicit-any
+type ClientRoom = Room<unknown, GameState>;
 
 function getServerUrl(): string {
   if (
@@ -109,6 +109,24 @@ export class NetworkManager {
     this.room.onMessage(ServerMessageType.QuestList, (data: ServerMessages[ServerMessageType.QuestList]) => {
       this._bufferedQuestList = data;
     });
+
+    // Pre-register no-op handlers for combat/visual messages that are only
+    // handled by GameEventHandler (set up after the Phaser scene loads).
+    // This prevents "onMessage() not registered" warnings during the preloader
+    // phase when the server is already broadcasting these events.
+    const noop = () => {};
+    this.room.onMessage(ServerMessageType.AttackStart, noop);
+    this.room.onMessage(ServerMessageType.AttackHit, noop);
+    this.room.onMessage(ServerMessageType.CastStart, noop);
+    this.room.onMessage(ServerMessageType.CastHit, noop);
+    this.room.onMessage(ServerMessageType.Damage, noop);
+    this.room.onMessage(ServerMessageType.Death, noop);
+    this.room.onMessage(ServerMessageType.Heal, noop);
+    this.room.onMessage(ServerMessageType.Respawn, noop);
+    this.room.onMessage(ServerMessageType.BuffApplied, noop);
+    this.room.onMessage(ServerMessageType.StunApplied, noop);
+    this.room.onMessage(ServerMessageType.StealthApplied, noop);
+    this.room.onMessage(ServerMessageType.LevelUp, noop);
 
     this.room.onMessage(ServerMessageType.FriendUpdate, (data: ServerMessages[ServerMessageType.FriendUpdate]) => {
       if (this._onFriendUpdate) {

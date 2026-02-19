@@ -1,4 +1,5 @@
 import { extname, join } from "node:path";
+import type { ServerWebSocket } from "bun";
 import type { TileMap } from "@abraxas/shared";
 import { BunWebSockets } from "@colyseus/bun-websockets";
 import {
@@ -76,6 +77,14 @@ async function serveStatic(
 // and to fix a Linux-specific build of @colyseus/bun-websockets that stores
 // `pathname + search` in rawClient.data.url instead of just `pathname`, which
 // breaks the roomId regex inside the default onConnection.
+
+interface WebSocketData {
+	url: string;
+	searchParams: URLSearchParams;
+	headers: Headers;
+	remoteAddress: string;
+}
+
 class GameTransport extends BunWebSockets {
 	constructor(private readonly staticDir?: string) {
 		super();
@@ -97,7 +106,9 @@ class GameTransport extends BunWebSockets {
 		super.bindRouter(router);
 	}
 
-	override async onConnection(rawClient: { data: { url: string } }): Promise<void> {
+	override async onConnection(
+		rawClient: ServerWebSocket<WebSocketData>,
+	): Promise<void> {
 		// Strip query string so the roomId regex in super.onConnection matches.
 		rawClient.data.url = rawClient.data.url.split("?")[0];
 		return super.onConnection(rawClient);

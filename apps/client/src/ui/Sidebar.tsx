@@ -11,7 +11,7 @@ import { InventoryTab } from "./sidebar/InventoryTab";
 import { SpellsTab } from "./sidebar/SpellsTab";
 import { PartyTab } from "./sidebar/PartyTab";
 import { FriendsTab } from "./sidebar/FriendsTab";
-import { type SidebarProps } from "./sidebar/types";
+import type { SidebarProps } from "./sidebar/types";
 import { useIsMobile } from "../hooks/useIsMobile";
 
 const SIDEBAR_TABS: readonly {
@@ -195,10 +195,9 @@ export function Sidebar({
 				)}
 			</Box>
 
-			{/* Footer */}
+		{/* Footer */}
 		<SidebarFooter
 			state={state}
-			classSpells={classSpells}
 		/>
 		</Flex>
 	);

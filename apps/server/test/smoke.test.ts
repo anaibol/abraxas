@@ -2,14 +2,15 @@ import { describe, test, expect, beforeAll, afterAll } from "bun:test";
 import { Client, Room } from "@colyseus/sdk";
 import { resolve } from "path";
 import { createGameServer } from "../src/server";
-import { TileMap, Direction } from "@abraxas/shared";
+import { TileMap, Direction, type JoinOptions } from "@abraxas/shared";
 import { GameState } from "../src/schema/GameState";
 import { Player } from "../src/schema/Player";
 import { hashPassword, generateToken } from "../src/database/auth";
 import { prisma } from "../src/database/db";
+import type { Server } from "@colyseus/core";
 
 const TEST_PORT = 2500 + Math.floor(Math.random() * 1000);
-let server: any;
+let server: Server;
 let testMap: TileMap;
 let clientA: Client;
 let clientB: Client;
@@ -108,21 +109,27 @@ describe("Arena multiplayer smoke test", () => {
     const tokenB = generateToken({ userId: userB.id, email: emailB });
     console.log("[smoke.test] Step 0.3: Tokens generated");
 
-    async function joinWithRetry(client: Client, token: string, opts: any, attempts = 3) {
+    async function joinWithRetry(
+      client: Client,
+      token: string,
+      opts: JoinOptions & { mapName?: string },
+      attempts = 3,
+    ) {
       // Set token correctly for Colyseus 0.17
       client.auth.token = token;
 
-      let lastErr: any;
+      let lastErr: Error | undefined;
 
       for (let i = 0; i < attempts; i++) {
         try {
           return await client.joinOrCreate("arena", opts);
-        } catch (e: any) {
-          lastErr = e;
-          console.error(`[smoke.test] joinWithRetry attempt ${i+1} failed:`, e);
+        } catch (e: unknown) {
+          const err = e as Error;
+          lastErr = err;
+          console.error(`[smoke.test] joinWithRetry attempt ${i + 1} failed:`, e);
           // If reservation expired (524), retry after a short delay
-          const msg = (e && (e.message || e.toString())) || '';
-          if (msg.includes('seat reservation expired') || (e && e.code === 524)) {
+          const msg = err?.message || String(e) || "";
+          if (msg.includes("seat reservation expired") || (err as any)?.code === 524) {
             await wait(300);
             continue;
           }
@@ -282,7 +289,7 @@ describe("Arena multiplayer smoke test", () => {
     roomA.leave();
     roomB.leave();
     await wait(300);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error("[smoke.test] CRITICAL ERROR IN TEST:", e);
       throw e;
     }

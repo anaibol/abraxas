@@ -1324,9 +1324,36 @@ export class EffectManager {
 	}
 
 	/**
+	 * Checks whether `spellId` warrants a projectile animation (ranged spell with
+	 * a meaningful travel distance) and launches one if so. Safe to call
+	 * unconditionally — all guard logic lives here.
+	 */
+	maybeLaunchProjectile(
+		casterSessionId: string,
+		spellId: string,
+		targetTileX: number,
+		targetTileY: number,
+	) {
+		const spell = SPELLS[spellId];
+		if (!spell || spell.rangeTiles <= 1) return;
+
+		const sprite = this.spriteManager.getSprite(casterSessionId);
+		if (!sprite) return;
+
+		const casterTileX = Math.round(sprite.renderX / TILE_SIZE);
+		const casterTileY = Math.round(sprite.renderY / TILE_SIZE);
+		const dx = targetTileX - casterTileX;
+		const dy = targetTileY - casterTileY;
+		if (Math.sqrt(dx * dx + dy * dy) < 2) return;
+
+		const travelMs = Math.max(120, spell.windupMs ?? 200);
+		this.playProjectile(casterSessionId, spellId, targetTileX, targetTileY, travelMs);
+	}
+
+	/**
 	 * Animates a projectile particle traveling from a caster sprite to a target
-	 * tile over `durationMs` milliseconds. On arrival it plays the impact burst.
-	 * Used for visually representing ranged NPC spells (shadow bolts, web shots…).
+	 * tile over `durationMs` milliseconds. Prefer `maybeLaunchProjectile` for
+	 * spell casts — this lower-level method skips range/distance guards.
 	 */
 	playProjectile(
 		casterSessionId: string,

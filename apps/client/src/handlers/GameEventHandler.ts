@@ -5,7 +5,6 @@ import {
 	SPAWN_PROTECTION_MS,
 	ChatChannel,
 	SPELLS,
-	TILE_SIZE,
 } from "@abraxas/shared";
 import type { SpriteManager } from "../managers/SpriteManager";
 import type { EffectManager } from "../managers/EffectManager";
@@ -104,26 +103,12 @@ export class GameEventHandler {
 		}
 		this.soundManager.playSpell();
 
-		// For ranged spells with a meaningful travel distance, animate a projectile
-		// from the caster to the target tile so the attack reads clearly.
-		const spell = SPELLS[data.spellId];
-		if (spell && spell.rangeTiles > 1 && sprite) {
-			const casterTileX = Math.round(sprite.renderX / TILE_SIZE);
-			const casterTileY = Math.round(sprite.renderY / TILE_SIZE);
-			const dx = data.targetTileX - casterTileX;
-			const dy = data.targetTileY - casterTileY;
-			const tileDistance = Math.sqrt(dx * dx + dy * dy);
-			if (tileDistance >= 2) {
-				const travelMs = Math.max(120, spell.windupMs ?? 200);
-				this.effectManager.playProjectile(
-					data.sessionId,
-					data.spellId,
-					data.targetTileX,
-					data.targetTileY,
-					travelMs,
-				);
-			}
-		}
+		this.effectManager.maybeLaunchProjectile(
+			data.sessionId,
+			data.spellId,
+			data.targetTileX,
+			data.targetTileY,
+		);
 	}
 
 	private onCastHit(data: ServerMessages["cast_hit"]) {
