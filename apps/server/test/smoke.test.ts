@@ -5,7 +5,7 @@ import { createGameServer } from "../src/server";
 import { TileMap, Direction } from "@abraxas/shared";
 import { GameState } from "../src/schema/GameState";
 import { Player } from "../src/schema/Player";
-import { AuthService } from "../src/database/auth";
+import { hashPassword, generateToken } from "../src/database/auth";
 import { prisma } from "../src/database/db";
 
 const TEST_PORT = 2500 + Math.floor(Math.random() * 1000);
@@ -92,7 +92,7 @@ describe("Arena multiplayer smoke test", () => {
     const emailB = `wizard_${testSuffix}@test.com`;
 
     // Seed users
-    const password = await AuthService.hashPassword("password");
+    const password = await hashPassword("password");
     const userA = await prisma.account.upsert({
       where: { email: emailA },
       update: { password },
@@ -104,8 +104,8 @@ describe("Arena multiplayer smoke test", () => {
       create: { email: emailB, password }
     });
 
-    const tokenA = AuthService.generateToken({ userId: userA.id, email: emailA });
-    const tokenB = AuthService.generateToken({ userId: userB.id, email: emailB });
+    const tokenA = generateToken({ userId: userA.id, email: emailA });
+    const tokenB = generateToken({ userId: userB.id, email: emailB });
     console.log("[smoke.test] Step 0.3: Tokens generated");
 
     async function joinWithRetry(client: Client, token: string, opts: any, attempts = 3) {

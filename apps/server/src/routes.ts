@@ -3,7 +3,7 @@ import { z } from "zod";
 import { CLASS_STATS } from "@abraxas/shared";
 import { CharacterClass } from "./generated/prisma";
 import { logger } from "./logger";
-import { AuthService } from "./database/auth";
+import { hashPassword, generateToken, verifyPassword, verifyToken } from "./database/auth";
 import { prisma } from "./database/db";
 
 function extractBearerToken(req: Request): string | null {
@@ -35,12 +35,12 @@ export const registerEndpoint = createEndpoint(
         return ctx.json({ error: "Email already registered" }, { status: 409 });
       }
 
-      const hashedPassword = await AuthService.hashPassword(password);
+      const hashedPassword = await hashPassword(password);
       const user = await prisma.account.create({
         data: { email, password: hashedPassword },
       });
 
-      const token = AuthService.generateToken({
+      const token = generateToken({
         userId: user.id,
         email: user.email,
       });
@@ -66,7 +66,7 @@ export const loginEndpoint = createEndpoint(
 
     try {
       const user = await prisma.account.findUnique({ where: { email } });
-      if (!user || !(await AuthService.verifyPassword(password, user.password))) {
+      if (!user || !(await verifyPassword(password, user.password))) {
         return ctx.json({ error: "Invalid credentials" }, { status: 401 });
       }
 
@@ -76,7 +76,7 @@ export const loginEndpoint = createEndpoint(
         orderBy: { lastLoginAt: "desc" },
       });
 
-      const token = AuthService.generateToken({
+      const token = generateToken({
         userId: user.id,
         email: user.email,
       });
@@ -98,7 +98,7 @@ export const meEndpoint = createEndpoint(
       return ctx.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const payload = AuthService.verifyToken(token);
+    const payload = verifyToken(token);
     if (!payload) {
       return ctx.json({ error: "Invalid or expired token" }, { status: 401 });
     }
@@ -136,7 +136,7 @@ export const createCharacterEndpoint = createEndpoint(
       return ctx.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const payload = AuthService.verifyToken(token);
+    const payload = verifyToken(token);
     if (!payload) {
       return ctx.json({ error: "Invalid or expired token" }, { status: 401 });
     }

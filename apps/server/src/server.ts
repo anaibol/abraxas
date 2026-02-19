@@ -11,7 +11,7 @@ import {
 import { logger } from "./logger";
 import { ArenaRoom } from "./rooms/ArenaRoom";
 import { createCharacterEndpoint, healthEndpoint, loginEndpoint, meEndpoint, registerEndpoint } from "./routes";
-import { MapService } from "./services/MapService";
+import { setMap } from "./services/MapService";
 
 process.on("uncaughtException", (e) => {
 	logger.error({
@@ -110,8 +110,8 @@ export async function createGameServer(options: {
 	map: TileMap;
 	staticDir?: string;
 }): Promise<Server> {
-	MapService.setMap("arena.test", options.map);
-	MapService.setMap("arena", options.map);
+	setMap("arena.test", options.map);
+	setMap("arena", options.map);
 
 	const server = defineServer({
 		transport: new GameTransport(options.staticDir),

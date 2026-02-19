@@ -7,7 +7,7 @@ import {
 } from "@abraxas/shared";
 import { type AuthContext, type Client, Room } from "@colyseus/core";
 import { StateView } from "@colyseus/schema";
-import { AuthService } from "../database/auth";
+import { verifyToken } from "../database/auth";
 import { prisma } from "../database/db";
 import type { Account } from "../generated/prisma";
 import { MessageHandler } from "../handlers/MessageHandler";
@@ -16,7 +16,7 @@ import { GameState } from "../schema/GameState";
 import { Player } from "../schema/Player";
 import { ChatService } from "../services/ChatService";
 import { LevelService } from "../services/LevelService";
-import { MapService } from "../services/MapService";
+import { getMap } from "../services/MapService";
 import { PersistenceService } from "../services/PersistenceService";
 import { PlayerService } from "../services/PlayerService";
 import { BuffSystem } from "../systems/BuffSystem";
@@ -65,7 +65,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 	async onCreate(options: JoinOptions & { mapName?: string }) {
 		try {
 			this.roomMapName = options.mapName || "arena.test";
-			const loadedMap = await MapService.getMap(this.roomMapName);
+			const loadedMap = await getMap(this.roomMapName);
 			if (!loadedMap)
 				throw new Error(`Failed to load map: ${this.roomMapName}`);
 			this.map = loadedMap;
@@ -198,7 +198,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 			(typeof options?.token === "string" ? options.token : undefined);
 		if (!actualToken || typeof actualToken !== "string")
 			throw new Error("Authentication token required");
-		const payload = AuthService.verifyToken(actualToken);
+		const payload = verifyToken(actualToken);
 		if (!payload) throw new Error("Invalid token");
 		const dbUser = await prisma.account.findUnique({
 			where: { id: payload.userId },
