@@ -25,6 +25,7 @@ import type { MovementSystem } from "../systems/MovementSystem";
 import type { QuestSystem } from "../systems/QuestSystem";
 import type { SocialSystem } from "../systems/SocialSystem";
 import type { TradeSystem } from "../systems/TradeSystem";
+import type { BankSystem } from "../systems/BankSystem";
 
 type BroadcastCallback = <T extends ServerMessageType>(
 	type: T,
@@ -46,6 +47,7 @@ export interface RoomContext {
 		friends: FriendsSystem;
 		quests: QuestSystem;
 		trade: TradeSystem;
+		bank: BankSystem;
 	};
 	services: {
 		chat: ChatService;
@@ -61,11 +63,9 @@ export class MessageHandler {
 	constructor(private ctx: RoomContext) {}
 
 	/**
-   * Registers all message handlers with the room.
-  /**
-   * Registers all message handlers with the room.
-   * This allows for a clean, declarative setup in the Room class.
-   */
+	 * Registers all message handlers with the room.
+	 * This allows for a clean, declarative setup in the Room class.
+	 */
 	registerHandlers(
 		register: <T extends ClientMessageType>(
 			type: T,
@@ -118,6 +118,15 @@ export class MessageHandler {
 		);
 		register(ClientMessageType.TradeConfirm, (c) => this.handleTradeConfirm(c));
 		register(ClientMessageType.TradeCancel, (c) => this.handleTradeCancel(c));
+
+		// Bank
+		register(ClientMessageType.BankDeposit, (c, d) =>
+			this.handleBankDeposit(c, d),
+		);
+		register(ClientMessageType.BankWithdraw, (c, d) =>
+			this.handleBankWithdraw(c, d),
+		);
+		register(ClientMessageType.BankClose, (c) => this.handleBankClose(c));
 	}
 
 	// ── Helpers ─────────────────────────────────────────────────────────────
@@ -136,10 +145,10 @@ export class MessageHandler {
 	/** Sends quest update notifications for a set of updated quest states. */
 	sendQuestUpdates(
 		client: Client,
-		updatedQuests: Awaited<ReturnType<QuestSystem["updateProgress"]>>,
+		updatedQuests: { questId: string; status: string; progress: any }[],
 	): void {
 		for (const quest of updatedQuests) {
-			client.send(ServerMessageType.QuestUpdate, { quest });
+			client.send(ServerMessageType.QuestUpdate, { quest: quest as any });
 			if (quest.status === "COMPLETED") {
 				client.send(ServerMessageType.Notification, {
 					message: `Quest Completed: ${QUESTS[quest.questId].title}`,
@@ -347,10 +356,22 @@ export class MessageHandler {
 			.then((updatedQuests) => this.sendQuestUpdates(client, updatedQuests));
 
 		if (npc.type === "merchant") {
-			const inventory = MERCHANT_INVENTORY.general_store ?? [];
-			client.send(ServerMessageType.OpenShop, { npcId: data.npcId, inventory });
-			return;
+			this.openShop(client, npc);
+		} else if (npc.type === "banker") {
+			this.openBank(client);
+		} else {
+			this.openDialogue(client, npc);
 		}
+	}
+
+	private openShop(client: Client, npc: any) {
+		const inventory = MERCHANT_INVENTORY.general_store ?? [];
+		client.send(ServerMessageType.OpenShop, { npcId: npc.sessionId, inventory });
+	}
+
+	private openDialogue(client: Client, npc: any) {
+		const player = this.getActivePlayer(client);
+		if (!player) return;
 
 		const availableQuests = this.ctx.systems.quests.getAvailableQuests(
 			player.dbId,
@@ -360,7 +381,7 @@ export class MessageHandler {
 			const questId = availableQuests[0];
 			const questDef = QUESTS[questId];
 			client.send(ServerMessageType.OpenDialogue, {
-				npcId: data.npcId,
+				npcId: npc.sessionId,
 				text: `${questDef.description}\n\nDo you accept this quest?`,
 				options: [
 					{ text: "Accept Quest", action: "quest_accept", data: { questId } },
@@ -377,7 +398,7 @@ export class MessageHandler {
 			const questDef = QUESTS[state.questId];
 			if (questDef?.npcId === npc.type) {
 				client.send(ServerMessageType.OpenDialogue, {
-					npcId: data.npcId,
+					npcId: npc.sessionId,
 					text: `Great job on ${questDef.title}! Here is your reward.`,
 					options: [
 						{
@@ -392,7 +413,7 @@ export class MessageHandler {
 		}
 
 		client.send(ServerMessageType.OpenDialogue, {
-			npcId: data.npcId,
+			npcId: npc.sessionId,
 			text: "Hello there, traveler!",
 			options: [{ text: "Goodbye", action: "close" }],
 		});
@@ -409,7 +430,7 @@ export class MessageHandler {
 			.acceptQuest(player.dbId, data.questId)
 			.then((state) => {
 				if (state) {
-					client.send(ServerMessageType.QuestUpdate, { quest: state });
+					client.send(ServerMessageType.QuestUpdate, { quest: state as any });
 					client.send(ServerMessageType.Notification, {
 						message: `Quest Accepted: ${QUESTS[data.questId]?.title ?? data.questId}`,
 					});
@@ -469,13 +490,16 @@ export class MessageHandler {
 						}
 					}
 
-					client.send(ServerMessageType.QuestUpdate, {
-						// biome-ignore lint/style/noNonNullAssertion: quest exists because QuestAccept only fires for accepted quests
-						quest: this.ctx.systems.quests.getQuestState(
-							player.dbId,
-							data.questId,
-						)!,
-					});
+					const state = this.ctx.systems.quests.getQuestState(
+						player.dbId,
+						data.questId,
+					);
+					if (state) {
+						client.send(ServerMessageType.QuestUpdate, {
+							quest: state as any,
+						});
+					}
+
 					client.send(ServerMessageType.Notification, {
 						message: `Quest Completed: ${questDef.title} (+${questDef.rewards.exp} XP, +${questDef.rewards.gold} Gold)`,
 					});
@@ -766,5 +790,68 @@ export class MessageHandler {
 
 	private findClient(sessionId: string): Client | undefined {
 		return this.ctx.findClientBySessionId(sessionId);
+	}
+
+	// ── Bank Handlers ────────────────────────────────────────────────────────
+
+	private async openBank(client: Client) {
+		const player = this.getActivePlayer(client);
+		if (!player) return;
+
+		const items = await this.ctx.systems.bank.openBank(player);
+		client.send(ServerMessageType.BankOpened, {});
+		client.send(ServerMessageType.BankSync, { items });
+	}
+
+	private handleBankDeposit(
+		client: Client,
+		data: ClientMessages[ClientMessageType.BankDeposit],
+	) {
+		const player = this.getActivePlayer(client);
+		if (!player) return;
+
+		if (
+			this.ctx.systems.bank.deposit(
+				player,
+				data.itemId,
+				data.quantity,
+				data.slotIndex,
+				(msg: string) => this.sendError(client, msg),
+			)
+		) {
+			this.syncBank(client, player);
+		}
+	}
+
+	private handleBankWithdraw(
+		client: Client,
+		data: ClientMessages[ClientMessageType.BankWithdraw],
+	) {
+		const player = this.getActivePlayer(client);
+		if (!player) return;
+
+		if (
+			this.ctx.systems.bank.withdraw(
+				player,
+				data.itemId,
+				data.quantity,
+				data.bankSlotIndex,
+				(msg: string) => this.sendError(client, msg),
+			)
+		) {
+			this.syncBank(client, player);
+		}
+	}
+
+	private handleBankClose(client: Client) {
+		const player = this.getActivePlayer(client);
+		if (!player) return;
+
+		this.ctx.systems.bank.closeBank(player);
+	}
+
+	private async syncBank(client: Client, player: Player) {
+		const items = await this.ctx.systems.bank.openBank(player);
+		client.send(ServerMessageType.BankSync, { items });
 	}
 }

@@ -22,7 +22,8 @@ export type NpcType =
   | "merchant"
   | "spider"
   | "ghost"
-  | "lich";
+  | "lich"
+  | "banker";
 
 export enum NpcState {
   IDLE = "idle",
@@ -255,6 +256,10 @@ export enum ServerMessageType {
   TradeStateUpdate = "trade_state_update",
   TradeCompleted = "trade_completed",
   TradeCancelled = "trade_cancelled",
+
+  // Bank
+  BankOpened = "bank_opened",
+  BankSync = "bank_sync",
 }
 
 export enum ChatChannel {
@@ -387,6 +392,10 @@ export type ServerMessages = {
   [ServerMessageType.TradeStateUpdate]: TradeState;
   [ServerMessageType.TradeCompleted]: {};
   [ServerMessageType.TradeCancelled]: { reason: string };
+
+  // Bank
+  [ServerMessageType.BankOpened]: {};
+  [ServerMessageType.BankSync]: { items: InventoryEntry[] };
 };
 
 export type WelcomeData = ServerMessages[ServerMessageType.Welcome];
@@ -420,6 +429,11 @@ export enum ClientMessageType {
   TradeOfferUpdate = "trade_offer_update",
   TradeConfirm = "trade_confirm",
   TradeCancel = "trade_cancel",
+
+  // Bank
+  BankDeposit = "bank_deposit",
+  BankWithdraw = "bank_withdraw",
+  BankClose = "bank_close",
 }
 
 export type ClientMessages = {
@@ -462,6 +476,11 @@ export type ClientMessages = {
   };
   [ClientMessageType.TradeConfirm]: {};
   [ClientMessageType.TradeCancel]: {};
+
+  // Bank
+  [ClientMessageType.BankDeposit]: { itemId: string; quantity: number; slotIndex: number };
+  [ClientMessageType.BankWithdraw]: { itemId: string; quantity: number; bankSlotIndex: number };
+  [ClientMessageType.BankClose]: {};
 };
 
 export interface BroadcastFn {

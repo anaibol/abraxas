@@ -91,6 +91,7 @@ model Character {
 
   stats      CharacterStats?
   inventory  Inventory?
+  bank       Bank?
   equipments Equipment[]
   questLog   CharacterQuest[]
 
@@ -128,6 +129,7 @@ model ItemInstance {
 
   inventorySlot InventorySlot?
   equipment     Equipment?
+  bankSlot      BankSlot?
 }
 
 model Inventory {
@@ -137,6 +139,30 @@ model Inventory {
 
   size  Int             @default(40)
   slots InventorySlot[]
+}
+
+model Bank {
+  id          String    @id @default(cuid())
+  characterId String    @unique
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  slots BankSlot[]
+}
+
+model BankSlot {
+  id     String @id @default(cuid())
+  bankId String
+  bank   Bank   @relation(fields: [bankId], references: [id], onDelete: Cascade)
+
+  idx    Int
+  itemId String?       @unique
+  item   ItemInstance? @relation(fields: [itemId], references: [id], onDelete: SetNull)
+
+  qty Int @default(0)
+
+  @@unique([bankId, idx])
+  @@index([bankId])
+  @@index([itemId])
 }
 
 model InventorySlot {
@@ -180,7 +206,7 @@ model CharacterQuest {
   character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
 
   questId String
-  quest   Quest @relation(fields: [questId], references: [id], onDelete: Restrict)
+  quest   Quest  @relation(fields: [questId], references: [id], onDelete: Restrict)
 
   status       QuestStatus @default(NOT_STARTED)
   progressJson Json?

@@ -31,6 +31,7 @@ import { RespawnSystem } from "../systems/RespawnSystem";
 import { SocialSystem } from "../systems/SocialSystem";
 import { TickSystem } from "../systems/TickSystem";
 import { TradeSystem } from "../systems/TradeSystem";
+import { BankSystem } from "../systems/BankSystem";
 import { type Entity, SpatialLookup } from "../utils/SpatialLookup";
 
 export class ArenaRoom extends Room<{ state: GameState }> {
@@ -58,6 +59,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 	private spatial!: SpatialLookup;
 	private quests = new QuestSystem();
 	private trade!: TradeSystem;
+	private bankSystem!: BankSystem;
 
 	async onCreate(options: JoinOptions & { mapName?: string }) {
 		try {
@@ -83,6 +85,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 				this.findClient(sid),
 			);
 			this.trade = new TradeSystem(this.inventorySystem);
+			this.bankSystem = new BankSystem(this.inventorySystem);
 
 			this.playerService = new PlayerService(
 				this.state,
@@ -120,6 +123,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 					friends: this.friends,
 					quests: this.quests,
 					trade: this.trade,
+					bank: this.bankSystem,
 				},
 				services: {
 					chat: chatService,
@@ -295,6 +299,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 		if (player) {
 			this.messageHandler.handlePartyLeave(client);
 			await this.playerService.cleanupPlayer(player, this.roomMapName);
+			await this.bankSystem.closeBank(player);
 		}
 		this.movement.removePlayer(client.sessionId);
 		this.combat.removeEntity(client.sessionId);
