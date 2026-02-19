@@ -111,6 +111,10 @@ interface SidebarProps {
   onSpellClick?: (spellId: string, rangeTiles: number) => void;
   /** The spell currently queued for targeting (shows as selected). */
   pendingSpellId?: string | null;
+  /** Whether the user is on a mobile/touch device. */
+  isMobile?: boolean;
+  /** Called when the mobile overlay close button is tapped. */
+  onClose?: () => void;
 }
 
 const RARITY_COLORS: Record<string, string> = {
@@ -142,6 +146,7 @@ export function Sidebar({
   onPartyInvite, onPartyLeave, onPartyKick,
   friends = [], pendingFriendRequests = [], onFriendRequest, onFriendAccept, onWhisper, onTradeRequest,
   selectedItemId, onSelectItem, onSpellClick, pendingSpellId,
+  isMobile, onClose,
 }: SidebarProps) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<"inv" | "spells" | "quests" | "party" | "friends">("inv");
@@ -153,8 +158,42 @@ export function Sidebar({
   const hpColor = hpPct > 50 ? P.blood : hpPct > 25 ? "#8b5a1a" : "#5a0e0e";
   const classSpells = stats?.spells?.map((id: string) => SPELLS[id]).filter(Boolean) ?? [];
 
-  return (
-    <Flex w="380px" h="100%" direction="column" bg={P.bg} borderLeft="3px solid" borderColor={P.border} flexShrink={0} overflow="hidden" userSelect="none" fontFamily={P.font}>
+  const sidebarPanel = (
+    <Flex
+      w={isMobile ? "min(380px, 100vw)" : "380px"}
+      h={isMobile ? "100dvh" : "100%"}
+      direction="column"
+      bg={P.bg}
+      borderLeft={isMobile ? "none" : "3px solid"}
+      borderColor={P.border}
+      flexShrink={0}
+      overflow="hidden"
+      userSelect="none"
+      fontFamily={P.font}
+      position={isMobile ? "relative" : undefined}
+    >
+      {isMobile && (
+        <Box
+          position="absolute"
+          top="10px"
+          right="12px"
+          zIndex={10}
+          w="36px"
+          h="36px"
+          bg={P.raised}
+          border={`1px solid ${P.border}`}
+          borderRadius="6px"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          fontSize="16px"
+          color={P.gold}
+          cursor="pointer"
+          onPointerDown={(e) => { e.preventDefault(); onClose?.(); }}
+        >
+          ✕
+        </Box>
+      )}
       {/* Header */}
       <Box px="4" pt="3.5" pb="2.5" bg={P.surface} borderBottom="1px solid" borderBottomColor={P.border} textAlign="center">
         <Text fontSize="16px" fontWeight="700" color={P.gold} letterSpacing="2px" textShadow="0 0 12px rgba(180,140,50,0.25)">
@@ -571,18 +610,39 @@ export function Sidebar({
         </Box>
       </Box>
 
-      {/* Keybinds */}
-      <Flex px="3" py="2" gap="2" justify="center" flexWrap="wrap" borderTop="1px solid" borderTopColor={P.raised} bg={P.bg}>
-        <KeyHint keys="Arrows" action={t("controls.move")} />
-        <KeyHint keys="Ctrl" action={t("controls.melee")} />
-        <KeyHint keys="A" action={t("controls.pickup")} />
-        <KeyHint keys="T" action={t("controls.drop")} />
-        {classSpells.map((spell) => (
-          <KeyHint key={spell.id} keys={`${spell.key}${spell.rangeTiles > 0 ? "+Click" : ""}`} action={t(`spells.${spell.id}.name`)} />
-        ))}
-      </Flex>
+      {/* Keybinds — hide on mobile since controls are on-screen */}
+      {!isMobile && (
+        <Flex px="3" py="2" gap="2" justify="center" flexWrap="wrap" borderTop="1px solid" borderTopColor={P.raised} bg={P.bg}>
+          <KeyHint keys="Arrows" action={t("controls.move")} />
+          <KeyHint keys="Ctrl" action={t("controls.melee")} />
+          <KeyHint keys="A" action={t("controls.pickup")} />
+          <KeyHint keys="T" action={t("controls.drop")} />
+          {classSpells.map((spell) => (
+            <KeyHint key={spell.id} keys={`${spell.key}${spell.rangeTiles > 0 ? "+Click" : ""}`} action={t(`spells.${spell.id}.name`)} />
+          ))}
+        </Flex>
+      )}
     </Flex>
   );
+
+  if (isMobile) {
+    return (
+      <Box
+        position="fixed"
+        inset="0"
+        zIndex={100}
+        display="flex"
+        justifyContent="flex-end"
+        onClick={() => onClose?.()}
+      >
+        <Box onClick={(e) => e.stopPropagation()}>
+          {sidebarPanel}
+        </Box>
+      </Box>
+    );
+  }
+
+  return sidebarPanel;
 }
 
 function StatChip({ label, value }: { label: string; value: number }) {

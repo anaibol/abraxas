@@ -10,9 +10,11 @@ type MinimapProps = {
   players: SchemaMap<Player> | undefined;
   npcs: SchemaMap<Npc> | undefined;
   currentPlayerId: string;
+  isMobile?: boolean;
 };
 
-export const Minimap: FC<MinimapProps> = ({ map, players, npcs, currentPlayerId }) => {
+export const Minimap: FC<MinimapProps> = ({ map, players, npcs, currentPlayerId, isMobile }) => {
+  const size = isMobile ? 110 : 200;
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: players/npcs are stable mutable MapSchema refs read live by the RAF loop; currentPlayerId never changes during a session
@@ -20,11 +22,14 @@ export const Minimap: FC<MinimapProps> = ({ map, players, npcs, currentPlayerId 
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    canvas.width = size;
+    canvas.height = size;
+
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const scaleX = canvas.width / map.width;
-    const scaleY = canvas.height / map.height;
+    const scaleX = size / map.width;
+    const scaleY = size / map.height;
 
     const bgCanvas = document.createElement("canvas");
     bgCanvas.width = canvas.width;
@@ -70,24 +75,25 @@ export const Minimap: FC<MinimapProps> = ({ map, players, npcs, currentPlayerId 
 
     render();
     return () => cancelAnimationFrame(rafId);
-  }, [map]);
+  }, [map, size]);
 
   return (
     <div
       style={{
         position: "absolute",
-        bottom: "20px",
-        right: "20px",
+        top: isMobile ? "12px" : undefined,
+        bottom: isMobile ? undefined : "20px",
+        right: isMobile ? "64px" : "20px",
         border: "2px solid #555",
         backgroundColor: "rgba(0, 0, 0, 0.8)",
         borderRadius: "4px",
-        width: "200px",
-        height: "200px",
-        zIndex: 100,
+        width: `${size}px`,
+        height: `${size}px`,
+        zIndex: 40,
         pointerEvents: "none",
       }}
     >
-      <canvas ref={canvasRef} width={200} height={200} style={{ display: "block", width: "100%", height: "100%" }} />
+      <canvas ref={canvasRef} style={{ display: "block", width: "100%", height: "100%" }} />
     </div>
   );
 };

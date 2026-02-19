@@ -29,7 +29,7 @@ import type {
   ServerMessages,
   TradeState,
 } from "@abraxas/shared";
-import { getRandomName, ServerMessageType, ITEMS, CLASS_STATS, SPELLS, Direction } from "@abraxas/shared";
+import { getRandomName, ServerMessageType, ITEMS, CLASS_STATS, SPELLS, type Direction } from "@abraxas/shared";
 import { QuestDialogue } from "./QuestDialogue";
 import { MobileControls } from "./MobileControls";
 import { NetworkManager } from "../network/NetworkManager";
@@ -667,7 +667,7 @@ export function App() {
         });
       }
     },
-    [addConsoleMessage],
+    [addConsoleMessage, t],
   );
 
   const handleSpellClick = useCallback((spellId: string, rangeTiles: number) => {
