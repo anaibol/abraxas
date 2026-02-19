@@ -62,6 +62,7 @@ export class PlayerSprite {
   private lastPredictTime = 0;
   private lastServerTileX = 0;
   private lastServerTileY = 0;
+  private _destroyed = false;
 
   constructor(
     scene: Phaser.Scene,
@@ -268,6 +269,7 @@ export class PlayerSprite {
   }
 
   setFacing(direction: Direction) {
+    if (this._destroyed) return;
     if (direction === this.currentDir) return;
     this.currentDir = direction;
     const dirName = DIR_NAME_MAP[direction];
@@ -296,17 +298,18 @@ export class PlayerSprite {
   }
 
   private setIdleFrame() {
+    if (this._destroyed) return;
     const dirName = DIR_NAME_MAP[this.currentDir];
     const bodyGrhId = this.bodyEntry[dirName];
     const bodyStatic = this.resolver.resolveStaticGrh(bodyGrhId);
-    if (bodyStatic) {
+    if (bodyStatic && this.bodySprite.active) {
       this.bodySprite.stop();
       this.bodySprite.setTexture(
         `ao-${bodyStatic.grafico}`,
         `grh-${bodyStatic.id}`,
       );
     }
-    if (this.weaponSprite) {
+    if (this.weaponSprite?.active) {
       const weaponEntry = this.resolver.getWeaponEntry(this.curWeaponAoId);
       if (weaponEntry) {
         const ws = this.resolver.resolveStaticGrh(weaponEntry[dirName]);
@@ -316,7 +319,7 @@ export class PlayerSprite {
         }
       }
     }
-    if (this.shieldSprite) {
+    if (this.shieldSprite?.active) {
       const shieldEntry = this.resolver.getShieldEntry(this.curShieldAoId);
       if (shieldEntry) {
         const ss = this.resolver.resolveStaticGrh(shieldEntry[dirName]);
@@ -449,6 +452,7 @@ export class PlayerSprite {
   }
 
   setMoving(moving: boolean) {
+    if (this._destroyed) return;
     if (moving === this.isMoving) return;
     this.isMoving = moving;
 
@@ -596,6 +600,7 @@ export class PlayerSprite {
   }
 
   update(delta: number) {
+    if (this._destroyed) return;
     const dx = this.targetX - this.renderX;
     const dy = this.targetY - this.renderY;
     const distSq = dx * dx + dy * dy;
@@ -627,6 +632,7 @@ export class PlayerSprite {
   }
 
   destroy() {
+    this._destroyed = true;
     this.container.destroy();
   }
 }

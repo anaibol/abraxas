@@ -139,18 +139,25 @@ export class GameScene extends Phaser.Scene {
     const $state = Callbacks.get(this.room);
     const unsub = (...fns: (() => void)[]) => this.stateUnsubscribers.push(...fns);
 
+    const playerOnChangeUnsubs = new Map<string, () => void>();
+    const npcOnChangeUnsubs = new Map<string, () => void>();
+
     unsub(
       $state.onAdd("players", (player, sessionId) => {
         this.spriteManager.addPlayer(player, sessionId);
         this.spriteManager.syncPlayer(player, sessionId);
         const isLocal = sessionId === this.room.sessionId;
-        unsub($state.onChange(player, () => {
+        const onChangeUnsub = $state.onChange(player, () => {
           this.spriteManager.syncPlayer(player, sessionId);
           if (isLocal) this.pushSidebarUpdate(player);
-        }));
+        });
+        playerOnChangeUnsubs.set(sessionId, onChangeUnsub);
+        unsub(onChangeUnsub);
         if (isLocal) this.pushSidebarUpdate(player);
       }),
       $state.onRemove("players", (_player, sessionId) => {
+        playerOnChangeUnsubs.get(sessionId)?.();
+        playerOnChangeUnsubs.delete(sessionId);
         this.spriteManager.removePlayer(sessionId);
       }),
       $state.onAdd("drops", (drop, id) => this.addDrop(drop, id)),
@@ -158,9 +165,15 @@ export class GameScene extends Phaser.Scene {
       $state.onAdd("npcs", (npc, id) => {
         this.spriteManager.addNpc(npc, id);
         this.spriteManager.syncNpc(npc, id);
-        unsub($state.onChange(npc, () => this.spriteManager.syncNpc(npc, id)));
+        const onChangeUnsub = $state.onChange(npc, () => this.spriteManager.syncNpc(npc, id));
+        npcOnChangeUnsubs.set(id, onChangeUnsub);
+        unsub(onChangeUnsub);
       }),
-      $state.onRemove("npcs", (_npc, id) => this.spriteManager.removeNpc(id)),
+      $state.onRemove("npcs", (_npc, id) => {
+        npcOnChangeUnsubs.get(id)?.();
+        npcOnChangeUnsubs.delete(id);
+        this.spriteManager.removeNpc(id);
+      }),
     );
 
     new GameEventHandler(

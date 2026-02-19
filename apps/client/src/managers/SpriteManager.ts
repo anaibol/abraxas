@@ -44,8 +44,8 @@ export class SpriteManager {
   removePlayer(sessionId: string) {
     const sprite = this.sprites.get(sessionId);
     if (sprite) {
-      sprite.destroy();
       this.sprites.delete(sessionId);
+      sprite.destroy();
     }
   }
 
