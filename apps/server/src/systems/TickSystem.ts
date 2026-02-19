@@ -94,8 +94,9 @@ export class TickSystem {
 		systems.drops.expireDrops(state.drops, now);
 
 		// 5. Natural Regeneration
-		// Normal: +1% maxMana every 20 ticks
-		// Meditating: +2% maxMana every 5 ticks (~8x faster)
+		// Mana — normal: +1% maxMana every 20 ticks
+		//        meditating: +2% maxMana every 5 ticks (~8x faster)
+		// HP   — passive: +0.5% maxHp every 30 ticks
 		for (const player of state.players.values()) {
 			if (!player.alive) continue;
 
@@ -113,6 +114,13 @@ export class TickSystem {
 						player.mana + Math.max(1, Math.floor(player.maxMana * 0.01)),
 					);
 				}
+			}
+
+			if (state.tick % 30 === 0 && player.hp < player.maxHp) {
+				player.hp = Math.min(
+					player.maxHp,
+					player.hp + Math.max(1, Math.floor(player.maxHp * 0.005)),
+				);
 			}
 		}
 

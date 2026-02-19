@@ -18,7 +18,7 @@ import { LoadingScreen } from "./LoadingScreen";
 import { Sidebar, type PlayerState } from "./Sidebar";
 import { DeathOverlay } from "./DeathOverlay";
 import { KillFeed, type KillFeedEntry } from "./KillFeed";
-import { Console, type ConsoleMessage } from "./Console";
+import { Console } from "./Console";
 import { Minimap } from "./Minimap";
 import { ScoreboardOverlay, type KillStats } from "./ScoreboardOverlay";
 import { MerchantShop } from "./MerchantShop";
@@ -48,16 +48,176 @@ const toaster = createToaster({
   pauseOnPageIdle: true,
 });
 
+type RoomListenerCallbacks = {
+  t: (key: string, options?: Record<string, unknown>) => string;
+  addConsoleMessage: (text: string, color?: string) => void;
+  setShopData: (data: { npcId: string; inventory: string[] } | null) => void;
+  setDialogueData: (data: { npcId: string; text: string; options: { text: string; action: string; data?: unknown }[] } | null) => void;
+  setQuests: (fn: (prev: PlayerQuestState[]) => PlayerQuestState[]) => void;
+  setPartyData: (data: { partyId: string; leaderId: string; members: { sessionId: string; name: string }[] } | null) => void;
+  setBankData: (data: { items: { itemId: string; quantity: number; slotIndex: number }[] } | null) => void;
+  setTradeData: (data: TradeState | null) => void;
+  setKillStats: (fn: (prev: Record<string, KillStats>) => Record<string, KillStats>) => void;
+  networkRef: { current: NetworkManager | null };
+};
+
+function setupRoomListeners(
+  room: Room<GameState>,
+  network: NetworkManager,
+  cb: RoomListenerCallbacks,
+): void {
+  const {
+    t, addConsoleMessage,
+    setShopData, setDialogueData, setQuests,
+    setPartyData, setBankData, setTradeData,
+    setKillStats, networkRef,
+  } = cb;
+
+  room.onMessage(ServerMessageType.KillFeed, (data: ServerMessages[ServerMessageType.KillFeed]) => {
+    const isPvp = room.state.players.has(data.victimSessionId);
+    if (data.killerName) {
+      setKillStats((prev) => {
+        const cur = prev[data.killerName] ?? { npcKills: 0, pvpKills: 0 };
+        return {
+          ...prev,
+          [data.killerName]: {
+            npcKills: cur.npcKills + (isPvp ? 0 : 1),
+            pvpKills: cur.pvpKills + (isPvp ? 1 : 0),
+          },
+        };
+      });
+    }
+  });
+
+  room.onMessage(ServerMessageType.Chat, (data: ServerMessages[ServerMessageType.Chat]) => {
+    const color =
+      data.channel === "party" ? "#aaaaff"
+      : data.channel === "whisper" ? "#ff88ff"
+      : "#ffffff";
+    addConsoleMessage(`${data.senderName}: ${data.message}`, color);
+  });
+
+  room.onMessage(ServerMessageType.OpenShop, (data: ServerMessages[ServerMessageType.OpenShop]) => {
+    setShopData(data);
+  });
+
+  room.onMessage(ServerMessageType.OpenDialogue, (data: ServerMessages[ServerMessageType.OpenDialogue]) => {
+    setDialogueData({
+      ...data,
+      text: t(data.text),
+      options: data.options.map((opt) => ({ ...opt, text: t(opt.text) })),
+    });
+  });
+
+  room.onMessage(ServerMessageType.QuestUpdate, (data: ServerMessages[ServerMessageType.QuestUpdate]) => {
+    setQuests((prev) => {
+      const idx = prev.findIndex((q) => q.questId === data.quest.questId);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = data.quest;
+        return next;
+      }
+      return [...prev, data.quest];
+    });
+  });
+
+  room.onMessage(ServerMessageType.PartyInvited, (data: ServerMessages[ServerMessageType.PartyInvited]) => {
+    toaster.create({
+      title: t("sidebar.party.tabs.party"),
+      description: t("social.invited_to_party", { name: data.inviterName }),
+      action: {
+        label: t("sidebar.friends.accept"),
+        onClick: () => network.sendPartyAccept(data.partyId),
+      },
+    });
+  });
+
+  room.onMessage(ServerMessageType.PartyUpdate, (data: ServerMessages[ServerMessageType.PartyUpdate]) => {
+    setPartyData(data.partyId ? data : null);
+  });
+
+  room.onMessage(ServerMessageType.FriendInvited, (data: ServerMessages[ServerMessageType.FriendInvited]) => {
+    toaster.create({
+      title: t("sidebar.tabs.friends"),
+      description: t("social.friend_request", { targetName: data.requesterName }),
+      type: "info",
+      action: {
+        label: t("sidebar.friends.accept"),
+        onClick: () => networkRef.current?.sendFriendAccept(data.requesterId),
+      },
+    });
+  });
+
+  room.onMessage(ServerMessageType.BankOpened, () => {
+    setBankData({ items: [] });
+  });
+
+  room.onMessage(ServerMessageType.BankSync, (data: ServerMessages[ServerMessageType.BankSync]) => {
+    setBankData({ items: data.items });
+  });
+
+  room.onMessage(ServerMessageType.TradeRequested, (data: ServerMessages[ServerMessageType.TradeRequested]) => {
+    toaster.create({
+      title: t("sidebar.party.trade"),
+      description: t("social.trade_requested", { name: data.requesterName }),
+      type: "info",
+      action: {
+        label: t("sidebar.friends.accept"),
+        onClick: () => networkRef.current?.sendTradeAccept(data.requesterSessionId),
+      },
+    });
+  });
+
+  room.onMessage(ServerMessageType.TradeStarted, (_data: ServerMessages[ServerMessageType.TradeStarted]) => {
+    // TradeStateUpdate will immediately follow with the initial state
+  });
+
+  room.onMessage(ServerMessageType.TradeStateUpdate, (data: ServerMessages[ServerMessageType.TradeStateUpdate]) => {
+    setTradeData(data);
+  });
+
+  room.onMessage(ServerMessageType.TradeCompleted, () => {
+    setTradeData(null);
+    addConsoleMessage(t("game.trade_completed"), "#44ff88");
+  });
+
+  room.onMessage(ServerMessageType.TradeCancelled, (data: ServerMessages[ServerMessageType.TradeCancelled]) => {
+    setTradeData(null);
+    addConsoleMessage(t("game.trade_cancelled", { reason: t(data.reason) }), "#ff8844");
+  });
+
+  room.onMessage(ServerMessageType.ItemUsed, (data: ServerMessages[ServerMessageType.ItemUsed]) => {
+    const itemName = ITEMS[data.itemId]?.name ?? data.itemId;
+    addConsoleMessage(t("game.item_used", { item: itemName }), "#aaffcc");
+  });
+
+  room.onMessage(ServerMessageType.Notification, (data: ServerMessages[ServerMessageType.Notification]) => {
+    addConsoleMessage(t(data.message, data.templateData), "#ffffaa");
+  });
+
+  room.onMessage(ServerMessageType.Error, (data: ServerMessages[ServerMessageType.Error]) => {
+    addConsoleMessage(t(data.message, data.templateData), "#ffaaaa");
+    toaster.create({
+      title: t("lobby.error.title"),
+      description: t(data.message, data.templateData),
+      type: "error",
+    });
+  });
+
+  room.onMessage(ServerMessageType.InvalidTarget, () => {
+    addConsoleMessage(t("game.invalid_target"), "#ff8888");
+  });
+}
+
 export function App() {
   const { t } = useTranslation();
   const killFeedIdRef = useRef(0);
-  const consoleMsgIdRef = useRef(0);
   const [phase, setPhase] = useState<"lobby" | "game">("lobby");
   const [connecting, setConnecting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [playerState, setPlayerState] = useState<PlayerState>({
     name: getRandomName(),
-    classType: "warrior",
+    classType: "WARRIOR",
     hp: 100,
     maxHp: 100,
     mana: 30,
@@ -67,7 +227,7 @@ export function App() {
   const [deathTime, setDeathTime] = useState(0);
   const [showDeath, setShowDeath] = useState(false);
   const [killFeed, setKillFeed] = useState<KillFeedEntry[]>([]);
-  const [consoleMessages, setConsoleMessages] = useState<ConsoleMessage[]>([]);
+  const { messages: consoleMessages, add: addConsoleMessage, reset: resetConsoleMessages } = useConsoleMessages();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [mapData, setMapData] = useState<TileMap | null>(null);
   const [shopData, setShopData] = useState<{
@@ -156,41 +316,6 @@ export function App() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [phase]);
 
-  useEffect(() => {
-    if (phase !== "game") return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Enter" && !isChatOpen) setIsChatOpen(true);
-      if (e.key === "Escape" && isChatOpen) setIsChatOpen(false);
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [phase, isChatOpen]);
-
-  useEffect(() => {
-    if (phase !== "game") return;
-
-    const handleTabDown = (e: KeyboardEvent) => {
-      if (e.key === "Tab") {
-        e.preventDefault();
-        setShowScoreboard(true);
-      }
-    };
-    const handleTabUp = (e: KeyboardEvent) => {
-      if (e.key === "Tab") {
-        e.preventDefault();
-        setShowScoreboard(false);
-      }
-    };
-
-    window.addEventListener("keydown", handleTabDown);
-    window.addEventListener("keyup", handleTabUp);
-    return () => {
-      window.removeEventListener("keydown", handleTabDown);
-      window.removeEventListener("keyup", handleTabUp);
-    };
-  }, [phase]);
 
   useEffect(() => {
     const game = phaserGameRef.current;
@@ -201,55 +326,19 @@ export function App() {
     }
   }, [isChatOpen]);
 
-  useEffect(() => {
-    if (phase !== "game" || isChatOpen) return;
-
-    const handleKey = (e: KeyboardEvent) => {
-      const key = e.key.toLowerCase();
-
-      if (e.type !== "keydown") return;
-
-      // A — pickup drop under the player
-      if (key === "a") {
-        const room = roomRef.current;
-        const network = networkRef.current;
-        if (!room || !network) return;
-        const player = room.state.players.get(room.sessionId);
-        if (!player?.alive) return;
-        for (const [dropId, drop] of room.state.drops) {
-          if (drop.tileX === player.tileX && drop.tileY === player.tileY) {
-            network.sendPickup(dropId);
-            break;
-          }
-        }
-        return;
-      }
-
-      // T — drop selected inventory item (with quantity prompt if stackable)
-      if (key === "t") {
-        if (!selectedItemId || dropDialog) return;
-        const inv = playerState.inventory ?? [];
-        const slot = inv.find((i) => i.itemId === selectedItemId);
-        if (!slot) return;
-
-        if (slot.quantity > 1) {
-          const itemName = ITEMS[slot.itemId]?.name ?? slot.itemId;
-          setDropDialog({ itemId: slot.itemId, itemName, maxQty: slot.quantity });
-        } else {
-          networkRef.current?.sendDropItem(slot.itemId, 1);
-          setSelectedItemId(null);
-        }
-        return;
-      }
-    };
-
-    window.addEventListener("keydown", handleKey);
-    window.addEventListener("keyup", handleKey);
-    return () => {
-      window.removeEventListener("keydown", handleKey);
-      window.removeEventListener("keyup", handleKey);
-    };
-  }, [phase, isChatOpen, selectedItemId, playerState.inventory, dropDialog]);
+  useGameKeyboard({
+    phase,
+    isChatOpen,
+    selectedItemId,
+    inventory: playerState.inventory,
+    dropDialog,
+    networkRef,
+    roomRef,
+    setIsChatOpen,
+    setShowScoreboard,
+    setDropDialog,
+    setSelectedItemId,
+  });
 
   useEffect(() => {
     return () => {
@@ -257,15 +346,6 @@ export function App() {
     };
   }, []);
 
-  const addConsoleMessage = useCallback((text: string, color?: string) => {
-    setConsoleMessages((prev) => {
-      const next = [
-        ...prev,
-        { id: ++consoleMsgIdRef.current, text, color, timestamp: Date.now() },
-      ];
-      return next.length > 50 ? next.slice(next.length - 50) : next;
-    });
-  }, []);
 
   const handleJoin = useCallback(
     async (
@@ -322,17 +402,12 @@ export function App() {
           handleJoin(charId, classType, token, data.targetMap);
         };
 
-        // Add welcome message
-        setConsoleMessages([
-          {
-            id: ++consoleMsgIdRef.current,
-            text: mapName
-              ? t("game.traveling", { map: mapName })
-              : t("game.welcome"),
-            color: "#ffff00",
-            timestamp: Date.now(),
-          },
-        ]);
+        resetConsoleMessages({
+          id: 0,
+          text: mapName ? t("game.traveling", { map: mapName }) : t("game.welcome"),
+          color: "#ffff00",
+          timestamp: Date.now(),
+        });
 
         network
           .getRoom()
@@ -361,23 +436,11 @@ export function App() {
           .onMessage(
             ServerMessageType.Chat,
             (data: ServerMessages[ServerMessageType.Chat]) => {
-              setConsoleMessages((prev) => {
-                const newMsg: ConsoleMessage = {
-                  id: ++consoleMsgIdRef.current,
-                  text: `${data.senderName}: ${data.message}`,
-                  color:
-                    data.channel === "party"
-                      ? "#aaaaff"
-                      : data.channel === "whisper"
-                        ? "#ff88ff"
-                        : "#ffffff",
-                  timestamp: Date.now(),
-                  channel: data.channel,
-                };
-                const next = [...prev, newMsg];
-                if (next.length > 50) return next.slice(next.length - 50);
-                return next;
-              });
+              const color =
+                data.channel === "party" ? "#aaaaff"
+                : data.channel === "whisper" ? "#ff88ff"
+                : "#ffffff";
+              addConsoleMessage(`${data.senderName}: ${data.message}`, color);
             },
           );
 

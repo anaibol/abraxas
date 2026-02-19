@@ -6,6 +6,7 @@ import {
 	MathUtils,
 	MERCHANT_INVENTORY,
 	QUESTS,
+	type PlayerQuestState,
 	type ServerMessages,
 	ServerMessageType,
 	type TileMap,
@@ -17,6 +18,7 @@ import type { Client } from "@colyseus/core";
 import { logger } from "../logger";
 import type { GameState } from "../schema/GameState";
 import type { Player } from "../schema/Player";
+import type { Npc } from "../schema/Npc";
 import type { ChatService } from "../services/ChatService";
 import type { LevelService } from "../services/LevelService";
 import type { CombatSystem } from "../systems/CombatSystem";
@@ -147,12 +149,9 @@ export class MessageHandler {
 	}
 
 	/** Sends quest update notifications for a set of updated quest states. */
-	sendQuestUpdates(
-		client: Client,
-		updatedQuests: { questId: string; status: string; progress: any }[],
-	): void {
+	sendQuestUpdates(client: Client, updatedQuests: PlayerQuestState[]): void {
 		for (const quest of updatedQuests) {
-			client.send(ServerMessageType.QuestUpdate, { quest: quest as any });
+			client.send(ServerMessageType.QuestUpdate, { quest });
 			if (quest.status === "COMPLETED") {
 				client.send(ServerMessageType.Notification, {
 					message: "quest.completed",
@@ -404,12 +403,12 @@ export class MessageHandler {
 		}
 	}
 
-	private openShop(client: Client, npc: any) {
+	private openShop(client: Client, npc: Npc) {
 		const inventory = MERCHANT_INVENTORY.general_store ?? [];
 		client.send(ServerMessageType.OpenShop, { npcId: npc.sessionId, inventory });
 	}
 
-	private openDialogue(client: Client, npc: any) {
+	private openDialogue(client: Client, npc: Npc) {
 		const player = this.getActivePlayer(client);
 		if (!player) return;
 
@@ -473,9 +472,9 @@ export class MessageHandler {
 			.acceptQuest(player.dbId, data.questId)
 			.then((state) => {
 				if (state) {
-					client.send(ServerMessageType.QuestUpdate, { quest: state as any });
-					client.send(ServerMessageType.Notification, {
-						message: "quest.accepted",
+				client.send(ServerMessageType.QuestUpdate, { quest: state });
+				client.send(ServerMessageType.Notification, {
+					message: "quest.accepted",
 						templateData: {
 							title: QUESTS[data.questId]?.title ?? data.questId,
 						},
@@ -538,9 +537,7 @@ export class MessageHandler {
 						data.questId,
 					);
 					if (state) {
-						client.send(ServerMessageType.QuestUpdate, {
-							quest: state as any,
-						});
+				client.send(ServerMessageType.QuestUpdate, { quest: state });
 					}
 
 					client.send(ServerMessageType.Notification, {

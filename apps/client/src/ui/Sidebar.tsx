@@ -2,7 +2,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import { Box, Flex, Text, Grid, Input, Button, VStack, HStack } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
-import { CLASS_STATS, SPELLS, ITEMS, EQUIPMENT_SLOTS, type EquipmentSlot, type PlayerQuestState } from "@abraxas/shared";
+import { CLASS_STATS, SPELLS, ITEMS, EQUIPMENT_SLOTS, type EquipmentSlot, type PlayerQuestState, type ClassType } from "@abraxas/shared";
 import { P } from "./palette";
 import { QuestLog } from "./QuestLog";
 
@@ -20,9 +20,9 @@ export interface EquipmentState {
   ring: string;
 }
 
-export interface PlayerState {
+export type PlayerState = {
   name: string;
-  classType: string;
+  classType: ClassType;
   hp: number;
   maxHp: number;
   mana: number;
