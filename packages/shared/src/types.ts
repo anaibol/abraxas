@@ -346,14 +346,17 @@ export type ServerMessages = {
 		message: string;
 		channel?: ChatChannel;
 	};
-	[ServerMessageType.Notification]: { message: string };
+	[ServerMessageType.Notification]: {
+		message: string;
+		templateData?: Record<string, any>;
+	};
 	[ServerMessageType.ItemUsed]: { sessionId: string; itemId: string };
 	[ServerMessageType.InvalidTarget]: null;
 	[ServerMessageType.LevelUp]: { sessionId: string; level: number };
 	[ServerMessageType.OpenShop]: { npcId: string; inventory: string[] };
 	[ServerMessageType.BuyItem]: { itemId: string; quantity: number };
 	[ServerMessageType.SellItem]: { itemId: string; quantity: number };
-	[ServerMessageType.Error]: { message: string };
+	[ServerMessageType.Error]: { message: string; templateData?: Record<string, any> };
 	[ServerMessageType.FriendRequest]: { targetName: string };
 	[ServerMessageType.FriendInvited]: {
 		requesterId: string;

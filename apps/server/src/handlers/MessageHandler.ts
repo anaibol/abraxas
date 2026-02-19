@@ -153,7 +153,12 @@ export class MessageHandler {
 			client.send(ServerMessageType.QuestUpdate, { quest: quest as any });
 			if (quest.status === "COMPLETED") {
 				client.send(ServerMessageType.Notification, {
-					message: `Quest Completed: ${QUESTS[quest.questId].title}`,
+					message: "quest.completed",
+					templateData: {
+						title: QUESTS[quest.questId].title,
+						exp: QUESTS[quest.questId].rewards.exp,
+						gold: QUESTS[quest.questId].rewards.gold,
+					},
 				});
 			}
 		}
@@ -261,12 +266,14 @@ export class MessageHandler {
 		) {
 			if (drop.itemType === "gold") {
 				this.ctx.broadcast(ServerMessageType.Notification, {
-					message: `${player.name} picked up ${drop.goldAmount} gold`,
+					message: "game.gold_picked_up",
+					templateData: { name: player.name, amount: drop.goldAmount },
 				});
 			} else {
 				const itemName = ITEMS[drop.itemId]?.name ?? drop.itemId;
 				this.ctx.broadcast(ServerMessageType.Notification, {
-					message: `${player.name} picked up ${itemName}`,
+					message: "game.item_picked_up",
+					templateData: { name: player.name, item: itemName },
 				});
 				this.ctx.systems.quests
 					.updateProgress(player.dbId, "collect", drop.itemId, drop.quantity)
@@ -366,7 +373,7 @@ export class MessageHandler {
 		const dist =
 			Math.abs(player.tileX - npc.tileX) + Math.abs(player.tileY - npc.tileY);
 		if (dist > 3) {
-			this.sendError(client, "Too far to interact");
+			this.sendError(client, "game.too_far");
 			return;
 		}
 
@@ -401,10 +408,14 @@ export class MessageHandler {
 			const questDef = QUESTS[questId];
 			client.send(ServerMessageType.OpenDialogue, {
 				npcId: npc.sessionId,
-				text: `${questDef.description}\n\nDo you accept this quest?`,
+				text: "dialogue.accept_prompt",
 				options: [
-					{ text: "Accept Quest", action: "quest_accept", data: { questId } },
-					{ text: "Maybe later", action: "close" },
+					{
+						text: "dialogue.accept_quest",
+						action: "quest_accept",
+						data: { questId },
+					},
+					{ text: "dialogue.maybe_later", action: "close" },
 				],
 			});
 			return;
@@ -418,10 +429,10 @@ export class MessageHandler {
 			if (questDef?.npcId === npc.type) {
 				client.send(ServerMessageType.OpenDialogue, {
 					npcId: npc.sessionId,
-					text: `Great job on ${questDef.title}! Here is your reward.`,
+					text: "dialogue.reward_prompt",
 					options: [
 						{
-							text: "Complete Quest",
+							text: "dialogue.complete_quest",
 							action: "quest_complete",
 							data: { questId: state.questId },
 						},
@@ -433,8 +444,8 @@ export class MessageHandler {
 
 		client.send(ServerMessageType.OpenDialogue, {
 			npcId: npc.sessionId,
-			text: "Hello there, traveler!",
-			options: [{ text: "Goodbye", action: "close" }],
+			text: "dialogue.hello_traveler",
+			options: [{ text: "dialogue.goodbye", action: "close" }],
 		});
 	}
 
@@ -451,7 +462,10 @@ export class MessageHandler {
 				if (state) {
 					client.send(ServerMessageType.QuestUpdate, { quest: state as any });
 					client.send(ServerMessageType.Notification, {
-						message: `Quest Accepted: ${QUESTS[data.questId]?.title ?? data.questId}`,
+						message: "quest.accepted",
+						templateData: {
+							title: QUESTS[data.questId]?.title ?? data.questId,
+						},
 					});
 				}
 			})
@@ -460,7 +474,7 @@ export class MessageHandler {
 					message: `Failed to accept quest ${data.questId} for ${player.name}`,
 					error: String(err),
 				});
-				this.sendError(client, "Failed to accept quest");
+				this.sendError(client, "game.quest_failed_accept");
 			});
 	}
 
@@ -484,10 +498,7 @@ export class MessageHandler {
 					) <= 3,
 			);
 			if (!isNearNpc) {
-				this.sendError(
-					client,
-					"You must be near the quest NPC to complete this quest",
-				);
+				this.sendError(client, "game.quest_near_npc");
 				return;
 			}
 		}
@@ -520,7 +531,12 @@ export class MessageHandler {
 					}
 
 					client.send(ServerMessageType.Notification, {
-						message: `Quest Completed: ${questDef.title} (+${questDef.rewards.exp} XP, +${questDef.rewards.gold} Gold)`,
+						message: "quest.completed",
+						templateData: {
+							title: questDef.title,
+							exp: questDef.rewards.exp,
+							gold: questDef.rewards.gold,
+						},
 					});
 				}
 			})
@@ -529,7 +545,7 @@ export class MessageHandler {
 					message: `Failed to complete quest ${data.questId} for ${player.name}`,
 					error: String(err),
 				});
-				this.sendError(client, "Failed to complete quest");
+				this.sendError(client, "game.quest_failed_complete");
 			});
 	}
 
@@ -560,7 +576,7 @@ export class MessageHandler {
 		// Validate item is actually sold by this merchant
 		const merchantStock = MERCHANT_INVENTORY.general_store ?? [];
 		if (!merchantStock.includes(data.itemId)) {
-			this.sendError(client, "That item is not available here");
+			this.sendError(client, "game.not_available");
 			return;
 		}
 
@@ -571,13 +587,13 @@ export class MessageHandler {
 
 		// Prevent bulk buying non-stackable items
 		if (!itemDef.stackable && quantity > 1) {
-			this.sendError(client, "You can only buy one of that item at a time");
+			this.sendError(client, "game.only_buy_one");
 			return;
 		}
 
 		const totalCost = itemDef.goldValue * quantity;
 		if (player.gold < totalCost) {
-			this.sendError(client, "Not enough gold");
+			this.sendError(client, "game.not_enough_gold");
 			return;
 		}
 
@@ -588,7 +604,8 @@ export class MessageHandler {
 		) {
 			player.gold -= totalCost;
 			client.send(ServerMessageType.Notification, {
-				message: `Bought ${quantity}x ${itemDef.name}`,
+				message: "game.bought_item",
+				templateData: { quantity, item: itemDef.name },
 			});
 		}
 	}
@@ -622,7 +639,8 @@ export class MessageHandler {
 		if (this.ctx.systems.inventory.removeItem(player, data.itemId, quantity)) {
 			player.gold += sellValue;
 			client.send(ServerMessageType.Notification, {
-				message: `Sold ${quantity}x ${itemDef.name} for ${sellValue} gold`,
+				message: "game.sold_item",
+				templateData: { quantity, item: itemDef.name, gold: sellValue },
 			});
 		} else {
 			this.sendError(client, "Item not found in inventory");
@@ -705,7 +723,7 @@ export class MessageHandler {
 			Math.abs(player.tileX - target.tileX) +
 			Math.abs(player.tileY - target.tileY);
 		if (dist > 3) {
-			this.sendError(client, "Target too far to trade");
+			this.sendError(client, "game.too_far_trade");
 			return;
 		}
 
@@ -737,10 +755,7 @@ export class MessageHandler {
 
 			this.sendToParticipants(trade, ServerMessageType.TradeStateUpdate, trade);
 		} else {
-			this.sendError(
-				client,
-				"Failed to accept trade. Participant might be busy.",
-			);
+			this.sendError(client, "game.trade_failed_accept");
 		}
 	}
 
@@ -788,8 +803,7 @@ export class MessageHandler {
 							);
 						} else {
 							this.sendToParticipants(trade, ServerMessageType.TradeCancelled, {
-								reason:
-									"Trade validation failed (inventory full or items missing)",
+								reason: "game.trade_failed_validation",
 							});
 						}
 					});

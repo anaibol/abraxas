@@ -3,8 +3,8 @@ import type { Quest } from "../types";
 export const QUESTS: Record<string, Quest> = {
   slime_slayer: {
     id: "slime_slayer",
-    title: "Slime Slayer",
-    description: "The village is being overrun by goblins! Kill 5 of them to help us out.",
+    title: "quest.slime_slayer.title",
+    description: "quest.slime_slayer.description",
     npcId: "merchant",
     requirements: [{ type: "kill", target: "goblin", count: 5 }],
     rewards: {
@@ -15,8 +15,8 @@ export const QUESTS: Record<string, Quest> = {
   },
   tutorial_talk: {
     id: "tutorial_talk",
-    title: "A New Arrival",
-    description: "Welcome to Abraxas! Go talk to the Merchant to learn about trading.",
+    title: "quest.tutorial_talk.title",
+    description: "quest.tutorial_talk.description",
     npcId: "merchant",
     requirements: [{ type: "talk", target: "merchant", count: 1 }],
     rewards: {

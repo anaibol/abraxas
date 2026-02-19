@@ -107,6 +107,10 @@ interface SidebarProps {
   selectedItemId?: string | null;
   /** Called when the player selects or deselects an inventory slot. */
   onSelectItem?: (itemId: string | null) => void;
+  /** Called when the player clicks a spell to begin targeting. */
+  onSpellClick?: (spellId: string, rangeTiles: number) => void;
+  /** The spell currently queued for targeting (shows as selected). */
+  pendingSpellId?: string | null;
 }
 
 const RARITY_COLORS: Record<string, string> = {
@@ -137,7 +141,7 @@ export function Sidebar({
   partyId = "", leaderId = "", partyMembers = [],
   onPartyInvite, onPartyLeave, onPartyKick,
   friends = [], pendingFriendRequests = [], onFriendRequest, onFriendAccept, onWhisper, onTradeRequest,
-  selectedItemId, onSelectItem,
+  selectedItemId, onSelectItem, onSpellClick, pendingSpellId,
 }: SidebarProps) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<"inv" | "spells" | "quests" | "party" | "friends">("inv");
@@ -326,33 +330,51 @@ export function Sidebar({
             <Text textAlign="center" color={P.borderLight} fontSize="11px" py="8" fontStyle="italic">{t("sidebar.inventory.empty_spells")}</Text>
           ) : (
             <Flex direction="column" gap="1.5">
-              {classSpells.map((spell) => (
-                <Flex
-                  key={spell.id}
-                  align="center"
-                  gap="3"
-                  p="2.5"
-                  bg={P.darkest}
-                  border="1px solid"
-                  borderColor={P.border}
-                  borderRadius="2px"
-                  cursor="pointer"
-                  transition="all 0.12s"
-                  _hover={{ bg: P.surface, borderColor: P.gold }}
-                >
-                  <Flex w="36px" h="36px" align="center" justify="center" bg={P.surface} border="1px solid" borderColor={P.border} borderRadius="2px" fontSize="20px" flexShrink={0}>
-                    {SPELL_ICONS[spell.id] || "\u2728"}
+              {classSpells.map((spell) => {
+                const isPending = pendingSpellId === spell.id;
+                return (
+                  <Flex
+                    key={spell.id}
+                    align="center"
+                    gap="3"
+                    p="2.5"
+                    bg={isPending ? P.surface : P.darkest}
+                    border="1px solid"
+                    borderColor={isPending ? P.gold : P.border}
+                    borderRadius="2px"
+                    cursor="pointer"
+                    transition="all 0.12s"
+                    _hover={{ bg: P.surface, borderColor: P.gold }}
+                    onClick={() => onSpellClick?.(spell.id, spell.rangeTiles)}
+                    title={spell.rangeTiles > 0 ? t("sidebar.inventory.spell_click_hint") : undefined}
+                  >
+                    <Flex
+                      w="36px" h="36px" align="center" justify="center"
+                      bg={isPending ? P.raised : P.surface}
+                      border="1px solid"
+                      borderColor={isPending ? P.gold : P.border}
+                      borderRadius="2px"
+                      fontSize="20px"
+                      flexShrink={0}
+                    >
+                      {SPELL_ICONS[spell.id] || "\u2728"}
+                    </Flex>
+                    <Box flex="1">
+                      <Text fontSize="12px" fontWeight="700" color={isPending ? P.gold : P.gold}>
+                        {spell.id.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())}
+                      </Text>
+                      <Text fontSize="9px" color={P.goldDark} mt="0.5">
+                        {t("sidebar.inventory.mana")}: {spell.manaCost} · {spell.rangeTiles > 0 ? `${t("sidebar.inventory.range")}: ${spell.rangeTiles}` : t("sidebar.inventory.self")} · [{spell.key}]
+                      </Text>
+                    </Box>
+                    {isPending && (
+                      <Text fontSize="9px" color={P.gold} fontWeight="700" letterSpacing="1px" textTransform="uppercase" flexShrink={0}>
+                        {t("sidebar.inventory.targeting")}
+                      </Text>
+                    )}
                   </Flex>
-                  <Box>
-                    <Text fontSize="12px" fontWeight="700" color={P.gold}>
-                      {spell.id.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())}
-                    </Text>
-                    <Text fontSize="9px" color={P.goldDark} mt="0.5">
-                      {t("sidebar.inventory.mana")}: {spell.manaCost} · {spell.rangeTiles > 0 ? `${t("sidebar.inventory.range")}: ${spell.rangeTiles}` : t("sidebar.inventory.self")} · [{spell.key}]
-                    </Text>
-                  </Box>
-                </Flex>
-              ))}
+                );
+              })}
             </Flex>
           )}
         </Box>

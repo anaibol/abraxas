@@ -315,6 +315,8 @@ export class CombatSystem {
 
 		caster.lastGcdMs = now;
 		caster.spellCooldowns.set(spellId, now + spell.cooldownMs);
+		// Prevent an instant melee following a spell — treat the spell cast as consuming the melee timer too
+		this.lastMeleeMs.set(caster.sessionId, now);
 
 		const windup: WindupAction = {
 			type: "spell",

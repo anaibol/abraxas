@@ -25,7 +25,8 @@
       "char_name_required": "Le nombre du personnage est requis",
       "char_name_invalid": "Chaque mot doit commencer par une majuscule et ne contenir que des lettres (ex: Chevalier Noir)",
       "auth_failed": "Échec de l'authentification",
-      "network_error": "Erreur réseau"
+      "network_error": "Erreur réseau",
+      "title": "Erreur"
     }
   },
   "classes": {
@@ -61,7 +62,28 @@
     "invalid_item": "Objet invalide",
     "cannot_equip_consumable": "Impossible d'équiper un consommable",
     "invalid_equip_slot": "Emplacement d'équipement invalide",
-    "item_not_usable": "Objet non utilisable"
+    "item_not_usable": "Objet non utilisable",
+    "gold_picked_up": "{{name}} a ramassé {{amount}} pièces d'or",
+    "item_picked_up": "{{name}} a ramassé {{item}}",
+    "too_far": "Trop loin pour interagir",
+    "too_far_merchant": "Vous êtes trop loin d'un marchand",
+    "too_far_trade": "Cible trop loin pour échanger",
+    "not_available": "Cet objet n'est pas disponible ici",
+    "only_buy_one": "Vous ne pouvez acheter qu'un seul de cet objet à la fois",
+    "not_enough_gold": "Pas assez d'or",
+    "bought_item": "Acheté {{quantity}}x {{item}}",
+    "sold_item": "Vendu {{quantity}}x {{item}} pour {{gold}} pièces d'or",
+    "quest_near_npc": "Vous devez être proche du PNJ de la quête pour la terminer",
+    "quest_failed_accept": "Échec de l'acceptation de la quête",
+    "quest_failed_complete": "Échec de la fin de la quête",
+    "trade_failed_accept": "Échec de l'acceptation de l'échange. Le participant est peut-être occupé.",
+    "trade_failed_validation": "Échec de la validation de l'échange (inventaire plein ou objets manquants)",
+    "traveling": "Voyage vers {{map}}...",
+    "welcome": "Bienvenue sur Abraxas !",
+    "trade_completed": "Échange terminé avec succès",
+    "trade_cancelled": "Échange annulé : {{reason}}",
+    "item_used": "Utilisé : {{item}}",
+    "invalid_target": "Cible invalide"
   },
   "social": {
     "already_in_party": "Le joueur est déjà dans un groupe",
@@ -89,7 +111,9 @@
       "empty_spells": "Aucun sort disponible",
       "mana": "Mana",
       "range": "Portée",
-      "self": "Soi"
+      "self": "Soi",
+      "targeting": "En ciblage…",
+      "spell_click_hint": "Cliquer pour cibler"
     },
     "party": {
       "not_in_party": "Pas dans un groupe. Invitez quelqu'un pour en commencer un.",
@@ -127,5 +151,26 @@
     "drop": "Jeter",
     "use": "Utiliser",
     "equip": "Équiper"
+  },
+  "quest": {
+    "accepted": "Quête acceptée : {{title}}",
+    "completed": "Quête terminée : {{title}} (+{{exp}} XP, +{{gold}} Or)",
+    "slime_slayer": {
+      "title": "Chasseur de Slimes",
+      "description": "Le village est envahi par les gobelins ! Tuez-en 5 pour nous aider."
+    },
+    "tutorial_talk": {
+      "title": "Une nouvelle arrivée",
+      "description": "Bienvenue sur Abraxas ! Allez parler au marchand pour en savoir plus sur le commerce."
+    }
+  },
+  "dialogue": {
+    "accept_quest": "Accepter la quête",
+    "maybe_later": "Peut-être plus tard",
+    "complete_quest": "Terminer la quête",
+    "goodbye": "Au revoir",
+    "hello_traveler": "Bonjour, voyageur !",
+    "accept_prompt": "Acceptez-vous cette quête ?",
+    "reward_prompt": "Excellent travail pour {{title}} ! Voici votre récompense."
   }
 }

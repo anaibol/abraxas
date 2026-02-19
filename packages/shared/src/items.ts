@@ -38,7 +38,7 @@ export const ITEMS: Record<string, Item> = {
   // --- WEAPONS ---
   club: {
     id: "club",
-    name: "Club",
+    name: "items.club.name",
     slot: "weapon",
     rarity: "common",
     stats: { str: 2 },
@@ -47,7 +47,7 @@ export const ITEMS: Record<string, Item> = {
   },
   dagger: {
     id: "dagger",
-    name: "Dagger",
+    name: "items.dagger.name",
     slot: "weapon",
     rarity: "common",
     stats: { agi: 2 },
@@ -56,7 +56,7 @@ export const ITEMS: Record<string, Item> = {
   },
   iron_sword: {
     id: "iron_sword",
-    name: "Iron Sword",
+    name: "items.iron_sword.name",
     slot: "weapon",
     rarity: "common",
     stats: { str: 5 },
@@ -66,7 +66,7 @@ export const ITEMS: Record<string, Item> = {
   },
   steel_sword: {
     id: "steel_sword",
-    name: "Steel Sword",
+    name: "items.steel_sword.name",
     slot: "weapon",
     rarity: "uncommon",
     stats: { str: 10 },
@@ -76,7 +76,7 @@ export const ITEMS: Record<string, Item> = {
   },
   flame_blade: {
     id: "flame_blade",
-    name: "Flame Blade",
+    name: "items.flame_blade.name",
     slot: "weapon",
     rarity: "rare",
     stats: { str: 18, int: 5 },
@@ -86,7 +86,7 @@ export const ITEMS: Record<string, Item> = {
   },
   magic_staff: {
     id: "magic_staff",
-    name: "Magic Staff",
+    name: "items.magic_staff.name",
     slot: "weapon",
     rarity: "common",
     stats: { int: 6 },
@@ -96,7 +96,7 @@ export const ITEMS: Record<string, Item> = {
   },
   arcane_staff: {
     id: "arcane_staff",
-    name: "Arcane Staff",
+    name: "items.arcane_staff.name",
     slot: "weapon",
     rarity: "uncommon",
     stats: { int: 12, mana: 20 },
@@ -106,7 +106,7 @@ export const ITEMS: Record<string, Item> = {
   },
   staff_of_storms: {
     id: "staff_of_storms",
-    name: "Staff of Storms",
+    name: "items.staff_of_storms.name",
     slot: "weapon",
     rarity: "rare",
     stats: { int: 22, mana: 50 },
@@ -116,7 +116,7 @@ export const ITEMS: Record<string, Item> = {
   },
   short_bow: {
     id: "short_bow",
-    name: "Short Bow",
+    name: "items.short_bow.name",
     slot: "weapon",
     rarity: "common",
     stats: { agi: 4 },
@@ -126,7 +126,7 @@ export const ITEMS: Record<string, Item> = {
   },
   hunting_bow: {
     id: "hunting_bow",
-    name: "Hunting Bow",
+    name: "items.hunting_bow.name",
     slot: "weapon",
     rarity: "common",
     stats: { agi: 5 },
@@ -136,7 +136,7 @@ export const ITEMS: Record<string, Item> = {
   },
   longbow: {
     id: "longbow",
-    name: "Longbow",
+    name: "items.longbow.name",
     slot: "weapon",
     rarity: "uncommon",
     stats: { agi: 10 },
@@ -146,7 +146,7 @@ export const ITEMS: Record<string, Item> = {
   },
   elven_bow: {
     id: "elven_bow",
-    name: "Elven Bow",
+    name: "items.elven_bow.name",
     slot: "weapon",
     rarity: "rare",
     stats: { agi: 18, str: 4 },
@@ -156,7 +156,7 @@ export const ITEMS: Record<string, Item> = {
   },
   dagger_dual: {
     id: "dagger_dual",
-    name: "Dual Daggers",
+    name: "items.dagger_dual.name",
     slot: "weapon",
     rarity: "common",
     stats: { agi: 3 },
@@ -166,7 +166,7 @@ export const ITEMS: Record<string, Item> = {
   },
   twin_daggers: {
     id: "twin_daggers",
-    name: "Twin Daggers",
+    name: "items.twin_daggers.name",
     slot: "weapon",
     rarity: "common",
     stats: { agi: 4, str: 2 },
@@ -176,7 +176,7 @@ export const ITEMS: Record<string, Item> = {
   },
   shadow_daggers: {
     id: "shadow_daggers",
-    name: "Shadow Daggers",
+    name: "items.shadow_daggers.name",
     slot: "weapon",
     rarity: "uncommon",
     stats: { agi: 9, str: 4 },
@@ -186,7 +186,7 @@ export const ITEMS: Record<string, Item> = {
   },
   venom_blades: {
     id: "venom_blades",
-    name: "Venom Blades",
+    name: "items.venom_blades.name",
     slot: "weapon",
     rarity: "rare",
     stats: { agi: 15, str: 6 },
@@ -196,7 +196,7 @@ export const ITEMS: Record<string, Item> = {
   },
   holy_mace: {
     id: "holy_mace",
-    name: "Holy Mace",
+    name: "items.holy_mace.name",
     slot: "weapon",
     rarity: "common",
     stats: { str: 4, int: 3 },
@@ -206,7 +206,7 @@ export const ITEMS: Record<string, Item> = {
   },
   blessed_hammer: {
     id: "blessed_hammer",
-    name: "Blessed Hammer",
+    name: "items.blessed_hammer.name",
     slot: "weapon",
     rarity: "uncommon",
     stats: { str: 8, int: 8 },
@@ -216,7 +216,7 @@ export const ITEMS: Record<string, Item> = {
   },
   elder_staff: {
     id: "elder_staff",
-    name: "Elder Staff",
+    name: "items.elder_staff.name",
     slot: "weapon",
     rarity: "uncommon",
     stats: { int: 10, hp: 20 },
@@ -226,7 +226,7 @@ export const ITEMS: Record<string, Item> = {
   },
   bronze_axe: {
     id: "bronze_axe",
-    name: "Bronze Axe",
+    name: "items.bronze_axe.name",
     slot: "weapon",
     rarity: "common",
     stats: { str: 6 },
@@ -235,7 +235,7 @@ export const ITEMS: Record<string, Item> = {
   },
   iron_dagger: {
     id: "iron_dagger",
-    name: "Iron Dagger",
+    name: "items.iron_dagger.name",
     slot: "weapon",
     rarity: "common",
     stats: { agi: 5 },
@@ -246,7 +246,7 @@ export const ITEMS: Record<string, Item> = {
   // --- ARMOR ---
   tunic: {
     id: "tunic",
-    name: "Tunic",
+    name: "items.tunic.name",
     slot: "armor",
     rarity: "common",
     stats: { armor: 1 },
@@ -254,7 +254,7 @@ export const ITEMS: Record<string, Item> = {
   },
   leather_armor: {
     id: "leather_armor",
-    name: "Leather Armor",
+    name: "items.leather_armor.name",
     slot: "armor",
     rarity: "common",
     stats: { armor: 3, hp: 10 },
@@ -262,7 +262,7 @@ export const ITEMS: Record<string, Item> = {
   },
   chainmail: {
     id: "chainmail",
-    name: "Chainmail",
+    name: "items.chainmail.name",
     slot: "armor",
     rarity: "uncommon",
     stats: { armor: 8, hp: 30 },
@@ -271,7 +271,7 @@ export const ITEMS: Record<string, Item> = {
   },
   plate_armor: {
     id: "plate_armor",
-    name: "Plate Armor",
+    name: "items.plate_armor.name",
     slot: "armor",
     rarity: "rare",
     stats: { armor: 15, hp: 60, str: 5 },
@@ -280,7 +280,7 @@ export const ITEMS: Record<string, Item> = {
   },
   mage_robes: {
     id: "mage_robes",
-    name: "Mage Robes",
+    name: "items.mage_robes.name",
     slot: "armor",
     rarity: "common",
     stats: { int: 3, mana: 15 },
@@ -289,7 +289,7 @@ export const ITEMS: Record<string, Item> = {
   },
   shadow_cloak: {
     id: "shadow_cloak",
-    name: "Shadow Cloak",
+    name: "items.shadow_cloak.name",
     slot: "armor",
     rarity: "uncommon",
     stats: { agi: 5, armor: 4 },
@@ -300,7 +300,7 @@ export const ITEMS: Record<string, Item> = {
   // --- SHIELDS ---
   wooden_shield: {
     id: "wooden_shield",
-    name: "Wooden Shield",
+    name: "items.wooden_shield.name",
     slot: "shield",
     rarity: "common",
     stats: { armor: 2 },
@@ -309,7 +309,7 @@ export const ITEMS: Record<string, Item> = {
   },
   iron_shield: {
     id: "iron_shield",
-    name: "Iron Shield",
+    name: "items.iron_shield.name",
     slot: "shield",
     rarity: "uncommon",
     stats: { armor: 5, hp: 15 },
@@ -320,7 +320,7 @@ export const ITEMS: Record<string, Item> = {
   // --- HELMETS ---
   iron_helmet: {
     id: "iron_helmet",
-    name: "Iron Helmet",
+    name: "items.iron_helmet.name",
     slot: "helmet",
     rarity: "common",
     stats: { armor: 2, hp: 8 },
@@ -329,7 +329,7 @@ export const ITEMS: Record<string, Item> = {
   },
   wizard_hat: {
     id: "wizard_hat",
-    name: "Wizard Hat",
+    name: "items.wizard_hat.name",
     slot: "helmet",
     rarity: "common",
     stats: { int: 3, mana: 10 },
@@ -339,7 +339,7 @@ export const ITEMS: Record<string, Item> = {
   },
   crown_of_thorns: {
     id: "crown_of_thorns",
-    name: "Crown of Thorns",
+    name: "items.crown_of_thorns.name",
     slot: "helmet",
     rarity: "rare",
     stats: { int: 8, mana: 30, str: 5 },
@@ -350,7 +350,7 @@ export const ITEMS: Record<string, Item> = {
   // --- ACCESSORIES ---
   ring_of_strength: {
     id: "ring_of_strength",
-    name: "Ring of Strength",
+    name: "items.ring_of_strength.name",
     slot: "ring",
     rarity: "uncommon",
     stats: { str: 5 },
@@ -358,7 +358,7 @@ export const ITEMS: Record<string, Item> = {
   },
   ring_of_agility: {
     id: "ring_of_agility",
-    name: "Ring of Agility",
+    name: "items.ring_of_agility.name",
     slot: "ring",
     rarity: "uncommon",
     stats: { agi: 5 },
@@ -366,7 +366,7 @@ export const ITEMS: Record<string, Item> = {
   },
   ring_of_intellect: {
     id: "ring_of_intellect",
-    name: "Ring of Intellect",
+    name: "items.ring_of_intellect.name",
     slot: "ring",
     rarity: "uncommon",
     stats: { int: 5 },
@@ -374,7 +374,7 @@ export const ITEMS: Record<string, Item> = {
   },
   ring_of_vitality: {
     id: "ring_of_vitality",
-    name: "Ring of Vitality",
+    name: "items.ring_of_vitality.name",
     slot: "ring",
     rarity: "uncommon",
     stats: { hp: 50 },
@@ -384,7 +384,7 @@ export const ITEMS: Record<string, Item> = {
   // --- CONSUMABLES ---
   health_potion: {
     id: "health_potion",
-    name: "Health Potion",
+    name: "items.health_potion.name",
     slot: "consumable",
     rarity: "common",
     stats: {},
@@ -394,7 +394,7 @@ export const ITEMS: Record<string, Item> = {
   },
   mana_potion: {
     id: "mana_potion",
-    name: "Mana Potion",
+    name: "items.mana_potion.name",
     slot: "consumable",
     rarity: "common",
     stats: {},
@@ -404,7 +404,7 @@ export const ITEMS: Record<string, Item> = {
   },
   great_health_potion: {
     id: "great_health_potion",
-    name: "Great Health Potion",
+    name: "items.great_health_potion.name",
     slot: "consumable",
     rarity: "uncommon",
     stats: {},
@@ -414,7 +414,7 @@ export const ITEMS: Record<string, Item> = {
   },
   great_mana_potion: {
     id: "great_mana_potion",
-    name: "Great Mana Potion",
+    name: "items.great_mana_potion.name",
     slot: "consumable",
     rarity: "uncommon",
     stats: {},

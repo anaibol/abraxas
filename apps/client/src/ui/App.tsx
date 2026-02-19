@@ -102,6 +102,7 @@ export function App() {
   const [chatPrefill, setChatPrefill] = useState<string | undefined>();
   const [showScoreboard, setShowScoreboard] = useState(false);
   const [killStats, setKillStats] = useState<Record<string, KillStats>>({});
+  const [pendingSpellId, setPendingSpellId] = useState<string | null>(null);
 
   const gameContainerRef = useRef<HTMLDivElement>(null);
   const phaserGameRef = useRef<Phaser.Game | null>(null);
@@ -405,7 +406,15 @@ export function App() {
           .onMessage(
             ServerMessageType.OpenDialogue,
             (data: ServerMessages[ServerMessageType.OpenDialogue]) => {
-              setDialogueData(data);
+              const localizedOptions = data.options.map((opt) => ({
+                ...opt,
+                text: t(opt.text),
+              }));
+              setDialogueData({
+                ...data,
+                text: t(data.text), // Key or literal (t returns literal if key not found)
+                options: localizedOptions,
+              });
             },
           );
 
@@ -434,10 +443,12 @@ export function App() {
             ServerMessageType.PartyInvited,
             (data: ServerMessages[ServerMessageType.PartyInvited]) => {
               toaster.create({
-                title: "Party Invitation",
-                description: `${data.inviterName} invited you to a party. Accept?`,
+                title: t("sidebar.party.tabs.party"),
+                description: t("social.invited_to_party", {
+                  name: data.inviterName,
+                }),
                 action: {
-                  label: "Accept",
+                  label: t("sidebar.friends.accept"),
                   onClick: () => network.sendPartyAccept(data.partyId),
                 },
               });
@@ -459,11 +470,13 @@ export function App() {
             ServerMessageType.FriendInvited,
             (data: ServerMessages[ServerMessageType.FriendInvited]) => {
               toaster.create({
-                title: "Friend Request",
-                description: `${data.requesterName} wants to be your friend.`,
+                title: t("sidebar.tabs.friends"),
+                description: t("social.friend_request", {
+                  targetName: data.requesterName,
+                }),
                 type: "info",
                 action: {
-                  label: "Accept",
+                  label: t("sidebar.friends.accept"),
                   onClick: () =>
                     networkRef.current?.sendFriendAccept(data.requesterId),
                 },
@@ -495,12 +508,17 @@ export function App() {
             ServerMessageType.TradeRequested,
             (data: ServerMessages[ServerMessageType.TradeRequested]) => {
               toaster.create({
-                title: "Trade Request",
-                description: `${data.requesterName} wants to trade with you.`,
+                title: t("sidebar.party.trade"),
+                description: t("social.trade_requested", {
+                  name: data.requesterName,
+                }),
                 type: "info",
                 action: {
-                  label: "Accept",
-                  onClick: () => networkRef.current?.sendTradeAccept(data.requesterSessionId),
+                  label: t("sidebar.friends.accept"),
+                  onClick: () =>
+                    networkRef.current?.sendTradeAccept(
+                      data.requesterSessionId,
+                    ),
                 },
               });
             },
@@ -526,13 +544,10 @@ export function App() {
 
         network
           .getRoom()
-          .onMessage(
-            ServerMessageType.TradeCompleted,
-            () => {
-              setTradeData(null);
-              addConsoleMessage("Trade completed successfully.", "#44ff88");
-            },
-          );
+          .onMessage(ServerMessageType.TradeCompleted, () => {
+            setTradeData(null);
+            addConsoleMessage(t("game.trade_completed"), "#44ff88");
+          });
 
         network
           .getRoom()
@@ -540,7 +555,10 @@ export function App() {
             ServerMessageType.TradeCancelled,
             (data: ServerMessages[ServerMessageType.TradeCancelled]) => {
               setTradeData(null);
-              addConsoleMessage(`Trade cancelled: ${data.reason}`, "#ff8844");
+              addConsoleMessage(
+                t("game.trade_cancelled", { reason: t(data.reason) }),
+                "#ff8844",
+              );
             },
           );
 
@@ -550,9 +568,36 @@ export function App() {
             ServerMessageType.ItemUsed,
             (data: ServerMessages[ServerMessageType.ItemUsed]) => {
               const itemName = ITEMS[data.itemId]?.name ?? data.itemId;
-              addConsoleMessage(`Used: ${itemName}`, "#aaffcc");
+              addConsoleMessage(
+                t("game.item_used", { item: itemName }),
+                "#aaffcc",
+              );
             },
           );
+        network
+          .getRoom()
+          .onMessage(
+            ServerMessageType.Notification,
+            (data: ServerMessages[ServerMessageType.Notification]) => {
+              addConsoleMessage(t(data.message, data.templateData), "#ffffaa");
+            },
+          );
+        network
+          .getRoom()
+          .onMessage(
+            ServerMessageType.Error,
+            (data: ServerMessages[ServerMessageType.Error]) => {
+              addConsoleMessage(t(data.message, data.templateData), "#ffaaaa");
+              toaster.create({
+                title: t("lobby.error.title"),
+                description: t(data.message, data.templateData),
+                type: "error",
+              });
+            },
+          );
+        network.getRoom().onMessage(ServerMessageType.InvalidTarget, () => {
+          addConsoleMessage(t("game.invalid_target"), "#ff8888");
+        });
 
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
@@ -635,6 +680,25 @@ export function App() {
     },
     [addConsoleMessage],
   );
+
+  const handleSpellClick = useCallback((spellId: string, rangeTiles: number) => {
+    const game = phaserGameRef.current;
+    if (!game) return;
+    const scene = game.scene.getScene("GameScene") as GameScene | null;
+    if (!scene) return;
+    scene.startSpellTargeting(spellId, rangeTiles);
+    if (rangeTiles > 0) {
+      setPendingSpellId(spellId);
+      // Clear the pending indicator once the player clicks (or cancels) in the game
+      const clearPending = () => setPendingSpellId(null);
+      const canvas = game.canvas;
+      const onDown = () => { clearPending(); canvas.removeEventListener("pointerdown", onDown); canvas.removeEventListener("contextmenu", onDown); window.removeEventListener("keydown", onEsc); };
+      const onEsc = (e: KeyboardEvent) => { if (e.key === "Escape") { clearPending(); canvas.removeEventListener("pointerdown", onDown); canvas.removeEventListener("contextmenu", onDown); window.removeEventListener("keydown", onEsc); } };
+      canvas.addEventListener("pointerdown", onDown);
+      canvas.addEventListener("contextmenu", onDown);
+      window.addEventListener("keydown", onEsc);
+    }
+  }, []);
 
   const handleSendChat = (msg: string) => {
     const trimmed = msg.trim();
@@ -724,6 +788,8 @@ export function App() {
               onTradeRequest={(sid: string) => networkRef.current?.sendTradeRequest(sid)}
               selectedItemId={selectedItemId}
               onSelectItem={setSelectedItemId}
+              onSpellClick={handleSpellClick}
+              pendingSpellId={pendingSpellId}
             />
             {shopData && (
               <MerchantShop

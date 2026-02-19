@@ -25,7 +25,8 @@
       "char_name_required": "El nombre del personaje es obligatorio",
       "char_name_invalid": "Cada palabra debe comenzar con mayúscula y contener solo letras (ej. Caballero Oscuro)",
       "auth_failed": "Autenticación fallida",
-      "network_error": "Error de red"
+      "network_error": "Error de red",
+      "title": "Error"
     }
   },
   "classes": {
@@ -61,7 +62,28 @@
     "cannot_equip_consumable": "No se puede equipar un consumible",
     "invalid_equip_slot": "Ranura de equipo inválida",
     "item_not_usable": "Objeto no usable",
-    "restricted_to": "Restringido a {{classes}}"
+    "restricted_to": "Restringido a {{classes}}",
+    "gold_picked_up": "{{name}} recogió {{amount}} de oro",
+    "item_picked_up": "{{name}} recogió {{item}}",
+    "too_far": "Demasiado lejos para interactuar",
+    "too_far_merchant": "Estás demasiado lejos de un comerciante",
+    "too_far_trade": "Objetivo demasiado lejos para comerciar",
+    "not_available": "Ese objeto no está disponible aquí",
+    "only_buy_one": "Solo puedes comprar uno de ese objeto a la vez",
+    "not_enough_gold": "No tienes suficiente oro",
+    "bought_item": "Comprado {{quantity}}x {{item}}",
+    "sold_item": "Vendido {{quantity}}x {{item}} por {{gold}} de oro",
+    "quest_near_npc": "Debes estar cerca del NPC de la misión para completarla",
+    "quest_failed_accept": "Error al aceptar la misión",
+    "quest_failed_complete": "Error al completar la misión",
+    "trade_failed_accept": "Error al aceptar el intercambio. El participante puede estar ocupado.",
+    "trade_failed_validation": "Error de validación del intercambio (inventario lleno o faltan objetos)",
+    "traveling": "Viajando a {{map}}...",
+    "welcome": "¡Bienvenido a Abraxas!",
+    "trade_completed": "Intercambio completado con éxito",
+    "trade_cancelled": "Intercambio cancelado: {{reason}}",
+    "item_used": "Usado: {{item}}",
+    "invalid_target": "Objetivo inválido"
   },
   "social": {
     "already_in_party": "El jugador ya está en un grupo",
@@ -89,7 +111,9 @@
       "empty_spells": "No hay hechizos disponibles",
       "mana": "Maná",
       "range": "Rango",
-      "self": "Propio"
+      "self": "Propio",
+      "targeting": "Apuntando…",
+      "spell_click_hint": "Clic para apuntar"
     },
     "party": {
       "not_in_party": "No estás en un grupo. Invita a alguien para empezar uno.",
@@ -127,5 +151,26 @@
     "drop": "Soltar",
     "use": "Usar",
     "equip": "Equipar"
+  },
+  "quest": {
+    "accepted": "Misión aceptada: {{title}}",
+    "completed": "Misión completada: {{title}} (+{{exp}} PE, +{{gold}} oro)",
+    "slime_slayer": {
+      "title": "Cazador de Slimes",
+      "description": "¡La aldea está siendo invadida por goblins! Mata a 5 para ayudarnos."
+    },
+    "tutorial_talk": {
+      "title": "Un nuevo llegado",
+      "description": "¡Bienvenido a Abraxas! Ve a hablar con el Comerciante para aprender sobre el comercio."
+    }
+  },
+  "dialogue": {
+    "accept_quest": "Aceptar misión",
+    "maybe_later": "Tal vez más tarde",
+    "complete_quest": "Completar misión",
+    "goodbye": "Adiós",
+    "hello_traveler": "¡Hola, viajero!",
+    "accept_prompt": "¿Aceptas esta misión?",
+    "reward_prompt": "¡Gran trabajo con {{title}}! Aquí tienes tu recompensa."
   }
 }

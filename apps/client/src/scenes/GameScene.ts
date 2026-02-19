@@ -236,6 +236,15 @@ export class GameScene extends Phaser.Scene {
 		this.audioManager.cleanup();
 	}
 
+	startSpellTargeting(spellId: string, rangeTiles: number) {
+		this.inputHandler.cancelTargeting();
+		if (rangeTiles > 0) {
+			this.inputHandler.enterTargeting({ mode: "spell", spellId, rangeTiles });
+		} else {
+			this.network.sendCast(spellId, 0, 0);
+		}
+	}
+
 	private onEnterTargeting(rangeTiles: number) {
 		this.targetingRangeTiles = rangeTiles;
 		this.input.setDefaultCursor("crosshair");

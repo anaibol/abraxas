@@ -1,0 +1,20 @@
+{
+  "name": "Abraxas Arena",
+  "short_name": "Abraxas",
+  "description": "A free browser-based multiplayer RPG. Choose your class, battle monsters and other players, loot epic gear, and rise through the ranks.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1208",
+  "theme_color": "#1a1208",
+  "orientation": "landscape",
+  "categories": ["games", "entertainment"],
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ]
+}

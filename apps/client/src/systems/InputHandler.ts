@@ -108,7 +108,7 @@ export class InputHandler {
     }
   }
 
-  private enterTargeting(state: TargetingState) {
+  enterTargeting(state: TargetingState) {
     this.targeting = state;
     this.onEnterTargeting?.(state.rangeTiles);
   }

@@ -25,7 +25,8 @@
       "char_name_required": "Character name is required",
       "char_name_invalid": "Each word must start with a capital letter and contain only letters (e.g. Dark Knight)",
       "auth_failed": "Authentication failed",
-      "network_error": "Network error"
+      "network_error": "Network error",
+      "title": "Error"
     }
   },
   "classes": {
@@ -61,7 +62,28 @@
     "cannot_equip_consumable": "Cannot equip consumable",
     "invalid_equip_slot": "Invalid equipment slot",
     "item_not_usable": "Item not usable",
-    "restricted_to": "Restricted to {{classes}}"
+    "restricted_to": "Restricted to {{classes}}",
+    "gold_picked_up": "{{name}} picked up {{amount}} gold",
+    "item_picked_up": "{{name}} picked up {{item}}",
+    "too_far": "Too far to interact",
+    "too_far_merchant": "You are too far from a merchant",
+    "too_far_trade": "Target too far to trade",
+    "not_available": "That item is not available here",
+    "only_buy_one": "You can only buy one of that item at a time",
+    "not_enough_gold": "Not enough gold",
+    "bought_item": "Bought {{quantity}}x {{item}}",
+    "sold_item": "Sold {{quantity}}x {{item}} for {{gold}} gold",
+    "quest_near_npc": "You must be near the quest NPC to complete this quest",
+    "quest_failed_accept": "Failed to accept quest",
+    "quest_failed_complete": "Failed to complete quest",
+    "trade_failed_accept": "Failed to accept trade. Participant might be busy.",
+    "trade_failed_validation": "Trade validation failed (inventory full or items missing)",
+    "traveling": "Traveling to {{map}}...",
+    "welcome": "Welcome to Abraxas!",
+    "trade_completed": "Trade completed successfully",
+    "trade_cancelled": "Trade cancelled: {{reason}}",
+    "item_used": "Used: {{item}}",
+    "invalid_target": "Invalid target"
   },
   "social": {
     "already_in_party": "Player is already in a party",
@@ -89,7 +111,9 @@
       "empty_spells": "No spells available",
       "mana": "Mana",
       "range": "Range",
-      "self": "Self"
+      "self": "Self",
+      "targeting": "Targeting…",
+      "spell_click_hint": "Click to target"
     },
     "party": {
       "not_in_party": "Not in a party. Invite someone to start one.",
@@ -127,5 +151,26 @@
     "drop": "Drop",
     "use": "Use",
     "equip": "Equip"
+  },
+  "quest": {
+    "accepted": "Quest Accepted: {{title}}",
+    "completed": "Quest Completed: {{title}} (+{{exp}} XP, +{{gold}} Gold)",
+    "slime_slayer": {
+      "title": "Slime Slayer",
+      "description": "The village is being overrun by goblins! Kill 5 of them to help us out."
+    },
+    "tutorial_talk": {
+      "title": "A New Arrival",
+      "description": "Welcome to Abraxas! Go talk to the Merchant to learn about trading."
+    }
+  },
+  "dialogue": {
+    "accept_quest": "Accept Quest",
+    "maybe_later": "Maybe later",
+    "complete_quest": "Complete Quest",
+    "goodbye": "Goodbye",
+    "hello_traveler": "Hello there, traveler!",
+    "accept_prompt": "Do you accept this quest?",
+    "reward_prompt": "Great job on {{title}}! Here is your reward."
   }
 }
