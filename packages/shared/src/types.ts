@@ -230,6 +230,13 @@ export enum ServerMessageType {
   OpenDialogue = "open_dialogue",
 }
 
+export enum ChatChannel {
+  Global = "global",
+  Party = "party",
+  Whisper = "whisper",
+  System = "system",
+}
+
 export type ServerMessages = {
   [ServerMessageType.Welcome]: {
     sessionId: string;
@@ -296,7 +303,7 @@ export type ServerMessages = {
     senderId: string;
     senderName: string;
     message: string;
-    channel?: "global" | "party" | "whisper" | "system";
+    channel?: ChatChannel;
   };
   [ServerMessageType.Notification]: { message: string };
   [ServerMessageType.ItemUsed]: { sessionId: string; itemId: string };

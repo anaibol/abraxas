@@ -12,40 +12,40 @@ const currentLevel = LEVELS[LOG_LEVEL] ?? 1;
 
 interface LogEntry {
   timestamp: string;
-  level: string;
+  level: "debug" | "info" | "warn" | "error";
   room?: string;
   tick?: number;
   clientId?: string;
   intent?: string;
   posBefore?: { x: number; y: number };
   posAfter?: { x: number; y: number };
-  result?: string;
+  result?: "success" | "failed" | "error";
   damage?: number;
   hpAfter?: number;
+  message?: string;
+  error?: unknown;
   [key: string]: unknown;
 }
 
-function log(level: string, fields: Omit<LogEntry, "timestamp" | "level">) {
+function log(level: LogEntry["level"], fields: string | (Omit<LogEntry, "timestamp" | "level">)) {
   if ((LEVELS[level] ?? 0) < currentLevel) return;
 
   const entry: LogEntry = {
     timestamp: new Date().toISOString(),
     level,
-    ...fields,
+    ...(typeof fields === "string" ? { message: fields } : fields),
   };
 
-  if (LOG_FORMAT === "json") {
-    console.log(JSON.stringify(entry));
-  } else {
-    console.log(
-      `[${entry.timestamp}] ${entry.level.toUpperCase()} ${JSON.stringify(fields)}`
-    );
-  }
+  const output = LOG_FORMAT === "json" 
+    ? JSON.stringify(entry)
+    : `[${entry.timestamp}] ${entry.level.toUpperCase()} ${entry.message || ""} ${JSON.stringify(typeof fields === "object" ? fields : {})}`;
+  
+  console.log(output);
 }
 
 export const logger = {
-  debug: (fields: Omit<LogEntry, "timestamp" | "level">) => log("debug", fields),
-  info: (fields: Omit<LogEntry, "timestamp" | "level">) => log("info", fields),
-  warn: (fields: Omit<LogEntry, "timestamp" | "level">) => log("warn", fields),
-  error: (fields: Omit<LogEntry, "timestamp" | "level">) => log("error", fields),
+  debug: (fields: string | Omit<LogEntry, "timestamp" | "level">) => log("debug", fields),
+  info: (fields: string | Omit<LogEntry, "timestamp" | "level">) => log("info", fields),
+  warn: (fields: string | Omit<LogEntry, "timestamp" | "level">) => log("warn", fields),
+  error: (fields: string | Omit<LogEntry, "timestamp" | "level">) => log("error", fields),
 };
