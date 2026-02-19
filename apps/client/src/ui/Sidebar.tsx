@@ -906,25 +906,25 @@ function SpellsTab({
 									position="relative"
 								>
 									{SPELL_ICONS[spell.id] || "✨"}
-									{/* Keybind badge */}
-									{spell.key && (
-										<Box
-											position="absolute"
-											bottom="-1px"
-											right="-1px"
-											bg={isPending ? P.gold : "#1a1510"}
-											border="1px solid"
-											borderColor={isPending ? P.gold : P.raised}
-											borderRadius="2px"
-											px="1"
-											fontSize="7px"
-											fontFamily="'Consolas', monospace"
-											color={isPending ? P.bg : P.goldMuted}
-											lineHeight="1.4"
-										>
-											{spell.key}
-										</Box>
-									)}
+								{/* Keybind badge */}
+								{spell.key && (
+									<Box
+										position="absolute"
+										bottom="-1px"
+										right="-1px"
+										bg={isPending ? P.gold : "#1a1510"}
+										border="1px solid"
+										borderColor={isPending ? P.gold : P.raised}
+										borderRadius="2px"
+										px="1"
+										fontSize="10px"
+										fontFamily="'Consolas', monospace"
+										color={isPending ? P.bg : P.goldMuted}
+										lineHeight="1.4"
+									>
+										{spell.key}
+									</Box>
+								)}
 								</Flex>
 
 								{/* Text block */}
@@ -1120,13 +1120,13 @@ function PartyTab({
 				</VStack>
 			) : (
 				<VStack align="stretch" gap="2">
-					<Text
-						fontSize="9px"
-						color={P.goldDark}
-						letterSpacing="2px"
-						textTransform="uppercase"
-					>
-						{t("sidebar.party.party_id", { id: partyId })}
+				<Text
+					fontSize="11px"
+					color={P.goldDark}
+					letterSpacing="2px"
+					textTransform="uppercase"
+				>
+					{t("sidebar.party.party_id", { id: partyId })}
 					</Text>
 					{partyMembers.map((member) => (
 						<Flex

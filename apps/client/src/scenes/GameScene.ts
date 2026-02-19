@@ -121,11 +121,7 @@ export class GameScene extends Phaser.Scene {
 			this.cameraController,
 			() => this.room.sessionId,
 		);
-		this.effectManager = new EffectManager(
-			this,
-			this.resolver,
-			this.spriteManager,
-		);
+		this.effectManager = new EffectManager(this, this.spriteManager);
 
 		const localPlayer = this.room.state.players.get(this.room.sessionId);
 		const classType = localPlayer?.classType ?? "WARRIOR";
