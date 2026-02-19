@@ -120,7 +120,22 @@ export const SPELLS: Record<string, Spell> = {
     dotDurationMs: 5000,
     fxId: 19,
   },
-
+  evasion: {
+    id: "evasion",
+    rangeTiles: 0,
+    manaCost: 20,
+    baseDamage: 0,
+    scalingStat: "agi",
+    scalingRatio: 0,
+    cooldownMs: 10000,
+    windupMs: 60,
+    effect: "buff",
+    key: "E",
+    durationMs: 5000,
+    buffStat: "agi",
+    buffAmount: 15,
+    fxId: 18,
+  },
   // Assassin (Rogue)
   backstab: {
     id: "backstab",
@@ -192,7 +207,22 @@ export const SPELLS: Record<string, Spell> = {
     key: "W",
     fxId: 1,
   },
-
+  divine_shield: {
+    id: "divine_shield",
+    rangeTiles: 0,
+    manaCost: 40,
+    baseDamage: 0,
+    scalingStat: "int",
+    scalingRatio: 0,
+    cooldownMs: 20000,
+    windupMs: 100,
+    effect: "buff",
+    key: "E",
+    durationMs: 4000,
+    buffStat: "invulnerable",
+    buffAmount: 1,
+    fxId: 34,
+  },
 
   // NPC Spells
   poison_bite: {

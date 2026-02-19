@@ -35,7 +35,25 @@ export type Item = {
 };
 
 export const ITEMS: Record<string, Item> = {
-  // ── Weapons: Warrior ──
+  // --- WEAPONS ---
+  club: {
+    id: "club",
+    name: "Club",
+    slot: "weapon",
+    rarity: "common",
+    stats: { str: 2 },
+    goldValue: 5,
+    aoWeaponId: 1,
+  },
+  dagger: {
+    id: "dagger",
+    name: "Dagger",
+    slot: "weapon",
+    rarity: "common",
+    stats: { agi: 2 },
+    goldValue: 8,
+    aoWeaponId: 2,
+  },
   iron_sword: {
     id: "iron_sword",
     name: "Iron Sword",
@@ -56,9 +74,16 @@ export const ITEMS: Record<string, Item> = {
     requiredClass: ["WARRIOR", "CLERIC"],
     aoWeaponId: 21,
   },
-
-
-  // ── Weapons: Wizard ──
+  flame_blade: {
+    id: "flame_blade",
+    name: "Flame Blade",
+    slot: "weapon",
+    rarity: "rare",
+    stats: { str: 18, int: 5 },
+    goldValue: 250,
+    requiredClass: ["WARRIOR"],
+    aoWeaponId: 30,
+  },
   magic_staff: {
     id: "magic_staff",
     name: "Magic Staff",
@@ -69,10 +94,36 @@ export const ITEMS: Record<string, Item> = {
     requiredClass: ["MAGE"],
     aoWeaponId: 6,
   },
-
-
-
-  // ── Weapons: Ranger ──
+  arcane_staff: {
+    id: "arcane_staff",
+    name: "Arcane Staff",
+    slot: "weapon",
+    rarity: "uncommon",
+    stats: { int: 12, mana: 20 },
+    goldValue: 80,
+    requiredClass: ["MAGE"],
+    aoWeaponId: 18,
+  },
+  staff_of_storms: {
+    id: "staff_of_storms",
+    name: "Staff of Storms",
+    slot: "weapon",
+    rarity: "rare",
+    stats: { int: 22, mana: 50 },
+    goldValue: 300,
+    requiredClass: ["MAGE"],
+    aoWeaponId: 34,
+  },
+  short_bow: {
+    id: "short_bow",
+    name: "Short Bow",
+    slot: "weapon",
+    rarity: "common",
+    stats: { agi: 4 },
+    goldValue: 12,
+    requiredClass: ["RANGER"],
+    aoWeaponId: 41,
+  },
   hunting_bow: {
     id: "hunting_bow",
     name: "Hunting Bow",
@@ -93,9 +144,26 @@ export const ITEMS: Record<string, Item> = {
     requiredClass: ["RANGER"],
     aoWeaponId: 7,
   },
-
-
-  // ── Weapons: Rogue ──
+  elven_bow: {
+    id: "elven_bow",
+    name: "Elven Bow",
+    slot: "weapon",
+    rarity: "rare",
+    stats: { agi: 18, str: 4 },
+    goldValue: 280,
+    requiredClass: ["RANGER"],
+    aoWeaponId: 28,
+  },
+  dagger_dual: {
+    id: "dagger_dual",
+    name: "Dual Daggers",
+    slot: "weapon",
+    rarity: "common",
+    stats: { agi: 3 },
+    goldValue: 15,
+    requiredClass: ["ROGUE"],
+    aoWeaponId: 13,
+  },
   twin_daggers: {
     id: "twin_daggers",
     name: "Twin Daggers",
@@ -116,9 +184,16 @@ export const ITEMS: Record<string, Item> = {
     requiredClass: ["ROGUE"],
     aoWeaponId: 35,
   },
-
-
-  // ── Weapons: Cleric ──
+  venom_blades: {
+    id: "venom_blades",
+    name: "Venom Blades",
+    slot: "weapon",
+    rarity: "rare",
+    stats: { agi: 15, str: 6 },
+    goldValue: 260,
+    requiredClass: ["ROGUE"],
+    aoWeaponId: 11,
+  },
   holy_mace: {
     id: "holy_mace",
     name: "Holy Mace",
@@ -129,14 +204,54 @@ export const ITEMS: Record<string, Item> = {
     requiredClass: ["CLERIC"],
     aoWeaponId: 4,
   },
+  blessed_hammer: {
+    id: "blessed_hammer",
+    name: "Blessed Hammer",
+    slot: "weapon",
+    rarity: "uncommon",
+    stats: { str: 8, int: 8 },
+    goldValue: 90,
+    requiredClass: ["CLERIC"],
+    aoWeaponId: 15,
+  },
+  elder_staff: {
+    id: "elder_staff",
+    name: "Elder Staff",
+    slot: "weapon",
+    rarity: "uncommon",
+    stats: { int: 10, hp: 20 },
+    goldValue: 75,
+    requiredClass: ["CLERIC", "MAGE"],
+    aoWeaponId: 20,
+  },
+  bronze_axe: {
+    id: "bronze_axe",
+    name: "Bronze Axe",
+    slot: "weapon",
+    rarity: "common",
+    stats: { str: 6 },
+    goldValue: 18,
+    aoWeaponId: 3,
+  },
+  iron_dagger: {
+    id: "iron_dagger",
+    name: "Iron Dagger",
+    slot: "weapon",
+    rarity: "common",
+    stats: { agi: 5 },
+    goldValue: 15,
+    aoWeaponId: 12,
+  },
 
-
-  // ── Weapons: MAGE (spare) ──
-
-
-
-
-  // ── Armor ──
+  // --- ARMOR ---
+  tunic: {
+    id: "tunic",
+    name: "Tunic",
+    slot: "armor",
+    rarity: "common",
+    stats: { armor: 1 },
+    goldValue: 3,
+  },
   leather_armor: {
     id: "leather_armor",
     name: "Leather Armor",
@@ -150,11 +265,19 @@ export const ITEMS: Record<string, Item> = {
     name: "Chainmail",
     slot: "armor",
     rarity: "uncommon",
-    stats: { armor: 6, hp: 20 },
+    stats: { armor: 8, hp: 30 },
     goldValue: 50,
     requiredClass: ["WARRIOR", "CLERIC"],
   },
-
+  plate_armor: {
+    id: "plate_armor",
+    name: "Plate Armor",
+    slot: "armor",
+    rarity: "rare",
+    stats: { armor: 15, hp: 60, str: 5 },
+    goldValue: 200,
+    requiredClass: ["WARRIOR"],
+  },
   mage_robes: {
     id: "mage_robes",
     name: "Mage Robes",
@@ -164,13 +287,37 @@ export const ITEMS: Record<string, Item> = {
     goldValue: 18,
     requiredClass: ["MAGE"],
   },
+  shadow_cloak: {
+    id: "shadow_cloak",
+    name: "Shadow Cloak",
+    slot: "armor",
+    rarity: "uncommon",
+    stats: { agi: 5, armor: 4 },
+    goldValue: 60,
+    requiredClass: ["ROGUE", "RANGER"],
+  },
 
+  // --- SHIELDS ---
+  wooden_shield: {
+    id: "wooden_shield",
+    name: "Wooden Shield",
+    slot: "shield",
+    rarity: "common",
+    stats: { armor: 2 },
+    goldValue: 10,
+    aoShieldId: 1,
+  },
+  iron_shield: {
+    id: "iron_shield",
+    name: "Iron Shield",
+    slot: "shield",
+    rarity: "uncommon",
+    stats: { armor: 5, hp: 15 },
+    goldValue: 35,
+    aoShieldId: 2,
+  },
 
-  // ── Shields ──
-
-
-
-  // ── Helmets ──
+  // --- HELMETS ---
   iron_helmet: {
     id: "iron_helmet",
     name: "Iron Helmet",
@@ -190,15 +337,51 @@ export const ITEMS: Record<string, Item> = {
     requiredClass: ["MAGE"],
     aoHelmetId: 4,
   },
+  crown_of_thorns: {
+    id: "crown_of_thorns",
+    name: "Crown of Thorns",
+    slot: "helmet",
+    rarity: "rare",
+    stats: { int: 8, mana: 30, str: 5 },
+    goldValue: 220,
+    aoHelmetId: 7,
+  },
 
+  // --- ACCESSORIES ---
+  ring_of_strength: {
+    id: "ring_of_strength",
+    name: "Ring of Strength",
+    slot: "ring",
+    rarity: "uncommon",
+    stats: { str: 5 },
+    goldValue: 100,
+  },
+  ring_of_agility: {
+    id: "ring_of_agility",
+    name: "Ring of Agility",
+    slot: "ring",
+    rarity: "uncommon",
+    stats: { agi: 5 },
+    goldValue: 100,
+  },
+  ring_of_intellect: {
+    id: "ring_of_intellect",
+    name: "Ring of Intellect",
+    slot: "ring",
+    rarity: "uncommon",
+    stats: { int: 5 },
+    goldValue: 100,
+  },
+  ring_of_vitality: {
+    id: "ring_of_vitality",
+    name: "Ring of Vitality",
+    slot: "ring",
+    rarity: "uncommon",
+    stats: { hp: 50 },
+    goldValue: 120,
+  },
 
-  // ── Rings ──
-
-
-
-
-
-  // ── Consumables ──
+  // --- CONSUMABLES ---
   health_potion: {
     id: "health_potion",
     name: "Health Potion",
@@ -219,6 +402,24 @@ export const ITEMS: Record<string, Item> = {
     consumeEffect: { healMana: 40 },
     stackable: true,
   },
-
-
+  great_health_potion: {
+    id: "great_health_potion",
+    name: "Great Health Potion",
+    slot: "consumable",
+    rarity: "uncommon",
+    stats: {},
+    goldValue: 25,
+    consumeEffect: { healHp: 150 },
+    stackable: true,
+  },
+  great_mana_potion: {
+    id: "great_mana_potion",
+    name: "Great Mana Potion",
+    slot: "consumable",
+    rarity: "uncommon",
+    stats: {},
+    goldValue: 25,
+    consumeEffect: { healMana: 120 },
+    stackable: true,
+  },
 };

@@ -18,21 +18,10 @@ export interface MoveResult {
 }
 
 export class MovementSystem {
-  private timers = new Map<string, EntityTimers>();
-
   constructor(private spatial: SpatialLookup) {}
 
-  private getTimers(sessionId: string): EntityTimers {
-    let t = this.timers.get(sessionId);
-    if (!t) {
-      t = { lastMoveMs: 0 };
-      this.timers.set(sessionId, t);
-    }
-    return t;
-  }
-
-  removePlayer(sessionId: string): void {
-    this.timers.delete(sessionId);
+  removePlayer(_sessionId: string): void {
+    // No-op: timers are now part of the Char entity
   }
 
   /**
@@ -48,7 +37,6 @@ export class MovementSystem {
     tick: number,
     roomId: string,
   ): MoveResult {
-    const timers = this.getTimers(entity.sessionId);
 
     const stats = entity.getStats();
     if (!stats) return { success: false };
@@ -58,7 +46,7 @@ export class MovementSystem {
     const moveIntervalMs = 1000 / speed;
 
     // Movement timing check (15ms jitter tolerance)
-    if (now - timers.lastMoveMs < moveIntervalMs - 15) {
+    if (now - entity.lastMoveMs < moveIntervalMs - 15) {
       if (entity instanceof Player) {
         logger.debug({ room: roomId, tick, clientId: entity.sessionId, intent: "move", result: "too_fast" });
       }
@@ -86,9 +74,9 @@ export class MovementSystem {
     this.spatial.updatePosition(entity, posBefore.x, posBefore.y);
 
     // Timing drift cap
-    timers.lastMoveMs += moveIntervalMs;
-    if (now - timers.lastMoveMs > moveIntervalMs) {
-      timers.lastMoveMs = now;
+    entity.lastMoveMs += moveIntervalMs;
+    if (now - entity.lastMoveMs > moveIntervalMs) {
+      entity.lastMoveMs = now;
     }
 
     if (entity instanceof Player) {

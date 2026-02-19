@@ -1,5 +1,5 @@
 import { Schema, type } from "@colyseus/schema";
-import { Direction } from "@abraxas/shared";
+import { Direction, type BufferedAction, type WindupAction } from "@abraxas/shared";
 import type { NpcStats, Spell } from "@abraxas/shared";
 
 /**
@@ -13,6 +13,13 @@ export abstract class Char extends Schema {
   @type("uint16") tileX: number = 0;
   @type("uint16") tileY: number = 0;
   @type("uint8") facing: Direction = Direction.DOWN;
+
+  // Transient server-side state (not synced to clients)
+  lastMoveMs: number = 0;
+  lastGcdMs: number = 0;
+  spellCooldowns = new Map<string, number>();
+  bufferedAction: BufferedAction | null = null;
+  windupAction: WindupAction | null = null;
 
   // Combat stats (common to players and NPCs)
   @type("uint8") str: number = 0;

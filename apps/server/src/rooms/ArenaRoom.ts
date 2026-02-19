@@ -72,6 +72,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     try {
       this.autoDispose = false;
       this.seatReservationTimeout = 60;
+      this.maxMessagesPerSecond = 20;
       this.setState(new GameState());
 
       this.roomMapName = options.mapName || "arena.test";

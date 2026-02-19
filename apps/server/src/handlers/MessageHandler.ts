@@ -116,7 +116,10 @@ export class MessageHandler {
 
   // ── Message Handlers ─────────────────────────────────────────────────────
 
-  handleMove(client: Client, data: { direction: Direction }): void {
+  handleMove(
+    client: Client,
+    data: ClientMessages[ClientMessageType.Move],
+  ): void {
     const player = this.getActivePlayer(client);
     if (!player) return;
     if (player.stunned) return;

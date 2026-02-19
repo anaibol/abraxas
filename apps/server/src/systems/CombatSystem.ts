@@ -13,7 +13,6 @@ import type {
   BroadcastFn,
   Spell,
   WindupAction,
-  EntityCombatState,
   TileMap,
 } from "@abraxas/shared";
 import type { BuffSystem } from "./BuffSystem";
@@ -27,7 +26,6 @@ type SendToClientFn = <T extends ServerMessageType>(
 
 export class CombatSystem {
   private activeWindups = new Map<string, WindupAction>();
-  private entityStates = new Map<string, EntityCombatState>();
 
   constructor(
     private spatial: SpatialLookup,
@@ -35,21 +33,8 @@ export class CombatSystem {
     private map: TileMap,
   ) {}
 
-  getEntityState(sessionId: string): EntityCombatState {
-    if (!this.entityStates.has(sessionId)) {
-      this.entityStates.set(sessionId, {
-        lastMeleeMs: 0,
-        lastGcdMs: 0,
-        spellCooldowns: new Map(),
-        bufferedAction: null,
-        windupAction: null,
-      });
-    }
-    return this.entityStates.get(sessionId)!;
-  }
 
   removeEntity(sessionId: string) {
-    this.entityStates.delete(sessionId);
     this.activeWindups.delete(sessionId);
   }
 
@@ -87,49 +72,47 @@ export class CombatSystem {
     onDeath: (entity: Entity, killerSessionId?: string) => void,
     onSummon?: (caster: Entity, spellId: string, x: number, y: number) => void,
   ) {
-    for (const [sessionId, cs] of this.entityStates.entries()) {
-      if (!cs.bufferedAction) continue;
-
+    for (const sessionId of this.activeWindups.keys()) {
       const entity = this.spatial.findEntityBySessionId(sessionId);
-      if (!entity || !entity.alive) {
-        cs.bufferedAction = null;
+      if (!entity || !entity.alive || !entity.bufferedAction) {
+        if (entity) entity.bufferedAction = null;
         continue;
       }
 
       // Buffer expires if too old
-      if (now - cs.bufferedAction.bufferedAt > 500) {
-        cs.bufferedAction = null;
+      if (now - entity.bufferedAction.bufferedAt > 500) {
+        entity.bufferedAction = null;
         continue;
       }
 
       const sendToClient = getSendToClient(sessionId);
 
-      if (cs.bufferedAction.type === "attack") {
+      if (entity.bufferedAction.type === "attack") {
         if (
           this.tryAttack(
             entity,
-            cs.bufferedAction.targetTileX ?? entity.tileX,
-            cs.bufferedAction.targetTileY ?? entity.tileY,
+            entity.bufferedAction.targetTileX ?? entity.tileX,
+            entity.bufferedAction.targetTileY ?? entity.tileY,
             broadcast,
             now,
             sendToClient,
           )
         ) {
-          cs.bufferedAction = null;
+          entity.bufferedAction = null;
         }
-      } else if (cs.bufferedAction.type === "cast" && cs.bufferedAction.spellId) {
+      } else if (entity.bufferedAction.type === "cast" && entity.bufferedAction.spellId) {
         if (
           this.tryCast(
             entity,
-            cs.bufferedAction.spellId,
-            cs.bufferedAction.targetTileX ?? entity.tileX,
-            cs.bufferedAction.targetTileY ?? entity.tileY,
+            entity.bufferedAction.spellId,
+            entity.bufferedAction.targetTileX ?? entity.tileX,
+            entity.bufferedAction.targetTileY ?? entity.tileY,
             broadcast,
             now,
             sendToClient,
           )
         ) {
-          cs.bufferedAction = null;
+          entity.bufferedAction = null;
         }
       }
     }
@@ -145,11 +128,10 @@ export class CombatSystem {
   ): boolean {
     if (this.buffSystem.isStunned(attacker.sessionId, now)) return false;
 
-    const cs = this.getEntityState(attacker.sessionId);
     const stats = attacker.getStats()!;
 
-    if (now < cs.lastGcdMs + GCD_MS || this.activeWindups.has(attacker.sessionId)) {
-      cs.bufferedAction = {
+    if (now < attacker.lastGcdMs + GCD_MS || this.activeWindups.has(attacker.sessionId)) {
+      attacker.bufferedAction = {
         type: "attack",
         targetTileX,
         targetTileY,
@@ -195,7 +177,7 @@ export class CombatSystem {
       targetTileY,
     };
 
-    cs.lastGcdMs = now;
+    attacker.lastGcdMs = now;
     this.activeWindups.set(attacker.sessionId, windup);
     broadcast(ServerMessageType.AttackStart, {
       sessionId: attacker.sessionId,
@@ -216,7 +198,6 @@ export class CombatSystem {
   ): boolean {
     if (this.buffSystem.isStunned(caster.sessionId, now)) return false;
 
-    const cs = this.getEntityState(caster.sessionId);
     const spell = SPELLS[spellId];
     if (!spell) return false;
 
@@ -229,8 +210,8 @@ export class CombatSystem {
       }
     }
 
-    if (now < cs.lastGcdMs + GCD_MS || this.activeWindups.has(caster.sessionId)) {
-      cs.bufferedAction = {
+    if (now < caster.lastGcdMs + GCD_MS || this.activeWindups.has(caster.sessionId)) {
+      caster.bufferedAction = {
         type: "cast",
         spellId,
         targetTileX,
@@ -240,7 +221,7 @@ export class CombatSystem {
       return false;
     }
 
-    const cd = cs.spellCooldowns.get(spellId) || 0;
+    const cd = caster.spellCooldowns.get(spellId) || 0;
     if (now < cd) return false;
 
     // Facing check for targeted spells
@@ -277,8 +258,8 @@ export class CombatSystem {
       caster.mana -= spell.manaCost;
     }
 
-    cs.lastGcdMs = now;
-    cs.spellCooldowns.set(spellId, now + spell.cooldownMs);
+    caster.lastGcdMs = now;
+    caster.spellCooldowns.set(spellId, now + spell.cooldownMs);
 
     const windup: WindupAction = {
       type: "spell",

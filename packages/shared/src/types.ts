@@ -10,7 +10,12 @@ export type ClassType = "WARRIOR" | "MAGE" | "ROGUE" | "CLERIC" | "RANGER";
 export type NpcType =
   | "orc"
   | "skeleton"
-  | "merchant";
+  | "goblin"
+  | "wolf"
+  | "merchant"
+  | "spider"
+  | "ghost"
+  | "lich";
 
 export enum NpcState {
   IDLE = "idle",
