@@ -68,6 +68,7 @@ export class QuestSystem {
         quest: { connect: { code: questId } },
         status: "IN_PROGRESS",
         progressJson: initialState.progress,
+        startedAt: new Date(),
       },
     });
 
@@ -133,7 +134,7 @@ export class QuestSystem {
 
     await prisma.characterQuest.updateMany({
       where: { characterId: charId, quest: { code: questId } },
-      data: { status: "TURNED_IN" },
+      data: { status: "TURNED_IN", completedAt: new Date() },
     });
 
     return questDef;

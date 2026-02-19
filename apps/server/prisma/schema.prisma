@@ -15,20 +15,6 @@ enum CharacterClass {
   RANGER
 }
 
-enum ItemRarity {
-  COMMON
-  UNCOMMON
-  RARE
-  EPIC
-  LEGENDARY
-}
-
-enum ItemBind {
-  NONE
-  ON_PICKUP
-  ON_EQUIP
-}
-
 enum EquipSlot {
   HEAD
   CHEST
@@ -51,7 +37,6 @@ enum QuestStatus {
 
 model Account {
   id        String   @id @default(cuid())
-  email     String?  @unique
   username  String   @unique
   password  String
   createdAt DateTime @default(now())
@@ -94,25 +79,20 @@ model Character {
   class       CharacterClass
   level       Int            @default(1)
   exp         Int            @default(0)
+  gold        Int            @default(0)
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
   lastLoginAt DateTime?
 
-  gold Int    @default(0)
-  gems Int    @default(0)
-
   mapId  String @default("")
-  x      Float   @default(0)
-  y      Float   @default(0)
-  z      Float   @default(0)
-  facing String  @default("down")
+  x      Float  @default(0)
+  y      Float  @default(0)
+  facing String @default("down")
 
-  stats         CharacterStats?
-  inventory     Inventory?
-  equipments    Equipment[]
-  skills        CharacterSkill[]
-  questLog      CharacterQuest[]
-  itemInstances ItemInstance[]
+  stats      CharacterStats?
+  inventory  Inventory?
+  equipments Equipment[]
+  questLog   CharacterQuest[]
 
   @@index([accountId])
   @@index([mapId])
@@ -123,36 +103,18 @@ model CharacterStats {
   characterId String    @unique
   character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
 
-  str Int @default(5)
-  agi Int @default(5)
-  int Int @default(5)
-  vit Int @default(5)
-
+  str   Int @default(5)
+  agi   Int @default(5)
+  int   Int @default(5)
   maxHp Int @default(100)
   maxMp Int @default(50)
   hp    Int @default(100)
   mp    Int @default(50)
-
-  armor  Int @default(0)
-  minDmg Int @default(1)
-  maxDmg Int @default(3)
 }
 
 model ItemDef {
-  id           String     @id @default(cuid())
-  code         String     @unique
-  name         String
-  description  String?
-  rarity       ItemRarity @default(COMMON)
-  bind         ItemBind   @default(NONE)
-  stackSize    Int        @default(1)
-  equipSlot    EquipSlot?
-  isConsumable Boolean    @default(false)
-
-  statsJson Json?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id   String @id @default(cuid())
+  code String @unique
 
   instances ItemInstance[]
 }
@@ -162,13 +124,7 @@ model ItemInstance {
   itemDefId String
   itemDef   ItemDef @relation(fields: [itemDefId], references: [id], onDelete: Restrict)
 
-  seed     Int?
-  metaJson Json?
-
   boundToCharacterId String?
-  boundToCharacter   Character? @relation(fields: [boundToCharacterId], references: [id], onDelete: SetNull)
-
-  createdAt DateTime @default(now())
 
   inventorySlot InventorySlot?
   equipment     Equipment?
@@ -211,40 +167,11 @@ model Equipment {
   @@unique([characterId, slot])
 }
 
-model SkillDef {
-  id          String  @id @default(cuid())
-  code        String  @unique
-  name        String
-  description String?
-  maxLevel    Int     @default(10)
-  metaJson    Json?
-
-  CharacterSkill CharacterSkill[]
-}
-
-model CharacterSkill {
-  id          String    @id @default(cuid())
-  characterId String
-  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
-
-  skillDefId String
-  skillDef   SkillDef @relation(fields: [skillDefId], references: [id], onDelete: Restrict)
-
-  level Int @default(1)
-  exp   Int @default(0)
-
-  @@unique([characterId, skillDefId])
-  @@index([characterId])
-}
-
 model Quest {
-  id          String  @id @default(cuid())
-  code        String  @unique
-  name        String
-  description String?
-  metaJson    Json?
+  id   String @id @default(cuid())
+  code String @unique
 
-  CharacterQuest CharacterQuest[]
+  characterQuests CharacterQuest[]
 }
 
 model CharacterQuest {

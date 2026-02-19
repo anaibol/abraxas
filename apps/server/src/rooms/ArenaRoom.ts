@@ -328,6 +328,8 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         return;
       }
 
+      prisma.character.update({ where: { id: char.id }, data: { lastLoginAt: new Date() } }).catch(() => {});
+
       if (char.mapId !== this.roomMapName) {
         logger.info({
           room: this.roomId,
