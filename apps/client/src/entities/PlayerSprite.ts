@@ -52,12 +52,10 @@ export class PlayerSprite {
   private currentDir: Direction = Direction.DOWN;
   private isMoving: boolean = false;
 
-  // Current equipment AO IDs (0 = none)
   private curWeaponAoId: number = 0;
   private curShieldAoId: number = 0;
   private curHelmetAoId: number = 0;
 
-  // Client-side prediction tracking
   public predictedTileX: number = 0;
   public predictedTileY: number = 0;
   private pendingPredictions = 0;
@@ -117,7 +115,6 @@ export class PlayerSprite {
     this.lastServerTileX = tileX;
     this.lastServerTileY = tileY;
 
-    // Body sprite: resolve first frame of "down" animation for initial display
     const bodyGrhId = this.bodyEntry.down;
     const bodyStatic = this.resolver.resolveStaticGrh(bodyGrhId)!;
     this.bodySprite = scene.add.sprite(
@@ -128,7 +125,6 @@ export class PlayerSprite {
     );
     this.bodySprite.setOrigin(0.5, 1);
 
-    // Head sprite: resolve "down" direction
     const headGrhId = this.headEntry.down;
     const headStatic = this.resolver.resolveStaticGrh(headGrhId)!;
     this.headSprite = scene.add.sprite(
@@ -140,7 +136,6 @@ export class PlayerSprite {
     this.headSprite.setOrigin(0.5, 0);
     this.updateHeadPosition();
 
-    // Name above head
     this.nameText = scene.add.text(0, -30, name, {
       fontSize: "10px",
       color: isLocal ? "#ffffff" : "#cccccc",
@@ -148,7 +143,6 @@ export class PlayerSprite {
     });
     this.nameText.setOrigin(0.5, 1);
 
-    // HP/Mana bars below feet
     const barWidth = TILE_SIZE - 6;
     this.hpBarBg = scene.add.rectangle(
       0,
@@ -194,7 +188,6 @@ export class PlayerSprite {
   }
 
   private updateHeadPosition() {
-    // Body bottom at TILE_SIZE/2, body height from the static frame
     const dirName = DIR_NAME_MAP[this.currentDir];
     const bodyStatic = this.resolver.resolveStaticGrh(this.bodyEntry[dirName]);
     const bodyH = bodyStatic ? bodyStatic.height : 45;
@@ -264,7 +257,6 @@ export class PlayerSprite {
     this.currentDir = direction;
     const dirName = DIR_NAME_MAP[direction];
 
-    // Update head frame
     const headGrhId = this.headEntry[dirName];
     const headStatic = this.resolver.resolveStaticGrh(headGrhId);
     if (headStatic) {
@@ -274,20 +266,15 @@ export class PlayerSprite {
       );
     }
 
-    // Update head position (body frame size may vary by direction)
     this.updateHeadPosition();
 
-    // Update body animation/idle
     if (this.isMoving) {
       this.playWalkAnims();
     } else {
       this.setIdleFrame();
     }
 
-    // Update equipment sprites direction
     this.updateEquipmentDirection();
-
-    // Z-ordering by direction
     this.updateZOrder();
   }
 
@@ -302,7 +289,6 @@ export class PlayerSprite {
         `grh-${bodyStatic.id}`,
       );
     }
-    // Stop equipment anims too
     if (this.weaponSprite) {
       const weaponEntry = this.resolver.getWeaponEntry(this.curWeaponAoId);
       if (weaponEntry) {
@@ -334,7 +320,6 @@ export class PlayerSprite {
       this.bodySprite.play(bodyAnimKey, true);
     }
 
-    // Sync weapon animation
     if (this.weaponSprite && this.curWeaponAoId) {
       const weaponEntry = this.resolver.getWeaponEntry(this.curWeaponAoId);
       if (weaponEntry) {
@@ -347,7 +332,6 @@ export class PlayerSprite {
       }
     }
 
-    // Sync shield animation
     if (this.shieldSprite && this.curShieldAoId) {
       const shieldEntry = this.resolver.getShieldEntry(this.curShieldAoId);
       if (shieldEntry) {
@@ -363,7 +347,6 @@ export class PlayerSprite {
 
   private updateEquipmentDirection() {
     const dirName = DIR_NAME_MAP[this.currentDir];
-    // Weapon
     if (this.weaponSprite && this.curWeaponAoId) {
       const weaponEntry = this.resolver.getWeaponEntry(this.curWeaponAoId);
       if (weaponEntry) {
@@ -385,7 +368,6 @@ export class PlayerSprite {
       }
     }
 
-    // Shield
     if (this.shieldSprite && this.curShieldAoId) {
       const shieldEntry = this.resolver.getShieldEntry(this.curShieldAoId);
       if (shieldEntry) {
@@ -407,7 +389,6 @@ export class PlayerSprite {
       }
     }
 
-    // Helmet (static per direction)
     if (this.helmetSprite && this.curHelmetAoId) {
       const helmetEntry = this.resolver.getHelmetEntry(this.curHelmetAoId);
       if (helmetEntry) {
@@ -600,28 +581,22 @@ export class PlayerSprite {
   update(delta: number) {
     const dx = this.targetX - this.renderX;
     const dy = this.targetY - this.renderY;
-    const dist = Math.sqrt(dx * dx + dy * dy);
+    const distSq = dx * dx + dy * dy;
 
-    // Detect movement state from render interpolation
-    const moving = dist > 1;
-    this.setMoving(moving);
+    this.setMoving(distSq > 1);
 
-    if (dist < 0.5) {
-      this.renderX = this.targetX;
-      this.renderY = this.targetY;
-    } else if (dist > TILE_SIZE * 4) {
+    if (distSq < 0.25 || distSq > (TILE_SIZE * 4) ** 2) {
       this.renderX = this.targetX;
       this.renderY = this.targetY;
     } else {
+      const dist = Math.sqrt(distSq);
       const maxMove = this.pixelsPerSecond * (delta / 1000);
       if (maxMove >= dist) {
         this.renderX = this.targetX;
         this.renderY = this.targetY;
       } else {
-        const nx = dx / dist;
-        const ny = dy / dist;
-        this.renderX += nx * maxMove;
-        this.renderY += ny * maxMove;
+        this.renderX += (dx / dist) * maxMove;
+        this.renderY += (dy / dist) * maxMove;
       }
     }
 
