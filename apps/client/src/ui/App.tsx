@@ -295,15 +295,6 @@ export function App() {
                 setIsLoading(false);
                 setConnecting(false);
               },
-              (message: string) => {
-                toaster.create({
-                  title: t("lobby.error.title"),
-                  description: message,
-                  type: "error",
-                  duration: 3000,
-                });
-                setConnecting(false);
-              },
               (recording) => setIsRecording(recording),
               (sessionId, name, screenX, screenY) => {
                 setPlayerContextMenu({ sessionId, name, screenX, screenY });

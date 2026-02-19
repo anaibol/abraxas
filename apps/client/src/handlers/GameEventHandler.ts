@@ -5,12 +5,15 @@ import {
 	SPAWN_PROTECTION_MS,
 	ChatChannel,
 	SPELLS,
+	i18n,
 } from "@abraxas/shared";
 import type { SpriteManager } from "../managers/SpriteManager";
 import type { EffectManager } from "../managers/EffectManager";
 import type { SoundManager } from "../assets/SoundManager";
 import type { InputHandler } from "../systems/InputHandler";
 import type { ConsoleCallback } from "../scenes/GameScene";
+
+const t = (key: string, opts?: Record<string, unknown>) => i18n.t(key, opts);
 
 export class GameEventHandler {
 	private unsubscribers: (() => void)[] = [];
@@ -23,7 +26,6 @@ export class GameEventHandler {
 		private inputHandler: InputHandler,
 		private onConsoleMessage?: ConsoleCallback,
 		private onKillFeed?: (killer: string, victim: string) => void,
-		private onError?: (message: string) => void,
 	) {}
 
 	private isSelf(sessionId: string): boolean {
@@ -52,9 +54,8 @@ export class GameEventHandler {
 		on(ServerMessageType.KillFeed, (data) => this.onKillFeedMessage(data));
 		on(ServerMessageType.InvalidTarget, () => this.onInvalidTarget());
 		on(ServerMessageType.LevelUp, (data) => this.onLevelUp(data));
-		on(ServerMessageType.Notification, (data) => this.onNotification(data));
 		on(ServerMessageType.StealthApplied, (data) => this.onStealthApplied(data));
-		on(ServerMessageType.Error, (data) => this.onErrorMessage(data));
+		// Notification and Error are handled (with translation) in useRoomListeners
 	}
 
 	destroy() {
@@ -71,17 +72,12 @@ export class GameEventHandler {
 		this.spriteManager.showChatBubble(data.senderId, data.message);
 	}
 
-	private onErrorMessage(data: { message: string }) {
-		this.onError?.(data.message);
-		this.onConsoleMessage?.(`Error: ${data.message}`, "#ff0000");
-	}
-
 	private onAttackStart(data: ServerMessages["attack_start"]) {
 		const sprite = this.spriteManager.getSprite(data.sessionId);
 		if (sprite) {
 			this.spriteManager.pulseAlpha(data.sessionId, 0.7, 100);
 			if (this.isSelf(data.sessionId))
-				this.onConsoleMessage?.("You attacked!", "#cccccc");
+				this.onConsoleMessage?.(t("game.you_attacked"), "#cccccc");
 		}
 		this.soundManager.playAttack();
 	}
@@ -99,7 +95,7 @@ export class GameEventHandler {
 			this.spriteManager.pulseAlpha(data.sessionId, 0.8, 140);
 			this.effectManager.playCastWindup(data.sessionId, data.spellId);
 			if (this.isSelf(data.sessionId))
-				this.onConsoleMessage?.("You cast a spell!", "#aaaaff");
+				this.onConsoleMessage?.(t("game.you_cast_spell"), "#aaaaff");
 		}
 		this.soundManager.playSpell();
 
@@ -124,7 +120,7 @@ export class GameEventHandler {
 		this.soundManager.playHit();
 
 		if (this.isSelf(data.targetSessionId)) {
-			this.onConsoleMessage?.(`You took ${data.amount} damage!`, "#ff4444");
+			this.onConsoleMessage?.(t("game.you_took_damage", { amount: data.amount }), "#ff4444");
 		}
 	}
 
@@ -137,7 +133,7 @@ export class GameEventHandler {
 		}
 		if (this.isSelf(data.sessionId)) {
 			this.inputHandler.cancelTargeting();
-			this.onConsoleMessage?.("You have died!", "#ff0000");
+			this.onConsoleMessage?.(t("game.you_died"), "#ff0000");
 		}
 		this.soundManager.playDeath();
 	}
@@ -153,10 +149,7 @@ export class GameEventHandler {
 			);
 		}
 		if (this.isSelf(data.sessionId)) {
-			this.onConsoleMessage?.(
-				"You have respawned! (Protected for 5s)",
-				"#aaffaa",
-			);
+			this.onConsoleMessage?.(t("game.you_respawned"), "#aaffaa");
 		}
 	}
 
@@ -164,7 +157,7 @@ export class GameEventHandler {
 		this.effectManager.showHeal(data.sessionId, data.amount);
 		this.soundManager.playHeal();
 		if (this.isSelf(data.sessionId)) {
-			this.onConsoleMessage?.(`You healed for ${data.amount}!`, "#33cc33");
+			this.onConsoleMessage?.(t("game.you_healed", { amount: data.amount }), "#33cc33");
 		}
 	}
 
@@ -174,84 +167,37 @@ export class GameEventHandler {
 		const effect = spell?.effect ?? "buff";
 
 		if (effect === "debuff") {
-			this.spriteManager.applySpellStateVisual(
-				data.sessionId,
-				data.spellId,
-				durationMs,
-			);
-			this.effectManager.showFloatingText(
-				data.sessionId,
-				"WEAKENED",
-				"#cc44ff",
-			);
+			this.spriteManager.applySpellStateVisual(data.sessionId, data.spellId, durationMs);
+			this.effectManager.showFloatingText(data.sessionId, t("game.buff_weakened"), "#cc44ff");
 		} else if (effect === "stun") {
 			this.spriteManager.applyStunVisual(data.sessionId, durationMs);
-			this.effectManager.showFloatingText(
-				data.sessionId,
-				"STUNNED ✦",
-				"#ffff44",
-			);
+			this.effectManager.showFloatingText(data.sessionId, `${t("game.buff_stunned")} ✦`, "#ffff44");
 		} else if (effect === "stealth") {
-			this.spriteManager.applySpellStateVisual(
-				data.sessionId,
-				data.spellId,
-				durationMs,
-			);
-			this.effectManager.showFloatingText(data.sessionId, "STEALTH", "#aaddff");
+			this.spriteManager.applySpellStateVisual(data.sessionId, data.spellId, durationMs);
+			this.effectManager.showFloatingText(data.sessionId, t("game.buff_stealth"), "#aaddff");
 		} else if (data.spellId === "divine_shield") {
 			this.spriteManager.applyInvulnerableVisual(data.sessionId, durationMs);
-			this.effectManager.showFloatingText(
-				data.sessionId,
-				"INVULNERABLE",
-				"#ffffff",
-			);
+			this.effectManager.showFloatingText(data.sessionId, t("game.buff_invulnerable"), "#ffffff");
 		} else if (effect === "dot") {
-			this.spriteManager.applySpellStateVisual(
-				data.sessionId,
-				data.spellId,
-				durationMs,
-			);
-			this.effectManager.showFloatingText(
-				data.sessionId,
-				"POISONED",
-				"#44ff44",
-			);
+			this.spriteManager.applySpellStateVisual(data.sessionId, data.spellId, durationMs);
+			this.effectManager.showFloatingText(data.sessionId, t("game.buff_poisoned"), "#44ff44");
 		} else {
-			this.spriteManager.applySpellStateVisual(
-				data.sessionId,
-				data.spellId,
-				durationMs,
-			);
-			this.effectManager.showFloatingText(
-				data.sessionId,
-				"BUFFED ✦",
-				"#ffdd44",
-			);
+			this.spriteManager.applySpellStateVisual(data.sessionId, data.spellId, durationMs);
+			this.effectManager.showFloatingText(data.sessionId, `${t("game.buff_buffed")} ✦`, "#ffdd44");
 		}
 	}
 
 	private onStunApplied(data: ServerMessages["stun_applied"]) {
-		this.spriteManager.applyStunVisual(
-			data.targetSessionId,
-			data.durationMs ?? 1500,
-		);
-		this.effectManager.showFloatingText(
-			data.targetSessionId,
-			"STUNNED ✦",
-			"#ffff44",
-		);
+		this.spriteManager.applyStunVisual(data.targetSessionId, data.durationMs ?? 1500);
+		this.effectManager.showFloatingText(data.targetSessionId, `${t("game.buff_stunned")} ✦`, "#ffff44");
 		if (this.isSelf(data.targetSessionId)) {
-			this.onConsoleMessage?.("You are stunned!", "#ffff44");
+			this.onConsoleMessage?.(t("game.you_stunned"), "#ffff44");
 		}
 	}
 
 	private onStealthApplied(data: ServerMessages["stealth_applied"]) {
-		this.spriteManager.applySpellStateVisual(
-			data.sessionId,
-			"stealth",
-			data.durationMs,
-		);
-		this.effectManager.showFloatingText(data.sessionId, "STEALTH", "#aaddff");
+		this.spriteManager.applySpellStateVisual(data.sessionId, "stealth", data.durationMs);
+		this.effectManager.showFloatingText(data.sessionId, t("game.buff_stealth"), "#aaddff");
 	}
 
 	private onKillFeedMessage(data: ServerMessages["kill_feed"]) {
@@ -259,18 +205,11 @@ export class GameEventHandler {
 	}
 
 	private onInvalidTarget() {
-		this.effectManager.showFloatingText(
-			this.room.sessionId,
-			"Invalid target",
-			"#ff8800",
-		);
+		this.effectManager.showFloatingText(this.room.sessionId, t("game.invalid_target"), "#ff8800");
 	}
 
 	private onLevelUp(data: ServerMessages["level_up"]) {
 		this.effectManager.playLevelUp(data.sessionId);
 	}
 
-	private onNotification(data: ServerMessages["notification"]) {
-		this.onConsoleMessage?.(data.message, "#ffff00");
-	}
 }

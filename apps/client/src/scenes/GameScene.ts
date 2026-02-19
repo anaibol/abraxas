@@ -28,7 +28,6 @@ export class GameScene extends Phaser.Scene {
 	private onKillFeed?: KillFeedCallback;
 	private onConsoleMessage?: ConsoleCallback;
 	private onReady?: () => void;
-	private onError?: (message: string) => void;
 	private onPttChange?: (recording: boolean) => void;
 	private onPlayerRightClick?: PlayerRightClickCallback;
 	private room!: Room<GameState>;
@@ -84,7 +83,6 @@ export class GameScene extends Phaser.Scene {
 		onKillFeed?: KillFeedCallback,
 		onConsoleMessage?: ConsoleCallback,
 		onReady?: () => void,
-		onError?: (message: string) => void,
 		onPttChange?: (recording: boolean) => void,
 		onPlayerRightClick?: PlayerRightClickCallback,
 	) {
@@ -95,7 +93,6 @@ export class GameScene extends Phaser.Scene {
 		this.onKillFeed = onKillFeed;
 		this.onConsoleMessage = onConsoleMessage;
 		this.onReady = onReady;
-		this.onError = onError;
 		this.onPttChange = onPttChange;
 		this.onPlayerRightClick = onPlayerRightClick;
 	}
@@ -227,7 +224,6 @@ export class GameScene extends Phaser.Scene {
 			this.inputHandler,
 			this.onConsoleMessage,
 			this.onKillFeed,
-			this.onError,
 		);
 		this.gameEventHandler.setupListeners();
 
