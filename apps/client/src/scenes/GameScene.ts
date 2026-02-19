@@ -50,6 +50,7 @@ export class GameScene extends Phaser.Scene {
 	private lastOverlayCenterX = -1;
 	private lastOverlayCenterY = -1;
 
+	private muteKey?: Phaser.Input.Keyboard.Key;
 	private debugText?: Phaser.GameObjects.Text;
 	private dropGraphics = new Map<string, Phaser.GameObjects.Arc>();
 
@@ -83,6 +84,11 @@ export class GameScene extends Phaser.Scene {
 
 		this.soundManager = new SoundManager(this);
 		this.soundManager.startMusic();
+
+		this.muteKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.M);
+		this.muteKey?.on("down", () => {
+			this.soundManager.toggleMute();
+		});
 
 		this.audioManager = new AudioManager();
 
@@ -225,6 +231,7 @@ export class GameScene extends Phaser.Scene {
 		for (const unsub of this.stateUnsubscribers) unsub();
 		this.stateUnsubscribers = [];
 		this.inputHandler.destroy();
+		if (this.muteKey) this.input.keyboard?.removeKey(this.muteKey);
 		this.soundManager.stopMusic();
 		this.audioManager.cleanup();
 	}

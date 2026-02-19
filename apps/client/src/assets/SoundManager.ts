@@ -50,4 +50,14 @@ export class SoundManager {
       this.music = null;
     }
   }
+
+  toggleMute(): boolean {
+    const muted = !this.scene.sound.mute;
+    this.scene.sound.mute = muted;
+    return muted;
+  }
+
+  get muted(): boolean {
+    return this.scene.sound.mute;
+  }
 }
