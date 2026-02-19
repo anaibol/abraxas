@@ -1,17 +1,17 @@
-import {
-	defineServer,
-	defineRoom,
-	createRouter,
-	type Server,
-	type Router,
-} from "@colyseus/core";
-import { BunWebSockets } from "@colyseus/bun-websockets";
-import { join, extname } from "path";
-import { ArenaRoom } from "./rooms/ArenaRoom";
+import { extname, join } from "node:path";
 import type { TileMap } from "@abraxas/shared";
+import { BunWebSockets } from "@colyseus/bun-websockets";
+import {
+	createRouter,
+	defineRoom,
+	defineServer,
+	type Router,
+	type Server,
+} from "@colyseus/core";
 import { logger } from "./logger";
+import { ArenaRoom } from "./rooms/ArenaRoom";
+import { healthEndpoint, loginEndpoint, registerEndpoint } from "./routes";
 import { MapService } from "./services/MapService";
-import { healthEndpoint, registerEndpoint, loginEndpoint } from "./routes";
 
 process.on("uncaughtException", (e) => {
 	logger.error({
@@ -72,29 +72,29 @@ async function serveStatic(
 	});
 }
 
-// @colyseus/bun-websockets ignores the `express` callback entirely and returns
-// 404 for all unmatched routes. We intercept `bindRouter` (called internally by
-// defineServer) to handle SPA routes before the Colyseus router takes over.
-function patchTransportForSPA(transport: BunWebSockets, staticDir: string) {
-	const origBindRouter = transport.bindRouter.bind(transport);
+// Extends BunWebSockets only to add SPA fallback for non-API routes.
+// The URL parsing bug (url.pathname + url.search) is already fixed in
+// @colyseus/bun-websockets@0.17.7, so no listen() override is needed.
+class GameTransport extends BunWebSockets {
+	constructor(private readonly staticDir?: string) {
+		super();
+	}
 
-	(
-		transport as BunWebSockets & { bindRouter: (r: Router) => void }
-	).bindRouter = (router) => {
-		const origHandler = router.handler as (req: Request) => Promise<Response>;
+	override bindRouter(router: Router): void {
+		const origHandler = router.handler.bind(router);
+		const staticDir = this.staticDir;
 
 		router.handler = (req: Request) => {
 			const { pathname } = new URL(req.url);
-			const isColyseusPath = COLYSEUS_PREFIXES.some(
+			const isApiRoute = COLYSEUS_PREFIXES.some(
 				(p) => pathname === p || pathname.startsWith(`${p}/`),
 			);
-			return isColyseusPath
-				? origHandler.call(router, req)
-				: serveStatic(pathname, staticDir);
+			if (isApiRoute || !staticDir) return origHandler(req);
+			return serveStatic(pathname, staticDir);
 		};
 
-		origBindRouter(router);
-	};
+		super.bindRouter(router);
+	}
 }
 
 export async function createGameServer(options: {
@@ -105,11 +105,8 @@ export async function createGameServer(options: {
 	MapService.setMap("arena.test", options.map);
 	MapService.setMap("arena", options.map);
 
-	const transport = new BunWebSockets();
-	if (options.staticDir) patchTransportForSPA(transport, options.staticDir);
-
 	const server = defineServer({
-		transport,
+		transport: new GameTransport(options.staticDir),
 		devMode:
 			process.env.NODE_ENV !== "production" && process.env.NODE_ENV !== "test",
 		rooms: { arena: defineRoom(ArenaRoom) },
