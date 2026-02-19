@@ -108,13 +108,27 @@ export function App() {
   const [isMobile] = useState(() => typeof window !== "undefined" && ("ontouchstart" in window || navigator.maxTouchPoints > 0));
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  const [room, setRoom] = useState<Room<GameState> | null>(null);
+  const roomRef = useRef<Room<GameState> | null>(null);
+
   const gameContainerRef = useRef<HTMLDivElement>(null);
   const phaserGameRef = useRef<Phaser.Game | null>(null);
   const networkRef = useRef<NetworkManager | null>(null);
   const audioManagerRef = useRef<AudioManager | null>(null);
   const wasAliveRef = useRef(true);
 
-  const roomRef = useRef<Room<GameState> | null>(null);
+  useRoomListeners(room, networkRef.current, {
+    t,
+    addConsoleMessage,
+    setShopData,
+    setDialogueData,
+    setQuests,
+    setPartyData,
+    setBankData,
+    setTradeData,
+    setKillStats,
+    networkRef,
+  });
 
   // Clear selection if the selected item is no longer in inventory
   useEffect(() => {
@@ -208,7 +222,9 @@ export function App() {
         const network = new NetworkManager();
         await network.connect(charId, classType, token, mapName);
         networkRef.current = network;
-        roomRef.current = network.getRoom();
+        const room = network.getRoom();
+        roomRef.current = room;
+        setRoom(room);
 
         const welcome = network.getWelcomeData();
 
@@ -248,18 +264,6 @@ export function App() {
           timestamp: Date.now(),
         });
 
-        setupRoomListeners(network.getRoom(), network, {
-          t,
-          addConsoleMessage,
-          setShopData,
-          setDialogueData,
-          setQuests,
-          setPartyData,
-          setBankData,
-          setTradeData,
-          setKillStats,
-          networkRef,
-        });
 
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
@@ -629,89 +633,3 @@ export function App() {
 
 // ── Drop quantity dialog ──────────────────────────────────────────────────────
 
-function DropQuantityDialog({
-  itemName,
-  maxQty,
-  onConfirm,
-  onCancel,
-}: {
-  itemName: string;
-  maxQty: number;
-  onConfirm: (qty: number) => void;
-  onCancel: () => void;
-}) {
-  const [qty, setQty] = useState(maxQty);
-  const clamp = (n: number) => Math.min(Math.max(1, n), maxQty);
-  const confirm = () => onConfirm(clamp(qty));
-
-  return (
-    <Box
-      position="fixed"
-      inset="0"
-      zIndex={200}
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      bg="rgba(0,0,0,0.65)"
-      onClick={onCancel}
-    >
-      <Box
-        bg={T.bg}
-        border="2px solid"
-        borderColor={T.border}
-        borderRadius="4px"
-        p="5"
-        w="260px"
-        fontFamily={T.display}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <Box textStyle={T.sectionLabel} color={T.gold} mb="1" textAlign="center">
-          Drop Item
-        </Box>
-        <Box textStyle={T.bodyText} color={T.goldText} textAlign="center" mb="3">
-          {itemName}
-        </Box>
-
-        <Box mb="3">
-          <Box textStyle={T.statLabel} color={T.goldDark} letterSpacing="2px" mb="1">
-            Quantity (1 – {maxQty})
-          </Box>
-          <input
-            // biome-ignore lint/a11y/noAutofocus: dialog input needs immediate focus for keyboard shortcuts
-            autoFocus
-            type="number"
-            min={1}
-            max={maxQty}
-            value={qty}
-            onChange={(e) => setQty(Number(e.target.value))}
-            onKeyDown={(e) => {
-              if (e.key === "Escape") { e.preventDefault(); onCancel(); }
-              if (e.key === "Enter")  { e.preventDefault(); confirm(); }
-            }}
-            style={{
-              width: "100%",
-              background: HEX.surface,
-              border: `1px solid ${HEX.border}`,
-              borderRadius: "2px",
-              color: HEX.goldText,
-              fontFamily: "var(--chakra-fonts-mono)",
-              fontSize: "14px",
-              padding: "4px 8px",
-              outline: "none",
-              boxSizing: "border-box",
-            }}
-          />
-        </Box>
-
-        <Flex gap="2">
-          <Box as="button" flex="1" py="1.5" textStyle={T.bodyText} fontWeight="700" letterSpacing="1px" bg={T.raised} border="1px solid" borderColor={T.border} borderRadius="2px" color={T.goldText} cursor="pointer" fontFamily={T.display} onClick={onCancel}>
-            Cancel
-          </Box>
-          <Box as="button" flex="1" py="1.5" textStyle={T.bodyText} fontWeight="700" letterSpacing="1px" bg={T.goldDark} border="1px solid" borderColor={T.gold} borderRadius="2px" color={T.gold} cursor="pointer" fontFamily={T.display} onClick={confirm}>
-            Drop
-          </Box>
-        </Flex>
-      </Box>
-    </Box>
-  );
-}
