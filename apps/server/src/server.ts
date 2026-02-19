@@ -10,7 +10,7 @@ import {
 } from "@colyseus/core";
 import { logger } from "./logger";
 import { ArenaRoom } from "./rooms/ArenaRoom";
-import { createCharacterEndpoint, healthEndpoint, loginEndpoint, registerEndpoint } from "./routes";
+import { createCharacterEndpoint, healthEndpoint, loginEndpoint, meEndpoint, registerEndpoint } from "./routes";
 import { MapService } from "./services/MapService";
 
 process.on("uncaughtException", (e) => {
@@ -118,7 +118,7 @@ export async function createGameServer(options: {
 		devMode:
 			process.env.NODE_ENV !== "production" && process.env.NODE_ENV !== "test",
 		rooms: { arena: defineRoom(ArenaRoom) },
-		routes: createRouter({ healthEndpoint, registerEndpoint, loginEndpoint, createCharacterEndpoint }),
+		routes: createRouter({ healthEndpoint, registerEndpoint, loginEndpoint, meEndpoint, createCharacterEndpoint }),
 	});
 
 	await server.listen(options.port, "0.0.0.0");

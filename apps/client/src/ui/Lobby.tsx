@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box, Flex, Text, Input, Button, Grid,
   IconButton, Badge,
@@ -136,6 +136,27 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
   const [token, setToken] = useState("");
   const [characters, setCharacters] = useState<CharacterSummary[]>([]);
 
+  useEffect(() => {
+    const stored = localStorage.getItem("abraxas_token");
+    if (!stored) return;
+
+    fetch("/api/me", {
+      headers: { Authorization: `Bearer ${stored}` },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("invalid");
+        return res.json();
+      })
+      .then((data) => {
+        setToken(stored);
+        setCharacters(data.characters ?? []);
+        setMode("character_select");
+      })
+      .catch(() => {
+        localStorage.removeItem("abraxas_token");
+      });
+  }, []);
+
   const labelStyle = {
     fontSize: "10px",
     color: P.goldMuted,
@@ -165,6 +186,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
         return;
       }
 
+      localStorage.setItem("abraxas_token", data.token);
       setToken(data.token);
       setCharacters(data.characters ?? []);
       setMode("character_select");
@@ -218,6 +240,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
   };
 
   const resetToLogin = () => {
+    localStorage.removeItem("abraxas_token");
     setMode("login");
     setToken("");
     setCharacters([]);
