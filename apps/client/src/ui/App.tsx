@@ -19,11 +19,13 @@ import { Console, type ConsoleMessage } from "./Console";
 import { Minimap } from "./Minimap";
 import { MerchantShop } from "./MerchantShop";
 import { BankWindow } from "./BankWindow";
+import { TradeWindow } from "./TradeWindow";
 import type {
   ClassType,
   TileMap,
   PlayerQuestState,
   ServerMessages,
+  TradeState,
 } from "@abraxas/shared";
 import { getRandomName, ServerMessageType, ITEMS } from "@abraxas/shared";
 import { QuestDialogue } from "./QuestDialogue";
@@ -93,6 +95,8 @@ export function App() {
     itemName: string;
     maxQty: number;
   } | null>(null);
+  const [tradeData, setTradeData] = useState<TradeState | null>(null);
+  const [chatPrefill, setChatPrefill] = useState<string | undefined>();
 
   const gameContainerRef = useRef<HTMLDivElement>(null);
   const phaserGameRef = useRef<Phaser.Game | null>(null);
@@ -232,6 +236,16 @@ export function App() {
     return () => {
       audioManagerRef.current?.cleanup();
     };
+  }, []);
+
+  const addConsoleMessage = useCallback((text: string, color?: string) => {
+    setConsoleMessages((prev) => {
+      const next = [
+        ...prev,
+        { id: ++consoleMsgId, text, color, timestamp: Date.now() },
+      ];
+      return next.length > 50 ? next.slice(next.length - 50) : next;
+    });
   }, []);
 
   const handleJoin = useCallback(
@@ -434,6 +448,71 @@ export function App() {
             },
           );
 
+        network
+          .getRoom()
+          .onMessage(
+            ServerMessageType.TradeRequested,
+            (data: ServerMessages[ServerMessageType.TradeRequested]) => {
+              toaster.create({
+                title: "Trade Request",
+                description: `${data.requesterName} wants to trade with you.`,
+                type: "info",
+                action: {
+                  label: "Accept",
+                  onClick: () => networkRef.current?.sendTradeAccept(data.requesterSessionId),
+                },
+              });
+            },
+          );
+
+        network
+          .getRoom()
+          .onMessage(
+            ServerMessageType.TradeStarted,
+            (_data: ServerMessages[ServerMessageType.TradeStarted]) => {
+              // TradeStateUpdate will immediately follow with the initial state
+            },
+          );
+
+        network
+          .getRoom()
+          .onMessage(
+            ServerMessageType.TradeStateUpdate,
+            (data: ServerMessages[ServerMessageType.TradeStateUpdate]) => {
+              setTradeData(data);
+            },
+          );
+
+        network
+          .getRoom()
+          .onMessage(
+            ServerMessageType.TradeCompleted,
+            () => {
+              setTradeData(null);
+              addConsoleMessage("Trade completed successfully.", "#44ff88");
+            },
+          );
+
+        network
+          .getRoom()
+          .onMessage(
+            ServerMessageType.TradeCancelled,
+            (data: ServerMessages[ServerMessageType.TradeCancelled]) => {
+              setTradeData(null);
+              addConsoleMessage(`Trade cancelled: ${data.reason}`, "#ff8844");
+            },
+          );
+
+        network
+          .getRoom()
+          .onMessage(
+            ServerMessageType.ItemUsed,
+            (data: ServerMessages[ServerMessageType.ItemUsed]) => {
+              const itemName = ITEMS[data.itemId]?.name ?? data.itemId;
+              addConsoleMessage(`Used: ${itemName}`, "#aaffcc");
+            },
+          );
+
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             const el = gameContainerRef.current;
@@ -513,18 +592,8 @@ export function App() {
         });
       }
     },
-    [],
+    [addConsoleMessage],
   );
-
-  const addConsoleMessage = (text: string, color?: string) => {
-    setConsoleMessages((prev) => {
-      const next = [
-        ...prev,
-        { id: ++consoleMsgId, text, color, timestamp: Date.now() },
-      ];
-      return next.length > 50 ? next.slice(next.length - 50) : next;
-    });
-  };
 
   const handleSendChat = (msg: string) => {
     const trimmed = msg.trim();
@@ -610,7 +679,8 @@ export function App() {
               pendingFriendRequests={pendingFriendRequests}
               onFriendRequest={(name: string) => networkRef.current?.sendFriendRequest(name)}
               onFriendAccept={(rid: string) => networkRef.current?.sendFriendAccept(rid)}
-              onWhisper={() => setIsChatOpen(true)}
+              onWhisper={(name: string) => { setChatPrefill(`/w ${name} `); setIsChatOpen(true); }}
+              onTradeRequest={(sid: string) => networkRef.current?.sendTradeRequest(sid)}
               selectedItemId={selectedItemId}
               onSelectItem={setSelectedItemId}
             />
@@ -665,8 +735,20 @@ export function App() {
           <Console
             messages={consoleMessages}
             isChatOpen={isChatOpen}
-            onSendChat={handleSendChat}
+            onSendChat={(msg) => { setChatPrefill(undefined); handleSendChat(msg); }}
+            prefillMessage={chatPrefill}
           />
+          {tradeData && roomRef.current && (
+            <TradeWindow
+              trade={tradeData}
+              mySessionId={roomRef.current.sessionId}
+              playerInventory={playerState.inventory ?? []}
+              playerGold={playerState.gold ?? 0}
+              onUpdateOffer={(gold, items) => networkRef.current?.sendTradeOfferUpdate(gold, items)}
+              onConfirm={() => networkRef.current?.sendTradeConfirm()}
+              onCancel={() => networkRef.current?.sendTradeCancel()}
+            />
+          )}
         </>
       )}
 

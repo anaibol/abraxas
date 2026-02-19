@@ -251,17 +251,26 @@ export class InventorySystem {
 
   dropAllItems(player: Player): { itemId: string; quantity: number }[] {
     const dropped: { itemId: string; quantity: number }[] = [];
+    const kept: { itemId: string; quantity: number }[] = [];
 
     player.inventory.forEach((item) => {
-      if (item?.itemId) {
+      if (!item?.itemId) return;
+      if (ITEMS[item.itemId]?.keepOnDeath) {
+        kept.push({ itemId: item.itemId, quantity: item.quantity });
+      } else {
         dropped.push({ itemId: item.itemId, quantity: item.quantity });
       }
     });
+
     player.inventory.clear();
+
+    for (const { itemId, quantity } of kept) {
+      this.addItem(player, itemId, quantity);
+    }
 
     for (const slotKey of Object.values(EQUIP_SLOT_MAP)) {
       const itemId = getEquipSlot(player, slotKey);
-      if (itemId) {
+      if (itemId && !ITEMS[itemId]?.keepOnDeath) {
         dropped.push({ itemId, quantity: 1 });
         setEquipSlot(player, slotKey, "");
       }

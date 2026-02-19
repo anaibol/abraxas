@@ -29,6 +29,7 @@ export type Item = {
     healMana?: number;
   };
   stackable?: boolean;
+  keepOnDeath?: boolean;
   aoWeaponId?: number;
   aoShieldId?: number;
   aoHelmetId?: number;
@@ -391,6 +392,7 @@ export const ITEMS: Record<string, Item> = {
     goldValue: 8,
     consumeEffect: { healHp: 50 },
     stackable: true,
+    keepOnDeath: true,
   },
   mana_potion: {
     id: "mana_potion",
@@ -401,6 +403,7 @@ export const ITEMS: Record<string, Item> = {
     goldValue: 8,
     consumeEffect: { healMana: 40 },
     stackable: true,
+    keepOnDeath: true,
   },
   great_health_potion: {
     id: "great_health_potion",

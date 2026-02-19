@@ -1,22 +1,23 @@
 export interface Buff {
-  id: string;
-  stat: string;
-  amount: number;
-  expiresAt: number;
+	id: string;
+	stat: string;
+	amount: number;
+	expiresAt: number;
 }
 
 export interface DoT {
-  id: string;
-  sourceSessionId: string;
-  damage: number;
-  intervalMs: number;
-  expiresAt: number;
-  lastTickAt: number;
+	id: string;
+	sourceSessionId: string;
+	damage: number;
+	intervalMs: number;
+	expiresAt: number;
+	lastTickAt: number;
 }
 
 export interface PlayerBuffState {
-  buffs: Buff[];
-  dots: DoT[];
-  stunnedUntil: number;
-  stealthedUntil: number;
+	buffs: Buff[];
+	dots: DoT[];
+	stunnedUntil: number;
+	stealthedUntil: number;
+	spawnProtectedUntil: number;
 }

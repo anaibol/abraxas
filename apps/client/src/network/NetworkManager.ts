@@ -227,6 +227,27 @@ export class NetworkManager {
     this._send(ClientMessageType.BankClose, {});
   }
 
+  // Trade System
+  sendTradeRequest(targetSessionId: string) {
+    this._send(ClientMessageType.TradeRequest, { targetSessionId });
+  }
+
+  sendTradeAccept(requesterSessionId: string) {
+    this._send(ClientMessageType.TradeAccept, { requesterSessionId });
+  }
+
+  sendTradeOfferUpdate(gold: number, items: { itemId: string; quantity: number }[]) {
+    this._send(ClientMessageType.TradeOfferUpdate, { gold, items });
+  }
+
+  sendTradeConfirm() {
+    this._send(ClientMessageType.TradeConfirm, {});
+  }
+
+  sendTradeCancel() {
+    this._send(ClientMessageType.TradeCancel, {});
+  }
+
   disconnect() {
     this.room?.leave();
   }

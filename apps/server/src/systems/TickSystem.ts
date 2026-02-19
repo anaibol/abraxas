@@ -4,6 +4,7 @@ import {
 	NPC_STATS,
 	type ServerMessages,
 	ServerMessageType,
+	SPAWN_PROTECTION_MS,
 	type TileMap,
 } from "@abraxas/shared";
 import { findSafeSpawn } from "../utils/spawnUtils";
@@ -110,7 +111,15 @@ export class TickSystem {
 			(sid) => state.players.get(sid),
 			map,
 			broadcast,
-			(p) => systems.spatial.addToGrid(p),
+			(p) => {
+				systems.spatial.addToGrid(p);
+				systems.buff.applySpawnProtection(
+					p.sessionId,
+					SPAWN_PROTECTION_MS,
+					now,
+				);
+				p.spawnProtection = true;
+			},
 			(x, y) => findSafeSpawn(x, y, map, systems.spatial),
 		);
 	}
@@ -156,16 +165,17 @@ export class TickSystem {
 						Math.floor(Math.random() * (entry.max - entry.min + 1)) + entry.min;
 					const ox = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
 					const oy = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
-					const tx = Math.max(0, Math.min(this.opts.map.width - 1, npc.tileX + ox));
-					const ty = Math.max(0, Math.min(this.opts.map.height - 1, npc.tileY + oy));
+					const tx = Math.max(
+						0,
+						Math.min(this.opts.map.width - 1, npc.tileX + ox),
+					);
+					const ty = Math.max(
+						0,
+						Math.min(this.opts.map.height - 1, npc.tileY + oy),
+					);
 
 					if (entry.itemId === "gold") {
-						systems.drops.spawnGoldDrop(
-							this.opts.state.drops,
-							tx,
-							ty,
-							qty,
-						);
+						systems.drops.spawnGoldDrop(this.opts.state.drops, tx, ty, qty);
 					} else {
 						systems.drops.spawnItemDrop(
 							this.opts.state.drops,

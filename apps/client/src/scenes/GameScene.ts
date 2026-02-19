@@ -315,6 +315,9 @@ export class GameScene extends Phaser.Scene {
 			gold: player.gold,
 			stealthed: player.stealthed,
 			stunned: player.stunned,
+			level: player.level,
+			xp: player.xp,
+			maxXp: player.maxXp,
 			inventory: this.buildInventory(player),
 			equipment: {
 				weapon: player.equipWeapon ?? "",

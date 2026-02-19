@@ -109,6 +109,8 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 			const chatService = new ChatService(
 				this.broadcast.bind(this),
 				findClientByName,
+				(sid) => this.findClient(sid),
+				this.social.broadcastToParty.bind(this.social),
 			);
 
 			this.messageHandler = new MessageHandler({

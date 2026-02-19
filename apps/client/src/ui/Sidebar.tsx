@@ -31,6 +31,9 @@ export interface PlayerState {
   gold?: number;
   stealthed?: boolean;
   stunned?: boolean;
+  level?: number;
+  xp?: number;
+  maxXp?: number;
   inventory?: InventorySlot[];
   equipment?: EquipmentState;
 }
@@ -98,6 +101,7 @@ interface SidebarProps {
   onFriendRequest?: (name: string) => void;
   onFriendAccept?: (requesterId: string) => void;
   onWhisper?: (name: string) => void;
+  onTradeRequest?: (sessionId: string) => void;
   /** The currently selected inventory item id (controlled from parent). */
   selectedItemId?: string | null;
   /** Called when the player selects or deselects an inventory slot. */
@@ -131,7 +135,7 @@ export function Sidebar({
   state, isRecording, onEquip, onUnequip, onUseItem, onDropItem, quests,
   partyId = "", leaderId = "", partyMembers = [],
   onPartyInvite, onPartyLeave, onPartyKick,
-  friends = [], pendingFriendRequests = [], onFriendRequest, onFriendAccept, onWhisper,
+  friends = [], pendingFriendRequests = [], onFriendRequest, onFriendAccept, onWhisper, onTradeRequest,
   selectedItemId, onSelectItem,
 }: SidebarProps) {
   const [tab, setTab] = useState<"inv" | "spells" | "quests" | "party" | "friends">("inv");
@@ -144,7 +148,7 @@ export function Sidebar({
   const classSpells = stats?.spells?.map((id: string) => SPELLS[id]).filter(Boolean) ?? [];
 
   return (
-    <Flex w="280px" h="100%" direction="column" bg={P.bg} borderLeft="3px solid" borderColor={P.border} flexShrink={0} overflow="hidden" userSelect="none" fontFamily={P.font}>
+    <Flex w="320px" h="100%" direction="column" bg={P.bg} borderLeft="3px solid" borderColor={P.border} flexShrink={0} overflow="hidden" userSelect="none" fontFamily={P.font}>
       {/* Header */}
       <Box px="4" pt="3.5" pb="2.5" bg={P.surface} borderBottom="1px solid" borderBottomColor={P.border} textAlign="center">
         <Text fontSize="16px" fontWeight="700" color={P.gold} letterSpacing="2px" textShadow="0 0 12px rgba(180,140,50,0.25)">
@@ -162,6 +166,19 @@ export function Sidebar({
                 <Text fontSize="10px" color="#ff4444" fontWeight="700" letterSpacing="2px">TRANSMITTING</Text>
             </Flex>
         )}
+        {/* Level + XP bar */}
+        <Flex align="center" justify="space-between" mt="2" px="0.5">
+          <Text fontSize="9px" color={P.goldDark} letterSpacing="2px" textTransform="uppercase">Lv {state.level ?? 1}</Text>
+          <Text fontSize="9px" color={P.goldDark} fontFamily={P.mono}>{state.xp ?? 0} / {state.maxXp ?? 100} xp</Text>
+        </Flex>
+        <Box pos="relative" h="6px" bg={P.darkest} border="1px solid" borderColor={P.border} borderRadius="full" overflow="hidden" mt="0.5">
+          <Box
+            h="100%"
+            w={`${state.maxXp ? Math.min(100, ((state.xp ?? 0) / state.maxXp) * 100) : 0}%`}
+            bg={`linear-gradient(90deg, ${P.goldDark}, ${P.gold})`}
+            transition="width 0.3s"
+          />
+        </Box>
       </Box>
       <Box h="1px" bg={`linear-gradient(90deg, transparent, ${P.gold}, transparent)`} />
 
@@ -380,11 +397,18 @@ export function Sidebar({
                       {member.name}{member.sessionId === leaderId ? " (L)" : ""}
                     </Text>
                   </HStack>
-                  {leaderId === partyMembers[0]?.sessionId && member.sessionId !== leaderId && (
-                    <Button size="xs" variant="ghost" p="0" h="auto" minW="auto" color="red.400" fontSize="10px" onClick={() => onPartyKick?.(member.sessionId)}>
-                      [Kick]
-                    </Button>
-                  )}
+                  <HStack gap="1">
+                    {member.sessionId !== leaderId && (
+                      <Button size="xs" variant="ghost" p="0" h="auto" minW="auto" color={P.gold} fontSize="10px" onClick={() => onTradeRequest?.(member.sessionId)}>
+                        [Trade]
+                      </Button>
+                    )}
+                    {leaderId === partyMembers[0]?.sessionId && member.sessionId !== leaderId && (
+                      <Button size="xs" variant="ghost" p="0" h="auto" minW="auto" color="red.400" fontSize="10px" onClick={() => onPartyKick?.(member.sessionId)}>
+                        [Kick]
+                      </Button>
+                    )}
+                  </HStack>
                 </Flex>
               ))}
               <Button
@@ -450,6 +474,11 @@ export function Sidebar({
                     {friend.online && (
                       <Button size="xs" variant="ghost" p="0" h="auto" minW="auto" color="blue.400" fontSize="10px" onClick={() => onPartyInvite?.(friend.id)}>
                         [P]
+                      </Button>
+                    )}
+                    {friend.online && (
+                      <Button size="xs" variant="ghost" p="0" h="auto" minW="auto" color={P.gold} fontSize="10px" onClick={() => onTradeRequest?.(friend.id)}>
+                        [Trade]
                       </Button>
                     )}
                   </HStack>

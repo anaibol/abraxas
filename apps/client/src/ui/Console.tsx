@@ -1,4 +1,4 @@
-import { Box, Text, Flex, HStack } from "@chakra-ui/react";
+import { Box, Text, HStack } from "@chakra-ui/react";
 import { useEffect, useRef, useState, useMemo } from "react";
 
 export interface ConsoleMessage {
@@ -13,15 +13,26 @@ interface ConsoleProps {
   messages: ConsoleMessage[];
   onSendChat?: (message: string) => void;
   isChatOpen?: boolean;
+  prefillMessage?: string;
 }
 
 type Channel = "all" | "global" | "party" | "whisper" | "system";
 
-export function Console({ messages, onSendChat, isChatOpen }: ConsoleProps) {
+export function Console({ messages, onSendChat, isChatOpen, prefillMessage }: ConsoleProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [inputValue, setInputValue] = useState("");
   const [activeChannel, setActiveChannel] = useState<Channel>("all");
+
+  useEffect(() => {
+    if (prefillMessage && isChatOpen) {
+      setInputValue(prefillMessage);
+      requestAnimationFrame(() => {
+        const el = inputRef.current;
+        if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+      });
+    }
+  }, [prefillMessage, isChatOpen]);
 
   const filteredMessages = useMemo(() => {
     if (activeChannel === "all") return messages;
@@ -29,7 +40,7 @@ export function Console({ messages, onSendChat, isChatOpen }: ConsoleProps) {
   }, [messages, activeChannel]);
 
   useEffect(() => {
-    // If we're already near the bottom, scroll to bottom
+    if (filteredMessages.length === 0) return;
     const container = bottomRef.current?.parentElement;
     if (container) {
       const isVisible = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
