@@ -152,25 +152,229 @@
     "use": "Usar",
     "equip": "Equipar"
   },
-  "quest": {
-    "accepted": "Misión aceptada: {{title}}",
-    "completed": "Misión completada: {{title}} (+{{exp}} PE, +{{gold}} oro)",
-    "slime_slayer": {
-      "title": "Cazador de Slimes",
-      "description": "¡La aldea está siendo invadida por goblins! Mata a 5 para ayudarnos."
+  "npcs": {
+    "orc": "Orco",
+    "skeleton": "Esqueleto",
+    "goblin": "Goblin",
+    "wolf": "Lobo",
+    "merchant": "Comerciante",
+    "spider": "Araña",
+    "ghost": "Fantasma",
+    "lich": "Liche",
+    "banker": "Banquero Real"
+  },
+  "items": {
+    "club": {
+      "name": "Garrote"
     },
-    "tutorial_talk": {
-      "title": "Un nuevo llegado",
-      "description": "¡Bienvenido a Abraxas! Ve a hablar con el Comerciante para aprender sobre el comercio."
+    "dagger": {
+      "name": "Daga"
+    },
+    "iron_sword": {
+      "name": "Espada de Hierro"
+    },
+    "steel_sword": {
+      "name": "Espada de Acero"
+    },
+    "flame_blade": {
+      "name": "Hoja de Llama"
+    },
+    "magic_staff": {
+      "name": "Báculo Mágico"
+    },
+    "arcane_staff": {
+      "name": "Báculo Arcano"
+    },
+    "staff_of_storms": {
+      "name": "Báculo de Tormentas"
+    },
+    "short_bow": {
+      "name": "Arco Corto"
+    },
+    "hunting_bow": {
+      "name": "Arco de Caza"
+    },
+    "longbow": {
+      "name": "Arco Largo"
+    },
+    "elven_bow": {
+      "name": "Arco Élfico"
+    },
+    "dagger_dual": {
+      "name": "Dagas Duales"
+    },
+    "twin_daggers": {
+      "name": "Dagas Gemelas"
+    },
+    "shadow_daggers": {
+      "name": "Dagas Sombrías"
+    },
+    "venom_blades": {
+      "name": "Hojas de Veneno"
+    },
+    "holy_mace": {
+      "name": "Maza Sagrada"
+    },
+    "blessed_hammer": {
+      "name": "Martillo Bendito"
+    },
+    "elder_staff": {
+      "name": "Báculo de Anciano"
+    },
+    "bronze_axe": {
+      "name": "Hacha de Bronce"
+    },
+    "iron_dagger": {
+      "name": "Daga de Hierro"
+    },
+    "tunic": {
+      "name": "Túnica"
+    },
+    "leather_armor": {
+      "name": "Armadura de Cuero"
+    },
+    "chainmail": {
+      "name": "Cota de Malla"
+    },
+    "plate_armor": {
+      "name": "Armadura de Placas"
+    },
+    "mage_robes": {
+      "name": "Túnicas de Mago"
+    },
+    "shadow_cloak": {
+      "name": "Capa de Sombras"
+    },
+    "wooden_shield": {
+      "name": "Escudo de Madera"
+    },
+    "iron_shield": {
+      "name": "Escudo de Hierro"
+    },
+    "iron_helmet": {
+      "name": "Casco de Hierro"
+    },
+    "wizard_hat": {
+      "name": "Sombrero de Mago"
+    },
+    "crown_of_thorns": {
+      "name": "Corona de Espinas"
+    },
+    "ring_of_strength": {
+      "name": "Anillo de Fuerza"
+    },
+    "ring_of_agility": {
+      "name": "Anillo de Agilidad"
+    },
+    "ring_of_intellect": {
+      "name": "Anillo de Intelecto"
+    },
+    "ring_of_vitality": {
+      "name": "Anillo de Vitalidad"
+    },
+    "health_potion": {
+      "name": "Poción de Salud"
+    },
+    "mana_potion": {
+      "name": "Poción de Maná"
+    },
+    "great_health_potion": {
+      "name": "Gran Poción de Salud"
+    },
+    "great_mana_potion": {
+      "name": "Gran Poción de Maná"
     }
   },
-  "dialogue": {
-    "accept_quest": "Aceptar misión",
-    "maybe_later": "Tal vez más tarde",
-    "complete_quest": "Completar misión",
-    "goodbye": "Adiós",
-    "hello_traveler": "¡Hola, viajero!",
-    "accept_prompt": "¿Aceptas esta misión?",
-    "reward_prompt": "¡Gran trabajo con {{title}}! Aquí tienes tu recompensa."
+  "spells": {
+    "war_cry": {
+      "name": "Grito de Guerra"
+    },
+    "shield_bash": {
+      "name": "Golpe de Escudo"
+    },
+    "fireball": {
+      "name": "Bola de Fuego"
+    },
+    "ice_bolt": {
+      "name": "Rayo de Hielo"
+    },
+    "thunderstorm": {
+      "name": "Tormenta"
+    },
+    "mana_shield": {
+      "name": "Escudo de Maná"
+    },
+    "multi_shot": {
+      "name": "Disparo Múltiple"
+    },
+    "poison_arrow": {
+      "name": "Flecha Venenosa"
+    },
+    "evasion": {
+      "name": "Evasión"
+    },
+    "backstab": {
+      "name": "Puñalada"
+    },
+    "stealth": {
+      "name": "Sigilo"
+    },
+    "envenom": {
+      "name": "Envenenar"
+    },
+    "holy_strike": {
+      "name": "Golpe Sagrado"
+    },
+    "heal": {
+      "name": "Sanar"
+    },
+    "divine_shield": {
+      "name": "Escudo Divino"
+    }
+  },
+  "ui": {
+    "merchant": {
+      "title": "ESTABLECIMIENTO MERCANTIL",
+      "purse": "BOLSA",
+      "tab_buy": "ADQUIRIR",
+      "tab_sell": "LIQUIDAR",
+      "no_items_sell": "Tus cofres no contienen mercancía negociable",
+      "unit_price": "Precio Unitario",
+      "quantity": "CANTIDAD",
+      "total_cost": "COSTO TOTAL",
+      "confirm_buy": "CONFIRMAR COMPRA",
+      "confirm_sell": "LIQUIDAR ACTIVOS",
+      "value_label": "Valor"
+    },
+    "bank": {
+      "title": "Bóveda Royal",
+      "subtitle": "Repositorio Seguro de Activos",
+      "inventory_label": "INVENTARIO PERSONAL",
+      "vault_label": "ALMACENAMIENTO EN BÓVEDA",
+      "held_in_bags": "En las bolsas",
+      "stored_in_vault": "Almacenado en la bóveda",
+      "quantity": "CANTIDAD",
+      "deposit": "DEPOSITAR",
+      "withdraw": "RETIRAR",
+      "empty_selection": "Selecciona un objeto para gestionar tus activos"
+    },
+    "quests": {
+      "title": "MISIONES",
+      "no_active": "No hay misiones activas",
+      "turn_in_hint": "Habla con {{name}} para entregar",
+      "kill_target": "Mata {{target}}s",
+      "talk_to_target": "Habla con {{target}}",
+      "accepted": "Misión aceptada: {{title}}",
+      "completed": "Misión completada: {{title}} (+{{exp}} PE, +{{gold}} oro)"
+    },
+    "dialogue": {
+      "accept_quest": "Aceptar misión",
+      "maybe_later": "Tal vez más tarde",
+      "complete_quest": "Completar misión",
+      "goodbye": "Adiós",
+      "hello_traveler": "¡Hola, viajero!",
+      "accept_prompt": "¿Aceptas esta misión?",
+      "reward_prompt": "¡Gran trabajo con {{title}}! Aquí tienes tu recompensa."
+    }
   }
 }

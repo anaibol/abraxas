@@ -1,5 +1,6 @@
 import { Box, Flex, Text, VStack, Progress } from "@chakra-ui/react";
 import { QUESTS, type PlayerQuestState } from "@abraxas/shared";
+import { useTranslation } from "react-i18next";
 
 interface QuestLogProps {
     quests: PlayerQuestState[];
@@ -17,13 +18,14 @@ const P = {
 };
 
 export function QuestLog({ quests }: QuestLogProps) {
+    const { t } = useTranslation();
     const activeQuests = quests.filter(q => q.status === "IN_PROGRESS" || q.status === "COMPLETED");
 
     return (
         <Box flex="1" overflow="auto" p="2.5" fontFamily={P.font}>
             {activeQuests.length === 0 ? (
                 <Text textAlign="center" color={P.goldMuted} fontSize="11px" py="8" fontStyle="italic">
-                    No active quests
+                    {t("ui.quests.no_active")}
                 </Text>
             ) : (
                 <VStack align="stretch" gap="3">
@@ -43,7 +45,7 @@ export function QuestLog({ quests }: QuestLogProps) {
                             >
                                 <Flex justify="space-between" align="center" mb="1">
                                     <Text fontSize="12px" fontWeight="bold" color={P.gold}>
-                                        {def.title}
+                                        {t(def.title)}
                                     </Text>
                                     <Text fontSize="9px" color={q.status === "COMPLETED" ? "#00ff00" : P.goldMuted} fontWeight="bold" textTransform="uppercase">
                                         {q.status}
@@ -51,7 +53,7 @@ export function QuestLog({ quests }: QuestLogProps) {
                                 </Flex>
                                 
                                 <Text fontSize="10px" color="whiteAlpha.800" mb="2" fontStyle="italic">
-                                    {def.description}
+                                    {t(def.description)}
                                 </Text>
 
                                 <VStack align="stretch" gap="1.5">
@@ -63,7 +65,9 @@ export function QuestLog({ quests }: QuestLogProps) {
                                             <Box key={`${q.questId}-req-${i}`}>
                                                 <Flex justify="space-between" fontSize="9px" color={P.goldMuted} mb="0.5">
                                                     <Text>
-                                                        {req.type === "kill" ? `Kill ${req.target}s` : `Talk to ${req.target}`}
+                                                        {req.type === "kill" 
+                                                            ? t("ui.quests.kill_target", { target: t(`npcs.${req.target}`) }) 
+                                                            : t("ui.quests.talk_to_target", { target: t(`npcs.${req.target}`) })}
                                                     </Text>
                                                     <Text fontFamily={P.mono}>{current} / {req.count}</Text>
                                                 </Flex>
@@ -77,7 +81,7 @@ export function QuestLog({ quests }: QuestLogProps) {
 
                                 {q.status === "COMPLETED" && (
                                     <Text fontSize="9px" color="#00ff00" mt="2" textAlign="center" fontWeight="bold">
-                                        Talk to {def.npcId.replace(/_/g, " ")} to turn in
+                                        {t("ui.quests.turn_in_hint", { name: t(`npcs.${def.npcId}`) })}
                                     </Text>
                                 )}
                             </Box>

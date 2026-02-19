@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Box, Flex, Text, Button, Grid, Input, Tooltip } from "@chakra-ui/react";
 import { ITEMS, type Item } from "@abraxas/shared";
+import { useTranslation } from "react-i18next";
 
 interface BankSlot {
   itemId: string;
@@ -36,6 +37,7 @@ export function BankWindow({
   onWithdraw,
   onClose,
 }: BankWindowProps) {
+  const { t } = useTranslation();
   const [selectedItem, setSelectedItem] = useState<{
     itemId: string;
     quantity: number;
@@ -81,10 +83,10 @@ export function BankWindow({
             textShadow={`0 0 15px ${P.goldDark}`}
             textTransform="uppercase"
           >
-            Royal Vault
+            {t("ui.bank.title")}
           </Text>
           <Text color={P.goldDark} fontSize="10px" letterSpacing="4px" textTransform="uppercase">
-            Secure Asset Repository
+            {t("ui.bank.subtitle")}
           </Text>
         </Box>
         <Button
@@ -103,7 +105,7 @@ export function BankWindow({
         {/* Inventory Section */}
         <Box>
           <Text color={P.goldMuted} fontSize="12px" mb="4" fontWeight="bold" letterSpacing="2px">
-            PERSONAL INVENTORY
+            {t("ui.bank.inventory_label")}
           </Text>
           <Grid templateColumns="repeat(6, 1fr)" gap="2" bg="blackAlpha.400" p="3" borderRadius="8px" border="1px solid" borderColor={P.border}>
             {Array.from({ length: 24 }).map((_, i) => {
@@ -148,7 +150,7 @@ export function BankWindow({
         {/* Bank Section */}
         <Box>
           <Text color={P.goldMuted} fontSize="12px" mb="4" fontWeight="bold" letterSpacing="2px">
-            VAULT STORAGE {bankItems.length} / 24
+            {t("ui.bank.vault_label")} {bankItems.length} / 24
           </Text>
           <Grid templateColumns="repeat(6, 1fr)" gap="2" bg="blackAlpha.400" p="3" borderRadius="8px" border="1px solid" borderColor={P.border}>
             {Array.from({ length: 24 }).map((_, i) => {
@@ -200,16 +202,16 @@ export function BankWindow({
             </Box>
             <Box flex="1">
               <Text color={P.gold} fontSize="20px" fontWeight="bold" mb="1">
-                {selectedDef?.name}
+                {selectedDef ? t(selectedDef.name) : ""}
               </Text>
               <Text color="whiteAlpha.600" fontSize="12px" textTransform="uppercase" letterSpacing="1px">
-                {selectedItem.source === "inventory" ? "Held in bags" : "Stored in vault"}
+                {selectedItem.source === "inventory" ? t("ui.bank.held_in_bags") : t("ui.bank.stored_in_vault")}
               </Text>
             </Box>
             
             <Flex align="center" gap="4">
               <Box>
-                <Text color={P.goldDark} fontSize="10px" mb="1" fontWeight="bold">QUANTITY</Text>
+                <Text color={P.goldDark} fontSize="10px" mb="1" fontWeight="bold">{t("ui.bank.quantity")}</Text>
                 <Flex align="center">
                   <Button size="xs" variant="outline" color={P.gold} onClick={() => setQuantity(Math.max(1, quantity - 1))}>-</Button>
                   <Input
@@ -253,7 +255,7 @@ export function BankWindow({
         ) : (
           <Flex h="60px" align="center" justify="center">
             <Text color={P.goldDark} fontStyle="italic" letterSpacing="2px">
-              Select an item to manage your assets
+              {t("ui.bank.empty_selection")}
             </Text>
           </Flex>
         )}

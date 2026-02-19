@@ -217,6 +217,15 @@ export class InputHandler {
     }
   }
 
+  triggerMove(direction: Direction, time: number) {
+    if (time - this.lastMoveSentMs >= this.moveIntervalMs) {
+      this.network.sendMove(direction);
+      this.onLocalMove?.(direction);
+      this.lastMoveSentMs += this.moveIntervalMs;
+      if (time - this.lastMoveSentMs > this.moveIntervalMs) this.lastMoveSentMs = time;
+    }
+  }
+
   setSpeed(tilesPerSecond: number) {
     const speed = tilesPerSecond || 0.1;
     this.moveIntervalMs = 1000 / speed;

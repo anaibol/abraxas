@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
     <!-- Primary Meta Tags -->
     <title>Abraxas Arena — Free Browser Multiplayer RPG</title>
@@ -68,6 +68,11 @@
     </script>
 
     <style>
+      html, body {
+        touch-action: none;
+        overflow: hidden;
+        overscroll-behavior: none;
+      }
       @font-face {
         font-family: "Friz Quadrata";
         src: url("/fonts/FrizQuadrataStd.woff2") format("woff2");

@@ -152,25 +152,229 @@
     "use": "Usa",
     "equip": "Equip"
   },
-  "quest": {
-    "accepted": "Missione accettata: {{title}}",
-    "completed": "Missione completata: {{title}} (+{{exp}} PE, +{{gold}} Oro)",
-    "slime_slayer": {
-      "title": "Cacciatore di Slime",
-      "description": "Il villaggio è invaso dai goblin! Uccidine 5 per aiutarci."
+  "npcs": {
+    "orc": "Orco",
+    "skeleton": "Scheletro",
+    "goblin": "Goblin",
+    "wolf": "Lupo",
+    "merchant": "Mercante",
+    "spider": "Ragno",
+    "ghost": "Fantasma",
+    "lich": "Lich",
+    "banker": "Banchiere Reale"
+  },
+  "items": {
+    "club": {
+      "name": "Clava"
     },
-    "tutorial_talk": {
-      "title": "Un nuovo arrivo",
-      "description": "Benvenuto in Abraxas! Vai a parlare con il Mercante per imparare il commercio."
+    "dagger": {
+      "name": "Pugnale"
+    },
+    "iron_sword": {
+      "name": "Spada di Ferro"
+    },
+    "steel_sword": {
+      "name": "Spada d'Acciaio"
+    },
+    "flame_blade": {
+      "name": "Lama di Fiamma"
+    },
+    "magic_staff": {
+      "name": "Bastone Magico"
+    },
+    "arcane_staff": {
+      "name": "Bastone Arcano"
+    },
+    "staff_of_storms": {
+      "name": "Bastone delle Tempeste"
+    },
+    "short_bow": {
+      "name": "Arco Corto"
+    },
+    "hunting_bow": {
+      "name": "Arco da Caccia"
+    },
+    "longbow": {
+      "name": "Arco Lungo"
+    },
+    "elven_bow": {
+      "name": "Arco Elfico"
+    },
+    "dagger_dual": {
+      "name": "Doppi Pugnali"
+    },
+    "twin_daggers": {
+      "name": "Pugnali Gemelli"
+    },
+    "shadow_daggers": {
+      "name": "Pugnali d'Ombra"
+    },
+    "venom_blades": {
+      "name": "Lame di Veleno"
+    },
+    "holy_mace": {
+      "name": "Mazza Sacra"
+    },
+    "blessed_hammer": {
+      "name": "Martello Benedetto"
+    },
+    "elder_staff": {
+      "name": "Bastone dell'Anziano"
+    },
+    "bronze_axe": {
+      "name": "Ascia di Bronzo"
+    },
+    "iron_dagger": {
+      "name": "Pugnale di Ferro"
+    },
+    "tunic": {
+      "name": "Tunica"
+    },
+    "leather_armor": {
+      "name": "Armatura di Cuoio"
+    },
+    "chainmail": {
+      "name": "Cotta di Maglia"
+    },
+    "plate_armor": {
+      "name": "Armatura di Piastre"
+    },
+    "mage_robes": {
+      "name": "Vestiti da Mago"
+    },
+    "shadow_cloak": {
+      "name": "Mantello d'Ombra"
+    },
+    "wooden_shield": {
+      "name": "Scudo di Legno"
+    },
+    "iron_shield": {
+      "name": "Scudo di Ferro"
+    },
+    "iron_helmet": {
+      "name": "Elmo di Ferro"
+    },
+    "wizard_hat": {
+      "name": "Cappello da Mago"
+    },
+    "crown_of_thorns": {
+      "name": "Corona di Spine"
+    },
+    "ring_of_strength": {
+      "name": "Anello della Forza"
+    },
+    "ring_of_agility": {
+      "name": "Anello dell'Agilità"
+    },
+    "ring_of_intellect": {
+      "name": "Anello dell'Intelletto"
+    },
+    "ring_of_vitality": {
+      "name": "Anello della Vitalità"
+    },
+    "health_potion": {
+      "name": "Pozione di Salute"
+    },
+    "mana_potion": {
+      "name": "Pozione di Mana"
+    },
+    "great_health_potion": {
+      "name": "Grande Pozione di Salute"
+    },
+    "great_mana_potion": {
+      "name": "Grande Pozione di Mana"
     }
   },
-  "dialogue": {
-    "accept_quest": "Accetta missione",
-    "maybe_later": "Forse più tardi",
-    "complete_quest": "Completa missione",
-    "goodbye": "Addio",
-    "hello_traveler": "Ciao, viaggiatore!",
-    "accept_prompt": "Accetti questa missione?",
-    "reward_prompt": "Ottimo lavoro su {{title}}! Ecco la tua ricompensa."
+  "spells": {
+    "war_cry": {
+      "name": "Grido di Guerra"
+    },
+    "shield_bash": {
+      "name": "Colpo di Scudo"
+    },
+    "fireball": {
+      "name": "Palla di Fuoco"
+    },
+    "ice_bolt": {
+      "name": "Dardo di Ghiaccio"
+    },
+    "thunderstorm": {
+      "name": "Tempesta"
+    },
+    "mana_shield": {
+      "name": "Scudo di Mana"
+    },
+    "multi_shot": {
+      "name": "Tiro Multiplo"
+    },
+    "poison_arrow": {
+      "name": "Freccia Velenosa"
+    },
+    "evasion": {
+      "name": "Evasione"
+    },
+    "backstab": {
+      "name": "Pugnalata alle spalle"
+    },
+    "stealth": {
+      "name": "Furtività"
+    },
+    "envenom": {
+      "name": "Avvelenare"
+    },
+    "holy_strike": {
+      "name": "Colpo Sacro"
+    },
+    "heal": {
+      "name": "Curare"
+    },
+    "divine_shield": {
+      "name": "Scudo Divino"
+    }
+  },
+  "ui": {
+    "merchant": {
+      "title": "STABILIMENTO MERCANTILE",
+      "purse": "BORSA",
+      "tab_buy": "ACQUISTA",
+      "tab_sell": "LIQUIDA",
+      "no_items_sell": "I tuoi forzieri non contengono merci scambiabili",
+      "unit_price": "Prezzo Unitario",
+      "quantity": "QUANTITÀ",
+      "total_cost": "COSTO TOTALE",
+      "confirm_buy": "CONFERMA ACQUISTO",
+      "confirm_sell": "LIQUIDA ATTIVITÀ",
+      "value_label": "Valore"
+    },
+    "bank": {
+      "title": "Caveau Reale",
+      "subtitle": "Deposito Asset Sicuro",
+      "inventory_label": "INVENTARIO PERSONALE",
+      "vault_label": "DEPOSITO NEL CAVEAU",
+      "held_in_bags": "Nelle borse",
+      "stored_in_vault": "Depositato nel caveau",
+      "quantity": "QUANTITÀ",
+      "deposit": "DEPOSITA",
+      "withdraw": "PRELEVA",
+      "empty_selection": "Seleziona un oggetto per gestire i tuoi asset"
+    },
+    "quests": {
+      "title": "MISSIONI",
+      "no_active": "Nessuna missione attiva",
+      "turn_in_hint": "Parla con {{name}} per consegnare",
+      "kill_target": "Uccidi {{target}}",
+      "talk_to_target": "Parla con {{target}}",
+      "accepted": "Missione accettata: {{title}}",
+      "completed": "Missione completata: {{title}} (+{{exp}} PE, +{{gold}} Oro)"
+    },
+    "dialogue": {
+      "accept_quest": "Accetta missione",
+      "maybe_later": "Forse più tardi",
+      "complete_quest": "Completa missione",
+      "goodbye": "Addio",
+      "hello_traveler": "Ciao, viaggiatore!",
+      "accept_prompt": "Accetti questa missione?",
+      "reward_prompt": "Ottimo lavoro su {{title}}! Ecco la tua ricompensa."
+    }
   }
 }

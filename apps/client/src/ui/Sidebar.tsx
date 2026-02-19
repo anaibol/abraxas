@@ -161,7 +161,7 @@ export function Sidebar({
           {state.name}
         </Text>
         <Text fontSize="9px" color={P.goldDark} letterSpacing="4px" textTransform="uppercase" mt="0.5">
-          {state.classType}
+          {t(`classes.${state.classType}.name`)}
         </Text>
         {!state.alive && <Text fontSize="12px" color={P.bloodBright} fontWeight="700" mt="1" letterSpacing="3px">{t("status.dead")}</Text>}
         {state.stunned && <Text fontSize="10px" color="#cccc33" fontWeight="700" mt="0.5" letterSpacing="2px">{t("status.stunned")}</Text>}
@@ -242,7 +242,7 @@ export function Sidebar({
                     alignItems="center"
                     justifyContent="center"
                     cursor={def ? "pointer" : "default"}
-                    title={def ? t("sidebar.inventory.unequip_hint", { name: def.name }) : slot}
+                    title={def ? t("sidebar.inventory.unequip_hint", { name: t(def.name) }) : slot}
                     onClick={() => def && onUnequip?.(slot)}
                     _hover={def ? { borderColor: P.gold } : {}}
                     position="relative"
@@ -278,7 +278,7 @@ export function Sidebar({
                     title={
                       def
                         ? t("sidebar.inventory.interactions_hint", {
-                            name: def.name,
+                            name: t(def.name),
                             qty: invItem && invItem.quantity > 1 ? ` x${invItem.quantity}` : "",
                             action: def.consumeEffect ? t("controls.use") : t("controls.equip")
                           })
@@ -361,7 +361,7 @@ export function Sidebar({
                     </Flex>
                     <Box flex="1">
                       <Text fontSize="12px" fontWeight="700" color={isPending ? P.gold : P.gold}>
-                        {spell.id.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())}
+                        {t(`spells.${spell.id}.name`)}
                       </Text>
                       <Text fontSize="9px" color={P.goldDark} mt="0.5">
                         {t("sidebar.inventory.mana")}: {spell.manaCost} · {spell.rangeTiles > 0 ? `${t("sidebar.inventory.range")}: ${spell.rangeTiles}` : t("sidebar.inventory.self")} · [{spell.key}]
@@ -578,7 +578,7 @@ export function Sidebar({
         <KeyHint keys="A" action={t("controls.pickup")} />
         <KeyHint keys="T" action={t("controls.drop")} />
         {classSpells.map((spell) => (
-          <KeyHint key={spell.id} keys={`${spell.key}${spell.rangeTiles > 0 ? "+Click" : ""}`} action={spell.id.split("_")[0]} />
+          <KeyHint key={spell.id} keys={`${spell.key}${spell.rangeTiles > 0 ? "+Click" : ""}`} action={t(`spells.${spell.id}.name`)} />
         ))}
       </Flex>
     </Flex>

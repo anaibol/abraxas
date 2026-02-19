@@ -152,25 +152,229 @@
     "use": "Utiliser",
     "equip": "Équiper"
   },
-  "quest": {
-    "accepted": "Quête acceptée : {{title}}",
-    "completed": "Quête terminée : {{title}} (+{{exp}} XP, +{{gold}} Or)",
-    "slime_slayer": {
-      "title": "Chasseur de Slimes",
-      "description": "Le village est envahi par les gobelins ! Tuez-en 5 pour nous aider."
+  "npcs": {
+    "orc": "Orc",
+    "skeleton": "Squelette",
+    "goblin": "Gobelin",
+    "wolf": "Loup",
+    "merchant": "Marchand",
+    "spider": "Araignée",
+    "ghost": "Fantôme",
+    "lich": "Liche",
+    "banker": "Banquier Royal"
+  },
+  "items": {
+    "club": {
+      "name": "Massue"
     },
-    "tutorial_talk": {
-      "title": "Une nouvelle arrivée",
-      "description": "Bienvenue sur Abraxas ! Allez parler au marchand pour en savoir plus sur le commerce."
+    "dagger": {
+      "name": "Dague"
+    },
+    "iron_sword": {
+      "name": "Épée en Fer"
+    },
+    "steel_sword": {
+      "name": "Épée en Acier"
+    },
+    "flame_blade": {
+      "name": "Lame de Feu"
+    },
+    "magic_staff": {
+      "name": "Bâton Magique"
+    },
+    "arcane_staff": {
+      "name": "Bâton Arcane"
+    },
+    "staff_of_storms": {
+      "name": "Bâton des Tempêtes"
+    },
+    "short_bow": {
+      "name": "Arc Court"
+    },
+    "hunting_bow": {
+      "name": "Arc de Chasse"
+    },
+    "longbow": {
+      "name": "Arc Long"
+    },
+    "elven_bow": {
+      "name": "Arc Elfique"
+    },
+    "dagger_dual": {
+      "name": "Dagues Duales"
+    },
+    "twin_daggers": {
+      "name": "Dagues Jumelles"
+    },
+    "shadow_daggers": {
+      "name": "Dagues d'Ombre"
+    },
+    "venom_blades": {
+      "name": "Lames de Venin"
+    },
+    "holy_mace": {
+      "name": "Masse Sacrée"
+    },
+    "blessed_hammer": {
+      "name": "Marteau Béni"
+    },
+    "elder_staff": {
+      "name": "Bâton de l'Ancien"
+    },
+    "bronze_axe": {
+      "name": "Hache en Bronze"
+    },
+    "iron_dagger": {
+      "name": "Dague en Fer"
+    },
+    "tunic": {
+      "name": "Tunique"
+    },
+    "leather_armor": {
+      "name": "Armure en Cuir"
+    },
+    "chainmail": {
+      "name": "Cotte de Mailles"
+    },
+    "plate_armor": {
+      "name": "Armure de Plaques"
+    },
+    "mage_robes": {
+      "name": "Robes de Mage"
+    },
+    "shadow_cloak": {
+      "name": "Cape d'Ombre"
+    },
+    "wooden_shield": {
+      "name": "Bouclier en Bois"
+    },
+    "iron_shield": {
+      "name": "Bouclier en Fer"
+    },
+    "iron_helmet": {
+      "name": "Casque en Fer"
+    },
+    "wizard_hat": {
+      "name": "Chapeau de Sorcier"
+    },
+    "crown_of_thorns": {
+      "name": "Couronne d'Épines"
+    },
+    "ring_of_strength": {
+      "name": "Anneau de Force"
+    },
+    "ring_of_agility": {
+      "name": "Anneau d'Agilité"
+    },
+    "ring_of_intellect": {
+      "name": "Anneau d'Intelligence"
+    },
+    "ring_of_vitality": {
+      "name": "Anneau de Vitalité"
+    },
+    "health_potion": {
+      "name": "Potion de Soin"
+    },
+    "mana_potion": {
+      "name": "Potion de Mana"
+    },
+    "great_health_potion": {
+      "name": "Grande Potion de Soin"
+    },
+    "great_mana_potion": {
+      "name": "Grande Potion de Mana"
     }
   },
-  "dialogue": {
-    "accept_quest": "Accepter la quête",
-    "maybe_later": "Peut-être plus tard",
-    "complete_quest": "Terminer la quête",
-    "goodbye": "Au revoir",
-    "hello_traveler": "Bonjour, voyageur !",
-    "accept_prompt": "Acceptez-vous cette quête ?",
-    "reward_prompt": "Excellent travail pour {{title}} ! Voici votre récompense."
+  "spells": {
+    "war_cry": {
+      "name": "Cri de Guerre"
+    },
+    "shield_bash": {
+      "name": "Coup de Bouclier"
+    },
+    "fireball": {
+      "name": "Boule de Feu"
+    },
+    "ice_bolt": {
+      "name": "Éclair de Glace"
+    },
+    "thunderstorm": {
+      "name": "Tempête"
+    },
+    "mana_shield": {
+      "name": "Bouclier de Mana"
+    },
+    "multi_shot": {
+      "name": "Tir Multiple"
+    },
+    "poison_arrow": {
+      "name": "Flèche Poison"
+    },
+    "evasion": {
+      "name": "Évasion"
+    },
+    "backstab": {
+      "name": "Coup de Poignard"
+    },
+    "stealth": {
+      "name": "Furtivité"
+    },
+    "envenom": {
+      "name": "Envenimer"
+    },
+    "holy_strike": {
+      "name": "Frappe Sacrée"
+    },
+    "heal": {
+      "name": "Soigner"
+    },
+    "divine_shield": {
+      "name": "Bouclier Divin"
+    }
+  },
+  "ui": {
+    "merchant": {
+      "title": "ÉTABLISSEMENT MARCHAND",
+      "purse": "BOURSE",
+      "tab_buy": "ACQUÉRIR",
+      "tab_sell": "LIQUIDER",
+      "no_items_sell": "Vos coffres ne contiennent aucune marchandise échangeable",
+      "unit_price": "Prix Unitaire",
+      "quantity": "QUANTITÉ",
+      "total_cost": "COÛT TOTAL",
+      "confirm_buy": "CONFIRMER L'ACHAT",
+      "confirm_sell": "LIQUIDER LES ACTIFS",
+      "value_label": "Valeur"
+    },
+    "bank": {
+      "title": "Coffre Royal",
+      "subtitle": "Dépôt d'Actifs Sécurisé",
+      "inventory_label": "INVENTAIRE PERSONNEL",
+      "vault_label": "STOCKAGE DU COFFRE",
+      "held_in_bags": "Dans les sacs",
+      "stored_in_vault": "Stocké dans le coffre",
+      "quantity": "QUANTITÉ",
+      "deposit": "DÉPOSER",
+      "withdraw": "RETIRER",
+      "empty_selection": "Sélectionnez un objet pour gérer vos actifs"
+    },
+    "quests": {
+      "title": "QUÊTES",
+      "no_active": "Aucune quête active",
+      "turn_in_hint": "Parlez à {{name}} pour terminer",
+      "kill_target": "Tuez {{target}}s",
+      "talk_to_target": "Parlez à {{target}}",
+      "accepted": "Quête acceptée : {{title}}",
+      "completed": "Quête terminée : {{title}} (+{{exp}} XP, +{{gold}} Or)"
+    },
+    "dialogue": {
+      "accept_quest": "Accepter la quête",
+      "maybe_later": "Peut-être plus tard",
+      "complete_quest": "Terminer la quête",
+      "goodbye": "Au revoir",
+      "hello_traveler": "Bonjour, voyageur !",
+      "accept_prompt": "Acceptez-vous cette quête ?",
+      "reward_prompt": "Excellent travail pour {{title}} ! Voici votre récompense."
+    }
   }
 }

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Box, Flex, Text, Button, Grid, Input } from "@chakra-ui/react";
 import { ITEMS, type Item } from "@abraxas/shared";
+import { useTranslation } from "react-i18next";
 
 interface MerchantShopProps {
   npcId: string;
@@ -24,6 +25,7 @@ const P = {
 };
 
 export function MerchantShop({ npcId, merchantInventory, playerGold, playerInventory, onBuy, onSell, onClose }: MerchantShopProps) {
+  const { t } = useTranslation();
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [tab, setTab] = useState<"buy" | "sell">("buy");
   const [quantity, setQuantity] = useState<number>(1);
@@ -68,7 +70,7 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
 
       <Flex justify="space-between" align="center" mb="6">
         <Text color={P.gold} fontSize="24px" fontWeight="700" letterSpacing="3px" textShadow={`0 0 10px ${P.goldDark}`}>
-          MERCHANT ESTABLISHMENT
+          {t("ui.merchant.title")}
         </Text>
         <Button 
           variant="ghost" 
@@ -86,7 +88,7 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
 
       <Flex mb="6" justify="space-between" bg="blackAlpha.400" p="3" borderRadius="4px" border="1px solid" borderColor={P.border}>
         <Text color={P.goldDim} fontSize="14px" fontWeight="bold">
-          PURSE: <Text as="span" color={P.gold} fontSize="16px" ml="2">{playerGold.toLocaleString()} GP</Text>
+          {t("ui.merchant.purse")}: <Text as="span" color={P.gold} fontSize="16px" ml="2">{playerGold.toLocaleString()} GP</Text>
         </Text>
       </Flex>
 
@@ -104,7 +106,7 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
           _hover={{ color: P.gold }}
           onClick={() => { setTab("buy"); setSelectedItem(null); setQuantity(1); }}
         >
-          ACQUIRE
+          {t("ui.merchant.tab_buy")}
         </Box>
         <Box
           px="8"
@@ -119,7 +121,7 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
           _hover={{ color: P.gold }}
           onClick={() => { setTab("sell"); setSelectedItem(null); setQuantity(1); }}
         >
-          LIQUIDATE
+          {t("ui.merchant.tab_sell")}
         </Box>
       </Flex>
 
@@ -154,7 +156,7 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
                       boxShadow={isSelected ? `0 0 10px ${P.goldDark}` : "none"}
                     ></Box>
                     <Box>
-                      <Text color="#fff" fontSize="13px" fontWeight="bold">{item.name}</Text>
+                      <Text color="#fff" fontSize="13px" fontWeight="bold">{t(item.name)}</Text>
                       <Text color={P.gold} fontSize="12px">{item.goldValue.toLocaleString()} GP</Text>
                     </Box>
                   </Flex>
@@ -166,7 +168,7 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
           <Grid templateColumns="repeat(2, 1fr)" gap="4">
             {playerInventory.length === 0 && (
               <Box gridColumn="span 2" py="10" textAlign="center">
-                <Text color="#555" fontSize="14px" fontStyle="italic">Your coffers contain no tradable wares</Text>
+                <Text color="#555" fontSize="14px" fontStyle="italic">{t("ui.merchant.no_items_sell")}</Text>
               </Box>
             )}
             {playerInventory.map((invItem, idx) => {
@@ -189,8 +191,8 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
                   <Flex align="center">
                     <Box w="40px" h="40px" bg="#000" mr="4" border="1px solid" borderColor={P.border}></Box>
                     <Box>
-                      <Text color="#fff" fontSize="13px" fontWeight="bold">{item.name} <Text as="span" color="whiteAlpha.600">(x{invItem.quantity})</Text></Text>
-                      <Text color={P.gold} fontSize="12px">Value: {Math.floor(item.goldValue * 0.5).toLocaleString()} GP</Text>
+                      <Text color="#fff" fontSize="13px" fontWeight="bold">{t(item.name)} <Text as="span" color="whiteAlpha.600">(x{invItem.quantity})</Text></Text>
+                      <Text color={P.gold} fontSize="12px">{t("ui.merchant.value_label")}: {Math.floor(item.goldValue * 0.5).toLocaleString()} GP</Text>
                     </Box>
                   </Flex>
                 </Box>
@@ -212,13 +214,13 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
         >
           <Flex justify="space-between" align="start" mb="4">
             <Box>
-              <Text color={P.gold} fontSize="18px" fontWeight="bold" mb="1">{selectedItem.name}</Text>
+              <Text color={P.gold} fontSize="18px" fontWeight="bold" mb="1">{t(selectedItem.name)}</Text>
               <Text color="whiteAlpha.600" fontSize="12px" letterSpacing="1px">
                 {selectedItem.slot.toUpperCase()} | {selectedItem.rarity.toUpperCase()}
               </Text>
             </Box>
             <Box textAlign="right">
-              <Text color="#fff" fontSize="12px" mb="1">Unit Price</Text>
+              <Text color="#fff" fontSize="12px" mb="1">{t("ui.merchant.unit_price")}</Text>
               <Text color={P.gold} fontSize="16px" fontWeight="bold">
                 {tab === "buy" ? selectedItem.goldValue : Math.floor(selectedItem.goldValue * 0.5)} GP
               </Text>
@@ -226,7 +228,7 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
           </Flex>
 
           <Flex align="center" mb="6" bg="blackAlpha.300" p="3" borderRadius="4px" border="1px solid" borderColor="whiteAlpha.100">
-            <Text color="whiteAlpha.800" fontSize="13px" mr="6">QUANTITY:</Text>
+            <Text color="whiteAlpha.800" fontSize="13px" mr="6">{t("ui.merchant.quantity")}:</Text>
             <Flex align="center" flex="1">
               <Button 
                 size="sm" 
@@ -263,7 +265,7 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
               </Button>
             </Flex>
             <Box textAlign="right" ml="6">
-              <Text color="whiteAlpha.600" fontSize="11px">TOTAL COST</Text>
+              <Text color="whiteAlpha.600" fontSize="11px">{t("ui.merchant.total_cost")}</Text>
               <Text color={P.gold} fontSize="20px" fontWeight="bold">
                 {(tab === "buy" ? selectedItem.goldValue * quantity : Math.floor(selectedItem.goldValue * 0.5) * quantity).toLocaleString()} GP
               </Text>
@@ -286,7 +288,7 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
               else onSell(selectedItem.id, quantity);
             }}
           >
-            {tab === "buy" ? "CONFIRM PURCHASE" : "LIQUIDATE ASSETS"}
+            {tab === "buy" ? t("ui.merchant.confirm_buy") : t("ui.merchant.confirm_sell")}
           </Button>
         </Box>
       )}

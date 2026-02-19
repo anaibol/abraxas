@@ -152,25 +152,229 @@
     "use": "Use",
     "equip": "Equip"
   },
-  "quest": {
-    "accepted": "Quest Accepted: {{title}}",
-    "completed": "Quest Completed: {{title}} (+{{exp}} XP, +{{gold}} Gold)",
-    "slime_slayer": {
-      "title": "Slime Slayer",
-      "description": "The village is being overrun by goblins! Kill 5 of them to help us out."
+  "npcs": {
+    "orc": "Orc",
+    "skeleton": "Skeleton",
+    "goblin": "Goblin",
+    "wolf": "Wolf",
+    "merchant": "Merchant",
+    "spider": "Spider",
+    "ghost": "Ghost",
+    "lich": "Lich",
+    "banker": "Royal Banker"
+  },
+  "items": {
+    "club": {
+      "name": "Club"
     },
-    "tutorial_talk": {
-      "title": "A New Arrival",
-      "description": "Welcome to Abraxas! Go talk to the Merchant to learn about trading."
+    "dagger": {
+      "name": "Dagger"
+    },
+    "iron_sword": {
+      "name": "Iron Sword"
+    },
+    "steel_sword": {
+      "name": "Steel Sword"
+    },
+    "flame_blade": {
+      "name": "Flame Blade"
+    },
+    "magic_staff": {
+      "name": "Magic Staff"
+    },
+    "arcane_staff": {
+      "name": "Arcane Staff"
+    },
+    "staff_of_storms": {
+      "name": "Staff of Storms"
+    },
+    "short_bow": {
+      "name": "Short Bow"
+    },
+    "hunting_bow": {
+      "name": "Hunting Bow"
+    },
+    "longbow": {
+      "name": "Longbow"
+    },
+    "elven_bow": {
+      "name": "Elven Bow"
+    },
+    "dagger_dual": {
+      "name": "Dual Daggers"
+    },
+    "twin_daggers": {
+      "name": "Twin Daggers"
+    },
+    "shadow_daggers": {
+      "name": "Shadow Daggers"
+    },
+    "venom_blades": {
+      "name": "Venom Blades"
+    },
+    "holy_mace": {
+      "name": "Holy Mace"
+    },
+    "blessed_hammer": {
+      "name": "Blessed Hammer"
+    },
+    "elder_staff": {
+      "name": "Elder Staff"
+    },
+    "bronze_axe": {
+      "name": "Bronze Axe"
+    },
+    "iron_dagger": {
+      "name": "Iron Dagger"
+    },
+    "tunic": {
+      "name": "Tunic"
+    },
+    "leather_armor": {
+      "name": "Leather Armor"
+    },
+    "chainmail": {
+      "name": "Chainmail"
+    },
+    "plate_armor": {
+      "name": "Plate Armor"
+    },
+    "mage_robes": {
+      "name": "Mage Robes"
+    },
+    "shadow_cloak": {
+      "name": "Shadow Cloak"
+    },
+    "wooden_shield": {
+      "name": "Wooden Shield"
+    },
+    "iron_shield": {
+      "name": "Iron Shield"
+    },
+    "iron_helmet": {
+      "name": "Iron Helmet"
+    },
+    "wizard_hat": {
+      "name": "Wizard Hat"
+    },
+    "crown_of_thorns": {
+      "name": "Crown of Thorns"
+    },
+    "ring_of_strength": {
+      "name": "Ring of Strength"
+    },
+    "ring_of_agility": {
+      "name": "Ring of Agility"
+    },
+    "ring_of_intellect": {
+      "name": "Ring of Intellect"
+    },
+    "ring_of_vitality": {
+      "name": "Ring of Vitality"
+    },
+    "health_potion": {
+      "name": "Health Potion"
+    },
+    "mana_potion": {
+      "name": "Mana Potion"
+    },
+    "great_health_potion": {
+      "name": "Great Health Potion"
+    },
+    "great_mana_potion": {
+      "name": "Great Mana Potion"
     }
   },
-  "dialogue": {
-    "accept_quest": "Accept Quest",
-    "maybe_later": "Maybe later",
-    "complete_quest": "Complete Quest",
-    "goodbye": "Goodbye",
-    "hello_traveler": "Hello there, traveler!",
-    "accept_prompt": "Do you accept this quest?",
-    "reward_prompt": "Great job on {{title}}! Here is your reward."
+  "spells": {
+    "war_cry": {
+      "name": "War Cry"
+    },
+    "shield_bash": {
+      "name": "Shield Bash"
+    },
+    "fireball": {
+      "name": "Fireball"
+    },
+    "ice_bolt": {
+      "name": "Ice Bolt"
+    },
+    "thunderstorm": {
+      "name": "Thunderstorm"
+    },
+    "mana_shield": {
+      "name": "Mana Shield"
+    },
+    "multi_shot": {
+      "name": "Multi Shot"
+    },
+    "poison_arrow": {
+      "name": "Poison Arrow"
+    },
+    "evasion": {
+      "name": "Evasion"
+    },
+    "backstab": {
+      "name": "Backstab"
+    },
+    "stealth": {
+      "name": "Stealth"
+    },
+    "envenom": {
+      "name": "Envenom"
+    },
+    "holy_strike": {
+      "name": "Holy Strike"
+    },
+    "heal": {
+      "name": "Heal"
+    },
+    "divine_shield": {
+      "name": "Divine Shield"
+    }
+  },
+  "ui": {
+    "merchant": {
+      "title": "MERCHANT ESTABLISHMENT",
+      "purse": "PURSE",
+      "tab_buy": "ACQUIRE",
+      "tab_sell": "LIQUIDATE",
+      "no_items_sell": "Your coffers contain no tradable wares",
+      "unit_price": "Unit Price",
+      "quantity": "QUANTITY",
+      "total_cost": "TOTAL COST",
+      "confirm_buy": "CONFIRM PURCHASE",
+      "confirm_sell": "LIQUIDATE ASSETS",
+      "value_label": "Value"
+    },
+    "bank": {
+      "title": "Royal Vault",
+      "subtitle": "Secure Asset Repository",
+      "inventory_label": "PERSONAL INVENTORY",
+      "vault_label": "VAULT STORAGE",
+      "held_in_bags": "Held in bags",
+      "stored_in_vault": "Stored in vault",
+      "quantity": "QUANTITY",
+      "deposit": "DEPOSIT",
+      "withdraw": "WITHDRAW",
+      "empty_selection": "Select an item to manage your assets"
+    },
+    "quests": {
+      "title": "QUESTS",
+      "no_active": "No active quests",
+      "turn_in_hint": "Talk to {{name}} to turn in",
+      "kill_target": "Kill {{target}}s",
+      "talk_to_target": "Talk to {{target}}",
+      "accepted": "Quest Accepted: {{title}}",
+      "completed": "Quest Completed: {{title}} (+{{exp}} XP, +{{gold}} Gold)"
+    },
+    "dialogue": {
+      "accept_quest": "Accept Quest",
+      "maybe_later": "Maybe later",
+      "complete_quest": "Complete Quest",
+      "goodbye": "Goodbye",
+      "hello_traveler": "Hello there, traveler!",
+      "accept_prompt": "Do you accept this quest?",
+      "reward_prompt": "Great job on {{title}}! Here is your reward."
+    }
   }
 }

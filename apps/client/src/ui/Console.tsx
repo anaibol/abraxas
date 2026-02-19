@@ -60,6 +60,19 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage }: Co
     }
   }, [isChatOpen]);
 
+  useEffect(() => {
+    if (!isChatOpen) return;
+
+    const handleWindowKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && document.activeElement !== inputRef.current) {
+        inputRef.current?.focus();
+      }
+    };
+
+    window.addEventListener("keydown", handleWindowKeyDown);
+    return () => window.removeEventListener("keydown", handleWindowKeyDown);
+  }, [isChatOpen]);
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
       if (e.key === "Enter") {
           if (inputValue.trim()) {
