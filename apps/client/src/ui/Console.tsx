@@ -41,9 +41,11 @@ export function Console({ messages, onSendChat, isChatOpen }: ConsoleProps) {
 
   useEffect(() => {
     if (isChatOpen) {
-      setTimeout(() => inputRef.current?.focus(), 10);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => inputRef.current?.focus());
+      });
     } else {
-        inputRef.current?.blur();
+      inputRef.current?.blur();
     }
   }, [isChatOpen]);
 
