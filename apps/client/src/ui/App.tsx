@@ -162,7 +162,7 @@ export function App() {
     if (!game) return;
     game.input.enabled = !isChatOpen;
     if (isChatOpen) {
-      (game.input.keyboard as Phaser.Input.Keyboard.KeyboardPlugin | null)?.resetKeys();
+      game.scene.getScene("GameScene")?.input?.keyboard?.resetKeys();
     }
   }, [isChatOpen]);
 
@@ -290,6 +290,15 @@ export function App() {
         setPhase("game");
         if (!mapName) setIsLoading(true); // Initial join also triggers loading
 
+        // Consume messages buffered during connect() (sent before Welcome)
+        const initialQuestList = network.getInitialQuestList();
+        if (initialQuestList) setQuests(initialQuestList.quests);
+
+        network.onFriendUpdate = (data: ServerMessages[ServerMessageType.FriendUpdate]) => {
+          setFriendsData(data.friends);
+          setPendingFriendRequests(data.pendingRequests);
+        };
+
         network.onWarp = (data) => {
           handleJoin(charId, classType, token, data.targetMap);
         };
@@ -352,15 +361,6 @@ export function App() {
         network
           .getRoom()
           .onMessage(
-            ServerMessageType.QuestList,
-            (data: ServerMessages[ServerMessageType.QuestList]) => {
-              setQuests(data.quests);
-            },
-          );
-
-        network
-          .getRoom()
-          .onMessage(
             ServerMessageType.QuestUpdate,
             (data: ServerMessages[ServerMessageType.QuestUpdate]) => {
               setQuests((prev) => {
@@ -417,16 +417,6 @@ export function App() {
                     networkRef.current?.sendFriendAccept(data.requesterId),
                 },
               });
-            },
-          );
-
-        network
-          .getRoom()
-          .onMessage(
-            ServerMessageType.FriendUpdate,
-            (data: ServerMessages[ServerMessageType.FriendUpdate]) => {
-              setFriendsData(data.friends);
-              setPendingFriendRequests(data.pendingRequests);
             },
           );
 

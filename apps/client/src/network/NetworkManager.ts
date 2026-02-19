@@ -38,6 +38,11 @@ export class NetworkManager {
   private welcomeData: WelcomeData | null = null;
   private welcomeResolve: ((data: WelcomeData) => void) | null = null;
 
+  // Buffered messages that arrive before App.tsx registers its handlers
+  private _bufferedQuestList: ServerMessages[ServerMessageType.QuestList] | null = null;
+  private _bufferedFriendUpdate: ServerMessages[ServerMessageType.FriendUpdate] | null = null;
+  private _onFriendUpdate: ((data: ServerMessages[ServerMessageType.FriendUpdate]) => void) | null = null;
+
   constructor(serverUrl?: string) {
     this.client = new Client(serverUrl ?? getServerUrl());
   }
@@ -57,6 +62,22 @@ export class NetworkManager {
   public onWarp:
     | ((data: { targetMap: string; targetX: number; targetY: number }) => void)
     | null = null;
+
+  /** Subscribe to FriendUpdate messages. Setting this flushes any buffered initial message. */
+  set onFriendUpdate(cb: ((data: ServerMessages[ServerMessageType.FriendUpdate]) => void) | null) {
+    this._onFriendUpdate = cb;
+    if (cb && this._bufferedFriendUpdate) {
+      cb(this._bufferedFriendUpdate);
+      this._bufferedFriendUpdate = null;
+    }
+  }
+
+  /** Consume the QuestList message that arrived during join (sent before Welcome). */
+  getInitialQuestList(): ServerMessages[ServerMessageType.QuestList] | null {
+    const data = this._bufferedQuestList;
+    this._bufferedQuestList = null;
+    return data;
+  }
 
   async connect(
     charId: string,
@@ -81,6 +102,20 @@ export class NetworkManager {
 
     const welcomePromise = new Promise<WelcomeData>((resolve) => {
       this.welcomeResolve = resolve;
+    });
+
+    // Register handlers for messages the server sends before Welcome so they
+    // are buffered and not silently dropped with a "not registered" warning.
+    this.room.onMessage(ServerMessageType.QuestList, (data: ServerMessages[ServerMessageType.QuestList]) => {
+      this._bufferedQuestList = data;
+    });
+
+    this.room.onMessage(ServerMessageType.FriendUpdate, (data: ServerMessages[ServerMessageType.FriendUpdate]) => {
+      if (this._onFriendUpdate) {
+        this._onFriendUpdate(data);
+      } else {
+        this._bufferedFriendUpdate = data;
+      }
     });
 
     this.room.onMessage(ServerMessageType.Welcome, (data: WelcomeData) => {

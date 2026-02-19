@@ -266,10 +266,11 @@ export class AoGrhResolver {
     const anim = this.resolveAnimGrh(grhId);
     if (!anim) return null;
 
-    const phaserFrames = anim.frames.map((f) => ({
-      key: `ao-${f.grafico}`,
-      frame: `grh-${f.id}`,
-    }));
+    const phaserFrames = anim.frames
+      .map((f) => ({ key: `ao-${f.grafico}`, frame: `grh-${f.id}` }))
+      .filter((f) => scene.textures.exists(f.key) && scene.textures.get(f.key).has(f.frame));
+
+    if (phaserFrames.length === 0) return null;
 
     const totalMs = anim.velocidad;
     const frameRate = (anim.frames.length / totalMs) * 1000;

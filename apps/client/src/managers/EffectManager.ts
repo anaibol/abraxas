@@ -11,6 +11,8 @@ export class EffectManager {
   ) {}
 
   playEffect(fxId: number, targetTileX: number, targetTileY: number) {
+    if (!this.scene.sys.isActive()) return;
+
     const fxEntry = this.resolver.getFxEntry(fxId);
     if (!fxEntry) return;
 
@@ -55,18 +57,23 @@ export class EffectManager {
   }
 
   private floatText(x: number, y: number, content: string, color: string, fontSize: string) {
-    const text = this.scene.add
-      .text(x, y, content, { fontSize, color, fontFamily: "'Friz Quadrata', Georgia, serif", fontStyle: "bold" })
-      .setOrigin(0.5)
-      .setDepth(20);
+    if (!this.scene.sys.isActive()) return;
+    try {
+      const text = this.scene.add
+        .text(x, y, content, { fontSize, color, fontFamily: "'Friz Quadrata', Georgia, serif", fontStyle: "bold" })
+        .setOrigin(0.5)
+        .setDepth(20);
 
-    this.scene.tweens.add({
-      targets: text,
-      y: y - 40,
-      alpha: 0,
-      duration: 1200,
-      ease: "Power1",
-      onComplete: () => text.destroy(),
-    });
+      this.scene.tweens.add({
+        targets: text,
+        y: y - 40,
+        alpha: 0,
+        duration: 1200,
+        ease: "Power1",
+        onComplete: () => text.destroy(),
+      });
+    } catch {
+      // Scene may be in the process of being destroyed
+    }
   }
 }
