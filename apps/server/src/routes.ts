@@ -6,6 +6,11 @@ import { logger } from "./logger";
 import { AuthService } from "./database/auth";
 import { prisma } from "./database/db";
 
+function extractBearerToken(req: Request): string | null {
+  const authHeader = req.headers.get("authorization");
+  return authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+}
+
 export const healthEndpoint = createEndpoint(
   "/health",
   { method: "GET" },
@@ -87,8 +92,7 @@ export const meEndpoint = createEndpoint(
   "/api/me",
   { method: "GET" },
   async (ctx) => {
-    const authHeader = ctx.request.headers.get("authorization") ?? "";
-    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+    const token = extractBearerToken(ctx.request);
 
     if (!token) {
       return ctx.json({ error: "Unauthorized" }, { status: 401 });
@@ -126,8 +130,7 @@ export const createCharacterEndpoint = createEndpoint(
     }),
   },
   async (ctx) => {
-    const authHeader = ctx.request.headers.get("authorization") ?? "";
-    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+    const token = extractBearerToken(ctx.request);
 
     if (!token) {
       return ctx.json({ error: "Unauthorized" }, { status: 401 });

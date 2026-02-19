@@ -320,11 +320,11 @@ export class GameScene extends Phaser.Scene {
 			maxXp: player.maxXp,
 			inventory: this.buildInventory(player),
 			equipment: {
-				weapon: player.equipWeapon ?? "",
-				armor: player.equipArmor ?? "",
-				shield: player.equipShield ?? "",
-				helmet: player.equipHelmet ?? "",
-				ring: player.equipRing ?? "",
+				weapon: player.equipWeapon,
+				armor: player.equipArmor,
+				shield: player.equipShield,
+				helmet: player.equipHelmet,
+				ring: player.equipRing,
 			},
 		});
 	}

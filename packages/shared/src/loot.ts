@@ -1,3 +1,20 @@
+import type { ClassType } from "./types";
+
+/**
+ * Basic items each class always keeps on death — one non-stackable copy,
+ * or the full stack for stackable consumables.
+ *
+ * Weapon choices are the lowest common-rarity item for each class.
+ * All classes keep basic healing/mana consumables.
+ */
+export const BASIC_ITEMS_BY_CLASS: Record<ClassType, string[]> = {
+  WARRIOR: ["iron_sword", "tunic", "health_potion", "mana_potion"],
+  MAGE: ["magic_staff", "mage_robes", "health_potion", "mana_potion"],
+  RANGER: ["short_bow", "tunic", "health_potion", "mana_potion"],
+  ROGUE: ["dagger", "tunic", "health_potion", "mana_potion"],
+  CLERIC: ["holy_mace", "tunic", "health_potion", "mana_potion"],
+};
+
 /** Starting equipment per class — full PvP loadout */
 export const STARTING_EQUIPMENT: Record<
   string,

@@ -39,9 +39,9 @@ export class SpriteManager {
 		sprite.setFacing(player.facing);
 		sprite.updateHpMana(player.hp, player.mana ?? 0);
 		sprite.updateEquipment(
-			player.equipWeapon ?? "",
-			player.equipShield ?? "",
-			player.equipHelmet ?? "",
+			player.equipWeapon,
+			player.equipShield,
+			player.equipHelmet,
 		);
 		this.updateAlpha(sprite, player);
 	}

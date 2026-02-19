@@ -669,8 +669,8 @@ export function App() {
               onUnequip={(slot) => networkRef.current?.sendUnequip(slot)}
               onUseItem={(itemId) => networkRef.current?.sendUseItem(itemId)}
               onDropItem={(itemId) => networkRef.current?.sendDropItem(itemId)}
-              partyId={partyData?.partyId ?? ""}
-              leaderId={partyData?.leaderId ?? ""}
+              partyId={partyData?.partyId}
+              leaderId={partyData?.leaderId}
               partyMembers={partyData?.members || []}
               onPartyInvite={(sid: string) => networkRef.current?.sendPartyInvite(sid)}
               onPartyLeave={() => networkRef.current?.sendPartyLeave()}

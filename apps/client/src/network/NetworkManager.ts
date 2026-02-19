@@ -131,8 +131,8 @@ export class NetworkManager {
     return this.welcomeData;
   }
 
-  get sessionId(): string {
-    return this.room?.sessionId ?? "";
+  get sessionId(): string | undefined {
+    return this.room?.sessionId;
   }
 
   sendMove(direction: Direction) {
