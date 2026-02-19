@@ -54,6 +54,11 @@
       "name": "Clerc",
       "desc": "PV:160 FOR:20",
       "longDesc": "Un défenseur sacré qui allie combat et protection divine."
+    },
+    "PALADIN": {
+      "name": "Paladin",
+      "desc": "PV:230 Armure:12",
+      "longDesc": "Un guerrier sacré en armure qui combine un combat au corps à corps dévastateur avec des soins et une protection divine."
     }
   },
   "game": {
@@ -306,49 +311,128 @@
   },
   "spells": {
     "war_cry": {
-      "name": "Cri de Guerre"
+      "name": "Cri de Guerre",
+      "desc": "Poussez un cri de bataille, augmentant votre FOR pendant 8s."
     },
     "shield_bash": {
-      "name": "Coup de Bouclier"
+      "name": "Coup de Bouclier",
+      "desc": "Frappez un ennemi avec votre bouclier, l'étourdissant pendant 2s."
+    },
+    "whirlwind": {
+      "name": "Tourbillon",
+      "desc": "Faites tourboyer votre arme, infligeant des dégâts à tous les ennemis adjacents."
+    },
+    "battle_shout": {
+      "name": "Cri de Bataille",
+      "desc": "Cri qui réduit l'armure de tous les ennemis proches pendant 6s."
     },
     "fireball": {
-      "name": "Boule de Feu"
+      "name": "Boule de Feu",
+      "desc": "Lancez un projectile brûlant sur une cible distante."
     },
     "ice_bolt": {
-      "name": "Éclair de Glace"
+      "name": "Éclair de Glace",
+      "desc": "Un éclat de glace qui transperce les défenses magiques."
     },
     "thunderstorm": {
-      "name": "Tempête"
+      "name": "Tempête",
+      "desc": "Invoquez la foudre sur une zone, frappant tous les ennemis proches."
     },
     "mana_shield": {
-      "name": "Bouclier de Mana"
+      "name": "Bouclier de Mana",
+      "desc": "Convertit le mana en une coque arcane protectrice (+armure pendant 6s)."
+    },
+    "frost_nova": {
+      "name": "Nova de Givre",
+      "desc": "Explosion de givre qui blesse tous les ennemis autour de vous."
+    },
+    "arcane_surge": {
+      "name": "Sursaut Arcane",
+      "desc": "Canalise un immense pouvoir arcane dans un projectile dévastateur."
     },
     "multi_shot": {
-      "name": "Tir Multiple"
+      "name": "Tir Multiple",
+      "desc": "Lâche une volée de flèches touchant les ennemis dans une petite zone."
     },
     "poison_arrow": {
-      "name": "Flèche Poison"
+      "name": "Flèche Poison",
+      "desc": "Flèche enduite de toxine qui empoisonne la cible pendant 5s."
     },
     "evasion": {
-      "name": "Évasion"
+      "name": "Évasion",
+      "desc": "Augmente considérablement l'AGI et les chances d'esquive pendant 5s."
+    },
+    "aimed_shot": {
+      "name": "Tir Visé",
+      "desc": "Un tir soigneusement visé depuis l'autre bout du champ de bataille."
+    },
+    "mark_target": {
+      "name": "Marquer la Cible",
+      "desc": "Marque un ennemi, réduisant son armure pendant 8s."
     },
     "backstab": {
-      "name": "Coup de Poignard"
+      "name": "Coup de Poignard",
+      "desc": "Un coup de poignard vicieux infligeant des dégâts massifs, doublés en étant furtif."
     },
     "stealth": {
-      "name": "Furtivité"
+      "name": "Furtivité",
+      "desc": "Disparaissez de la vue, devenant invisible pendant 6s."
     },
     "envenom": {
-      "name": "Envenimer"
+      "name": "Envenimer",
+      "desc": "Enduit votre lame de venin, empoisonnant la cible pendant 6s."
+    },
+    "smoke_bomb": {
+      "name": "Bombe Fumigène",
+      "desc": "Lance une bombe fumigène qui étourdit les ennemis proches pendant 1,5s."
+    },
+    "hemorrhage": {
+      "name": "Hémorragie",
+      "desc": "Draine la vie d'un ennemi, vous soignant de la moitié des dégâts infligés."
     },
     "holy_strike": {
-      "name": "Frappe Sacrée"
+      "name": "Frappe Sacrée",
+      "desc": "Un coup de mêlée béni qui frappe votre ennemi avec la lumière sacrée."
     },
     "heal": {
-      "name": "Soigner"
+      "name": "Soigner",
+      "desc": "Canalise l'énergie divine pour restaurer votre propre santé."
     },
     "divine_shield": {
-      "name": "Bouclier Divin"
+      "name": "Bouclier Divin",
+      "desc": "Entourez-vous de lumière sacrée, devenant invulnérable pendant 4s."
+    },
+    "holy_nova": {
+      "name": "Nova Sacrée",
+      "desc": "Explosion de lumière sacrée qui soigne tous les alliés proches."
+    },
+    "curse": {
+      "name": "Malédiction",
+      "desc": "Afflige un ennemi d'une sombre malédiction, baissant son INT pendant 10s."
+    },
+    "smite": {
+      "name": "Châtiment",
+      "desc": "Lance un éclair sacré sur une cible ennemie."
+    },
+    "judgment": {
+      "name": "Jugement",
+      "desc": "Un coup de mêlée consacré qui brûle les ennemis avec une force divine."
+    },
+    "lay_on_hands": {
+      "name": "Imposition des Mains",
+      "desc": "Canalise la Lumière pour restaurer une grande partie de votre santé."
+    },
+    "consecration": {
+      "name": "Consécration",
+      "desc": "Irradie un feu sacré, brûlant tous les ennemis dans la zone autour de vous."
+    },
+    "aura_of_protection": {
+      "name": "Aura de Protection",
+      "desc": "Enveloppez-vous de plaques divines, augmentant massivement l'armure pendant 8s."
+    },
+    "holy_bolt": {
+      "name": "Éclair Sacré",
+      "desc": "Lance un éclair concentré de lumière divine sur un ennemi distant."
     }
   },
   "ui": {

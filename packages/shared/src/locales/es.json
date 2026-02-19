@@ -54,6 +54,11 @@
       "name": "Clérigo",
       "desc": "HP:160 STR:20",
       "longDesc": "Un defensor sagrado que combina el combate con la protección divina."
+    },
+    "PALADIN": {
+      "name": "Paladín",
+      "desc": "HP:230 Armadura:12",
+      "longDesc": "Un guerrero sagrado blindado que combina un devastador combate cuerpo a cuerpo con curación y protección divina."
     }
   },
   "game": {
@@ -306,49 +311,128 @@
   },
   "spells": {
     "war_cry": {
-      "name": "Grito de Guerra"
+      "name": "Grito de Guerra",
+      "desc": "Lanza un grito de batalla, aumentando tu STR durante 8s."
     },
     "shield_bash": {
-      "name": "Golpe de Escudo"
+      "name": "Golpe de Escudo",
+      "desc": "Golpea a un enemigo con tu escudo, aturdiéndolo durante 2s."
+    },
+    "whirlwind": {
+      "name": "Torbellino",
+      "desc": "Gira tu arma, dañando a todos los enemigos adyacentes."
+    },
+    "battle_shout": {
+      "name": "Grito de Batalla",
+      "desc": "Grito que reduce la armadura de todos los enemigos cercanos durante 6s."
     },
     "fireball": {
-      "name": "Bola de Fuego"
+      "name": "Bola de Fuego",
+      "desc": "Lanza un proyectil ardiente a un objetivo distante."
     },
     "ice_bolt": {
-      "name": "Rayo de Hielo"
+      "name": "Rayo de Hielo",
+      "desc": "Un fragmento de hielo que atraviesa las defensas mágicas."
     },
     "thunderstorm": {
-      "name": "Tormenta"
+      "name": "Tormenta",
+      "desc": "Invoca rayos en una ubicación, golpeando a todos los enemigos cercanos."
     },
     "mana_shield": {
-      "name": "Escudo de Maná"
+      "name": "Escudo de Maná",
+      "desc": "Convierte el maná en una cáscara arcana protectora (+armadura por 6s)."
+    },
+    "frost_nova": {
+      "name": "Nova de Escarcha",
+      "desc": "Explosión de escarcha que daña a todos los enemigos a tu alrededor."
+    },
+    "arcane_surge": {
+      "name": "Oleada Arcana",
+      "desc": "Canaliza un inmenso poder arcano en un proyectil devastador."
     },
     "multi_shot": {
-      "name": "Disparo Múltiple"
+      "name": "Disparo Múltiple",
+      "desc": "Lanza una descarga de flechas que golpean a los enemigos en un área pequeña."
     },
     "poison_arrow": {
-      "name": "Flecha Venenosa"
+      "name": "Flecha Venenosa",
+      "desc": "Flecha recubierta de toxina que envenena al objetivo durante 5s."
     },
     "evasion": {
-      "name": "Evasión"
+      "name": "Evasión",
+      "desc": "Aumenta drásticamente la AGI y la probabilidad de esquiva durante 5s."
+    },
+    "aimed_shot": {
+      "name": "Disparo Apuntado",
+      "desc": "Un disparo cuidadosamente apuntado desde el otro lado del campo de batalla."
+    },
+    "mark_target": {
+      "name": "Marcar Objetivo",
+      "desc": "Marca a un enemigo, reduciendo su armadura durante 8s."
     },
     "backstab": {
-      "name": "Puñalada"
+      "name": "Puñalada",
+      "desc": "Una puñalada viscosa que inflige un daño masivo, duplicado desde el sigilo."
     },
     "stealth": {
-      "name": "Sigilo"
+      "name": "Sigilo",
+      "desc": "Desaparece de la vista, volviéndote invisible durante 6s."
     },
     "envenom": {
-      "name": "Envenenar"
+      "name": "Envenenar",
+      "desc": "Recubre tu hoja con veneno, envenenando al objetivo durante 6s."
+    },
+    "smoke_bomb": {
+      "name": "Bomba de Humo",
+      "desc": "Lanza una bomba de humo que aturde a los enemigos cercanos por 1.5s."
+    },
+    "hemorrhage": {
+      "name": "Hemorragia",
+      "desc": "Drena la vida de un enemigo, sanándote por la mitad del daño causado."
     },
     "holy_strike": {
-      "name": "Golpe Sagrado"
+      "name": "Golpe Sagrado",
+      "desc": "Un bendito golpe cuerpo a cuerpo que castiga a tu enemigo con luz sagrada."
     },
     "heal": {
-      "name": "Sanar"
+      "name": "Sanar",
+      "desc": "Canaliza energía divina para restaurar tu propia salud."
     },
     "divine_shield": {
-      "name": "Escudo Divino"
+      "name": "Escudo Divino",
+      "desc": "Rodéate de luz sagrada, volviéndote invulnerable durante 4s."
+    },
+    "holy_nova": {
+      "name": "Nova Sagrada",
+      "desc": "Explosión de luz sagrada que sana a todos los aliados cercanos."
+    },
+    "curse": {
+      "name": "Maldición",
+      "desc": "Aflige a un enemigo con una maldición oscura, bajando su INT durante 10s."
+    },
+    "smite": {
+      "name": "Castigar",
+      "desc": "Lanza un rayo sagrado a un objetivo enemigo."
+    },
+    "judgment": {
+      "name": "Sentencia",
+      "desc": "Un golpe cuerpo a cuerpo consagrado que abrasa a los enemigos con fuerza divina."
+    },
+    "lay_on_hands": {
+      "name": "Imposición de Manos",
+      "desc": "Canaliza la Luz para restaurar una gran cantidad de tu salud."
+    },
+    "consecration": {
+      "name": "Consagración",
+      "desc": "Irradia fuego sagrado, abrasando a todos los enemigos en el área a tu alrededor."
+    },
+    "aura_of_protection": {
+      "name": "Aura de Protección",
+      "desc": "Envuélvete en placas divinas, aumentando masivamente la armadura durante 8s."
+    },
+    "holy_bolt": {
+      "name": "Perno Sagrado",
+      "desc": "Lanza un rayo concentrado de luz divina a un enemigo distante."
     }
   },
   "ui": {

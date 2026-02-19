@@ -29,6 +29,7 @@ const CLASS_TYPES: readonly ClassType[] = [
   "RANGER",
   "ROGUE",
   "CLERIC",
+  "PALADIN",
 ];
 
 const CLASS_INFO: Record<
@@ -54,6 +55,10 @@ const CLASS_INFO: Record<
   CLERIC: {
     icon: "\uD83D\uDEE1\uFE0F",
     color: "#ffca3a",
+  },
+  PALADIN: {
+    icon: "\u2728",
+    color: "#f8f9fa",
   },
 };
 
@@ -104,7 +109,7 @@ function formatCharName(raw: string): string {
 const MAX_CHARACTERS = 5;
 
 export function Lobby({ onJoin, connecting }: LobbyProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -258,6 +263,33 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
         overflow="hidden"
         transition="min-width 0.3s ease"
       >
+        {/* Language Selector */}
+        <Flex position="absolute" top="12px" left="12px" gap="2" zIndex={10}>
+          {[
+            { code: "en", label: "🇺🇸" },
+            { code: "es", label: "🇪🇸" },
+            { code: "fr", label: "🇫🇷" },
+            { code: "it", label: "🇮🇹" },
+          ].map((lang) => (
+            <Box
+              key={lang.code}
+              cursor="pointer"
+              fontSize="18px"
+              opacity={i18n.language === lang.code ? 1 : 0.4}
+              filter={i18n.language === lang.code ? "none" : "grayscale(80%)"}
+              _hover={{ opacity: 1, filter: "none", transform: "scale(1.1)" }}
+              transition="all 0.2s"
+              onClick={() => {
+                i18n.changeLanguage(lang.code);
+                localStorage.setItem("abraxas_lang", lang.code);
+              }}
+              title={lang.code.toUpperCase()}
+            >
+              {lang.label}
+            </Box>
+          ))}
+        </Flex>
+
         {/* Shimmer Effect */}
         <Box
           position="absolute"
