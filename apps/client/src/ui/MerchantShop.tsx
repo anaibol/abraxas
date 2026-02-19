@@ -207,7 +207,7 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
             <Box>
               <Text color={T.gold} fontSize="18px" fontWeight="bold" mb="1">{t(selectedItem.name)}</Text>
               <Text color="whiteAlpha.600" fontSize="12px" letterSpacing="1px">
-                {selectedItem.slot.toUpperCase()} | {selectedItem.rarity.toUpperCase()}
+                {t(`item_slot.${selectedItem.slot}`).toUpperCase()} | {t(`item_rarity.${selectedItem.rarity}`).toUpperCase()}
               </Text>
             </Box>
             <Box textAlign="right">
