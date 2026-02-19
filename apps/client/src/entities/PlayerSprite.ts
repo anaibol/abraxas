@@ -33,6 +33,8 @@ export class PlayerSprite {
   private hpBarBg: Phaser.GameObjects.Rectangle;
   private hpBar: Phaser.GameObjects.Rectangle;
   private speakingIcon: Phaser.GameObjects.Text;
+  private chatBubbleText: Phaser.GameObjects.Text | null = null;
+  private chatBubbleBg: Phaser.GameObjects.Rectangle | null = null;
 
   public targetX: number;
   public targetY: number;
@@ -630,7 +632,84 @@ export class PlayerSprite {
     }
   }
 
+  showChatBubble(message: string) {
+    const scene = this.container.scene;
+    if (!scene) return;
+
+    if (this.chatBubbleText) {
+      this.chatBubbleText.destroy();
+      this.chatBubbleText = null;
+    }
+    if (this.chatBubbleBg) {
+      this.chatBubbleBg.destroy();
+      this.chatBubbleBg = null;
+    }
+
+    const maxLen = 80;
+    const display = message.length > maxLen ? `${message.substring(0, maxLen)}…` : message;
+
+    const nameH = this.nameText.height || 12;
+    const padding = 5;
+    const bubbleBottomY = this.nameText.y - nameH - padding;
+
+    const text = scene.add.text(0, bubbleBottomY, display, {
+      fontSize: "10px",
+      color: "#ffffff",
+      fontFamily: "'Friz Quadrata', Georgia, serif",
+      stroke: "#000000",
+      strokeThickness: 2,
+      wordWrap: { width: 110 },
+      align: "center",
+    });
+    text.setOrigin(0.5, 1);
+
+    const bgW = Math.max(text.width + padding * 2, 20);
+    const bgH = text.height + padding * 2;
+    const bg = scene.add.rectangle(0, bubbleBottomY - 1, bgW, bgH, 0x000000, 0.6);
+    bg.setOrigin(0.5, 1);
+    bg.setStrokeStyle(1, 0x888888, 0.5);
+
+    this.chatBubbleText = text;
+    this.chatBubbleBg = bg;
+    this.container.add([bg, text]);
+
+    const floatOffset = 6;
+    text.setY(bubbleBottomY + floatOffset);
+    bg.setY(bubbleBottomY - 1 + floatOffset);
+    text.setAlpha(0);
+    bg.setAlpha(0);
+
+    scene.tweens.add({
+      targets: [bg, text],
+      alpha: 1,
+      y: `-=${floatOffset}`,
+      duration: 250,
+      ease: "Power2.Out",
+      onComplete: () => {
+        scene.time.delayedCall(3500, () => {
+          if (this.chatBubbleText !== text) return;
+          scene.tweens.add({
+            targets: [bg, text],
+            alpha: 0,
+            duration: 600,
+            ease: "Power2.In",
+            onComplete: () => {
+              if (this.chatBubbleText === text) {
+                text.destroy();
+                bg.destroy();
+                this.chatBubbleText = null;
+                this.chatBubbleBg = null;
+              }
+            },
+          });
+        });
+      },
+    });
+  }
+
   destroy() {
+    this.chatBubbleText?.destroy();
+    this.chatBubbleBg?.destroy();
     this.container.destroy();
   }
 }

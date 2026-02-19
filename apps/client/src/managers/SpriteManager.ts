@@ -114,7 +114,11 @@ export class SpriteManager {
 		this.sprites.get(sessionId)?.container.setAlpha(alpha);
 	}
 
-	setSpeaking(sessionId: string, speaking: boolean, durationMs?: number) {
+  showChatBubble(sessionId: string, message: string) {
+    this.sprites.get(sessionId)?.showChatBubble(message);
+  }
+
+  setSpeaking(sessionId: string, speaking: boolean, durationMs?: number) {
 		const sprite = this.sprites.get(sessionId);
 		if (!sprite) return;
 		sprite.showSpeakingIndicator(speaking);

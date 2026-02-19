@@ -10,6 +10,7 @@ import {
 	ServerMessageType,
 	type TileMap,
 	type TradeState,
+	VOICE_RANGE,
 } from "@abraxas/shared";
 import { spiralSearch } from "../utils/spawnUtils";
 import type { Client } from "@colyseus/core";
@@ -678,16 +679,15 @@ export class MessageHandler {
 	}
 
 	handleAudio(client: Client, data: ArrayBuffer): void {
-		const player = this.getActivePlayer(client);
-		if (player) {
-			this.ctx.broadcast(
-				ServerMessageType.Audio,
-				{
-					sessionId: client.sessionId,
-					data: data,
-				},
-				{ except: client },
-			);
+		const speaker = this.getActivePlayer(client);
+		if (!speaker) return;
+
+		for (const [sessionId, player] of this.ctx.state.players) {
+			if (sessionId === client.sessionId) continue;
+			if (MathUtils.dist(speaker.getPosition(), player.getPosition()) > VOICE_RANGE) continue;
+
+			const target = this.ctx.findClientBySessionId(sessionId);
+			target?.send(ServerMessageType.Audio, { sessionId: client.sessionId, data });
 		}
 	}
 

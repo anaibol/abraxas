@@ -17,6 +17,7 @@ import { DeathOverlay } from "./DeathOverlay";
 import { KillFeed, type KillFeedEntry } from "./KillFeed";
 import { Console, type ConsoleMessage } from "./Console";
 import { Minimap } from "./Minimap";
+import { ScoreboardOverlay, type KillStats } from "./ScoreboardOverlay";
 import { MerchantShop } from "./MerchantShop";
 import { BankWindow } from "./BankWindow";
 import { TradeWindow } from "./TradeWindow";
@@ -97,6 +98,8 @@ export function App() {
   } | null>(null);
   const [tradeData, setTradeData] = useState<TradeState | null>(null);
   const [chatPrefill, setChatPrefill] = useState<string | undefined>();
+  const [showScoreboard, setShowScoreboard] = useState(false);
+  const [killStats, setKillStats] = useState<Record<string, KillStats>>({});
 
   const gameContainerRef = useRef<HTMLDivElement>(null);
   const phaserGameRef = useRef<Phaser.Game | null>(null);
@@ -156,6 +159,30 @@ export function App() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [phase, isChatOpen]);
+
+  useEffect(() => {
+    if (phase !== "game") return;
+
+    const handleTabDown = (e: KeyboardEvent) => {
+      if (e.key === "Tab") {
+        e.preventDefault();
+        setShowScoreboard(true);
+      }
+    };
+    const handleTabUp = (e: KeyboardEvent) => {
+      if (e.key === "Tab") {
+        e.preventDefault();
+        setShowScoreboard(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleTabDown);
+    window.addEventListener("keyup", handleTabUp);
+    return () => {
+      window.removeEventListener("keydown", handleTabDown);
+      window.removeEventListener("keyup", handleTabUp);
+    };
+  }, [phase]);
 
   useEffect(() => {
     const game = phaserGameRef.current;
@@ -314,6 +341,28 @@ export function App() {
             timestamp: Date.now(),
           },
         ]);
+
+        network
+          .getRoom()
+          .onMessage(
+            ServerMessageType.KillFeed,
+            (data: ServerMessages[ServerMessageType.KillFeed]) => {
+              const room = network.getRoom();
+              const isPvp = room.state.players.has(data.victimSessionId);
+              if (data.killerName) {
+                setKillStats((prev) => {
+                  const cur = prev[data.killerName] ?? { npcKills: 0, pvpKills: 0 };
+                  return {
+                    ...prev,
+                    [data.killerName]: {
+                      npcKills: cur.npcKills + (isPvp ? 0 : 1),
+                      pvpKills: cur.pvpKills + (isPvp ? 1 : 0),
+                    },
+                  };
+                });
+              }
+            },
+          );
 
         network
           .getRoom()
@@ -721,6 +770,19 @@ export function App() {
             )}
           </Flex>
           <DeathOverlay visible={showDeath} deathTime={deathTime} />
+          {roomRef.current && (
+            <ScoreboardOverlay
+              visible={showScoreboard}
+              killStats={killStats}
+              onlinePlayers={Array.from(roomRef.current.state?.players?.values() ?? []).map((p) => ({
+                name: p.name,
+                classType: p.classType,
+                alive: p.alive,
+              }))}
+              myName={playerState.name}
+              myLevel={playerState.level ?? 1}
+            />
+          )}
           <KillFeed entries={killFeed} />
           <Console
             messages={consoleMessages}

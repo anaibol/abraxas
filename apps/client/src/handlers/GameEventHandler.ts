@@ -1,6 +1,6 @@
 import type { Room } from "@colyseus/sdk";
 import type { ServerMessages } from "@abraxas/shared";
-import { ServerMessageType, SPAWN_PROTECTION_MS } from "@abraxas/shared";
+import { ServerMessageType, SPAWN_PROTECTION_MS, ChatChannel } from "@abraxas/shared";
 import type { SpriteManager } from "../managers/SpriteManager";
 import type { EffectManager } from "../managers/EffectManager";
 import type { SoundManager } from "../assets/SoundManager";
@@ -33,6 +33,7 @@ export class GameEventHandler {
 			this.unsubscribers.push(this.room.onMessage(type, handler));
 		};
 
+		on(ServerMessageType.Chat, (data) => this.onChat(data));
 		on(ServerMessageType.AttackStart, (data) => this.onAttackStart(data));
 		on(ServerMessageType.AttackHit, (data) => this.onAttackHit(data));
 		on(ServerMessageType.CastStart, (data) => this.onCastStart(data));
@@ -54,6 +55,11 @@ export class GameEventHandler {
 	destroy() {
 		for (const unsub of this.unsubscribers) unsub();
 		this.unsubscribers = [];
+	}
+
+	private onChat(data: ServerMessages[ServerMessageType.Chat]) {
+		if (data.channel === ChatChannel.Whisper || data.channel === ChatChannel.System) return;
+		this.spriteManager.showChatBubble(data.senderId, data.message);
 	}
 
 	private onErrorMessage(data: { message: string }) {
