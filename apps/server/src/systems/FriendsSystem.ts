@@ -138,38 +138,45 @@ export class FriendsSystem {
     const client = this.findClient(sessionId);
     if (!client) return;
 
-    // Fetch both sides of accepted friendships in two queries
-    const [outgoing, incoming] = await Promise.all([
+    const [outgoing, incoming, pendingIncoming] = await Promise.all([
       prisma.requesterFriend.findMany({
         where: { requesterId: userId, status: "ACCEPTED" },
       }),
       prisma.recipientFriend.findMany({
         where: { recipientId: userId, status: "ACCEPTED" },
       }),
+      // Requests sent TO this user that are still pending
+      prisma.requesterFriend.findMany({
+        where: { recipientId: userId, status: "PENDING" },
+        include: { requester: { include: { characters: { take: 1 } } } },
+      }),
     ]);
 
-    // Collect all friend user IDs, then fetch in one batch
     const friendIds = [
       ...outgoing.map((f) => f.recipientId),
       ...incoming.map((f) => f.requesterId),
     ];
 
-    if (friendIds.length === 0) {
-      client.send(ServerMessageType.FriendUpdate, { friends: [] });
-      return;
-    }
+    const [friendUsers] = await Promise.all([
+      friendIds.length > 0
+        ? prisma.account.findMany({
+            where: { id: { in: friendIds } },
+            include: { characters: { take: 1 } },
+          })
+        : Promise.resolve([]),
+    ]);
 
-    const users = await prisma.account.findMany({
-      where: { id: { in: friendIds } },
-      include: { characters: { take: 1 } },
-    });
-
-    const friends = users.map((user) => ({
+    const friends = friendUsers.map((user) => ({
       id: user.id,
       name: user.characters[0]?.name ?? "Unknown",
       online: this.onlineUsers.has(user.id),
     }));
 
-    client.send(ServerMessageType.FriendUpdate, { friends });
+    const pendingRequests = pendingIncoming.map((f) => ({
+      id: f.requesterId,
+      name: f.requester.characters[0]?.name ?? "Unknown",
+    }));
+
+    client.send(ServerMessageType.FriendUpdate, { friends, pendingRequests });
   }
 }

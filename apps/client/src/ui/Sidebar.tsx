@@ -94,7 +94,9 @@ interface SidebarProps {
   onPartyLeave?: () => void;
   onPartyKick?: (sessionId: string) => void;
   friends?: Friend[];
+  pendingFriendRequests?: { id: string; name: string }[];
   onFriendRequest?: (name: string) => void;
+  onFriendAccept?: (requesterId: string) => void;
   onWhisper?: (name: string) => void;
   /** The currently selected inventory item id (controlled from parent). */
   selectedItemId?: string | null;
@@ -129,7 +131,7 @@ export function Sidebar({
   state, isRecording, onEquip, onUnequip, onUseItem, onDropItem, quests,
   partyId = "", leaderId = "", partyMembers = [],
   onPartyInvite, onPartyLeave, onPartyKick,
-  friends = [], onFriendRequest, onWhisper,
+  friends = [], pendingFriendRequests = [], onFriendRequest, onFriendAccept, onWhisper,
   selectedItemId, onSelectItem,
 }: SidebarProps) {
   const [tab, setTab] = useState<"inv" | "spells" | "quests" | "party" | "friends">("inv");
@@ -454,6 +456,28 @@ export function Sidebar({
                 </Flex>
               ))}
             </VStack>
+            {pendingFriendRequests.length > 0 && (
+              <VStack align="stretch" gap="1">
+                <Text fontSize="9px" letterSpacing="2px" color={P.goldDark} textTransform="uppercase">Pending Requests</Text>
+                {pendingFriendRequests.map((req) => (
+                  <Flex key={req.id} justify="space-between" align="center" p="2" bg={P.darkest} border="1px solid" borderColor={P.border} borderRadius="2px">
+                    <Text fontSize="12px" color={P.goldText}>{req.name}</Text>
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      p="0"
+                      h="auto"
+                      minW="auto"
+                      color="green.400"
+                      fontSize="10px"
+                      onClick={() => onFriendAccept?.(req.id)}
+                    >
+                      [Accept]
+                    </Button>
+                  </Flex>
+                ))}
+              </VStack>
+            )}
           </VStack>
         </Box>
       )}

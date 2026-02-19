@@ -357,6 +357,7 @@ export type ServerMessages = {
   [ServerMessageType.FriendRemove]: { friendId: string };
   [ServerMessageType.FriendUpdate]: {
     friends: { id: string; name: string; online: boolean }[];
+    pendingRequests: { id: string; name: string }[];
   };
   [ServerMessageType.PartyInvite]: { targetSessionId: string };
   [ServerMessageType.PartyInvited]: { partyId: string; inviterName: string };

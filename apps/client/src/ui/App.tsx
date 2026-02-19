@@ -8,7 +8,7 @@ import {
   ToastCloseTrigger,
 } from "@chakra-ui/react";
 import { Box, Flex } from "@chakra-ui/react";
-import { useState, useRef, useCallback, useEffect, useId } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { system } from "./theme";
 import { Lobby } from "./Lobby";
 import { LoadingScreen } from "./LoadingScreen";
@@ -25,7 +25,7 @@ import type {
   PlayerQuestState,
   ServerMessages,
 } from "@abraxas/shared";
-import { getRandomName, ServerMessageType } from "@abraxas/shared";
+import { getRandomName, ServerMessageType, ITEMS } from "@abraxas/shared";
 import { QuestDialogue } from "./QuestDialogue";
 import { NetworkManager } from "../network/NetworkManager";
 import { AudioManager } from "../managers/AudioManager";
@@ -74,6 +74,9 @@ export function App() {
   const [friendsData, setFriendsData] = useState<
     { id: string; name: string; online: boolean }[]
   >([]);
+  const [pendingFriendRequests, setPendingFriendRequests] = useState<
+    { id: string; name: string }[]
+  >([]);
   const [quests, setQuests] = useState<PlayerQuestState[]>([]);
   const [dialogueData, setDialogueData] = useState<{
     npcId: string;
@@ -84,6 +87,12 @@ export function App() {
     items: { itemId: string; quantity: number; slotIndex: number }[];
   } | null>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [dropDialog, setDropDialog] = useState<{
+    itemId: string;
+    itemName: string;
+    maxQty: number;
+  } | null>(null);
 
   const gameContainerRef = useRef<HTMLDivElement>(null);
   const phaserGameRef = useRef<Phaser.Game | null>(null);
@@ -92,6 +101,13 @@ export function App() {
   const wasAliveRef = useRef(true);
 
   const roomRef = useRef<Room<GameState> | null>(null);
+
+  // Clear selection if the selected item is no longer in inventory
+  useEffect(() => {
+    if (!selectedItemId) return;
+    const exists = playerState.inventory?.some((i) => i.itemId === selectedItemId);
+    if (!exists) setSelectedItemId(null);
+  }, [playerState.inventory, selectedItemId]);
 
   useEffect(() => {
     if (!playerState.alive && wasAliveRef.current) {
@@ -150,7 +166,10 @@ export function App() {
     if (phase !== "game" || isChatOpen) return;
 
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() === "v") {
+      const key = e.key.toLowerCase();
+
+      // PTT voice (V)
+      if (key === "v") {
         if (e.type === "keydown" && !isRecording) {
           setIsRecording(true);
           if (audioManagerRef.current) {
@@ -162,6 +181,42 @@ export function App() {
           setIsRecording(false);
           audioManagerRef.current?.stopRecording();
         }
+        return;
+      }
+
+      if (e.type !== "keydown") return;
+
+      // A — pickup drop under the player
+      if (key === "a") {
+        const room = roomRef.current;
+        const network = networkRef.current;
+        if (!room || !network) return;
+        const player = room.state.players.get(room.sessionId);
+        if (!player?.alive) return;
+        for (const [dropId, drop] of room.state.drops) {
+          if (drop.tileX === player.tileX && drop.tileY === player.tileY) {
+            network.sendPickup(dropId);
+            break;
+          }
+        }
+        return;
+      }
+
+      // T — drop selected inventory item (with quantity prompt if stackable)
+      if (key === "t") {
+        if (!selectedItemId || dropDialog) return;
+        const inv = playerState.inventory ?? [];
+        const slot = inv.find((i) => i.itemId === selectedItemId);
+        if (!slot) return;
+
+        if (slot.quantity > 1) {
+          const itemName = ITEMS[slot.itemId]?.name ?? slot.itemId;
+          setDropDialog({ itemId: slot.itemId, itemName, maxQty: slot.quantity });
+        } else {
+          networkRef.current?.sendDropItem(slot.itemId, 1);
+          setSelectedItemId(null);
+        }
+        return;
       }
     };
 
@@ -171,7 +226,7 @@ export function App() {
       window.removeEventListener("keydown", handleKey);
       window.removeEventListener("keyup", handleKey);
     };
-  }, [phase, isChatOpen, isRecording]);
+  }, [phase, isChatOpen, isRecording, selectedItemId, playerState.inventory, dropDialog]);
 
   useEffect(() => {
     return () => {
@@ -363,6 +418,7 @@ export function App() {
             ServerMessageType.FriendUpdate,
             (data: ServerMessages[ServerMessageType.FriendUpdate]) => {
               setFriendsData(data.friends);
+              setPendingFriendRequests(data.pendingRequests);
             },
           );
 
@@ -566,8 +622,12 @@ export function App() {
               onPartyLeave={() => networkRef.current?.sendPartyLeave()}
               onPartyKick={(sid: string) => networkRef.current?.sendPartyKick(sid)}
               friends={friendsData}
+              pendingFriendRequests={pendingFriendRequests}
               onFriendRequest={(name: string) => networkRef.current?.sendFriendRequest(name)}
+              onFriendAccept={(rid: string) => networkRef.current?.sendFriendAccept(rid)}
               onWhisper={() => setIsChatOpen(true)}
+              selectedItemId={selectedItemId}
+              onSelectItem={setSelectedItemId}
             />
             {shopData && (
               <MerchantShop
@@ -624,6 +684,171 @@ export function App() {
           />
         </>
       )}
+
+      {/* Drop quantity dialog */}
+      {dropDialog && (
+        <DropQuantityDialog
+          itemName={dropDialog.itemName}
+          maxQty={dropDialog.maxQty}
+          onConfirm={(qty) => {
+            networkRef.current?.sendDropItem(dropDialog.itemId, qty);
+            setSelectedItemId(null);
+            setDropDialog(null);
+          }}
+          onCancel={() => setDropDialog(null)}
+        />
+      )}
     </ChakraProvider>
+  );
+}
+
+// ── Drop quantity dialog ──────────────────────────────────────────────────────
+
+const DQ = {
+  bg: "#0e0c14",
+  surface: "#14111e",
+  raised: "#1a1628",
+  border: "#2e2840",
+  gold: "#d4a843",
+  goldDark: "#6e5a18",
+  goldText: "#c8b68a",
+  font: "'Friz Quadrata', Georgia, serif",
+  mono: "'Consolas', monospace",
+} as const;
+
+function DropQuantityDialog({
+  itemName,
+  maxQty,
+  onConfirm,
+  onCancel,
+}: {
+  itemName: string;
+  maxQty: number;
+  onConfirm: (qty: number) => void;
+  onCancel: () => void;
+}) {
+  const [qty, setQty] = useState(maxQty);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Focus input on mount; Escape cancels, Enter confirms
+  useEffect(() => {
+    inputRef.current?.focus();
+    inputRef.current?.select();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onCancel();
+      if (e.key === "Enter") onConfirm(Math.min(Math.max(1, qty), maxQty));
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [qty, maxQty, onConfirm, onCancel]);
+
+  const handleConfirm = () => onConfirm(Math.min(Math.max(1, qty), maxQty));
+
+  return (
+    <Box
+      position="fixed"
+      inset="0"
+      zIndex={200}
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      bg="rgba(0,0,0,0.65)"
+      onClick={onCancel}
+    >
+      <Box
+        bg={DQ.bg}
+        border={`2px solid ${DQ.border}`}
+        borderRadius="4px"
+        p="5"
+        w="260px"
+        fontFamily={DQ.font}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <Box
+          fontSize="11px"
+          letterSpacing="3px"
+          textTransform="uppercase"
+          color={DQ.gold}
+          fontWeight="700"
+          mb="1"
+          textAlign="center"
+        >
+          Drop Item
+        </Box>
+        <Box
+          fontSize="13px"
+          color={DQ.goldText}
+          textAlign="center"
+          mb="3"
+        >
+          {itemName}
+        </Box>
+
+        <Box mb="3">
+          <Box fontSize="9px" color={DQ.goldDark} letterSpacing="2px" textTransform="uppercase" mb="1">
+            Quantity (1 – {maxQty})
+          </Box>
+          <input
+            ref={inputRef}
+            type="number"
+            min={1}
+            max={maxQty}
+            value={qty}
+            onChange={(e) => setQty(Number(e.target.value))}
+            style={{
+              width: "100%",
+              background: DQ.surface,
+              border: `1px solid ${DQ.border}`,
+              borderRadius: "2px",
+              color: DQ.goldText,
+              fontFamily: DQ.mono,
+              fontSize: "14px",
+              padding: "4px 8px",
+              outline: "none",
+              boxSizing: "border-box",
+            }}
+          />
+        </Box>
+
+        <Flex gap="2">
+          <Box
+            as="button"
+            flex="1"
+            py="1.5"
+            fontSize="11px"
+            fontWeight="700"
+            letterSpacing="1px"
+            bg={DQ.raised}
+            border={`1px solid ${DQ.border}`}
+            borderRadius="2px"
+            color={DQ.goldText}
+            cursor="pointer"
+            fontFamily={DQ.font}
+            onClick={onCancel}
+            style={{ transition: "background 0.1s" }}
+          >
+            Cancel
+          </Box>
+          <Box
+            as="button"
+            flex="1"
+            py="1.5"
+            fontSize="11px"
+            fontWeight="700"
+            letterSpacing="1px"
+            bg={DQ.goldDark}
+            border={`1px solid ${DQ.gold}`}
+            borderRadius="2px"
+            color={DQ.gold}
+            cursor="pointer"
+            fontFamily={DQ.font}
+            onClick={handleConfirm}
+            style={{ transition: "background 0.1s" }}
+          >
+            Drop
+          </Box>
+        </Flex>
+      </Box>
+    </Box>
   );
 }
