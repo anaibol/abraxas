@@ -642,6 +642,22 @@ export class CombatSystem {
 			if (target.hp <= 0) {
 				onDeath(target, attacker.sessionId);
 			}
+			// Apply secondary stat modifier (e.g. ice_bolt AGI slow) if defined alongside damage
+			if (!isSelfCast && ability.buffStat && ability.buffAmount !== undefined && ability.durationMs) {
+				this.buffSystem.addBuff(
+					target.sessionId,
+					`${ability.id}_slow`,
+					ability.buffStat,
+					ability.buffAmount,
+					ability.durationMs,
+					now,
+				);
+				broadcast(ServerMessageType.BuffApplied, {
+					sessionId: target.sessionId,
+					abilityId: ability.id,
+					durationMs: ability.durationMs,
+				});
+			}
 		} else if (ability.effect === "heal") {
 			const heal = calcHealAmount(
 				ability.baseDamage,

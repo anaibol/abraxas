@@ -36,6 +36,12 @@ const SPELL_ICONS: Record<string, string> = {
 	holy_nova: "🌟",
 	curse: "💀",
 	smite: "☀️",
+	// Paladin
+	judgment: "⚖️",
+	lay_on_hands: "🤲",
+	consecration: "🔆",
+	aura_of_protection: "💠",
+	holy_bolt: "✴️",
 };
 
 const EFFECT_LABELS: Record<string, { label: string; color: string }> = {

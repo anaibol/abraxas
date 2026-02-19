@@ -14,6 +14,8 @@ const ABILITY_KEY_CODES: Record<string, number> = {
   W: Phaser.Input.Keyboard.KeyCodes.W,
   E: Phaser.Input.Keyboard.KeyCodes.E,
   R: Phaser.Input.Keyboard.KeyCodes.R,
+  T: Phaser.Input.Keyboard.KeyCodes.T,
+  Y: Phaser.Input.Keyboard.KeyCodes.Y,
 };
 
 type TargetingState =

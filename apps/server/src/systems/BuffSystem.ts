@@ -1,4 +1,4 @@
-import type { Player } from "../schema/Player";
+import type { Char } from "../schema/Char";
 import {
 	Buff,
 	BroadcastFn,
@@ -133,21 +133,21 @@ export class BuffSystem {
 		return total;
 	}
 
-	/** Process DoTs and expire buffs/stuns. Call every tick. */
+	/** Process DoTs and expire buffs/stuns. Call every tick. Works for both Players and NPCs. */
 	tick(
 		now: number,
-		getPlayer: (sessionId: string) => Player | undefined,
+		getEntity: (sessionId: string) => Char | undefined,
 		broadcast: BroadcastFn,
-		onDeath: (player: Player) => void,
+		onDeath: (entity: Char) => void,
 	): void {
 		for (const [sessionId, s] of this.state.entries()) {
-			const player = getPlayer(sessionId);
-			if (!player || !player.alive) continue;
+			const entity = getEntity(sessionId);
+			if (!entity || !entity.alive) continue;
 
 			// Update stunned/stealthed/spawnProtection flags on the schema
-			player.stunned = now < s.stunnedUntil;
-			player.stealthed = now < s.stealthedUntil;
-			player.spawnProtection = now < s.spawnProtectedUntil;
+			entity.stunned = now < s.stunnedUntil;
+			entity.stealthed = now < s.stealthedUntil;
+			entity.spawnProtection = now < s.spawnProtectedUntil;
 
 			// Expire old buffs
 			s.buffs = s.buffs.filter((b) => now < b.expiresAt);
@@ -160,21 +160,20 @@ export class BuffSystem {
 
 				if (now - dot.lastTickAt >= dot.intervalMs) {
 					dot.lastTickAt = now;
-					player.hp -= dot.damage;
+					entity.hp -= dot.damage;
 
-					// Broadcast damage caused by DoT
 					broadcast(ServerMessageType.Damage, {
 						targetSessionId: sessionId,
 						amount: dot.damage,
-						hpAfter: player.hp,
+						hpAfter: entity.hp,
 						type: "dot",
 					});
 
-					if (player.hp <= 0) {
-						player.hp = 0;
-						player.alive = false;
+					if (entity.hp <= 0) {
+						entity.hp = 0;
+						entity.alive = false;
 						broadcast(ServerMessageType.Death, { sessionId });
-						onDeath(player);
+						onDeath(entity);
 						break;
 					}
 				}

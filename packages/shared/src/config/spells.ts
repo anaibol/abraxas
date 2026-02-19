@@ -98,7 +98,7 @@ export const ABILITIES: Record<string, Ability> = {
     fxId: 3,
   },
 
-  /** W — Ranged single-target: applies a slow (debuff AGI) on top of damage */
+  /** W — Ranged single-target: deals damage and applies an AGI slow */
   ice_bolt: {
     id: "ice_bolt",
     rangeTiles: 8,
@@ -112,6 +112,9 @@ export const ABILITIES: Record<string, Ability> = {
     damageSchool: "magical",
     key: "W",
     fxId: 22,
+    buffStat: "agi",
+    buffAmount: -6,
+    durationMs: 3000,
   },
 
   /** E — AoE lightning at target tile */

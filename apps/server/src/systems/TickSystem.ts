@@ -62,15 +62,12 @@ export class TickSystem {
 		state.tick++;
 		const now = Date.now();
 
-		// 1. Buffs
+		// 1. Buffs — resolves DoTs and expires effects for both Players and NPCs
 		systems.buff.tick(
 			now,
-			(sid) => {
-				const entity = systems.spatial.findEntityBySessionId(sid);
-				return entity instanceof Player ? entity : undefined;
-			},
+			(sid) => systems.spatial.findEntityBySessionId(sid),
 			broadcast,
-			(p) => this.opts.onEntityDeath(p),
+			(entity) => this.opts.onEntityDeath(entity),
 		);
 
 		// 2. NPCs
