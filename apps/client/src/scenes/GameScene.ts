@@ -50,6 +50,10 @@ export class GameScene extends Phaser.Scene {
 
 	private muteKey?: Phaser.Input.Keyboard.Key;
 	private debugText?: Phaser.GameObjects.Text;
+
+	// Map baking — chunks are baked lazily one per update() tick as the camera approaches them
+	private bakedChunks = new Set<string>();
+	private chunkBakeQueue: Array<{ cx: number; cy: number }> = [];
 	private dropVisuals = new Map<
 		string,
 		{
@@ -96,7 +100,7 @@ export class GameScene extends Phaser.Scene {
 		this.room = this.network.getRoom();
 		this.welcome = this.network.getWelcomeData();
 		this.collisionGrid = this.welcome.collision;
-		this.drawMap();
+		// Map chunks are baked lazily in update() via scheduleNearbyChunks()
 
 		this.sound.pauseOnBlur = false;
 
@@ -233,6 +237,14 @@ export class GameScene extends Phaser.Scene {
 	}
 
 	update(time: number, delta: number) {
+		// Schedule nearby chunks into the bake queue each tick
+		this.scheduleNearbyChunks();
+		// Bake one queued chunk per tick — keeps each rAF well under 16ms
+		if (this.chunkBakeQueue.length > 0) {
+			const next = this.chunkBakeQueue.shift();
+			if (next) this.bakeMapChunk(next);
+		}
+
 		this.inputHandler.update(time, () => this.getMouseTile());
 		this.spriteManager.update(delta);
 
@@ -410,28 +422,79 @@ export class GameScene extends Phaser.Scene {
 	}
 
 	/** Draws the entire map onto a single persistent Graphics object. */
-	private drawMap() {
+	/**
+	 * Called every update() tick. Looks at the camera world position and enqueues
+	 * any un-baked chunks within BAKE_RADIUS chunks of the camera for lazy baking.
+	 * Chunks are sorted nearest-first so the player sees them in order.
+	 */
+	private scheduleNearbyChunks() {
+		const { mapWidth, mapHeight } = this.welcome;
+		const CHUNK = 25;
+		const BAKE_RADIUS = 2; // chunks around the camera to keep baked
+
+		const cam = this.cameras.main;
+		// Camera center in tile coords
+		const camTileX = (cam.scrollX + cam.width / 2 / cam.zoom) / TILE_SIZE;
+		const camTileY = (cam.scrollY + cam.height / 2 / cam.zoom) / TILE_SIZE;
+		// Camera center in chunk coords
+		const camChunkX = Math.floor(camTileX / CHUNK);
+		const camChunkY = Math.floor(camTileY / CHUNK);
+
+		const toQueue: Array<{ cx: number; cy: number; dist: number }> = [];
+
+		for (let dy = -BAKE_RADIUS; dy <= BAKE_RADIUS; dy++) {
+			for (let dx = -BAKE_RADIUS; dx <= BAKE_RADIUS; dx++) {
+				const col = camChunkX + dx;
+				const row = camChunkY + dy;
+				const cx = col * CHUNK;
+				const cy = row * CHUNK;
+				if (cx < 0 || cy < 0 || cx >= mapWidth || cy >= mapHeight) continue;
+				const key = `${cx},${cy}`;
+				if (this.bakedChunks.has(key)) continue;
+				if (this.chunkBakeQueue.some(c => c.cx === cx && c.cy === cy)) continue;
+				toQueue.push({ cx, cy, dist: dx * dx + dy * dy });
+			}
+		}
+
+		// Nearest chunks first
+		toQueue.sort((a, b) => a.dist - b.dist);
+		for (const { cx, cy } of toQueue) {
+			this.chunkBakeQueue.push({ cx, cy });
+		}
+	}
+
+	/**
+	 * Bakes one map chunk into a Canvas texture and places a static Image.
+	 * Called once per update() tick from the queue so each frame stays fast.
+	 *
+	 * The Graphics object is never added to the display list and is destroyed
+	 * immediately after generateTexture(), leaving only a lightweight Image quad.
+	 */
+	private bakeMapChunk({ cx, cy }: { cx: number; cy: number }) {
 		const { mapWidth, mapHeight, collision, tileTypes } = this.welcome;
+		const CHUNK = 25;
+		const chW = Math.min(CHUNK, mapWidth - cx);
+		const chH = Math.min(CHUNK, mapHeight - cy);
 		const T = TILE_SIZE;
-		const g = this.add.graphics().setDepth(0);
+		const chPxW = chW * T;
+		const chPxH = chH * T;
 
-		// ── Grass background (one rect covering the whole map) ──────────────────
+		const g = this.make.graphics({ add: false });
+
 		g.fillStyle(0x4a8c2a, 1);
-		g.fillRect(0, 0, mapWidth * T, mapHeight * T);
+		g.fillRect(0, 0, chPxW, chPxH);
 
-		// ── Per-tile variation and non-grass tiles ───────────────────────────────
-		for (let ty = 0; ty < mapHeight; ty++) {
-			for (let tx = 0; tx < mapWidth; tx++) {
+		for (let ty = cy; ty < cy + chH; ty++) {
+			for (let tx = cx; tx < cx + chW; tx++) {
 				const type =
 					tileTypes?.[ty]?.[tx] ??
 					(collision[ty]?.[tx] === 1 ? 1 : 0);
-				const px = tx * T;
-				const py = ty * T;
+				const px = (tx - cx) * T;
+				const py = (ty - cy) * T;
 				const h = ((tx * 2246822519 + ty * 3266489917) >>> 0);
 
 				switch (type) {
 					case 0: {
-						// Subtle grass texture: 1–2 random patches per tile
 						const shade = h % 3;
 						if (shade === 0) {
 							g.fillStyle(0x3e7a1e, 0.45);
@@ -440,7 +503,6 @@ export class GameScene extends Phaser.Scene {
 							g.fillStyle(0x5aaa2c, 0.35);
 							g.fillRect(px + ((h >> 2) & 15), py + ((h >> 6) & 15), 8, 6);
 						}
-						// Occasional bright blade highlights
 						if ((h >> 8) % 7 === 0) {
 							g.fillStyle(0x72cc40, 0.5);
 							g.fillRect(px + ((h >> 10) & 27), py + ((h >> 14) & 27), 2, 4);
@@ -448,26 +510,19 @@ export class GameScene extends Phaser.Scene {
 						break;
 					}
 					case 1: {
-						// Stone wall – dark base + brick layers
 						g.fillStyle(0x484848, 1);
 						g.fillRect(px, py, T, T);
-						// Lighter stone face
 						g.fillStyle(0x606060, 1);
-						// Row 1 bricks
 						g.fillRect(px + 1, py + 1, 14, 6);
 						g.fillRect(px + 17, py + 1, 14, 6);
-						// Row 2 bricks (offset)
 						g.fillRect(px + 1, py + 9, 8, 6);
 						g.fillRect(px + 11, py + 9, 10, 6);
 						g.fillRect(px + 23, py + 9, 8, 6);
-						// Row 3 bricks
 						g.fillRect(px + 1, py + 17, 14, 6);
 						g.fillRect(px + 17, py + 17, 14, 6);
-						// Row 4 bricks (offset)
 						g.fillRect(px + 1, py + 25, 8, 5);
 						g.fillRect(px + 11, py + 25, 10, 5);
 						g.fillRect(px + 23, py + 25, 8, 5);
-						// Mortar (dark)
 						g.fillStyle(0x2c2c2c, 1);
 						g.fillRect(px, py, T, 1);
 						g.fillRect(px, py + 8, T, 2);
@@ -479,7 +534,6 @@ export class GameScene extends Phaser.Scene {
 						g.fillRect(px + 15, py + 16, 2, 9);
 						g.fillRect(px + 9, py + 24, 2, 8);
 						g.fillRect(px + 21, py + 24, 2, 8);
-						// Subtle top-left highlight on each brick face
 						g.fillStyle(0x7a7a7a, 0.5);
 						g.fillRect(px + 1, py + 1, 14, 1);
 						g.fillRect(px + 1, py + 1, 1, 6);
@@ -488,23 +542,17 @@ export class GameScene extends Phaser.Scene {
 						break;
 					}
 					case 2: {
-						// Tree – forest floor + canopy + trunk
 						g.fillStyle(0x2a5018, 1);
 						g.fillRect(px, py, T, T);
-						// Drop shadow
 						g.fillStyle(0x1a3a10, 0.55);
 						g.fillCircle(px + 16, py + 19, 12);
-						// Main foliage
 						g.fillStyle(0x2c7c18, 1);
 						g.fillCircle(px + 16, py + 13, 11);
-						// Highlight clusters
 						g.fillStyle(0x3a9820, 0.85);
 						g.fillCircle(px + 12, py + 10, 7);
 						g.fillCircle(px + 20, py + 10, 7);
-						// Top bright spot
 						g.fillStyle(0x50c030, 0.65);
 						g.fillCircle(px + 14, py + 8, 5);
-						// Trunk
 						g.fillStyle(0x46280c, 1);
 						g.fillRect(px + 13, py + 21, 6, 11);
 						g.fillStyle(0x624014, 0.6);
@@ -512,23 +560,18 @@ export class GameScene extends Phaser.Scene {
 						break;
 					}
 					case 3: {
-						// Water – deep blue with animated-looking waves
 						g.fillStyle(0x0c2a68, 1);
 						g.fillRect(px, py, T, T);
-						// Mid-layer
 						g.fillStyle(0x1848b0, 0.7);
 						g.fillRect(px, py, T, T);
-						// Lighter band
 						g.fillStyle(0x2860cc, 0.5);
 						g.fillRect(px, py + 10, T, 10);
-						// Waves
 						g.fillStyle(0x58a0e8, 0.55);
 						g.fillRect(px + 2, py + 5, 12, 2);
 						g.fillRect(px + 18, py + 8, 10, 2);
 						g.fillRect(px + 4, py + 17, 14, 2);
 						g.fillRect(px + 20, py + 22, 8, 2);
 						g.fillRect(px + 1, py + 26, 10, 2);
-						// Shimmer
 						g.fillStyle(0xa0d4ff, 0.28);
 						g.fillRect(px + 6, py + 5, 3, 1);
 						g.fillRect(px + 22, py + 9, 2, 1);
@@ -537,6 +580,12 @@ export class GameScene extends Phaser.Scene {
 				}
 			}
 		}
+
+		const key = `map-chunk-${cx}-${cy}`;
+		g.generateTexture(key, chPxW, chPxH);
+		g.destroy();
+		this.add.image(cx * T, cy * T, key).setOrigin(0, 0).setDepth(0);
+		this.bakedChunks.add(`${cx},${cy}`);
 	}
 
 	private getMouseTile(): { x: number; y: number } {
