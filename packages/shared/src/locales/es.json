@@ -115,11 +115,11 @@
   },
   "sidebar": {
     "tabs": {
-      "inv": "⚔️ Inv",
-      "spells": "📖 Hechizos",
-      "quests": "📜 Misiones",
-      "party": "⚔️ Grupo",
-      "friends": "👥 Amigos"
+      "inv": "Inv",
+      "spells": "Hechizos",
+      "quests": "Misiones",
+      "party": "Grupo",
+      "friends": "Amigos"
     },
     "inventory": {
       "unequip_hint": "{{name}} (clic derecho desequipar)",

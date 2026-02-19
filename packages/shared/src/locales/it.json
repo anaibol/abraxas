@@ -115,11 +115,11 @@
   },
   "sidebar": {
     "tabs": {
-      "inv": "⚔️ Inv",
-      "spells": "📖 Incantesimi",
-      "quests": "📜 Missioni",
-      "party": "⚔️ Gruppo",
-      "friends": "👥 Amici"
+      "inv": "Inv",
+      "spells": "Incantesimi",
+      "quests": "Missioni",
+      "party": "Gruppo",
+      "friends": "Amici"
     },
     "inventory": {
       "unequip_hint": "{{name}} (tasto destro rimuovi)",

@@ -115,11 +115,11 @@
   },
   "sidebar": {
     "tabs": {
-      "inv": "⚔️ Inv",
-      "spells": "📖 Sorts",
-      "quests": "📜 Quêtes",
-      "party": "⚔️ Groupe",
-      "friends": "👥 Amis"
+      "inv": "Inv",
+      "spells": "Sorts",
+      "quests": "Quêtes",
+      "party": "Groupe",
+      "friends": "Amis"
     },
     "inventory": {
       "unequip_hint": "{{name}} (clic droit déséquiper)",

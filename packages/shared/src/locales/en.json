@@ -115,11 +115,11 @@
   },
   "sidebar": {
     "tabs": {
-      "inv": "⚔️ Inv",
-      "spells": "📖 Spells",
-      "quests": "📜 Quests",
-      "party": "⚔️ Party",
-      "friends": "👥 Friends"
+      "inv": "Inv",
+      "spells": "Spells",
+      "quests": "Quests",
+      "party": "Party",
+      "friends": "Friends"
     },
     "inventory": {
       "unequip_hint": "{{name}} (right-click unequip)",
