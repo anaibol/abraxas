@@ -8,12 +8,12 @@ export type Item = {
   slot: ItemSlot;
   rarity: ItemRarity;
   stats: {
-    str?: number;
-    agi?: number;
-    int?: number;
-    hp?: number;
-    mana?: number;
-    armor?: number;
+    str: number;
+    agi: number;
+    int: number;
+    hp: number;
+    mana: number;
+    armor: number;
     /** Extra movement speed in tiles/s when this mount is equipped. */
     speedBonus?: number;
   };
@@ -31,7 +31,12 @@ export type Item = {
   mountNpcType?: string;
 };
 
+
+/** Baseline stat block — every item spreads this so the type is always fully hydrated. */
+const ZERO_STATS = { str: 0, agi: 0, int: 0, hp: 0, mana: 0, armor: 0 } as const;
+
 export const ITEMS: Record<string, Item> = {
+
   // --- WEAPONS ---
   club: {
     id: "club",
