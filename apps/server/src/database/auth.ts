@@ -24,7 +24,9 @@ export function generateToken(payload: AuthPayload): string {
 }
 
 function isAuthPayload(obj: unknown): obj is AuthPayload {
-  return typeof obj === "object" && obj !== null && "userId" in obj && "email" in obj && "role" in obj;
+  return (
+    typeof obj === "object" && obj !== null && "userId" in obj && "email" in obj && "role" in obj
+  );
 }
 
 export function verifyToken(token: string): AuthPayload | null {

@@ -1,7 +1,12 @@
-import { ClientMessageType, type ClientMessages, ServerMessageType, ITEMS } from "@abraxas/shared";
+import {
+  type ClientMessages,
+  type ClientMessageType,
+  ITEMS,
+  ServerMessageType,
+} from "@abraxas/shared";
 import type { Client } from "@colyseus/core";
-import type { RoomContext } from "./RoomContext";
 import { HandlerUtils } from "./HandlerUtils";
+import type { RoomContext } from "./RoomContext";
 
 /** Tile distance within which a player must be to attempt taming. */
 const TAME_RANGE = 2;

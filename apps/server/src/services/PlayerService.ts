@@ -1,22 +1,22 @@
-import { Client } from "@colyseus/core";
-import { Player } from "../schema/Player";
-import { GameState } from "../schema/GameState";
-import { FullCharacter, PersistenceService } from "./PersistenceService";
-import { InventorySystem } from "../systems/InventorySystem";
-import { SpatialLookup } from "../utils/SpatialLookup";
-import { QuestSystem } from "../systems/QuestSystem";
-import { FriendsSystem } from "../systems/FriendsSystem";
 import {
-  Direction,
-  EXP_TABLE,
-  STARTING_EQUIPMENT,
-  ITEMS,
-  InventoryEntry,
-  EquipmentData,
   ClassType,
+  Direction,
+  type EquipmentData,
+  EXP_TABLE,
+  type InventoryEntry,
+  ITEMS,
+  STARTING_EQUIPMENT,
 } from "@abraxas/shared";
-import { InventoryItem } from "../schema/InventoryItem";
+import type { Client } from "@colyseus/core";
 import { logger } from "../logger";
+import type { GameState } from "../schema/GameState";
+import { InventoryItem } from "../schema/InventoryItem";
+import { Player } from "../schema/Player";
+import type { FriendsSystem } from "../systems/FriendsSystem";
+import type { InventorySystem } from "../systems/InventorySystem";
+import type { QuestSystem } from "../systems/QuestSystem";
+import type { SpatialLookup } from "../utils/SpatialLookup";
+import { type FullCharacter, PersistenceService } from "./PersistenceService";
 
 export class PlayerService {
   constructor(
@@ -67,7 +67,14 @@ export class PlayerService {
     }
 
     const facingStr = char.facing.toUpperCase();
-    player.facing = facingStr === "UP" ? Direction.UP : facingStr === "LEFT" ? Direction.LEFT : facingStr === "RIGHT" ? Direction.RIGHT : Direction.DOWN;
+    player.facing =
+      facingStr === "UP"
+        ? Direction.UP
+        : facingStr === "LEFT"
+          ? Direction.LEFT
+          : facingStr === "RIGHT"
+            ? Direction.RIGHT
+            : Direction.DOWN;
     player.alive = player.hp > 0;
 
     // Starting gear logic
@@ -81,11 +88,21 @@ export class PlayerService {
         if (eq.item?.itemDef) {
           const code = eq.item.itemDef.code;
           switch (eq.slot) {
-            case "WEAPON_MAIN": player.equipWeapon = code; break;
-            case "WEAPON_OFF":  player.equipShield = code; break;
-            case "HEAD":        player.equipHelmet = code; break;
-            case "CHEST":       player.equipArmor = code;  break;
-            case "RING1":       player.equipRing = code;   break;
+            case "WEAPON_MAIN":
+              player.equipWeapon = code;
+              break;
+            case "WEAPON_OFF":
+              player.equipShield = code;
+              break;
+            case "HEAD":
+              player.equipHelmet = code;
+              break;
+            case "CHEST":
+              player.equipArmor = code;
+              break;
+            case "RING1":
+              player.equipRing = code;
+              break;
           }
         }
       }

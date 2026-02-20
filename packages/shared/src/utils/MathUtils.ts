@@ -26,7 +26,7 @@ export const MathUtils = {
       return dy > 0 ? Direction.DOWN : Direction.UP;
     }
   },
-  
+
   // Returns an array of points on the line between p1 and p2 (inclusive of p1, exclusive of p2 or inclusive depending on use)
   getLine(p1: Point, p2: Point): Point[] {
     const points: Point[] = [];
@@ -55,5 +55,5 @@ export const MathUtils = {
       }
     }
     return points;
-  }
+  },
 };

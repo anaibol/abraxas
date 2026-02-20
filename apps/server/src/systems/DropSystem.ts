@@ -1,18 +1,13 @@
-import type { MapSchema } from "@colyseus/schema";
-import type { Player } from "../schema/Player";
-import { Drop } from "../schema/Drop";
-import { InventorySystem } from "./InventorySystem";
 import { DROP_EXPIRY_MS } from "@abraxas/shared";
+import type { MapSchema } from "@colyseus/schema";
+import { Drop } from "../schema/Drop";
+import type { Player } from "../schema/Player";
+import type { InventorySystem } from "./InventorySystem";
 
 export class DropSystem {
   constructor(private inventorySystem: InventorySystem) {}
 
-  private createDrop(
-    drops: MapSchema<Drop>,
-    tileX: number,
-    tileY: number,
-    itemType: string,
-  ): Drop {
+  private createDrop(drops: MapSchema<Drop>, tileX: number, tileY: number, itemType: string): Drop {
     const id = crypto.randomUUID();
     const drop = new Drop();
     drop.id = id;
@@ -37,12 +32,7 @@ export class DropSystem {
     return drop;
   }
 
-  spawnGoldDrop(
-    drops: MapSchema<Drop>,
-    tileX: number,
-    tileY: number,
-    goldAmount: number,
-  ): Drop {
+  spawnGoldDrop(drops: MapSchema<Drop>, tileX: number, tileY: number, goldAmount: number): Drop {
     const drop = this.createDrop(drops, tileX, tileY, "gold");
     drop.goldAmount = goldAmount;
     return drop;

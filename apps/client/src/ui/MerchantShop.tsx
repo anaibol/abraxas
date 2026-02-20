@@ -1,11 +1,12 @@
-import React, { useState } from "react";
-import { Box, Flex, Text, Grid, Input } from "@chakra-ui/react";
-import { Button } from "./components/Button";
 import { ITEMS, type Item } from "@abraxas/shared";
+import { Box, Flex, Grid, Input, Text } from "@chakra-ui/react";
+import type React from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAudio } from "../contexts/AudioContext";
+import { Button } from "./components/Button";
 import { ItemGrid } from "./components/ItemGrid";
-import { T, HEX } from "./tokens";
+import { HEX, T } from "./tokens";
 
 interface MerchantShopProps {
   npcId: string;
@@ -17,8 +18,15 @@ interface MerchantShopProps {
   onClose: () => void;
 }
 
-
-export function MerchantShop({ npcId, merchantInventory, playerGold, playerInventory, onBuy, onSell, onClose }: MerchantShopProps) {
+export function MerchantShop({
+  npcId,
+  merchantInventory,
+  playerGold,
+  playerInventory,
+  onBuy,
+  onSell,
+  onClose,
+}: MerchantShopProps) {
   const { t } = useTranslation();
   const { playUIClick, playUIHover } = useAudio();
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
@@ -64,15 +72,21 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
       `}</style>
 
       <Flex justify="space-between" align="center" mb="6">
-        <Text color={T.gold} fontSize="24px" fontWeight="700" letterSpacing="3px" textShadow={`0 0 10px ${HEX.goldDark}`}>
+        <Text
+          color={T.gold}
+          fontSize="24px"
+          fontWeight="700"
+          letterSpacing="3px"
+          textShadow={`0 0 10px ${HEX.goldDark}`}
+        >
           {t("ui.merchant.title")}
         </Text>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={onClose} 
-          color={T.gold} 
-          p="0" 
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onClose}
+          color={T.gold}
+          p="0"
           minW="32px"
           _hover={{ bg: "whiteAlpha.100", transform: "scale(1.1)" }}
           transition="all 0.2s"
@@ -81,9 +95,20 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
         </Button>
       </Flex>
 
-      <Flex mb="6" justify="space-between" bg="blackAlpha.400" p="3" borderRadius="4px" border="1px solid" borderColor={T.border}>
+      <Flex
+        mb="6"
+        justify="space-between"
+        bg="blackAlpha.400"
+        p="3"
+        borderRadius="4px"
+        border="1px solid"
+        borderColor={T.border}
+      >
         <Text color={T.goldDim} fontSize="14px" fontWeight="bold">
-          {t("ui.merchant.purse")}: <Text as="span" color={T.gold} fontSize="16px" ml="2">{playerGold.toLocaleString()} GP</Text>
+          {t("ui.merchant.purse")}:{" "}
+          <Text as="span" color={T.gold} fontSize="16px" ml="2">
+            {playerGold.toLocaleString()} GP
+          </Text>
         </Text>
       </Flex>
 
@@ -99,8 +124,15 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
           borderBottom={tab === "buy" ? "3px solid" : "none"}
           borderColor={T.gold}
           _hover={{ color: T.gold }}
-          onMouseEnter={() => { if (tab !== "buy") playUIHover?.(); }}
-          onClick={() => { playUIClick?.(); setTab("buy"); setSelectedItem(null); setQuantity(1); }}
+          onMouseEnter={() => {
+            if (tab !== "buy") playUIHover?.();
+          }}
+          onClick={() => {
+            playUIClick?.();
+            setTab("buy");
+            setSelectedItem(null);
+            setQuantity(1);
+          }}
         >
           {t("ui.merchant.tab_buy")}
         </Box>
@@ -115,8 +147,15 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
           borderBottom={tab === "sell" ? "3px solid" : "none"}
           borderColor={T.gold}
           _hover={{ color: T.gold }}
-          onMouseEnter={() => { if (tab !== "sell") playUIHover?.(); }}
-          onClick={() => { playUIClick?.(); setTab("sell"); setSelectedItem(null); setQuantity(1); }}
+          onMouseEnter={() => {
+            if (tab !== "sell") playUIHover?.();
+          }}
+          onClick={() => {
+            playUIClick?.();
+            setTab("sell");
+            setSelectedItem(null);
+            setQuantity(1);
+          }}
         >
           {t("ui.merchant.tab_sell")}
         </Box>
@@ -140,13 +179,19 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
           <>
             {playerInventory.length === 0 && (
               <Box py="10" textAlign="center">
-                <Text color="#555" fontSize="14px" fontStyle="italic">{t("ui.merchant.no_items_sell")}</Text>
+                <Text color="#555" fontSize="14px" fontStyle="italic">
+                  {t("ui.merchant.no_items_sell")}
+                </Text>
               </Box>
             )}
             {playerInventory.length > 0 && (
               <ItemGrid
                 slots={playerInventory.map((item, i) => ({ ...item, slotIndex: i }))}
-                selectedSlotIndex={selectedItem ? playerInventory.findIndex(i => i.itemId === selectedItem.id) : null}
+                selectedSlotIndex={
+                  selectedItem
+                    ? playerInventory.findIndex((i) => i.itemId === selectedItem.id)
+                    : null
+                }
                 onSelect={(slot) => {
                   const item = ITEMS[slot.itemId];
                   if (item) {
@@ -162,37 +207,55 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
       </Box>
 
       {selectedItem && (
-        <Box 
-          mt="8" 
-          p="5" 
-          border="1px solid" 
-          borderColor={T.gold} 
-          borderRadius="6px" 
+        <Box
+          mt="8"
+          p="5"
+          border="1px solid"
+          borderColor={T.gold}
+          borderRadius="6px"
           bg="blackAlpha.600"
           boxShadow={`0 0 20px ${HEX.goldDark}22`}
         >
           <Flex justify="space-between" align="start" mb="4">
             <Box>
-              <Text color={T.gold} fontSize="18px" fontWeight="bold" mb="1">{t(selectedItem.name)}</Text>
+              <Text color={T.gold} fontSize="18px" fontWeight="bold" mb="1">
+                {t(selectedItem.name)}
+              </Text>
               <Text color="whiteAlpha.600" fontSize="12px" letterSpacing="1px">
-                {t(`item_slot.${selectedItem.slot}`).toUpperCase()} | {t(`item_rarity.${selectedItem.rarity}`).toUpperCase()}
+                {t(`item_slot.${selectedItem.slot}`).toUpperCase()} |{" "}
+                {t(`item_rarity.${selectedItem.rarity}`).toUpperCase()}
               </Text>
             </Box>
             <Box textAlign="right">
-              <Text color="#fff" fontSize="12px" mb="1">{t("ui.merchant.unit_price")}</Text>
+              <Text color="#fff" fontSize="12px" mb="1">
+                {t("ui.merchant.unit_price")}
+              </Text>
               <Text color={T.gold} fontSize="16px" fontWeight="bold">
-                {tab === "buy" ? selectedItem.goldValue : Math.floor(selectedItem.goldValue * 0.5)} GP
+                {tab === "buy" ? selectedItem.goldValue : Math.floor(selectedItem.goldValue * 0.5)}{" "}
+                GP
               </Text>
             </Box>
           </Flex>
 
-          <Flex align="center" mb="6" bg="blackAlpha.300" p="3" borderRadius="4px" border="1px solid" borderColor="whiteAlpha.100" flexWrap="wrap" gap="3">
-            <Text color="whiteAlpha.800" fontSize="13px">{t("ui.merchant.quantity")}:</Text>
+          <Flex
+            align="center"
+            mb="6"
+            bg="blackAlpha.300"
+            p="3"
+            borderRadius="4px"
+            border="1px solid"
+            borderColor="whiteAlpha.100"
+            flexWrap="wrap"
+            gap="3"
+          >
+            <Text color="whiteAlpha.800" fontSize="13px">
+              {t("ui.merchant.quantity")}:
+            </Text>
             <Flex align="center" flex="1" minW="120px">
-              <Button 
-                size="sm" 
-                variant="outline" 
-                borderColor={T.goldDark} 
+              <Button
+                size="sm"
+                variant="outline"
+                borderColor={T.goldDark}
                 color={T.gold}
                 _hover={{ bg: T.goldDark, color: "white" }}
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -212,10 +275,10 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
                 color="#fff"
                 _focus={{ borderColor: T.gold, boxShadow: "none" }}
               />
-              <Button 
-                size="sm" 
-                variant="outline" 
-                borderColor={T.goldDark} 
+              <Button
+                size="sm"
+                variant="outline"
+                borderColor={T.goldDark}
                 color={T.gold}
                 _hover={{ bg: T.goldDark, color: "white" }}
                 onClick={() => setQuantity(Math.min(999, quantity + 1))}
@@ -224,9 +287,15 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
               </Button>
             </Flex>
             <Box textAlign="right" ml={{ base: "0", md: "6" }}>
-              <Text color="whiteAlpha.600" fontSize="11px">{t("ui.merchant.total_cost")}</Text>
+              <Text color="whiteAlpha.600" fontSize="11px">
+                {t("ui.merchant.total_cost")}
+              </Text>
               <Text color={T.gold} fontSize="20px" fontWeight="bold">
-                {(tab === "buy" ? selectedItem.goldValue * quantity : Math.floor(selectedItem.goldValue * 0.5) * quantity).toLocaleString()} GP
+                {(tab === "buy"
+                  ? selectedItem.goldValue * quantity
+                  : Math.floor(selectedItem.goldValue * 0.5) * quantity
+                ).toLocaleString()}{" "}
+                GP
               </Text>
             </Box>
           </Flex>

@@ -21,7 +21,13 @@ export function KillFeed({ entries }: KillFeedProps) {
   if (visible.length === 0) return null;
 
   return (
-    <Box pos="fixed" top="12px" right={{ base: "62px", md: "296px" }} zIndex="40" pointerEvents="none">
+    <Box
+      pos="fixed"
+      top="12px"
+      right={{ base: "62px", md: "296px" }}
+      zIndex="40"
+      pointerEvents="none"
+    >
       {visible.map((entry) => (
         <Box
           key={entry.id}
@@ -35,9 +41,13 @@ export function KillFeed({ entries }: KillFeedProps) {
           fontFamily={T.display}
         >
           <Text fontSize="12px" color={T.goldText}>
-            <Text as="span" color={T.bloodBright} fontWeight="700">{entry.killerName}</Text>
-            {" "}{t("kill_feed.killed")}{" "}
-            <Text as="span" color={T.goldMuted} fontWeight="700">{entry.victimName}</Text>
+            <Text as="span" color={T.bloodBright} fontWeight="700">
+              {entry.killerName}
+            </Text>{" "}
+            {t("kill_feed.killed")}{" "}
+            <Text as="span" color={T.goldMuted} fontWeight="700">
+              {entry.victimName}
+            </Text>
           </Text>
         </Box>
       ))}

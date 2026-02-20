@@ -1,4 +1,4 @@
-import i18next, { i18n as I18nType } from "i18next";
+import i18next, { type i18n as I18nType } from "i18next";
 import en from "./locales/en.json";
 import es from "./locales/es.json";
 import fr from "./locales/fr.json";
@@ -19,4 +19,3 @@ i18n.init({
     escapeValue: false,
   },
 });
-

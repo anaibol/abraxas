@@ -9,7 +9,7 @@ export type ButtonProps = ChakraButtonProps & {
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ disableSound, onClick, onMouseEnter, ...props }, ref) => {
     const { playUIClick, playUIHover } = useAudio();
-    
+
     const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
       if (!disableSound && !props.disabled) {
         playUIHover?.();
@@ -25,14 +25,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     return (
-      <ChakraButton
-        ref={ref}
-        onMouseEnter={handleMouseEnter}
-        onClick={handleClick}
-        {...props}
-      />
+      <ChakraButton ref={ref} onMouseEnter={handleMouseEnter} onClick={handleClick} {...props} />
     );
-  }
+  },
 );
 
 Button.displayName = "Button";

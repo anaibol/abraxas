@@ -27,7 +27,7 @@ interface LogEntry {
   [key: string]: unknown;
 }
 
-function log(level: LogEntry["level"], fields: string | (Omit<LogEntry, "timestamp" | "level">)) {
+function log(level: LogEntry["level"], fields: string | Omit<LogEntry, "timestamp" | "level">) {
   if ((LEVELS[level] ?? 0) < currentLevel) return;
 
   const entry: LogEntry = {
@@ -36,10 +36,11 @@ function log(level: LogEntry["level"], fields: string | (Omit<LogEntry, "timesta
     ...(typeof fields === "string" ? { message: fields } : fields),
   };
 
-  const output = LOG_FORMAT === "json" 
-    ? JSON.stringify(entry)
-    : `[${entry.timestamp}] ${entry.level.toUpperCase()} ${entry.message || ""} ${JSON.stringify(typeof fields === "object" ? fields : {})}`;
-  
+  const output =
+    LOG_FORMAT === "json"
+      ? JSON.stringify(entry)
+      : `[${entry.timestamp}] ${entry.level.toUpperCase()} ${entry.message || ""} ${JSON.stringify(typeof fields === "object" ? fields : {})}`;
+
   console.log(output);
 }
 

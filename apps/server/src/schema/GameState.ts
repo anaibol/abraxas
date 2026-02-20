@@ -1,8 +1,8 @@
-import { Schema, type, MapSchema } from "@colyseus/schema";
-import { Player } from "./Player";
+import { MapSchema, Schema, type } from "@colyseus/schema";
 import { Drop } from "./Drop";
-import { Npc } from "./Npc";
 import { Group } from "./Group";
+import { Npc } from "./Npc";
+import { Player } from "./Player";
 
 export class GameState extends Schema {
   @type({ map: Player }) players = new MapSchema<Player>();

@@ -1,11 +1,11 @@
+import { ChatChannel, type ServerMessages, ServerMessageType } from "@abraxas/shared";
 import type { Client } from "@colyseus/core";
-import { ChatChannel, ServerMessageType, type ServerMessages } from "@abraxas/shared";
-import type { Player } from "../schema/Player";
 import { logger } from "../logger";
+import type { Player } from "../schema/Player";
 
 export type BroadcastFn = <T extends ServerMessageType>(
   type: T,
-  payload: ServerMessages[T]
+  payload: ServerMessages[T],
 ) => void;
 
 export class ChatService {
@@ -13,8 +13,16 @@ export class ChatService {
     private broadcast: BroadcastFn,
     private findClientByName: (name: string) => Client | undefined,
     private findClientBySessionId: (sessionId: string) => Client | undefined,
-    private broadcastToGroup: <T extends ServerMessageType>(groupId: string, type: T, msg: ServerMessages[T]) => void,
-    private broadcastToGuild: <T extends ServerMessageType>(guildId: string, type: T, msg: ServerMessages[T]) => void,
+    private broadcastToGroup: <T extends ServerMessageType>(
+      groupId: string,
+      type: T,
+      msg: ServerMessages[T],
+    ) => void,
+    private broadcastToGuild: <T extends ServerMessageType>(
+      guildId: string,
+      type: T,
+      msg: ServerMessages[T],
+    ) => void,
   ) {}
 
   public handleChat(player: Player, message: string): void {

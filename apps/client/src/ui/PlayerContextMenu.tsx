@@ -1,8 +1,8 @@
-import { useEffect, useRef } from "react";
 import { Box, Flex, Text, VStack } from "@chakra-ui/react";
+import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { T } from "./tokens";
 import { useAudio } from "../contexts/AudioContext";
+import { T } from "./tokens";
 
 export type PlayerContextTarget = {
   sessionId: string;
@@ -63,29 +63,46 @@ export function PlayerContextMenu({
     {
       label: t("context_menu.whisper"),
       color: "#cc88ff",
-      onClick: () => { onWhisper(target.name); onClose(); },
+      onClick: () => {
+        onWhisper(target.name);
+        onClose();
+      },
     },
     {
       label: t("context_menu.add_friend"),
       color: T.gold,
-      onClick: () => { onFriendRequest(target.sessionId, target.name); onClose(); },
+      onClick: () => {
+        onFriendRequest(target.sessionId, target.name);
+        onClose();
+      },
     },
     {
       label: t("context_menu.group_invite"),
       color: "#88aaff",
-      onClick: () => { onGroupInvite(target.sessionId); onClose(); },
+      onClick: () => {
+        onGroupInvite(target.sessionId);
+        onClose();
+      },
     },
     {
       label: t("context_menu.trade"),
       color: "#88ffcc",
-      onClick: () => { onTradeRequest(target.sessionId); onClose(); },
+      onClick: () => {
+        onTradeRequest(target.sessionId);
+        onClose();
+      },
     },
     ...(onGMTeleportTo
-      ? [{
-          label: "⬡ Teleport to",
-          color: "#ffaa33",
-          onClick: () => { onGMTeleportTo(target.sessionId); onClose(); },
-        }]
+      ? [
+          {
+            label: "⬡ Teleport to",
+            color: "#ffaa33",
+            onClick: () => {
+              onGMTeleportTo(target.sessionId);
+              onClose();
+            },
+          },
+        ]
       : []),
   ];
 
@@ -137,7 +154,10 @@ export function PlayerContextMenu({
             transition="all 0.1s"
             _hover={{ bg: T.raised }}
             onMouseEnter={() => playUIHover?.()}
-            onClick={() => { playUIClick?.(); action.onClick(); }}
+            onClick={() => {
+              playUIClick?.();
+              action.onClick();
+            }}
           >
             {action.label}
           </Box>

@@ -29,7 +29,7 @@ export interface EntityCombatState {
 export function calcMeleeDamage(
   attackerStr: number,
   defenderArmor: number,
-  defenderAgi: number
+  defenderAgi: number,
 ): { damage: number; dodged: boolean } {
   // Dodge: ~1% per AGI point above 10
   const dodgeChance = Math.max(0, (defenderAgi - 10) * 0.01);
@@ -40,7 +40,7 @@ export function calcMeleeDamage(
   // Base damage scales with attacker STR
   const raw = attackerStr * 1.5;
   // Armor reduction: armor / (armor + 50) formula for diminishing returns
-  const reductionMult = 1 - (defenderArmor / (defenderArmor + 50));
+  const reductionMult = 1 - defenderArmor / (defenderArmor + 50);
   const damage = Math.max(1, Math.round(raw * reductionMult));
   return { damage, dodged: false };
 }
@@ -49,7 +49,7 @@ export function calcMeleeDamage(
 export function calcRangedDamage(
   attackerAgi: number,
   defenderArmor: number,
-  defenderAgi: number
+  defenderAgi: number,
 ): { damage: number; dodged: boolean } {
   // Reduced dodge chance vs ranged
   const dodgeChance = Math.max(0, (defenderAgi - 10) * 0.005);
@@ -58,7 +58,7 @@ export function calcRangedDamage(
   }
 
   const raw = attackerAgi * 1.3;
-  const reductionMult = 1 - (defenderArmor / (defenderArmor + 60)); // Ranged penetrates slightly more
+  const reductionMult = 1 - defenderArmor / (defenderArmor + 60); // Ranged penetrates slightly more
   const damage = Math.max(1, Math.round(raw * reductionMult));
   return { damage, dodged: false };
 }
@@ -68,7 +68,7 @@ export function calcSpellDamage(
   baseDamage: number,
   scalingStat: number,
   scalingRatio: number,
-  defenderInt: number
+  defenderInt: number,
 ): number {
   const raw = baseDamage + scalingStat * scalingRatio;
   // Magic resist: ~0.5% per INT point
@@ -80,7 +80,7 @@ export function calcSpellDamage(
 export function calcHealAmount(
   baseAmount: number,
   casterInt: number,
-  scalingRatio: number
+  scalingRatio: number,
 ): number {
   return Math.max(1, Math.round(baseAmount + casterInt * scalingRatio));
 }

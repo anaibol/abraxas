@@ -1,5 +1,5 @@
-import { useEffect, useRef, type FC, type MouseEvent } from "react";
 import type { TileMap } from "@abraxas/shared";
+import { type FC, type MouseEvent, useEffect, useRef } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
 
 /** Minimal shape the minimap needs — avoids importing server schema into the client. */
@@ -15,7 +15,14 @@ type MinimapProps = {
   onGMClick?: (tileX: number, tileY: number) => void;
 };
 
-export const Minimap: FC<MinimapProps> = ({ map, players, npcs, currentPlayerId, isGM, onGMClick }) => {
+export const Minimap: FC<MinimapProps> = ({
+  map,
+  players,
+  npcs,
+  currentPlayerId,
+  isGM,
+  onGMClick,
+}) => {
   const isMobile = useIsMobile();
   const size = isMobile ? 120 : 200;
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -53,9 +60,7 @@ export const Minimap: FC<MinimapProps> = ({ map, players, npcs, currentPlayerId,
 
     for (let y = 0; y < map.height; y++) {
       for (let x = 0; x < map.width; x++) {
-        const tileType =
-          map.tileTypes?.[y]?.[x] ??
-          (map.collision[y]?.[x] === 1 ? 1 : 0);
+        const tileType = map.tileTypes?.[y]?.[x] ?? (map.collision[y]?.[x] === 1 ? 1 : 0);
         bgCtx.fillStyle = TILE_COLORS[tileType] ?? TILE_COLORS[0];
         bgCtx.fillRect(x, y, 1, 1);
       }
@@ -110,10 +115,16 @@ export const Minimap: FC<MinimapProps> = ({ map, players, npcs, currentPlayerId,
         const isSelf = player.sessionId === currentPlayerId;
         const px = (player.tileX - sX) * TILE_SCALE;
         const py = (player.tileY - sY) * TILE_SCALE;
-        
+
         ctx.fillStyle = isSelf ? "#00ff66" : "#4488ff";
         ctx.beginPath();
-        ctx.arc(px + TILE_SCALE / 2, py + TILE_SCALE / 2, Math.max(2.5, TILE_SCALE * 1.5), 0, Math.PI * 2);
+        ctx.arc(
+          px + TILE_SCALE / 2,
+          py + TILE_SCALE / 2,
+          Math.max(2.5, TILE_SCALE * 1.5),
+          0,
+          Math.PI * 2,
+        );
         ctx.fill();
         if (isSelf) {
           ctx.strokeStyle = "#ffffff";

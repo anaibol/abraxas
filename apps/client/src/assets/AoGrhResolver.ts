@@ -1,4 +1,4 @@
-import Phaser from "phaser";
+import type Phaser from "phaser";
 
 // --- Index JSON types ---
 
@@ -79,7 +79,7 @@ export class AoGrhResolver {
     armas: IndexEntry[],
     escudos: IndexEntry[],
     cascos: IndexEntry[],
-    fxs: IndexEntry[]
+    fxs: IndexEntry[],
   ) {
     this.graficos = graficos;
     this.cuerpos = cuerpos;
@@ -163,7 +163,7 @@ export class AoGrhResolver {
     weaponIds: number[],
     shieldIds: number[],
     helmetIds: number[],
-    fxIds: number[]
+    fxIds: number[],
   ): Set<number> {
     const pngs = new Set<number>();
     const visited = new Set<number>();

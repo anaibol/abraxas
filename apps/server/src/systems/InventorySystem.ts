@@ -1,14 +1,14 @@
 import {
-  ITEMS,
   BASIC_ITEMS_BY_CLASS,
   CLASS_STATS,
-  LEVEL_UP_STATS,
   type EquipmentSlot,
+  ITEMS,
+  LEVEL_UP_STATS,
   MAX_INVENTORY_SLOTS,
-  StatBonuses,
+  type StatBonuses,
 } from "@abraxas/shared";
-import type { Player } from "../schema/Player";
 import { InventoryItem } from "../schema/InventoryItem";
+import type { Player } from "../schema/Player";
 
 /** The subset of Player property keys that hold equipment item IDs. */
 type EquipSlotKey =
@@ -90,11 +90,7 @@ export class InventorySystem {
     return true;
   }
 
-  equipItem(
-    player: Player,
-    itemId: string,
-    onError?: (msg: string) => void,
-  ): boolean {
+  equipItem(player: Player, itemId: string, onError?: (msg: string) => void): boolean {
     const def = ITEMS[itemId];
     if (!def) {
       onError?.("Invalid item");
@@ -140,11 +136,7 @@ export class InventorySystem {
     return false;
   }
 
-  unequipItem(
-    player: Player,
-    slot: EquipmentSlot,
-    onError?: (msg: string) => void,
-  ): boolean {
+  unequipItem(player: Player, slot: EquipmentSlot, onError?: (msg: string) => void): boolean {
     const slotKey = EQUIP_SLOT_MAP[slot];
     if (!slotKey) return false;
 
@@ -158,11 +150,7 @@ export class InventorySystem {
     return true;
   }
 
-  useItem(
-    player: Player,
-    itemId: string,
-    onError?: (msg: string) => void,
-  ): boolean {
+  useItem(player: Player, itemId: string, onError?: (msg: string) => void): boolean {
     const def = ITEMS[itemId];
     if (!def || !def.consumeEffect) {
       onError?.("game.item_not_usable");
@@ -177,10 +165,7 @@ export class InventorySystem {
       player.hp = Math.min(player.maxHp, player.hp + def.consumeEffect.healHp);
     }
     if (def.consumeEffect.healMana) {
-      player.mana = Math.min(
-        player.maxMana,
-        player.mana + def.consumeEffect.healMana,
-      );
+      player.mana = Math.min(player.maxMana, player.mana + def.consumeEffect.healMana);
     }
 
     this.removeItem(player, itemId);

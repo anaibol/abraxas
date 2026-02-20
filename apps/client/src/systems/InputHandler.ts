@@ -1,6 +1,6 @@
+import { ABILITIES, CLASS_STATS, Direction } from "@abraxas/shared";
 import Phaser from "phaser";
 import type { NetworkManager } from "../network/NetworkManager";
-import { Direction, CLASS_STATS, ABILITIES } from "@abraxas/shared";
 
 const KEY_TO_DIRECTION: Record<number, Direction> = {
   [Phaser.Input.Keyboard.KeyCodes.UP]: Direction.UP,
@@ -8,7 +8,6 @@ const KEY_TO_DIRECTION: Record<number, Direction> = {
   [Phaser.Input.Keyboard.KeyCodes.LEFT]: Direction.LEFT,
   [Phaser.Input.Keyboard.KeyCodes.RIGHT]: Direction.RIGHT,
 };
-
 
 type TargetingState =
   | { mode: "spell"; spellId: string; rangeTiles: number }
@@ -32,7 +31,12 @@ export class InputHandler {
   private onEnterTargeting?: (rangeTiles: number) => void;
   private onExitTargeting?: () => void;
   private onInteract?: (tileX: number, tileY: number) => void;
-  private onRightClickTile?: (tileX: number, tileY: number, screenX: number, screenY: number) => void;
+  private onRightClickTile?: (
+    tileX: number,
+    tileY: number,
+    screenX: number,
+    screenY: number,
+  ) => void;
   private onPttStart?: () => void;
   private onPttEnd?: () => void;
   private pttKey!: Phaser.Input.Keyboard.Key;
@@ -202,7 +206,12 @@ export class InputHandler {
 
     if (rightClicked) {
       const tile = getMouseTile();
-      this.onRightClickTile?.(tile.x, tile.y, this.lastRightClickScreenX, this.lastRightClickScreenY);
+      this.onRightClickTile?.(
+        tile.x,
+        tile.y,
+        this.lastRightClickScreenX,
+        this.lastRightClickScreenY,
+      );
     }
 
     for (const { key, spellId, rangeTiles } of this.spellKeys) {

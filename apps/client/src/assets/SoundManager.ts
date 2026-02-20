@@ -1,24 +1,24 @@
-import { gameSettings } from "../settings/gameSettings";
 import Phaser from "phaser";
+import { gameSettings } from "../settings/gameSettings";
 
 // Base volumes baked into each sound; settings scale these.
 const BASE_MUSIC_VOL = 0.15;
 const BASE_SFX: Record<string, number> = {
-  "sfx-step1":  0.4,
-  "sfx-step2":  0.4,
-  "sfx-step3":  0.4,
-  "sfx-step4":  0.4,
-  "sfx-step5":  0.4,
+  "sfx-step1": 0.4,
+  "sfx-step2": 0.4,
+  "sfx-step3": 0.4,
+  "sfx-step4": 0.4,
+  "sfx-step5": 0.4,
   "sfx-attack1": 0.5,
   "sfx-attack2": 0.5,
   "sfx-attack3": 0.5,
-  "sfx-spell":  0.5,
-  "sfx-hit1":    0.5,
-  "sfx-hit2":    0.5,
-  "sfx-hit3":    0.5,
-  "sfx-death":  0.6,
-  "sfx-heal":   0.5,
-  "sfx-click":  0.4,
+  "sfx-spell": 0.5,
+  "sfx-hit1": 0.5,
+  "sfx-hit2": 0.5,
+  "sfx-hit3": 0.5,
+  "sfx-death": 0.6,
+  "sfx-heal": 0.5,
+  "sfx-click": 0.4,
   "sfx-click-hover": 0.2,
   "sfx-click-open": 0.4,
   "sfx-click-close": 0.4,
@@ -37,14 +37,17 @@ export class SoundManager {
   private applyMusicVolume(vol: number) {
     if (!this.music) return;
     // Phaser WebAudioSound / HTML5Sound both expose `setVolume`
-    if (this.music instanceof Phaser.Sound.WebAudioSound || this.music instanceof Phaser.Sound.HTML5AudioSound) {
+    if (
+      this.music instanceof Phaser.Sound.WebAudioSound ||
+      this.music instanceof Phaser.Sound.HTML5AudioSound
+    ) {
       this.music.setVolume(BASE_MUSIC_VOL * vol);
     }
   }
 
   private play(key: string, opts?: Phaser.Types.Sound.SoundConfig) {
     try {
-      const baseVol = BASE_SFX[key] ?? (opts?.volume ?? 0.5);
+      const baseVol = BASE_SFX[key] ?? opts?.volume ?? 0.5;
       const sfxVol = gameSettings.get().sfxVolume;
       this.scene.sound.play(key, { ...opts, volume: baseVol * sfxVol });
     } catch (e) {
@@ -57,17 +60,37 @@ export class SoundManager {
     this.play(`${prefix}${rnd}`, opts);
   }
 
-  playStep()   { this.playRandom("sfx-step", 5); }
-  playAttack() { this.playRandom("sfx-attack", 3); }
-  playSpell()  { this.play("sfx-spell");  }
-  playHit()    { this.playRandom("sfx-hit", 3); }
-  playDeath()  { this.play("sfx-death");  }
-  playHeal()   { this.play("sfx-heal");   }
+  playStep() {
+    this.playRandom("sfx-step", 5);
+  }
+  playAttack() {
+    this.playRandom("sfx-attack", 3);
+  }
+  playSpell() {
+    this.play("sfx-spell");
+  }
+  playHit() {
+    this.playRandom("sfx-hit", 3);
+  }
+  playDeath() {
+    this.play("sfx-death");
+  }
+  playHeal() {
+    this.play("sfx-heal");
+  }
 
-  playUIClick() { this.play("sfx-click"); }
-  playUIHover() { this.play("sfx-click-hover"); }
-  playUIOpen()  { this.play("sfx-click-open"); }
-  playUIClose() { this.play("sfx-click-close"); }
+  playUIClick() {
+    this.play("sfx-click");
+  }
+  playUIHover() {
+    this.play("sfx-click-hover");
+  }
+  playUIOpen() {
+    this.play("sfx-click-open");
+  }
+  playUIClose() {
+    this.play("sfx-click-close");
+  }
 
   startMusic() {
     if (this.music) return;

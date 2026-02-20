@@ -1,9 +1,4 @@
-import {
-  QUESTS,
-  type Quest,
-  type PlayerQuestState,
-  type QuestType,
-} from "@abraxas/shared";
+import { type PlayerQuestState, QUESTS, type Quest, type QuestType } from "@abraxas/shared";
 import { prisma } from "../database/db";
 
 export class QuestSystem {
@@ -90,9 +85,7 @@ export class QuestSystem {
       const questDef = QUESTS[state.questId];
       if (!questDef) continue;
 
-      const relevantReq = questDef.requirements.find(
-        (r) => r.type === type && r.target === target,
-      );
+      const relevantReq = questDef.requirements.find((r) => r.type === type && r.target === target);
       if (!relevantReq) continue;
 
       const current = state.progress[target] || 0;
@@ -172,7 +165,11 @@ export class QuestSystem {
         return {
           text: "dialogue.reward_prompt",
           options: [
-            { text: "dialogue.complete_quest", action: "quest_complete", data: { questId: state.questId } },
+            {
+              text: "dialogue.complete_quest",
+              action: "quest_complete",
+              data: { questId: state.questId },
+            },
           ],
         };
       }

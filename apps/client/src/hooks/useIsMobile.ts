@@ -7,8 +7,7 @@ import { useState } from "react";
 export function useIsMobile(): boolean {
   const [isMobile] = useState(
     () =>
-      typeof window !== "undefined" &&
-      ("ontouchstart" in window || navigator.maxTouchPoints > 0),
+      typeof window !== "undefined" && ("ontouchstart" in window || navigator.maxTouchPoints > 0),
   );
   return isMobile;
 }

@@ -1,5 +1,5 @@
+import { CLASS_APPEARANCE, ITEMS, NPC_APPEARANCE } from "@abraxas/shared";
 import Phaser from "phaser";
-import { CLASS_APPEARANCE, NPC_APPEARANCE, ITEMS } from "@abraxas/shared";
 import { AoGrhResolver } from "../assets/AoGrhResolver";
 
 export class PreloaderScene extends Phaser.Scene {
@@ -76,9 +76,7 @@ export class PreloaderScene extends Phaser.Scene {
     const cascos = this.cache.json.get("idx-cascos");
     const fxs = this.cache.json.get("idx-fxs");
 
-    const resolver = new AoGrhResolver(
-      graficos, cuerpos, cabezas, armas, escudos, cascos, fxs
-    );
+    const resolver = new AoGrhResolver(graficos, cuerpos, cabezas, armas, escudos, cascos, fxs);
 
     const bodyIds = new Set<number>();
     const headIds = new Set<number>();
@@ -111,7 +109,7 @@ export class PreloaderScene extends Phaser.Scene {
       [...weaponIds],
       [...shieldIds],
       [...helmetIds],
-      fxIds
+      fxIds,
     );
 
     this.label.setText(`Loading ${neededPngs.size} graphics...`);

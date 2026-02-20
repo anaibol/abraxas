@@ -1,8 +1,8 @@
-import { Client } from "@colyseus/core";
-import { GameState } from "../schema/GameState";
+import { ServerMessageType } from "@abraxas/shared";
+import type { Client } from "@colyseus/core";
 import { prisma } from "../database/db";
 import { logger } from "../logger";
-import { ServerMessageType } from "@abraxas/shared";
+import type { GameState } from "../schema/GameState";
 
 export class FriendsSystem {
   private onlineUsers = new Map<string, string>(); // userId -> sessionId

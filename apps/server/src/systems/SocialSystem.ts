@@ -1,14 +1,11 @@
-import { Client } from "@colyseus/core";
-import { GameState } from "../schema/GameState";
-import { Player } from "../schema/Player";
+import { type ServerMessages, ServerMessageType } from "@abraxas/shared";
+import type { Client } from "@colyseus/core";
+import type { GameState } from "../schema/GameState";
 import { Group } from "../schema/Group";
-import { ServerMessageType, ServerMessages } from "@abraxas/shared";
+import { Player } from "../schema/Player";
 
 export class SocialSystem {
-  private invitations = new Map<
-    string,
-    { groupId: string; inviterSessionId: string }
-  >();
+  private invitations = new Map<string, { groupId: string; inviterSessionId: string }>();
 
   constructor(
     private state: GameState,

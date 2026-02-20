@@ -36,7 +36,14 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     attackWindupMs: 120,
     armor: 2,
     // Q: fireball | W: ice_bolt | E: thunderstorm (AoE) | R: mana_shield | T: frost_nova (AoE stun) | Y: arcane_surge (nuke)
-    abilities: ["fireball", "ice_bolt", "thunderstorm", "mana_shield", "frost_nova", "arcane_surge"],
+    abilities: [
+      "fireball",
+      "ice_bolt",
+      "thunderstorm",
+      "mana_shield",
+      "frost_nova",
+      "arcane_surge",
+    ],
   },
   RANGER: {
     hp: 160,
@@ -96,18 +103,19 @@ export const CLASS_STATS: Record<string, ClassStats> = {
   },
 };
 
-export const LEVEL_UP_STATS: Record<string, { str: number; agi: number; int: number; hp: number; mana: number }> = {
+export const LEVEL_UP_STATS: Record<
+  string,
+  { str: number; agi: number; int: number; hp: number; mana: number }
+> = {
   WARRIOR: { str: 3, agi: 1, int: 0, hp: 30, mana: 5 },
-  MAGE:    { str: 0, agi: 1, int: 3, hp: 18, mana: 20 },
-  RANGER:  { str: 1, agi: 3, int: 0, hp: 22, mana: 10 },
-  ROGUE:   { str: 1, agi: 3, int: 0, hp: 22, mana: 8 },
-  CLERIC:  { str: 1, agi: 0, int: 3, hp: 26, mana: 15 },
+  MAGE: { str: 0, agi: 1, int: 3, hp: 18, mana: 20 },
+  RANGER: { str: 1, agi: 3, int: 0, hp: 22, mana: 10 },
+  ROGUE: { str: 1, agi: 3, int: 0, hp: 22, mana: 8 },
+  CLERIC: { str: 1, agi: 0, int: 3, hp: 26, mana: 15 },
   PALADIN: { str: 2, agi: 0, int: 2, hp: 28, mana: 12 },
 };
 
 export const EXP_TABLE = [
-  0, 100, 250, 450, 700, 1000, 1350, 1750, 2200, 2700,
-  3250, 3850, 4500, 5200, 5950, 6750, 7600, 8500, 9450, 10450,
+  0, 100, 250, 450, 700, 1000, 1350, 1750, 2200, 2700, 3250, 3850, 4500, 5200, 5950, 6750, 7600,
+  8500, 9450, 10450,
 ];
-
-

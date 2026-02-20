@@ -1,8 +1,7 @@
+import type { Ability, NpcStats, NpcType } from "@abraxas/shared";
+import { ABILITIES, NPC_STATS, NpcState } from "@abraxas/shared";
 import { type } from "@colyseus/schema";
 import { Char } from "./Char";
-import { NPC_STATS, ABILITIES } from "@abraxas/shared";
-import { NpcState } from "@abraxas/shared";
-import type { NpcType, NpcStats, Ability } from "@abraxas/shared";
 
 export class Npc extends Char {
   @type("string") type: NpcType = "orc";

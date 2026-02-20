@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import { Flex, Text } from "@chakra-ui/react";
-import { useTranslation } from "react-i18next";
 import { PLAYER_RESPAWN_TIME_MS } from "@abraxas/shared";
+import { Flex, Text } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { T } from "./tokens";
 
 interface DeathOverlayProps {

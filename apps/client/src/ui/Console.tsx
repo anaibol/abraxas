@@ -1,5 +1,5 @@
-import { Box, Text, HStack } from "@chakra-ui/react";
-import { useEffect, useRef, useState, useMemo } from "react";
+import { Box, HStack, Text } from "@chakra-ui/react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { T } from "./tokens";
 
@@ -20,14 +20,14 @@ interface ConsoleProps {
 }
 
 const GM_COMMANDS: { usage: string; desc: string }[] = [
-  { usage: "/gm heal",                  desc: "Restore HP & mana to full" },
-  { usage: "/gm item <id> [qty]",       desc: "Give yourself an item" },
-  { usage: "/gm gold <amount>",         desc: "Give yourself gold" },
-  { usage: "/gm xp <amount>",           desc: "Give yourself XP" },
-  { usage: "/gm tp <x> <y>",           desc: "Teleport to tile coordinates" },
-  { usage: "/gm goto <name>",           desc: "Teleport to a player" },
-  { usage: "/gm spawn <npcType>",       desc: "Spawn an NPC in front of you" },
-  { usage: "/gm announce <msg>",        desc: "Broadcast a server message" },
+  { usage: "/gm heal", desc: "Restore HP & mana to full" },
+  { usage: "/gm item <id> [qty]", desc: "Give yourself an item" },
+  { usage: "/gm gold <amount>", desc: "Give yourself gold" },
+  { usage: "/gm xp <amount>", desc: "Give yourself XP" },
+  { usage: "/gm tp <x> <y>", desc: "Teleport to tile coordinates" },
+  { usage: "/gm goto <name>", desc: "Teleport to a player" },
+  { usage: "/gm spawn <npcType>", desc: "Spawn an NPC in front of you" },
+  { usage: "/gm announce <msg>", desc: "Broadcast a server message" },
 ];
 
 type Channel = "all" | "global" | "group" | "whisper" | "system" | "combat";
@@ -52,9 +52,7 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
   const gmHints = useMemo(() => {
     if (!isGM || !inputValue.startsWith("/gm")) return [];
     const sub = inputValue.slice(3).trimStart().split(" ")[0].toLowerCase();
-    return GM_COMMANDS.filter(c =>
-      sub === "" || c.usage.split(" ")[1]?.startsWith(sub),
-    );
+    return GM_COMMANDS.filter((c) => sub === "" || c.usage.split(" ")[1]?.startsWith(sub));
   }, [isGM, inputValue]);
 
   useEffect(() => {
@@ -62,21 +60,27 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
       setInputValue(prefillMessage);
       requestAnimationFrame(() => {
         const el = inputRef.current;
-        if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+        if (el) {
+          el.focus();
+          el.setSelectionRange(el.value.length, el.value.length);
+        }
       });
     }
   }, [prefillMessage, isChatOpen]);
 
   const filteredMessages = useMemo(() => {
     if (activeChannel === "all") return messages;
-    return messages.filter(m => m.channel === activeChannel || (activeChannel === "system" && !m.channel));
+    return messages.filter(
+      (m) => m.channel === activeChannel || (activeChannel === "system" && !m.channel),
+    );
   }, [messages, activeChannel]);
 
   useEffect(() => {
     if (filteredMessages.length === 0) return;
     const container = bottomRef.current?.parentElement;
     if (container) {
-      const isVisible = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
+      const isVisible =
+        container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
       if (isVisible) {
         bottomRef.current?.scrollIntoView({ behavior: "auto" });
       }
@@ -113,7 +117,10 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
       setTabIndex(nextIndex);
       const cmd = gmHints[nextIndex].usage;
       // Fill up to the first placeholder (strip < ... > args)
-      const base = cmd.replace(/<[^>]+>/g, "").replace(/\[[^\]]+\]/g, "").trimEnd();
+      const base = cmd
+        .replace(/<[^>]+>/g, "")
+        .replace(/\[[^\]]+\]/g, "")
+        .trimEnd();
       setInputValue(base);
       return;
     }
@@ -148,8 +155,13 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
       flexDirection="column"
     >
       {/* Tabs */}
-      <HStack gap="0" bg="rgba(0,0,0,0.3)" borderBottom="1px solid rgba(255,255,255,0.1)" overflow="hidden">
-        {TABS.map(tab => (
+      <HStack
+        gap="0"
+        bg="rgba(0,0,0,0.3)"
+        borderBottom="1px solid rgba(255,255,255,0.1)"
+        overflow="hidden"
+      >
+        {TABS.map((tab) => (
           <Box
             key={tab.id}
             px={{ base: "2", md: "3" }}
@@ -171,26 +183,38 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
         ))}
       </HStack>
 
-      <Box flex="1" overflowY="auto" p="10px" css={{
-        "&::-webkit-scrollbar": { width: "4px" },
-        "&::-webkit-scrollbar-thumb": { background: "rgba(255,255,255,0.2)" }
-      }}>
+      <Box
+        flex="1"
+        overflowY="auto"
+        p="10px"
+        css={{
+          "&::-webkit-scrollbar": { width: "4px" },
+          "&::-webkit-scrollbar-thumb": { background: "rgba(255,255,255,0.2)" },
+        }}
+      >
         {filteredMessages.map((msg) => (
-            <Text
-                key={msg.id}
-                color={msg.color || "white"}
-                fontSize="13px"
-                mb={0.5}
-                lineHeight="1.2"
-                textShadow="1px 1px 0 #000"
-            >
-            <span style={{ opacity: 0.4, fontSize: "11px" }}>[{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}]</span>{" "}
+          <Text
+            key={msg.id}
+            color={msg.color || "white"}
+            fontSize="13px"
+            mb={0.5}
+            lineHeight="1.2"
+            textShadow="1px 1px 0 #000"
+          >
+            <span style={{ opacity: 0.4, fontSize: "11px" }}>
+              [
+              {new Date(msg.timestamp).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+              ]
+            </span>{" "}
             {msg.text}
-            </Text>
+          </Text>
         ))}
         <div ref={bottomRef} />
       </Box>
-      
+
       {isChatOpen && gmHints.length > 0 && (
         <Box
           bg="rgba(8, 6, 18, 0.96)"
@@ -219,30 +243,37 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
           </Text>
         </Box>
       )}
-      <Box 
-        h={isChatOpen ? "40px" : "0px"} 
-        transition="height 0.1s" 
+      <Box
+        h={isChatOpen ? "40px" : "0px"}
+        transition="height 0.1s"
         overflow="hidden"
         bg="rgba(0,0,0,0.5)"
       >
-          <input
-            ref={inputRef}
-            type="text"
-            value={inputValue}
-            onChange={(e) => { setInputValue(e.target.value); setTabIndex(-1); }}
-            onKeyDown={handleKeyDown}
-            style={{
-                width: "100%",
-                height: "100%",
-                background: "transparent",
-                border: "none",
-                color: "white",
-                padding: "0 10px",
-                outline: "none",
-                fontSize: "13px"
-            }}
-            placeholder={activeChannel === "group" ? t("console.placeholder_group") : t("console.placeholder_default")}
-          />
+        <input
+          ref={inputRef}
+          type="text"
+          value={inputValue}
+          onChange={(e) => {
+            setInputValue(e.target.value);
+            setTabIndex(-1);
+          }}
+          onKeyDown={handleKeyDown}
+          style={{
+            width: "100%",
+            height: "100%",
+            background: "transparent",
+            border: "none",
+            color: "white",
+            padding: "0 10px",
+            outline: "none",
+            fontSize: "13px",
+          }}
+          placeholder={
+            activeChannel === "group"
+              ? t("console.placeholder_group")
+              : t("console.placeholder_default")
+          }
+        />
       </Box>
     </Box>
   );

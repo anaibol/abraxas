@@ -1,7 +1,7 @@
-import { Box } from "@chakra-ui/react";
-import { useCallback, useRef } from "react";
 import { Direction } from "@abraxas/shared";
-import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Swords } from "lucide-react";
+import { Box } from "@chakra-ui/react";
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Swords } from "lucide-react";
+import { useCallback, useRef } from "react";
 import { T } from "./tokens";
 
 type SpellSlot = {
@@ -254,7 +254,10 @@ export function MobileControls({ onMove, onAttack, onSpell, spells }: MobileCont
           color="rgba(220, 80, 80, 0.95)"
           userSelect="none"
           cursor="pointer"
-          onPointerDown={(e: React.PointerEvent) => { e.preventDefault(); onAttack(); }}
+          onPointerDown={(e: React.PointerEvent) => {
+            e.preventDefault();
+            onAttack();
+          }}
           _active={{ bg: BTN_ACTIVE_BG, border: BTN_ACTIVE_BORDER }}
         >
           <Swords size={20} />

@@ -1,7 +1,7 @@
-import { GameState } from "../schema/GameState";
-import { Player } from "../schema/Player";
-import { Npc } from "../schema/Npc";
 import { MathUtils } from "@abraxas/shared";
+import type { GameState } from "../schema/GameState";
+import type { Npc } from "../schema/Npc";
+import { Player } from "../schema/Player";
 
 /** Union of all concrete entity types that live in the game world. */
 export type Entity = Player | Npc;
@@ -67,8 +67,7 @@ export class SpatialLookup {
   }
 
   findEntityBySessionId(sessionId: string): Entity | undefined {
-    if (this.state.players.has(sessionId))
-      return this.state.players.get(sessionId);
+    if (this.state.players.has(sessionId)) return this.state.players.get(sessionId);
     if (this.state.npcs.has(sessionId)) return this.state.npcs.get(sessionId);
     return undefined;
   }
@@ -82,24 +81,14 @@ export class SpatialLookup {
     // Return first entity found in cell
     for (const sessionId of cell) {
       const entity = this.findEntityBySessionId(sessionId);
-      if (
-        entity &&
-        entity.alive &&
-        entity.tileX === x &&
-        entity.tileY === y
-      ) {
+      if (entity && entity.alive && entity.tileX === x && entity.tileY === y) {
         return entity;
       }
     }
     return undefined;
   }
 
-  findEntitiesInRadius(
-    cx: number,
-    cy: number,
-    radius: number,
-    excludeId?: string,
-  ): Entity[] {
+  findEntitiesInRadius(cx: number, cy: number, radius: number, excludeId?: string): Entity[] {
     const result: Entity[] = [];
 
     // Optimization: Only check tiles within manhattan radius

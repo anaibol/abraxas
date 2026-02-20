@@ -1,26 +1,55 @@
-import { useEffect } from "react";
-import type { Room } from "@colyseus/sdk";
-import { 
-  ServerMessageType, 
-  ITEMS, 
-  type ServerMessages, 
-  type PlayerQuestState, 
-  type TradeState 
+import {
+  ITEMS,
+  type PlayerQuestState,
+  type ServerMessages,
+  ServerMessageType,
+  type TradeState,
 } from "@abraxas/shared";
+import type { Room } from "@colyseus/sdk";
+import { useEffect } from "react";
 import type { GameState } from "../../../server/src/schema/GameState";
-import { type NetworkManager } from "../network/NetworkManager";
-import { type KillStats } from "../ui/ScoreboardOverlay";
+import type { NetworkManager } from "../network/NetworkManager";
+import type { KillStats } from "../ui/ScoreboardOverlay";
 import { toaster } from "../ui/toaster";
 
 export type RoomListenerCallbacks = {
   t: (key: string, options?: Record<string, unknown>) => string;
-  addConsoleMessage: (text: string, color?: string, channel?: "global" | "group" | "whisper" | "system" | "combat") => void;
+  addConsoleMessage: (
+    text: string,
+    color?: string,
+    channel?: "global" | "group" | "whisper" | "system" | "combat",
+  ) => void;
   setShopData: (data: { npcId: string; inventory: string[] } | null) => void;
-  setDialogueData: (data: { npcId: string; text: string; options: { text: string; action: string; data?: unknown }[] } | null) => void;
+  setDialogueData: (
+    data: {
+      npcId: string;
+      text: string;
+      options: { text: string; action: string; data?: unknown }[];
+    } | null,
+  ) => void;
   setQuests: (fn: (prev: PlayerQuestState[]) => PlayerQuestState[]) => void;
-  setGroupData: (data: { groupId: string; leaderId: string; members: { sessionId: string; name: string }[] } | null) => void;
-  setGuildData: (data: { guildId: string; name: string; members: { sessionId?: string; name: string; role: "LEADER" | "OFFICER" | "MEMBER"; online: boolean }[] } | null) => void;
-  setBankData: (data: { items: { itemId: string; quantity: number; slotIndex: number }[] } | null) => void;
+  setGroupData: (
+    data: {
+      groupId: string;
+      leaderId: string;
+      members: { sessionId: string; name: string }[];
+    } | null,
+  ) => void;
+  setGuildData: (
+    data: {
+      guildId: string;
+      name: string;
+      members: {
+        sessionId?: string;
+        name: string;
+        role: "LEADER" | "OFFICER" | "MEMBER";
+        online: boolean;
+      }[];
+    } | null,
+  ) => void;
+  setBankData: (
+    data: { items: { itemId: string; quantity: number; slotIndex: number }[] } | null,
+  ) => void;
   setTradeData: (data: TradeState | null) => void;
   setKillStats: (fn: (prev: Record<string, KillStats>) => Record<string, KillStats>) => void;
   networkRef: { current: NetworkManager | null };
@@ -35,10 +64,17 @@ export function useRoomListeners(
     if (!room || !network) return;
 
     const {
-      t, addConsoleMessage,
-      setShopData, setDialogueData, setQuests,
-      setGroupData, setGuildData, setBankData, setTradeData,
-      setKillStats, networkRef,
+      t,
+      addConsoleMessage,
+      setShopData,
+      setDialogueData,
+      setQuests,
+      setGroupData,
+      setGuildData,
+      setBankData,
+      setTradeData,
+      setKillStats,
+      networkRef,
     } = cb;
 
     // Collect individual unsubscribers so cleanup only removes these handlers
@@ -69,13 +105,9 @@ export function useRoomListeners(
 
     on(ServerMessageType.Chat, (data) => {
       const color =
-        data.channel === "group" ? "#aaaaff"
-        : data.channel === "whisper" ? "#ff88ff"
-        : "#ffffff";
+        data.channel === "group" ? "#aaaaff" : data.channel === "whisper" ? "#ff88ff" : "#ffffff";
       const channel =
-        data.channel === "group" ? "group"
-        : data.channel === "whisper" ? "whisper"
-        : "global";
+        data.channel === "group" ? "group" : data.channel === "whisper" ? "whisper" : "global";
       addConsoleMessage(`${data.senderName}: ${data.message}`, color, channel);
     });
 
@@ -119,7 +151,10 @@ export function useRoomListeners(
     on(ServerMessageType.GuildInvited, (data) => {
       toaster.create({
         title: t("sidebar.tabs.guild", { defaultValue: "Guild" }),
-        description: t("social.invited_to_guild", { name: data.inviterName, guild: data.guildName }),
+        description: t("social.invited_to_guild", {
+          name: data.inviterName,
+          guild: data.guildName,
+        }),
         action: {
           label: t("sidebar.friends.accept", { defaultValue: "Accept" }),
           onClick: () => network.sendGuildAccept(data.guildId),

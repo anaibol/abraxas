@@ -1,10 +1,10 @@
+import { CLASS_STATS } from "@abraxas/shared";
 import { createEndpoint } from "@colyseus/core";
 import { z } from "zod";
-import { CLASS_STATS } from "@abraxas/shared";
+import { generateToken, hashPassword, verifyPassword, verifyToken } from "./database/auth";
+import { prisma } from "./database/db";
 import { CharacterClass } from "./generated/prisma";
 import { logger } from "./logger";
-import { hashPassword, generateToken, verifyPassword, verifyToken } from "./database/auth";
-import { prisma } from "./database/db";
 
 function extractBearerToken(req: Request): string | null {
   const authHeader = req.headers.get("authorization");

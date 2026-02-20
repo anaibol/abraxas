@@ -1,57 +1,64 @@
+import type {
+  ClassType,
+  Direction,
+  PlayerQuestState,
+  ServerMessages,
+  TileMap,
+  TradeState,
+} from "@abraxas/shared";
 import {
+  ABILITIES,
+  CLASS_STATS,
+  getRandomName,
+  ITEMS,
+  type ServerMessageType,
+} from "@abraxas/shared";
+import {
+  Box,
   ChakraProvider,
+  Flex,
+  ToastCloseTrigger,
+  ToastDescription,
   Toaster,
   ToastRoot,
   ToastTitle,
-  ToastDescription,
-  ToastCloseTrigger,
 } from "@chakra-ui/react";
-import { Box, Flex } from "@chakra-ui/react";
-import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import type { Room } from "@colyseus/sdk";
+import { Menu, MessageCircle } from "lucide-react";
+import Phaser from "phaser";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import type { GameState } from "../../../server/src/schema/GameState";
+import { useAudio } from "../contexts/AudioContext";
 import { useConsoleMessages } from "../hooks/useConsoleMessages";
 import { useGameKeyboard } from "../hooks/useGameKeyboard";
-import { useRoomListeners, type RoomListenerCallbacks } from "../hooks/useRoomListeners";
-import { useTranslation } from "react-i18next";
-import { system } from "./theme";
-import { T, HEX } from "./tokens";
-import { toaster } from "./toaster";
-import { Lobby } from "./Lobby";
+import { useGameSettings } from "../hooks/useGameSettings";
+import { useIsMobile } from "../hooks/useIsMobile";
+import { type RoomListenerCallbacks, useRoomListeners } from "../hooks/useRoomListeners";
+import { AudioManager } from "../managers/AudioManager";
+import { NetworkManager } from "../network/NetworkManager";
+import { GameScene } from "../scenes/GameScene";
+import { PreloaderScene } from "../scenes/PreloaderScene";
+import { BankWindow } from "./BankWindow";
+import { Console } from "./Console";
+import { DeathOverlay } from "./DeathOverlay";
+import { DropQuantityDialog } from "./DropQuantityDialog";
+import { KillFeed, type KillFeedEntry } from "./KillFeed";
 import { LoadingScreen } from "./LoadingScreen";
+import { Lobby } from "./Lobby";
+import { MerchantShop } from "./MerchantShop";
+import { Minimap } from "./Minimap";
+import { MobileControls } from "./MobileControls";
+import { PlayerContextMenu, type PlayerContextTarget } from "./PlayerContextMenu";
+import { QuestDialogue } from "./QuestDialogue";
+import { type KillStats, ScoreboardOverlay } from "./ScoreboardOverlay";
+import { SettingsModal } from "./SettingsModal";
 import { Sidebar } from "./Sidebar";
 import type { PlayerState } from "./sidebar/types";
-import { DeathOverlay } from "./DeathOverlay";
-import { KillFeed, type KillFeedEntry } from "./KillFeed";
-import { Console } from "./Console";
-import { Minimap } from "./Minimap";
-import { ScoreboardOverlay, type KillStats } from "./ScoreboardOverlay";
-import { MerchantShop } from "./MerchantShop";
-import { BankWindow } from "./BankWindow";
 import { TradeWindow } from "./TradeWindow";
-import { DropQuantityDialog } from "./DropQuantityDialog";
-import type {
-  ClassType,
-  TileMap,
-  PlayerQuestState,
-  ServerMessages,
-  TradeState,
-  Direction,
-} from "@abraxas/shared";
-import { getRandomName, ServerMessageType, ITEMS, CLASS_STATS, ABILITIES } from "@abraxas/shared";
-import { QuestDialogue } from "./QuestDialogue";
-import { MobileControls } from "./MobileControls";
-import { SettingsModal } from "./SettingsModal";
-import { useIsMobile } from "../hooks/useIsMobile";
-import { useGameSettings } from "../hooks/useGameSettings";
-import { NetworkManager } from "../network/NetworkManager";
-import { Menu, MessageCircle } from "lucide-react";
-import { AudioManager } from "../managers/AudioManager";
-import Phaser from "phaser";
-import { PreloaderScene } from "../scenes/PreloaderScene";
-import { GameScene } from "../scenes/GameScene";
-import { PlayerContextMenu, type PlayerContextTarget } from "./PlayerContextMenu";
-import type { GameState } from "../../../server/src/schema/GameState";
-import type { Room } from "@colyseus/sdk";
-import { useAudio } from "../contexts/AudioContext";
+import { system } from "./theme";
+import { toaster } from "./toaster";
+import { HEX, T } from "./tokens";
 
 export function App() {
   const { setSoundManager } = useAudio();
@@ -72,7 +79,11 @@ export function App() {
   const [deathTime, setDeathTime] = useState(0);
   const [showDeath, setShowDeath] = useState(false);
   const [killFeed, setKillFeed] = useState<KillFeedEntry[]>([]);
-  const { messages: consoleMessages, add: addConsoleMessage, reset: resetConsoleMessages } = useConsoleMessages();
+  const {
+    messages: consoleMessages,
+    add: addConsoleMessage,
+    reset: resetConsoleMessages,
+  } = useConsoleMessages();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [mapData, setMapData] = useState<TileMap | null>(null);
   const [shopData, setShopData] = useState<{
@@ -84,13 +95,18 @@ export function App() {
     leaderId: string;
     members: { sessionId: string; name: string }[];
   } | null>(null);
-  const [friendsData, setFriendsData] = useState<
-    { id: string; name: string; online: boolean }[]
-  >([]);
+  const [friendsData, setFriendsData] = useState<{ id: string; name: string; online: boolean }[]>(
+    [],
+  );
   const [guildData, setGuildData] = useState<{
     guildId: string;
     name: string;
-    members: { sessionId?: string; name: string; role: "LEADER" | "OFFICER" | "MEMBER"; online: boolean }[];
+    members: {
+      sessionId?: string;
+      name: string;
+      role: "LEADER" | "OFFICER" | "MEMBER";
+      online: boolean;
+    }[];
   } | null>(null);
   const [pendingFriendRequests, setPendingFriendRequests] = useState<
     { id: string; name: string }[]
@@ -167,9 +183,7 @@ export function App() {
   useEffect(() => {
     if (killFeed.length === 0) return;
     const timer = setTimeout(() => {
-      setKillFeed((prev) =>
-        prev.filter((e) => Date.now() - e.timestamp < 8000),
-      );
+      setKillFeed((prev) => prev.filter((e) => Date.now() - e.timestamp < 8000));
     }, 8000);
     return () => clearTimeout(timer);
   }, [killFeed]);
@@ -184,7 +198,6 @@ export function App() {
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [phase]);
-
 
   useEffect(() => {
     const game = phaserGameRef.current;
@@ -215,14 +228,8 @@ export function App() {
     };
   }, []);
 
-
   const handleJoin = useCallback(
-    async (
-      charId: string,
-      classType: ClassType,
-      token: string,
-      mapName?: string,
-    ) => {
+    async (charId: string, classType: ClassType, token: string, mapName?: string) => {
       setConnecting(true);
       if (mapName) setIsLoading(true); // If warping, show loading
 
@@ -281,7 +288,6 @@ export function App() {
           color: "#ffff00",
           timestamp: Date.now(),
         });
-
 
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
@@ -380,7 +386,9 @@ export function App() {
         canvas.removeEventListener("contextmenu", cleanup);
         window.removeEventListener("keydown", onEsc);
       };
-      const onEsc = (e: KeyboardEvent) => { if (e.key === "Escape") cleanup(); };
+      const onEsc = (e: KeyboardEvent) => {
+        if (e.key === "Escape") cleanup();
+      };
       canvas.addEventListener("pointerdown", cleanup);
       canvas.addEventListener("contextmenu", cleanup);
       window.addEventListener("keydown", onEsc);
@@ -392,7 +400,9 @@ export function App() {
     if (!classStats) return [];
     return classStats.abilities.flatMap((abilityId) => {
       const ability = ABILITIES[abilityId];
-      return ability ? [{ key: ability.key, spellId: ability.id, rangeTiles: ability.rangeTiles }] : [];
+      return ability
+        ? [{ key: ability.key, spellId: ability.id, rangeTiles: ability.rangeTiles }]
+        : [];
     });
   }, [playerState.classType]);
 
@@ -411,7 +421,6 @@ export function App() {
     if (!(scene instanceof GameScene)) return;
     scene?.triggerAttack();
   }, []);
-
 
   const handleSendChat = (msg: string) => {
     setIsChatOpen(false);
@@ -448,28 +457,17 @@ export function App() {
             <ToastTitle color="white" fontWeight="bold">
               {toast.title}
             </ToastTitle>
-            <ToastDescription color="whiteAlpha.900">
-              {toast.description}
-            </ToastDescription>
+            <ToastDescription color="whiteAlpha.900">{toast.description}</ToastDescription>
             <ToastCloseTrigger color="white" />
           </ToastRoot>
         )}
       </Toaster>
-      {phase === "lobby" && (
-        <Lobby onJoin={handleJoin} connecting={connecting} />
-      )}
+      {phase === "lobby" && <Lobby onJoin={handleJoin} connecting={connecting} />}
       {phase === "game" && mapData && (
         <>
           {isLoading && <LoadingScreen />}
           <Flex pos="fixed" inset="0" bg={T.darkest}>
-            <Box
-              ref={gameContainerRef}
-              flex="1"
-              h="100%"
-              minW="0"
-              overflow="hidden"
-              pos="relative"
-            >
+            <Box ref={gameContainerRef} flex="1" h="100%" minW="0" overflow="hidden" pos="relative">
               {roomRef.current && gameSettingsState.showMinimap && (
                 <Minimap
                   map={mapData}
@@ -497,7 +495,10 @@ export function App() {
                   justifyContent="center"
                   color="rgba(212, 168, 67, 0.9)"
                   cursor="pointer"
-                  onPointerDown={(e) => { e.preventDefault(); setIsSidebarOpen((v) => !v); }}
+                  onPointerDown={(e) => {
+                    e.preventDefault();
+                    setIsSidebarOpen((v) => !v);
+                  }}
                 >
                   <Menu size={22} />
                 </Box>
@@ -529,7 +530,10 @@ export function App() {
                 pendingFriendRequests={pendingFriendRequests}
                 onFriendRequest={(name: string) => networkRef.current?.sendFriendRequest(name)}
                 onFriendAccept={(rid: string) => networkRef.current?.sendFriendAccept(rid)}
-                onWhisper={(name: string) => { setChatPrefill(`/w ${name} `); setIsChatOpen(true); }}
+                onWhisper={(name: string) => {
+                  setChatPrefill(`/w ${name} `);
+                  setIsChatOpen(true);
+                }}
                 onTradeRequest={(sid: string) => networkRef.current?.sendTradeRequest(sid)}
                 selectedItemId={selectedItemId}
                 onSelectItem={setSelectedItemId}
@@ -546,12 +550,8 @@ export function App() {
                 merchantInventory={shopData.inventory}
                 playerGold={playerState.gold ?? 0}
                 playerInventory={playerState.inventory ?? []}
-                onBuy={(itemId, qty) =>
-                  networkRef.current?.sendBuyItem(itemId, qty)
-                }
-                onSell={(itemId, qty) =>
-                  networkRef.current?.sendSellItem(itemId, qty)
-                }
+                onBuy={(itemId, qty) => networkRef.current?.sendBuyItem(itemId, qty)}
+                onSell={(itemId, qty) => networkRef.current?.sendSellItem(itemId, qty)}
                 onClose={() => setShopData(null)}
               />
             )}
@@ -560,9 +560,7 @@ export function App() {
                 npcId={dialogueData.npcId}
                 text={dialogueData.text}
                 options={dialogueData.options}
-                onAction={(action, data) =>
-                  networkRef.current?.getRoom().send(action, data)
-                }
+                onAction={(action, data) => networkRef.current?.getRoom().send(action, data)}
                 onClose={() => setDialogueData(null)}
               />
             )}
@@ -591,11 +589,13 @@ export function App() {
             <ScoreboardOverlay
               visible={showScoreboard}
               killStats={killStats}
-              onlinePlayers={Array.from(roomRef.current.state?.players?.values() ?? []).map((p) => ({
-                name: p.name,
-                classType: p.classType,
-                alive: p.alive,
-              }))}
+              onlinePlayers={Array.from(roomRef.current.state?.players?.values() ?? []).map(
+                (p) => ({
+                  name: p.name,
+                  classType: p.classType,
+                  alive: p.alive,
+                }),
+              )}
               myName={playerState.name}
               myLevel={playerState.level ?? 1}
             />
@@ -604,7 +604,10 @@ export function App() {
           <Console
             messages={consoleMessages}
             isChatOpen={isChatOpen}
-            onSendChat={(msg) => { setChatPrefill(undefined); handleSendChat(msg); }}
+            onSendChat={(msg) => {
+              setChatPrefill(undefined);
+              handleSendChat(msg);
+            }}
             prefillMessage={chatPrefill}
             isGM={isGM}
           />
@@ -625,7 +628,10 @@ export function App() {
               justifyContent="center"
               color="rgba(212, 168, 67, 0.9)"
               cursor="pointer"
-              onPointerDown={(e) => { e.preventDefault(); setIsChatOpen(true); }}
+              onPointerDown={(e) => {
+                e.preventDefault();
+                setIsChatOpen(true);
+              }}
             >
               <MessageCircle size={20} />
             </Box>
@@ -650,9 +656,7 @@ export function App() {
               onCancel={() => networkRef.current?.sendTradeCancel()}
             />
           )}
-          {showSettings && (
-            <SettingsModal onClose={() => setShowSettings(false)} />
-          )}
+          {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
         </>
       )}
 
@@ -660,15 +664,22 @@ export function App() {
       {playerContextMenu && (
         <PlayerContextMenu
           target={playerContextMenu}
-          onWhisper={(name) => { setChatPrefill(`/w ${name} `); setIsChatOpen(true); }}
+          onWhisper={(name) => {
+            setChatPrefill(`/w ${name} `);
+            setIsChatOpen(true);
+          }}
           onFriendRequest={(_, name) => networkRef.current?.sendFriendRequest(name)}
           onGroupInvite={(sid) => networkRef.current?.sendGroupInvite(sid)}
           onTradeRequest={(sid) => networkRef.current?.sendTradeRequest(sid)}
           onClose={() => setPlayerContextMenu(null)}
-          onGMTeleportTo={isGM ? (sid) => {
-            const target = roomRef.current?.state.players.get(sid);
-            if (target) networkRef.current?.sendGMTeleport(target.tileX, target.tileY);
-          } : undefined}
+          onGMTeleportTo={
+            isGM
+              ? (sid) => {
+                  const target = roomRef.current?.state.players.get(sid);
+                  if (target) networkRef.current?.sendGMTeleport(target.tileX, target.tileY);
+                }
+              : undefined
+          }
         />
       )}
 
@@ -690,4 +701,3 @@ export function App() {
 }
 
 // ── Drop quantity dialog ──────────────────────────────────────────────────────
-

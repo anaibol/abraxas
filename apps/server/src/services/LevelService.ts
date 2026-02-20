@@ -1,5 +1,5 @@
-import { Player } from "../schema/Player";
-import { EXP_TABLE, ServerMessageType, BroadcastFn } from "@abraxas/shared";
+import { type BroadcastFn, EXP_TABLE, ServerMessageType } from "@abraxas/shared";
+import type { Player } from "../schema/Player";
 
 export class LevelService {
   constructor(

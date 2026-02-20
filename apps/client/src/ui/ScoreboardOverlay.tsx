@@ -1,6 +1,6 @@
-import { Box, Flex, Text, Grid } from "@chakra-ui/react";
+import { Box, Flex, Grid, Text } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
-import { T, HEX } from "./tokens";
+import { HEX, T } from "./tokens";
 
 export type KillStats = {
   npcKills: number;
@@ -20,7 +20,6 @@ type ScoreboardOverlayProps = {
   myName: string;
   myLevel: number;
 };
-
 
 const FONT = T.display;
 // Aliases for values that were local to this file
@@ -90,7 +89,8 @@ function LeaderboardRow({
   valueColor?: string;
 }) {
   const { t } = useTranslation();
-  const rankColor = rank === 1 ? T.gold : rank === 2 ? "#c0c0c0" : rank === 3 ? "#cd7f32" : SC.textDim;
+  const rankColor =
+    rank === 1 ? T.gold : rank === 2 ? "#c0c0c0" : rank === 3 ? "#cd7f32" : SC.textDim;
   return (
     <Flex
       align="center"
@@ -102,14 +102,40 @@ function LeaderboardRow({
       borderRadius="2px"
       border={isMe ? `1px solid rgba(212,168,67,0.25)` : "1px solid transparent"}
     >
-      <Box w="16px" textAlign="center" fontSize="12px" fontWeight="700" color={rankColor} fontFamily={FONT} flexShrink={0}>
+      <Box
+        w="16px"
+        textAlign="center"
+        fontSize="12px"
+        fontWeight="700"
+        color={rankColor}
+        fontFamily={FONT}
+        flexShrink={0}
+      >
         {rank}
       </Box>
-      <Box flex="1" fontSize="13px" color={isMe ? T.gold : SC.text} fontFamily={FONT} overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis">
+      <Box
+        flex="1"
+        fontSize="13px"
+        color={isMe ? T.gold : SC.text}
+        fontFamily={FONT}
+        overflow="hidden"
+        whiteSpace="nowrap"
+        textOverflow="ellipsis"
+      >
         {name}
-        {isMe && <Text as="span" color={T.goldDim} fontSize="11px" ml="1">{t("scoreboard.you")}</Text>}
+        {isMe && (
+          <Text as="span" color={T.goldDim} fontSize="11px" ml="1">
+            {t("scoreboard.you")}
+          </Text>
+        )}
       </Box>
-      <Box fontSize="13px" fontWeight="700" color={valueColor ?? SC.text} fontFamily={T.mono} flexShrink={0}>
+      <Box
+        fontSize="13px"
+        fontWeight="700"
+        color={valueColor ?? SC.text}
+        fontFamily={T.mono}
+        flexShrink={0}
+      >
         {value}
       </Box>
     </Flex>
@@ -145,14 +171,7 @@ export function ScoreboardOverlay({
   }, {});
 
   return (
-    <Flex
-      pos="fixed"
-      inset="0"
-      align="center"
-      justify="center"
-      zIndex={80}
-      pointerEvents="none"
-    >
+    <Flex pos="fixed" inset="0" align="center" justify="center" zIndex={80} pointerEvents="none">
       <Box
         bg={T.bg}
         border={`2px solid ${HEX.border}`}
@@ -196,9 +215,20 @@ export function ScoreboardOverlay({
         </Flex>
 
         {/* Body */}
-        <Grid templateColumns={{ base: "1fr", md: "1fr 1fr 200px" }} gap="0" maxH="calc(85dvh - 52px)" overflowY={{ base: "auto", md: "hidden" }}>
+        <Grid
+          templateColumns={{ base: "1fr", md: "1fr 1fr 200px" }}
+          gap="0"
+          maxH="calc(85dvh - 52px)"
+          overflowY={{ base: "auto", md: "hidden" }}
+        >
           {/* NPC Kills */}
-          <Box px="4" py="4" borderRight={{ base: "none", md: `1px solid ${HEX.border}` }} borderBottom={{ base: `1px solid ${HEX.border}`, md: "none" }} overflowY="auto">
+          <Box
+            px="4"
+            py="4"
+            borderRight={{ base: "none", md: `1px solid ${HEX.border}` }}
+            borderBottom={{ base: `1px solid ${HEX.border}`, md: "none" }}
+            overflowY="auto"
+          >
             <SectionTitle>{t("scoreboard.top_npc_hunters")}</SectionTitle>
             {npcRanking.length === 0 ? (
               <Box fontSize="12px" color={SC.textMuted} fontFamily={FONT} textAlign="center" mt="4">
@@ -229,15 +259,33 @@ export function ScoreboardOverlay({
                 borderRadius="2px"
                 border={`1px solid rgba(212,168,67,0.25)`}
               >
-                <Box w="16px" textAlign="center" fontSize="12px" fontWeight="700" color={T.gold} fontFamily={FONT}>
+                <Box
+                  w="16px"
+                  textAlign="center"
+                  fontSize="12px"
+                  fontWeight="700"
+                  color={T.gold}
+                  fontFamily={FONT}
+                >
                   —
                 </Box>
-                <Box flex="1" fontSize="13px" color={T.gold} fontFamily={FONT} overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis">
+                <Box
+                  flex="1"
+                  fontSize="13px"
+                  color={T.gold}
+                  fontFamily={FONT}
+                  overflow="hidden"
+                  whiteSpace="nowrap"
+                  textOverflow="ellipsis"
+                >
                   {myName}
-                  <Text as="span" color={T.goldDim} fontSize="11px" ml="1">{t("scoreboard.you")}</Text>
+                  <Text as="span" color={T.goldDim} fontSize="11px" ml="1">
+                    {t("scoreboard.you")}
+                  </Text>
                 </Box>
                 <Box fontSize="13px" fontWeight="700" color={T.gold} fontFamily={T.mono}>
-                  {t("scoreboard.lv_prefix")}{myLevel}
+                  {t("scoreboard.lv_prefix")}
+                  {myLevel}
                 </Box>
               </Flex>
               <Box fontSize="11px" color={SC.textMuted} textAlign="center" mt="2" fontFamily={FONT}>
@@ -247,7 +295,13 @@ export function ScoreboardOverlay({
           </Box>
 
           {/* PVP Kills + Online Players */}
-          <Box px="4" py="4" borderRight={{ base: "none", md: `1px solid ${HEX.border}` }} borderBottom={{ base: `1px solid ${HEX.border}`, md: "none" }} overflowY="auto">
+          <Box
+            px="4"
+            py="4"
+            borderRight={{ base: "none", md: `1px solid ${HEX.border}` }}
+            borderBottom={{ base: `1px solid ${HEX.border}`, md: "none" }}
+            overflowY="auto"
+          >
             <SectionTitle>{t("scoreboard.top_pvp")}</SectionTitle>
             {pvpRanking.length === 0 ? (
               <Box fontSize="12px" color={SC.textMuted} fontFamily={FONT} textAlign="center" mt="4">
@@ -270,7 +324,9 @@ export function ScoreboardOverlay({
             <Box mt="5">
               <SectionTitle>
                 {t("scoreboard.online_players")}
-                <Text as="span" color={SC.textDim} fontSize="11px" ml="2">({onlinePlayers.length})</Text>
+                <Text as="span" color={SC.textDim} fontSize="11px" ml="2">
+                  ({onlinePlayers.length})
+                </Text>
               </SectionTitle>
               {onlinePlayers.map((p) => (
                 <Flex
@@ -282,7 +338,9 @@ export function ScoreboardOverlay({
                   mb="0.5"
                   bg={p.name === myName ? "rgba(212,168,67,0.1)" : "transparent"}
                   borderRadius="2px"
-                  border={p.name === myName ? `1px solid rgba(212,168,67,0.2)` : "1px solid transparent"}
+                  border={
+                    p.name === myName ? `1px solid rgba(212,168,67,0.2)` : "1px solid transparent"
+                  }
                 >
                   <Box
                     w="6px"

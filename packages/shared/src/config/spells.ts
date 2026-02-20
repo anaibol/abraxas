@@ -9,7 +9,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
 
   /** Q — Self-buff: +STR for burst window */
   war_cry: {
-    id: "war_cry",key: "",
+    id: "war_cry",
+    key: "",
     requiredLevel: 1,
     durationMs: 8000,
     buffStat: "str",
@@ -19,7 +20,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
 
   /** W — Melee stun: close-range bash that interrupts */
   shield_bash: {
-    id: "shield_bash",key: "",
+    id: "shield_bash",
+    key: "",
     requiredLevel: 3,
     durationMs: 2000,
     fxId: 17,
@@ -27,7 +29,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
 
   /** E — AoE spin attack: damages all enemies adjacent to caster */
   whirlwind: {
-    id: "whirlwind",key: "",
+    id: "whirlwind",
+    key: "",
     requiredLevel: 6,
     aoeRadius: 1,
     fxId: 14,
@@ -35,7 +38,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
 
   /** R — AoE debuff: warcry that lowers enemy armor + STR in a wide radius */
   battle_shout: {
-    id: "battle_shout",key: "",
+    id: "battle_shout",
+    key: "",
     requiredLevel: 10,
     durationMs: 6000,
     aoeRadius: 3,
@@ -48,7 +52,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
 
   /** Q — Ranged single-target: fast projectile, full screen range */
   fireball: {
-    id: "fireball",key: "",
+    id: "fireball",
+    key: "",
     requiredLevel: 1,
     fxId: 3,
     manaCost: 25,
@@ -64,7 +69,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
 
   /** W — Ranged single-target: deals damage and applies an AGI slow */
   ice_bolt: {
-    id: "ice_bolt",key: "",
+    id: "ice_bolt",
+    key: "",
     requiredLevel: 3,
     fxId: 22,
     manaCost: 15,
@@ -83,7 +89,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
 
   /** E — AoE lightning at target tile */
   thunderstorm: {
-    id: "thunderstorm",key: "",
+    id: "thunderstorm",
+    key: "",
     requiredLevel: 6,
     aoeRadius: 2,
     fxId: 14,
@@ -91,7 +98,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
 
   /** R — Self-buff: temporary magic-armor shell */
   mana_shield: {
-    id: "mana_shield",key: "",
+    id: "mana_shield",
+    key: "",
     requiredLevel: 10,
     durationMs: 6000,
     buffStat: "armor",
@@ -101,7 +109,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
 
   /** T — AoE stun burst around the caster: short duration but wide radius */
   frost_nova: {
-    id: "frost_nova",key: "",
+    id: "frost_nova",
+    key: "",
     requiredLevel: 15,
     durationMs: 2000,
     aoeRadius: 3,
@@ -110,7 +119,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
 
   /** Y — Heavy single-target nuke: long cast, huge damage */
   arcane_surge: {
-    id: "arcane_surge",key: "",
+    id: "arcane_surge",
+    key: "",
     requiredLevel: 20,
     fxId: 3,
   },
@@ -119,7 +129,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
 
   /** Q — AoE volley: hits all enemies in a small radius at range */
   multi_shot: {
-    id: "multi_shot",key: "",
+    id: "multi_shot",
+    key: "",
     requiredLevel: 1,
     aoeRadius: 2,
     fxId: 14,
@@ -127,7 +138,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
 
   /** W — DoT: poisons a single enemy over several seconds */
   poison_arrow: {
-    id: "poison_arrow",key: "",
+    id: "poison_arrow",
+    key: "",
     requiredLevel: 3,
     dotDamage: 5,
     dotIntervalMs: 1000,
@@ -137,7 +149,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
 
   /** E — Self-buff: temporarily massively boosts AGI (dodge + speed) */
   evasion: {
-    id: "evasion",key: "",
+    id: "evasion",
+    key: "",
     requiredLevel: 6,
     durationMs: 5000,
     buffStat: "agi",
@@ -147,14 +160,16 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
 
   /** R — Precision shot: full viewport range, high damage, long cooldown */
   aimed_shot: {
-    id: "aimed_shot",key: "",
+    id: "aimed_shot",
+    key: "",
     requiredLevel: 10,
     fxId: 3,
   },
 
   /** T — Debuff: marks target, reducing their armor so all attacks deal more */
   mark_target: {
-    id: "mark_target",key: "",
+    id: "mark_target",
+    key: "",
     requiredLevel: 15,
     durationMs: 8000,
     buffStat: "armor",
@@ -166,14 +181,16 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
 
   /** Q — Melee nuke: massive burst from stealth */
   backstab: {
-    id: "backstab",key: "",
+    id: "backstab",
+    key: "",
     requiredLevel: 1,
     fxId: 2,
   },
 
   /** W — Vanish: disappear from enemy detection for a duration */
   stealth: {
-    id: "stealth",key: "",
+    id: "stealth",
+    key: "",
     requiredLevel: 3,
     durationMs: 6000,
     fxId: 10,
@@ -181,7 +198,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
 
   /** E — DoT: coats the weapon with venom for sustained damage */
   envenom: {
-    id: "envenom",key: "",
+    id: "envenom",
+    key: "",
     requiredLevel: 6,
     dotDamage: 6,
     dotIntervalMs: 1000,
@@ -191,7 +209,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
 
   /** R — AoE stun: throws a smoke bomb stunning nearby enemies */
   smoke_bomb: {
-    id: "smoke_bomb",key: "",
+    id: "smoke_bomb",
+    key: "",
     requiredLevel: 10,
     aoeRadius: 2,
     durationMs: 1500,
@@ -201,7 +220,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
 
   /** T — Leech strike: saps life force from the target into the caster */
   hemorrhage: {
-    id: "hemorrhage",key: "",
+    id: "hemorrhage",
+    key: "",
     requiredLevel: 15,
     leechRatio: 0.5,
     fxId: 2,
@@ -211,21 +231,24 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
 
   /** Q — Melee holy strike: smites a single foe */
   holy_strike: {
-    id: "holy_strike",key: "",
+    id: "holy_strike",
+    key: "",
     requiredLevel: 1,
     fxId: 23,
   },
 
   /** W — Self-heal: restores a chunk of HP */
   heal: {
-    id: "heal",key: "",
+    id: "heal",
+    key: "",
     requiredLevel: 3,
     fxId: 1,
   },
 
   /** E — Invulnerability bubble: brief window of immunity */
   divine_shield: {
-    id: "divine_shield",key: "",
+    id: "divine_shield",
+    key: "",
     requiredLevel: 6,
     durationMs: 4000,
     buffStat: "invulnerable",
@@ -235,7 +258,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
 
   /** R — AoE heal: pulse of holy light restores HP for all nearby allies */
   holy_nova: {
-    id: "holy_nova",key: "",
+    id: "holy_nova",
+    key: "",
     requiredLevel: 10,
     aoeRadius: 3,
     fxId: 1,
@@ -243,7 +267,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
 
   /** T — Curse: debuffs an enemy INT + armor, increasing all damage they take */
   curse: {
-    id: "curse",key: "",
+    id: "curse",
+    key: "",
     requiredLevel: 15,
     durationMs: 10000,
     buffStat: "int",
@@ -253,7 +278,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
 
   /** Y — Ranged smite: holy bolt that damages undead and unholy targets */
   smite: {
-    id: "smite",key: "",
+    id: "smite",
+    key: "",
     requiredLevel: 20,
     fxId: 23,
   },
@@ -262,21 +288,24 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
 
   /** Q — Melee holy slam: consecrated strike that deals divine damage */
   judgment: {
-    id: "judgment",key: "",
+    id: "judgment",
+    key: "",
     requiredLevel: 1,
     fxId: 23,
   },
 
   /** W — Lay on Hands: channel divine energy to restore a large chunk of HP */
   lay_on_hands: {
-    id: "lay_on_hands",key: "",
+    id: "lay_on_hands",
+    key: "",
     requiredLevel: 3,
     fxId: 1,
   },
 
   /** E — Consecration: radiate holy fire, damaging all enemies around the caster */
   consecration: {
-    id: "consecration",key: "",
+    id: "consecration",
+    key: "",
     requiredLevel: 6,
     aoeRadius: 2,
     fxId: 34,
@@ -284,7 +313,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
 
   /** R — Aura of Protection: surround yourself in divine plate, massively boosting armor */
   aura_of_protection: {
-    id: "aura_of_protection",key: "",
+    id: "aura_of_protection",
+    key: "",
     requiredLevel: 10,
     durationMs: 8000,
     buffStat: "armor",
@@ -294,7 +324,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
 
   /** T — Holy Bolt: launch a bolt of divine light at a distant enemy */
   holy_bolt: {
-    id: "holy_bolt",key: "",
+    id: "holy_bolt",
+    key: "",
     requiredLevel: 15,
     fxId: 23,
   },
@@ -522,6 +553,5 @@ export const ABILITIES: Record<string, Ability> = Object.fromEntries(
       id: k,
     };
     return [k, rawAbility];
-  })
+  }),
 );
-

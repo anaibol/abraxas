@@ -1,211 +1,203 @@
 import {
-	ITEMS,
-	MAX_INVENTORY_SLOTS,
-	ServerMessageType,
-	type TradeOffer,
-	type TradeState,
+  ITEMS,
+  MAX_INVENTORY_SLOTS,
+  ServerMessageType,
+  type TradeOffer,
+  type TradeState,
 } from "@abraxas/shared";
 import { logger } from "../logger";
 import type { Player } from "../schema/Player";
 import type { InventorySystem } from "./InventorySystem";
 
 export class TradeSystem {
-	private activeTrades = new Map<string, TradeState>();
-	private pendingRequests = new Map<string, string>(); // targetSessionId -> requesterSessionId
+  private activeTrades = new Map<string, TradeState>();
+  private pendingRequests = new Map<string, string>(); // targetSessionId -> requesterSessionId
 
-	constructor(private inventorySystem: InventorySystem) {}
+  constructor(private inventorySystem: InventorySystem) {}
 
-	handleRequest(
-		requester: Player,
-		target: Player,
-		sendToClient: (
-			sessionId: string,
-			type: ServerMessageType,
-			data: Record<string, unknown>,
-		) => void,
-	): boolean {
-		if (this.activeTrades.has(requester.sessionId)) return false;
-		if (this.activeTrades.has(target.sessionId)) return false;
+  handleRequest(
+    requester: Player,
+    target: Player,
+    sendToClient: (
+      sessionId: string,
+      type: ServerMessageType,
+      data: Record<string, unknown>,
+    ) => void,
+  ): boolean {
+    if (this.activeTrades.has(requester.sessionId)) return false;
+    if (this.activeTrades.has(target.sessionId)) return false;
 
-		this.pendingRequests.set(target.sessionId, requester.sessionId);
-		sendToClient(target.sessionId, ServerMessageType.TradeRequested, {
-			requesterSessionId: requester.sessionId,
-			requesterName: requester.name,
-		});
+    this.pendingRequests.set(target.sessionId, requester.sessionId);
+    sendToClient(target.sessionId, ServerMessageType.TradeRequested, {
+      requesterSessionId: requester.sessionId,
+      requesterName: requester.name,
+    });
 
-		logger.info({
-			intent: "trade_request",
-			from: requester.sessionId,
-			to: target.sessionId,
-		});
-		return true;
-	}
+    logger.info({
+      intent: "trade_request",
+      from: requester.sessionId,
+      to: target.sessionId,
+    });
+    return true;
+  }
 
-	handleAccept(requester: Player, target: Player): TradeState | null {
-		if (
-			this.activeTrades.has(requester.sessionId) ||
-			this.activeTrades.has(target.sessionId)
-		) {
-			return null;
-		}
+  handleAccept(requester: Player, target: Player): TradeState | null {
+    if (this.activeTrades.has(requester.sessionId) || this.activeTrades.has(target.sessionId)) {
+      return null;
+    }
 
-		const tradeId = `${requester.sessionId}-${target.sessionId}`;
-		const trade: TradeState = {
-			tradeId,
-			alice: {
-				sessionId: requester.sessionId,
-				name: requester.name,
-				offer: { gold: 0, items: [], confirmed: false },
-			},
-			bob: {
-				sessionId: target.sessionId,
-				name: target.name,
-				offer: { gold: 0, items: [], confirmed: false },
-			},
-		};
+    const tradeId = `${requester.sessionId}-${target.sessionId}`;
+    const trade: TradeState = {
+      tradeId,
+      alice: {
+        sessionId: requester.sessionId,
+        name: requester.name,
+        offer: { gold: 0, items: [], confirmed: false },
+      },
+      bob: {
+        sessionId: target.sessionId,
+        name: target.name,
+        offer: { gold: 0, items: [], confirmed: false },
+      },
+    };
 
-		this.activeTrades.set(requester.sessionId, trade);
-		this.activeTrades.set(target.sessionId, trade);
-		this.pendingRequests.delete(target.sessionId);
+    this.activeTrades.set(requester.sessionId, trade);
+    this.activeTrades.set(target.sessionId, trade);
+    this.pendingRequests.delete(target.sessionId);
 
-		logger.info({ intent: "trade_started", tradeId });
-		return trade;
-	}
+    logger.info({ intent: "trade_started", tradeId });
+    return trade;
+  }
 
-	updateOffer(
-		sessionId: string,
-		offer: { gold: number; items: { itemId: string; quantity: number }[] },
-	) {
-		const trade = this.activeTrades.get(sessionId);
-		if (!trade) return null;
+  updateOffer(
+    sessionId: string,
+    offer: { gold: number; items: { itemId: string; quantity: number }[] },
+  ) {
+    const trade = this.activeTrades.get(sessionId);
+    if (!trade) return null;
 
-		const isAlice = trade.alice.sessionId === sessionId;
-		const participant = isAlice ? trade.alice : trade.bob;
-		const other = isAlice ? trade.bob : trade.alice;
+    const isAlice = trade.alice.sessionId === sessionId;
+    const participant = isAlice ? trade.alice : trade.bob;
+    const other = isAlice ? trade.bob : trade.alice;
 
-		participant.offer.gold = Math.max(0, offer.gold);
-		participant.offer.items = offer.items;
-		participant.offer.confirmed = false;
-		other.offer.confirmed = false; // Reset other if offer changes
+    participant.offer.gold = Math.max(0, offer.gold);
+    participant.offer.items = offer.items;
+    participant.offer.confirmed = false;
+    other.offer.confirmed = false; // Reset other if offer changes
 
-		return trade;
-	}
+    return trade;
+  }
 
-	confirm(sessionId: string) {
-		const trade = this.activeTrades.get(sessionId);
-		if (!trade) return null;
+  confirm(sessionId: string) {
+    const trade = this.activeTrades.get(sessionId);
+    if (!trade) return null;
 
-		const isAlice = trade.alice.sessionId === sessionId;
-		const participant = isAlice ? trade.alice : trade.bob;
-		participant.offer.confirmed = true;
+    const isAlice = trade.alice.sessionId === sessionId;
+    const participant = isAlice ? trade.alice : trade.bob;
+    participant.offer.confirmed = true;
 
-		return trade;
-	}
+    return trade;
+  }
 
-	canComplete(trade: TradeState): boolean {
-		return trade.alice.offer.confirmed && trade.bob.offer.confirmed;
-	}
+  canComplete(trade: TradeState): boolean {
+    return trade.alice.offer.confirmed && trade.bob.offer.confirmed;
+  }
 
-	async executeTrade(
-		trade: TradeState,
-		players: { get: (id: string) => Player | undefined },
-	) {
-		const alice = players.get(trade.alice.sessionId);
-		const bob = players.get(trade.bob.sessionId);
+  async executeTrade(trade: TradeState, players: { get: (id: string) => Player | undefined }) {
+    const alice = players.get(trade.alice.sessionId);
+    const bob = players.get(trade.bob.sessionId);
 
-		if (!alice || !bob) return false;
+    if (!alice || !bob) return false;
 
-		// Validate Alice has everything
-		if (!this.validateOffer(alice, trade.alice.offer)) return false;
-		// Validate Bob has everything
-		if (!this.validateOffer(bob, trade.bob.offer)) return false;
+    // Validate Alice has everything
+    if (!this.validateOffer(alice, trade.alice.offer)) return false;
+    // Validate Bob has everything
+    if (!this.validateOffer(bob, trade.bob.offer)) return false;
 
-		// Validate Inventory Space
-		if (!this.hasSpaceFor(alice, trade.alice.offer, trade.bob.offer))
-			return false;
-		if (!this.hasSpaceFor(bob, trade.bob.offer, trade.alice.offer))
-			return false;
+    // Validate Inventory Space
+    if (!this.hasSpaceFor(alice, trade.alice.offer, trade.bob.offer)) return false;
+    if (!this.hasSpaceFor(bob, trade.bob.offer, trade.alice.offer)) return false;
 
-		// Transfer from Alice to Bob
-		this.transfer(alice, bob, trade.alice.offer);
-		// Transfer from Bob to Alice
-		this.transfer(bob, alice, trade.bob.offer);
+    // Transfer from Alice to Bob
+    this.transfer(alice, bob, trade.alice.offer);
+    // Transfer from Bob to Alice
+    this.transfer(bob, alice, trade.bob.offer);
 
-		this.cleanup(trade.alice.sessionId);
-		this.cleanup(trade.bob.sessionId);
+    this.cleanup(trade.alice.sessionId);
+    this.cleanup(trade.bob.sessionId);
 
-		return true;
-	}
+    return true;
+  }
 
-	private hasSpaceFor(
-		player: Player,
-		givingOffer: TradeOffer,
-		receivingOffer: TradeOffer,
-	): boolean {
-		const MAX_SLOTS = MAX_INVENTORY_SLOTS;
+  private hasSpaceFor(
+    player: Player,
+    givingOffer: TradeOffer,
+    receivingOffer: TradeOffer,
+  ): boolean {
+    const MAX_SLOTS = MAX_INVENTORY_SLOTS;
 
-		// Count current items
-		const currentCount = player.inventory.length;
+    // Count current items
+    const currentCount = player.inventory.length;
 
-		// Items removed (unique ones, because removeItem is called for each)
-		let itemsRemoved = 0;
-		for (const off of givingOffer.items) {
-			const slot = player.inventory.find((i) => i.itemId === off.itemId);
-			if (slot && slot.quantity === off.quantity) {
-				itemsRemoved++;
-			}
-		}
+    // Items removed (unique ones, because removeItem is called for each)
+    let itemsRemoved = 0;
+    for (const off of givingOffer.items) {
+      const slot = player.inventory.find((i) => i.itemId === off.itemId);
+      if (slot && slot.quantity === off.quantity) {
+        itemsRemoved++;
+      }
+    }
 
-		// Items added
-		let itemsAdded = 0;
-		for (const off of receivingOffer.items) {
-			const def = ITEMS[off.itemId];
-			if (def?.stackable) {
-				const existing = player.inventory.find((i) => i.itemId === off.itemId);
-				if (existing) continue; // Already exists, will stack
-			}
-			itemsAdded++;
-		}
+    // Items added
+    let itemsAdded = 0;
+    for (const off of receivingOffer.items) {
+      const def = ITEMS[off.itemId];
+      if (def?.stackable) {
+        const existing = player.inventory.find((i) => i.itemId === off.itemId);
+        if (existing) continue; // Already exists, will stack
+      }
+      itemsAdded++;
+    }
 
-		return currentCount - itemsRemoved + itemsAdded <= MAX_SLOTS;
-	}
+    return currentCount - itemsRemoved + itemsAdded <= MAX_SLOTS;
+  }
 
-	private validateOffer(player: Player, offer: TradeOffer): boolean {
-		if (player.gold < offer.gold) return false;
-		for (const item of offer.items) {
-			const slot = player.inventory.find((s) => s.itemId === item.itemId);
-			if (!slot || slot.quantity < item.quantity) return false;
-		}
-		return true;
-	}
+  private validateOffer(player: Player, offer: TradeOffer): boolean {
+    if (player.gold < offer.gold) return false;
+    for (const item of offer.items) {
+      const slot = player.inventory.find((s) => s.itemId === item.itemId);
+      if (!slot || slot.quantity < item.quantity) return false;
+    }
+    return true;
+  }
 
-	private transfer(from: Player, to: Player, offer: TradeOffer) {
-		if (offer.gold > 0) {
-			from.gold -= offer.gold;
-			to.gold += offer.gold;
-		}
-		for (const item of offer.items) {
-			if (this.inventorySystem.removeItem(from, item.itemId, item.quantity)) {
-				this.inventorySystem.addItem(to, item.itemId, item.quantity);
-			}
-		}
-	}
+  private transfer(from: Player, to: Player, offer: TradeOffer) {
+    if (offer.gold > 0) {
+      from.gold -= offer.gold;
+      to.gold += offer.gold;
+    }
+    for (const item of offer.items) {
+      if (this.inventorySystem.removeItem(from, item.itemId, item.quantity)) {
+        this.inventorySystem.addItem(to, item.itemId, item.quantity);
+      }
+    }
+  }
 
-	cancel(sessionId: string) {
-		const trade = this.activeTrades.get(sessionId);
-		if (trade) {
-			this.cleanup(trade.alice.sessionId);
-			this.cleanup(trade.bob.sessionId);
-			return trade;
-		}
-		return null;
-	}
+  cancel(sessionId: string) {
+    const trade = this.activeTrades.get(sessionId);
+    if (trade) {
+      this.cleanup(trade.alice.sessionId);
+      this.cleanup(trade.bob.sessionId);
+      return trade;
+    }
+    return null;
+  }
 
-	private cleanup(sessionId: string) {
-		this.activeTrades.delete(sessionId);
-	}
+  private cleanup(sessionId: string) {
+    this.activeTrades.delete(sessionId);
+  }
 
-	getActiveTrade(sessionId: string) {
-		return this.activeTrades.get(sessionId);
-	}
+  getActiveTrade(sessionId: string) {
+    return this.activeTrades.get(sessionId);
+  }
 }

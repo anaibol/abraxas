@@ -1,26 +1,26 @@
 import {
+  ABILITIES,
+  AGGRO_RANGE,
+  type BroadcastFn,
+  DIRECTION_DELTA,
+  Direction,
+  MathUtils,
+  NPC_RESPAWN_TIME_MS,
   NPC_STATS,
   NPC_TYPES,
-  ABILITIES,
-  TileMap,
-  Direction,
-  DIRECTION_DELTA,
-  NpcType,
-  BroadcastFn,
-  NPC_RESPAWN_TIME_MS,
-  AGGRO_RANGE,
-  MathUtils,
   NpcState,
+  type NpcType,
+  type TileMap,
 } from "@abraxas/shared";
-import { Npc } from "../schema/Npc";
-import { Player } from "../schema/Player";
-import { GameState } from "../schema/GameState";
-import { MovementSystem } from "./MovementSystem";
-import { CombatSystem } from "./CombatSystem";
-import { BuffSystem } from "./BuffSystem";
 import { logger } from "../logger";
-import { SpatialLookup, Entity } from "../utils/SpatialLookup";
+import type { GameState } from "../schema/GameState";
+import { Npc } from "../schema/Npc";
+import type { Player } from "../schema/Player";
+import type { Entity, SpatialLookup } from "../utils/SpatialLookup";
 import { findSafeSpawn } from "../utils/spawnUtils";
+import type { BuffSystem } from "./BuffSystem";
+import type { CombatSystem } from "./CombatSystem";
+import type { MovementSystem } from "./MovementSystem";
 
 /** Scan for targets every N ticks (~500 ms at 20 TPS). */
 const IDLE_SCAN_INTERVAL = 10;
@@ -121,13 +121,7 @@ export class NpcSystem {
     logger.error({ intent: "spawn_npc", result: "failed", type });
   }
 
-  tick(
-    map: TileMap,
-    now: number,
-    tickCount: number,
-    roomId: string,
-    broadcast: BroadcastFn,
-  ): void {
+  tick(map: TileMap, now: number, tickCount: number, roomId: string, broadcast: BroadcastFn): void {
     // Store map reference for use in state handlers
     this.currentMap = map;
     this.respawns = this.respawns.filter((r) => {
@@ -195,7 +189,13 @@ export class NpcSystem {
     }
   }
 
-  private updatePatrol(npc: Npc, map: TileMap, now: number, tickCount: number, roomId: string): void {
+  private updatePatrol(
+    npc: Npc,
+    map: TileMap,
+    now: number,
+    tickCount: number,
+    roomId: string,
+  ): void {
     if (tickCount % IDLE_SCAN_INTERVAL === 0) {
       const target = this.scanForAggroTarget(npc);
       if (target) {
@@ -210,14 +210,19 @@ export class NpcSystem {
       return;
     }
 
-    const dir = [Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT][Math.floor(Math.random() * 4)];
+    const dir = [Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT][
+      Math.floor(Math.random() * 4)
+    ];
 
     // Tether: discard the step (but still count it) if it would take the NPC
     // too far from its spawn point, so it stays in its home area.
     const { dx, dy } = DIRECTION_DELTA[dir];
     const nx = npc.tileX + dx;
     const ny = npc.tileY + dy;
-    if (MathUtils.manhattanDist({ x: nx, y: ny }, { x: npc.spawnX, y: npc.spawnY }) <= PATROL_TETHER_RADIUS) {
+    if (
+      MathUtils.manhattanDist({ x: nx, y: ny }, { x: npc.spawnX, y: npc.spawnY }) <=
+      PATROL_TETHER_RADIUS
+    ) {
       this.movementSystem.tryMove(npc, dir, map, now, tickCount, roomId);
     }
     npc.patrolStepsLeft--;
@@ -233,7 +238,13 @@ export class NpcSystem {
     return false;
   }
 
-  private updateChase(npc: Npc, map: TileMap, now: number, tickCount: number, roomId: string): void {
+  private updateChase(
+    npc: Npc,
+    map: TileMap,
+    now: number,
+    tickCount: number,
+    roomId: string,
+  ): void {
     const target = this.spatial.findEntityBySessionId(npc.targetId);
     if (!target || !target.isAttackable()) {
       npc.targetId = "";
@@ -305,7 +316,13 @@ export class NpcSystem {
     this.movementSystem.tryMove(npc, awayDir, map, now, tickCount, roomId);
   }
 
-  private updateReturn(npc: Npc, map: TileMap, now: number, tickCount: number, roomId: string): void {
+  private updateReturn(
+    npc: Npc,
+    map: TileMap,
+    now: number,
+    tickCount: number,
+    roomId: string,
+  ): void {
     // Re-aggro any player that wanders into range while the NPC is heading home.
     if (tickCount % IDLE_SCAN_INTERVAL === 0) {
       const target = this.scanForAggroTarget(npc);
@@ -326,7 +343,15 @@ export class NpcSystem {
     this.moveTowards(npc, npc.spawnX, npc.spawnY, map, now, tickCount, roomId);
   }
 
-  private moveTowards(npc: Npc, tx: number, ty: number, map: TileMap, now: number, tickCount: number, roomId: string): void {
+  private moveTowards(
+    npc: Npc,
+    tx: number,
+    ty: number,
+    map: TileMap,
+    now: number,
+    tickCount: number,
+    roomId: string,
+  ): void {
     const dx = tx - npc.tileX;
     const dy = ty - npc.tileY;
 
@@ -335,10 +360,15 @@ export class NpcSystem {
     const primaryDir = MathUtils.getDirection(npc.getPosition(), { x: tx, y: ty });
 
     const result = this.movementSystem.tryMove(npc, primaryDir, map, now, tickCount, roomId);
-    if (!result.success && (dx !== 0 && dy !== 0)) {
-      const altDir = (primaryDir === Direction.LEFT || primaryDir === Direction.RIGHT)
-        ? (dy > 0 ? Direction.DOWN : Direction.UP)
-        : (dx > 0 ? Direction.RIGHT : Direction.LEFT);
+    if (!result.success && dx !== 0 && dy !== 0) {
+      const altDir =
+        primaryDir === Direction.LEFT || primaryDir === Direction.RIGHT
+          ? dy > 0
+            ? Direction.DOWN
+            : Direction.UP
+          : dx > 0
+            ? Direction.RIGHT
+            : Direction.LEFT;
       this.movementSystem.tryMove(npc, altDir, map, now, tickCount, roomId);
     }
   }
@@ -346,7 +376,13 @@ export class NpcSystem {
   private getAwayDirection(npc: Npc, target: Entity): Direction {
     const dx = npc.tileX - target.tileX;
     const dy = npc.tileY - target.tileY;
-    return Math.abs(dx) >= Math.abs(dy) ? (dx >= 0 ? Direction.RIGHT : Direction.LEFT) : (dy > 0 ? Direction.DOWN : Direction.UP);
+    return Math.abs(dx) >= Math.abs(dy)
+      ? dx >= 0
+        ? Direction.RIGHT
+        : Direction.LEFT
+      : dy > 0
+        ? Direction.DOWN
+        : Direction.UP;
   }
 
   private tryUseAbility(npc: Npc, now: number, broadcast: BroadcastFn): boolean {
@@ -358,7 +394,8 @@ export class NpcSystem {
     // Emergency heal takes priority regardless of the cast-chance roll.
     if (npc.hp / npc.maxHp < 0.3) {
       const healId = stats.abilities.find((id) => ABILITIES[id]?.effect === "heal");
-      if (healId) return this.combatSystem.tryCast(npc, healId, npc.tileX, npc.tileY, broadcast, now);
+      if (healId)
+        return this.combatSystem.tryCast(npc, healId, npc.tileX, npc.tileY, broadcast, now);
     }
 
     // Probability gate: only attempt an ability a fraction of eligible ticks so
@@ -375,7 +412,14 @@ export class NpcSystem {
     if (!available.length) return false;
 
     const abilityId = available[Math.floor(Math.random() * available.length)];
-    const didCast = this.combatSystem.tryCast(npc, abilityId, target.tileX, target.tileY, broadcast, now);
+    const didCast = this.combatSystem.tryCast(
+      npc,
+      abilityId,
+      target.tileX,
+      target.tileY,
+      broadcast,
+      now,
+    );
 
     // If the chosen ability is a summon, actually spawn the minion server-side.
     if (didCast && ABILITIES[abilityId]?.effect === "summon") {
@@ -420,7 +464,12 @@ export class NpcSystem {
 
   handleDeath(npc: Npc): void {
     this.buffSystem.removePlayer(npc.sessionId);
-    this.respawns.push({ type: npc.type, deadAt: Date.now(), spawnX: npc.spawnX, spawnY: npc.spawnY });
+    this.respawns.push({
+      type: npc.type,
+      deadAt: Date.now(),
+      spawnX: npc.spawnX,
+      spawnY: npc.spawnY,
+    });
     this.state.npcs.delete(npc.sessionId);
     this.spatial.removeFromGrid(npc);
   }

@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { gameSettings, type GameSettings } from "../settings/gameSettings";
+import { useEffect, useState } from "react";
+import { type GameSettings, gameSettings } from "../settings/gameSettings";
 
 export function useGameSettings() {
   const [settings, setSettings] = useState<GameSettings>(() => gameSettings.get());

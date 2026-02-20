@@ -1,12 +1,9 @@
-import { useState, useEffect } from "react";
-import {
-  Box, Flex, Text, Input, Button, Grid,
-  IconButton, Badge,
-} from "@chakra-ui/react";
-import { keyframes } from "@emotion/react";
 import { type ClassType, getRandomName } from "@abraxas/shared";
-import { T, HEX } from "./tokens";
+import { Badge, Box, Button, Flex, Grid, IconButton, Input, Text } from "@chakra-ui/react";
+import { keyframes } from "@emotion/react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { HEX, T } from "./tokens";
 
 type LobbyProps = {
   onJoin: (charId: string, classType: ClassType, token: string) => void;
@@ -22,7 +19,6 @@ type CharacterSummary = {
 
 type Mode = "login" | "register" | "character_select" | "character_create";
 
-
 const CLASS_TYPES: readonly ClassType[] = [
   "WARRIOR",
   "MAGE",
@@ -32,10 +28,7 @@ const CLASS_TYPES: readonly ClassType[] = [
   "PALADIN",
 ];
 
-const CLASS_INFO: Record<
-  ClassType,
-  { icon: string; color: string }
-> = {
+const CLASS_INFO: Record<ClassType, { icon: string; color: string }> = {
   WARRIOR: {
     icon: "\u2694\uFE0F",
     color: "#e63946",
@@ -154,9 +147,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
   const handleAuth = async () => {
     setError("");
     const url = mode === "login" ? "/api/login" : "/api/register";
-    const body = mode === "login"
-      ? { email, password }
-      : { email, password };
+    const body = mode === "login" ? { email, password } : { email, password };
 
     try {
       const res = await fetch(url, {
@@ -376,7 +367,13 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
             </Box>
 
             {error && (
-              <Text color={T.bloodBright} fontSize="12px" textAlign="center" py="2" fontWeight="600">
+              <Text
+                color={T.bloodBright}
+                fontSize="12px"
+                textAlign="center"
+                py="2"
+                fontWeight="600"
+              >
                 {error}
               </Text>
             )}
@@ -394,7 +391,11 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
               letterSpacing="4px"
               textTransform="uppercase"
               transition="all 0.2s"
-              _hover={{ bg: T.gold, transform: "translateY(-2px)", boxShadow: `0 5px 20px ${HEX.gold}44` }}
+              _hover={{
+                bg: T.gold,
+                transform: "translateY(-2px)",
+                boxShadow: `0 5px 20px ${HEX.gold}44`,
+              }}
               _active={{ transform: "translateY(0)" }}
             >
               {mode === "login" ? t("lobby.login") : t("lobby.register")}
@@ -426,21 +427,19 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
         {mode === "character_select" && (
           <Box animation={`${entrance} 0.4s ease-out`}>
             <Flex justify="space-between" align="center" mb="5">
-              <Text {...labelStyle} mb="0">{t("lobby.choose_champion")}</Text>
+              <Text {...labelStyle} mb="0">
+                {t("lobby.choose_champion")}
+              </Text>
               <Text fontSize="11px" color={T.goldDark}>
                 {t("lobby.characters_count", { count: characters.length, max: MAX_CHARACTERS })}
               </Text>
             </Flex>
 
             {characters.length === 0 ? (
-              <Flex
-                direction="column"
-                align="center"
-                justify="center"
-                py="10"
-                gap="3"
-              >
-                <Text fontSize="32px" opacity="0.4">⚔️</Text>
+              <Flex direction="column" align="center" justify="center" py="10" gap="3">
+                <Text fontSize="32px" opacity="0.4">
+                  ⚔️
+                </Text>
                 <Text fontSize="13px" color={T.goldMuted} textAlign="center">
                   {t("lobby.no_champions")}
                 </Text>
@@ -467,12 +466,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                       }}
                     >
                       <Flex align="center" gap="4">
-                        <Box
-                          fontSize="26px"
-                          w="40px"
-                          textAlign="center"
-                          flexShrink={0}
-                        >
+                        <Box fontSize="26px" w="40px" textAlign="center" flexShrink={0}>
                           {info.icon}
                         </Box>
                         <Box flex="1">
@@ -484,7 +478,12 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                           >
                             {char.name}
                           </Text>
-                          <Text fontSize="12px" color={T.goldDark} textTransform="uppercase" letterSpacing="1px">
+                          <Text
+                            fontSize="12px"
+                            color={T.goldDark}
+                            textTransform="uppercase"
+                            letterSpacing="1px"
+                          >
                             {t(`classes.${char.class}.name`)}
                           </Text>
                         </Box>
@@ -527,9 +526,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                 setMode("character_create");
               }}
               _hover={
-                characters.length < MAX_CHARACTERS
-                  ? { borderColor: T.gold, color: T.goldText }
-                  : {}
+                characters.length < MAX_CHARACTERS ? { borderColor: T.gold, color: T.goldText } : {}
               }
             >
               + {t("lobby.new_character")}
@@ -562,7 +559,9 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
         {mode === "character_create" && (
           <Box animation={`${entrance} 0.4s ease-out`}>
             <Flex justify="space-between" align="baseline" mb="5">
-              <Text {...labelStyle} mb="0">{t("lobby.new_character")}</Text>
+              <Text {...labelStyle} mb="0">
+                {t("lobby.new_character")}
+              </Text>
             </Flex>
 
             <Box mb="4">
@@ -582,7 +581,11 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                   variant="ghost"
                   color={T.goldDim}
                   onClick={handleRandomName}
-                  _hover={{ bg: "transparent", color: T.gold, transform: "rotate(15deg) scale(1.1)" }}
+                  _hover={{
+                    bg: "transparent",
+                    color: T.gold,
+                    transform: "rotate(15deg) scale(1.1)",
+                  }}
                   _active={{ transform: "scale(0.95)" }}
                 >
                   <Text fontSize="20px">🎲</Text>
@@ -590,7 +593,9 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
               </Flex>
             </Box>
 
-            <Text {...labelStyle} mb="3">{t("lobby.select_path")}</Text>
+            <Text {...labelStyle} mb="3">
+              {t("lobby.select_path")}
+            </Text>
             <Grid templateColumns="repeat(1, 1fr)" gap="2" mb="6">
               {CLASS_TYPES.map((cls) => {
                 const sel = classType === cls;
@@ -657,7 +662,14 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
             </Grid>
 
             {error && (
-              <Text color={T.bloodBright} fontSize="12px" textAlign="center" py="2" fontWeight="600" mb="2">
+              <Text
+                color={T.bloodBright}
+                fontSize="12px"
+                textAlign="center"
+                py="2"
+                fontWeight="600"
+                mb="2"
+              >
                 {error}
               </Text>
             )}
@@ -674,7 +686,11 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
               fontSize="16px"
               letterSpacing="4px"
               textTransform="uppercase"
-              _hover={{ bg: T.gold, transform: "translateY(-2px)", boxShadow: `0 5px 20px ${HEX.gold}44` }}
+              _hover={{
+                bg: T.gold,
+                transform: "translateY(-2px)",
+                boxShadow: `0 5px 20px ${HEX.gold}44`,
+              }}
             >
               {t("lobby.create_character")}
             </Button>

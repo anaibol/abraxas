@@ -1,7 +1,7 @@
-import { Box, Grid, Text } from "@chakra-ui/react";
 import { ITEMS } from "@abraxas/shared";
-import { T } from "../tokens";
+import { Box, Grid, Text } from "@chakra-ui/react";
 import { useAudio } from "../../contexts/AudioContext";
+import { T } from "../tokens";
 
 export type SlotItem = {
   itemId: string;
@@ -48,17 +48,26 @@ export function ItemGrid({ slots, selectedSlotIndex, onSelect, maxSlots = 24 }: 
             alignItems="center"
             justifyContent="center"
             position="relative"
-            onMouseEnter={() => { if (def && !isSelected) playUIHover?.(); }}
-            onClick={() => { 
-              if (slot && !isSelected) { 
-                playUIClick?.(); 
-                onSelect(slot); 
-              } 
+            onMouseEnter={() => {
+              if (def && !isSelected) playUIHover?.();
+            }}
+            onClick={() => {
+              if (slot && !isSelected) {
+                playUIClick?.();
+                onSelect(slot);
+              }
             }}
           >
             {def && <Text fontSize="24px">✨</Text>}
             {slot && slot.quantity > 1 && (
-              <Text position="absolute" bottom="1px" right="2px" fontSize="10px" color="#fff" fontWeight="bold">
+              <Text
+                position="absolute"
+                bottom="1px"
+                right="2px"
+                fontSize="10px"
+                color="#fff"
+                fontWeight="bold"
+              >
                 {slot.quantity}
               </Text>
             )}

@@ -1,13 +1,13 @@
-import { Client, Room } from "@colyseus/sdk";
 import type {
   ClassType,
+  ClientMessages,
   Direction,
   EquipmentSlot,
-  WelcomeData,
   ServerMessages,
-  ClientMessages,
+  WelcomeData,
 } from "@abraxas/shared";
 import { ClientMessageType, ServerMessageType } from "@abraxas/shared";
+import { Client, type Room } from "@colyseus/sdk";
 import type { GameState } from "../../../server/src/schema/GameState";
 
 /**
@@ -22,10 +22,7 @@ import type { GameState } from "../../../server/src/schema/GameState";
 type ClientRoom = Room<unknown, GameState>;
 
 function getServerUrl(): string {
-  if (
-    typeof window !== "undefined" &&
-    window.location.hostname !== "localhost"
-  ) {
+  if (typeof window !== "undefined" && window.location.hostname !== "localhost") {
     const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
     return `${proto}//${window.location.host}`;
   }
@@ -41,7 +38,8 @@ export class NetworkManager {
   // Buffered messages that arrive before App.tsx registers its handlers
   private _bufferedQuestList: ServerMessages[ServerMessageType.QuestList] | null = null;
   private _bufferedFriendUpdate: ServerMessages[ServerMessageType.FriendUpdate] | null = null;
-  private _onFriendUpdate: ((data: ServerMessages[ServerMessageType.FriendUpdate]) => void) | null = null;
+  private _onFriendUpdate: ((data: ServerMessages[ServerMessageType.FriendUpdate]) => void) | null =
+    null;
 
   constructor(serverUrl?: string) {
     this.client = new Client(serverUrl ?? getServerUrl());
@@ -59,9 +57,8 @@ export class NetworkManager {
     }
   }
 
-  public onWarp:
-    | ((data: { targetMap: string; targetX: number; targetY: number }) => void)
-    | null = null;
+  public onWarp: ((data: { targetMap: string; targetX: number; targetY: number }) => void) | null =
+    null;
 
   /** Subscribe to FriendUpdate messages. Setting this flushes any buffered initial message. */
   set onFriendUpdate(cb: ((data: ServerMessages[ServerMessageType.FriendUpdate]) => void) | null) {
@@ -94,10 +91,7 @@ export class NetworkManager {
     // We use the <GameState> generic type, but we no longer pass the class itself
     // to avoid bundling the entire server-side schema module into the client build.
     // The server will send the full definition down on the first connect.
-    this.room = await this.client.joinOrCreate<GameState>(
-      "arena",
-      { charId, classType, mapName },
-    );
+    this.room = await this.client.joinOrCreate<GameState>("arena", { charId, classType, mapName });
 
     const welcomePromise = new Promise<WelcomeData>((resolve) => {
       this.welcomeResolve = resolve;
@@ -105,9 +99,12 @@ export class NetworkManager {
 
     // Register handlers for messages the server sends before Welcome so they
     // are buffered and not silently dropped with a "not registered" warning.
-    this.room.onMessage(ServerMessageType.QuestList, (data: ServerMessages[ServerMessageType.QuestList]) => {
-      this._bufferedQuestList = data;
-    });
+    this.room.onMessage(
+      ServerMessageType.QuestList,
+      (data: ServerMessages[ServerMessageType.QuestList]) => {
+        this._bufferedQuestList = data;
+      },
+    );
 
     // Pre-register no-op handlers for combat/visual messages that are only
     // handled by GameEventHandler (set up after the Phaser scene loads).
@@ -127,13 +124,16 @@ export class NetworkManager {
     this.room.onMessage(ServerMessageType.StealthApplied, noop);
     this.room.onMessage(ServerMessageType.LevelUp, noop);
 
-    this.room.onMessage(ServerMessageType.FriendUpdate, (data: ServerMessages[ServerMessageType.FriendUpdate]) => {
-      if (this._onFriendUpdate) {
-        this._onFriendUpdate(data);
-      } else {
-        this._bufferedFriendUpdate = data;
-      }
-    });
+    this.room.onMessage(
+      ServerMessageType.FriendUpdate,
+      (data: ServerMessages[ServerMessageType.FriendUpdate]) => {
+        if (this._onFriendUpdate) {
+          this._onFriendUpdate(data);
+        } else {
+          this._bufferedFriendUpdate = data;
+        }
+      },
+    );
 
     this.room.onMessage(ServerMessageType.Welcome, (data: WelcomeData) => {
       this.welcomeData = data;
@@ -143,12 +143,9 @@ export class NetworkManager {
       }
     });
 
-    this.room.onMessage(
-      ServerMessageType.Warp,
-      (data: ServerMessages[ServerMessageType.Warp]) => {
-        if (this.onWarp) this.onWarp(data);
-      },
-    );
+    this.room.onMessage(ServerMessageType.Warp, (data: ServerMessages[ServerMessageType.Warp]) => {
+      if (this.onWarp) this.onWarp(data);
+    });
 
     this.room.onMessage(
       ServerMessageType.Audio,
@@ -161,8 +158,7 @@ export class NetworkManager {
     return this.room;
   }
 
-  public onAudioData: ((sessionId: string, data: ArrayBuffer) => void) | null =
-    null;
+  public onAudioData: ((sessionId: string, data: ArrayBuffer) => void) | null = null;
 
   /** Measures round-trip latency using the built-in SDK ping. */
   ping(onResult: (rtt: number) => void): void {

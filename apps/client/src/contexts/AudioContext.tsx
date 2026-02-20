@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
+import type React from "react";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import type { SoundManager } from "../assets/SoundManager";
 
 interface AudioContextType {
@@ -27,7 +28,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo(
     () => ({ setSoundManager, playUIClick, playUIHover, playUIOpen, playUIClose }),
-    [playUIClick, playUIHover, playUIOpen, playUIClose]
+    [playUIClick, playUIHover, playUIOpen, playUIClose],
   );
 
   return <AudioContext.Provider value={value}>{children}</AudioContext.Provider>;

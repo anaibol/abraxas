@@ -1,4 +1,4 @@
-import type { TileMap, BroadcastFn } from "@abraxas/shared";
+import type { BroadcastFn, TileMap } from "@abraxas/shared";
 import { PLAYER_RESPAWN_TIME_MS, ServerMessageType } from "@abraxas/shared";
 import type { Player } from "../schema/Player";
 

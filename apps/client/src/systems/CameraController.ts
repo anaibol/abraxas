@@ -1,5 +1,5 @@
-import type Phaser from "phaser";
 import { TILE_SIZE, VIEWPORT_TILES_X, VIEWPORT_TILES_Y } from "@abraxas/shared";
+import type Phaser from "phaser";
 import type { PlayerSprite } from "../entities/PlayerSprite";
 
 export class CameraController {
