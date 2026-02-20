@@ -5,7 +5,7 @@ import { Char } from "./Char";
 import { InventoryItem } from "./InventoryItem";
 
 export class Player extends Char {
-  type = EntityType.PLAYER;
+  entityType = EntityType.PLAYER;
   // ── Shared (visible to all clients) ─────────────────────────────────────
   @type("string") groupId: string = "";
   @type("string") guildId: string = "";

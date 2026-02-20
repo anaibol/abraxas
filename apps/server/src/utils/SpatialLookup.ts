@@ -30,7 +30,8 @@ export class SpatialLookup {
 
   addToGrid(entity: Entity) {
     if (!entity.alive) {
-      this.removeFromGrid(entity); // Bug Fix: Ensure dead entities are removed
+      // Defensive: ensure any stale grid entry is cleared for newly-dead entities.
+      this.removeFromGrid(entity);
       return;
     }
     const key = this.getKey(entity.tileX, entity.tileY);
@@ -147,7 +148,7 @@ export class SpatialLookup {
     let minDist = Infinity;
 
     for (const entity of entities) {
-      if (entity.type === EntityType.PLAYER && entity.isAttackable()) {
+      if (entity.entityType === EntityType.PLAYER && entity.isAttackable()) {
         const dist = MathUtils.manhattanDist({ x: cx, y: cy }, entity.getPosition());
         if (dist < minDist) {
           minDist = dist;

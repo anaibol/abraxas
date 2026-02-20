@@ -10,6 +10,6 @@ export class GameState extends Schema {
   @type({ map: Drop }) drops = new MapSchema<Drop>();
   @type({ map: Group }) groups = new MapSchema<Group>();
   @type("uint32") tick: number = 0;
-  @type("number") timeOfDay: number = 12;
+  @type("float32") timeOfDay: number = 12;
   @type("string") weather: string = "clear";
 }

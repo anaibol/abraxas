@@ -16,9 +16,6 @@ export class Npc extends Char {
   @type("string") uniqueId?: string;
   @type("string") dbId?: string;
 
-  hp: number = 0;
-  maxHp: number = 0;
-
   // Server-only dataAI fields (not synced to clients) ──────────────────────
   /** Current AI state machine state. */
   state: NpcState = NpcState.IDLE;

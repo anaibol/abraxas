@@ -253,6 +253,11 @@ export class GameScene extends Phaser.Scene {
         unsub(onChangeUnsub);
 
         if (isLocal) {
+          if (import.meta.env.DEV) {
+            console.group(`%c[Abraxas] Local player onAdd (Colyseus snapshot)`, "color:#ffcc44;font-weight:bold");
+            console.log({ alive: pState.alive, hp: pState.hp, maxHp: pState.maxHp, mana: pState.mana, maxMana: pState.maxMana });
+            console.groupEnd();
+          }
           this.pushSidebarUpdate(player);
 
           // React sidebar sync: use per-field listen() so that movement

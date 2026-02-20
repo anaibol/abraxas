@@ -170,10 +170,15 @@ export class NpcSystem {
     const ability = ABILITIES[abilityId];
     if (!ability) return;
 
-    // Determine what to summon based on ability or caster
+    // Determine what to summon: ability ID encodes the type, or fall back to
+    // the caster's configured summonType (used by NPC summoners).
     let typeToSummon: NpcType = "skeleton";
     if (abilityId === "summon_skeleton") typeToSummon = "skeleton";
-    // Druid summons could go here too
+    else if (abilityId === "summon_zombie") typeToSummon = "zombie";
+    else if (caster instanceof Npc) {
+      const npcStats = NPC_STATS[caster.npcType];
+      if (npcStats?.summonType) typeToSummon = npcStats.summonType;
+    }
 
     // Check caps
     const ownerStats = caster.getStats();
@@ -475,19 +480,14 @@ export class NpcSystem {
     // Leash to owner if too far
     const distToOwner = MathUtils.manhattanDist(npc.getPosition(), owner.getPosition());
     if (distToOwner > 15) {
-      // Teleport companion to owner if extremely far away (e.g. owner respawned/warped)
-      // Offset by 1 tile if owner tile is blocked/occupied
-      let tx = owner.tileX;
-      let ty = owner.tileY;
-      const safe = findSafeSpawn(tx, ty, map, this.spatial);
+      // B009: always teleport to a safe tile near the owner, never their exact tile.
+      const safe = findSafeSpawn(owner.tileX, owner.tileY, map, this.spatial);
       if (safe) {
-        tx = safe.x;
-        ty = safe.y;
+        npc.tileX = safe.x;
+        npc.tileY = safe.y;
+        npc.path = [];
       }
-
-      npc.tileX = tx;
-      npc.tileY = ty;
-      npc.path = [];
+      // If no safe spot found, stay in place rather than overlapping the owner.
       return;
     }
 
@@ -506,7 +506,7 @@ export class NpcSystem {
       // Defend owner: scan for nearby hostiles targeting the owner
       const nearbyEnemies = this.spatial.findEntitiesInRadius(owner.tileX, owner.tileY, AGGRO_RANGE);
       for (const enemy of nearbyEnemies) {
-        if (enemy.type === EntityType.NPC && (enemy as Npc).targetId === owner.sessionId) {
+        if (enemy.entityType === EntityType.NPC && (enemy as Npc).targetId === owner.sessionId) {
           npc.targetId = enemy.sessionId;
           npc.state = NpcState.CHASE;
           return;

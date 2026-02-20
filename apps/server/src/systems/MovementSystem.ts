@@ -85,7 +85,7 @@ export class MovementSystem {
       newY < 0 ||
       newY >= map.height ||
       map.collision[newY]?.[newX] === 1 ||
-      (entity.type !== EntityType.PLAYER && map.warps?.some((w) => w.x === newX && w.y === newY)) ||
+      (entity.entityType !== EntityType.PLAYER && map.warps?.some((w) => w.x === newX && w.y === newY)) ||
       this.spatial.isTileOccupied(newX, newY, entity.sessionId)
     ) {
       return { success: false };

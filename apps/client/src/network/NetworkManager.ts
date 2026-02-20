@@ -141,6 +141,28 @@ export class NetworkManager {
         this.welcomeResolve(data);
         this.welcomeResolve = null;
       }
+      if (import.meta.env.DEV) {
+        const lp = this.room?.state.players.get(this.room.sessionId);
+        console.group(`%c[Abraxas] Welcome received — sessionId: ${this.room?.sessionId}`, "color:#7ec8e3;font-weight:bold");
+        console.log("map:", data.roomMapName, "spawn:", data.tileX, data.tileY);
+        if (lp) {
+          console.log("player state snapshot:", {
+            alive: lp.alive,
+            hp: lp.hp,
+            maxHp: lp.maxHp,
+            mana: lp.mana,
+            maxMana: lp.maxMana,
+            level: lp.level,
+            classType: lp.classType,
+          });
+        } else {
+          console.warn("[Abraxas] Local player not yet in state at Welcome time");
+        }
+        console.groupEnd();
+        // Expose the room on window for quick console inspection
+        (window as any).__room = this.room;
+        console.log("%c[Abraxas] window.__room exposed for console inspection", "color:#aaffaa");
+      }
     });
 
     this.room.onMessage(ServerMessageType.Warp, (data: ServerMessages[ServerMessageType.Warp]) => {

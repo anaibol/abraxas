@@ -8,7 +8,7 @@ import { Schema, type } from "@colyseus/schema";
  * and are common across character types.
  */
 export abstract class Char extends Schema {
-  @type("string") type: EntityType = EntityType.NPC;
+  @type("string") entityType: EntityType = EntityType.NPC;
   @type("string") sessionId: string = "";
   @type("string") name: string = "";
   @type("uint16") tileX: number = 0;

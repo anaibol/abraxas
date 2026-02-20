@@ -7,6 +7,7 @@ import {
   type JoinOptions,
   EntityType,
   type NpcType,
+  PLAYER_RESPAWN_TIME_MS,
   ServerMessageType,
   TICK_MS,
   type TileMap,
@@ -213,7 +214,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
               const affixes = (d.item.affixesJson as unknown as ItemAffix[]) || [];
               affixes.forEach((a) => {
                   const s = new ItemAffixSchema();
-                  s.type = a.type;
+                  s.affixType = a.type;
                   s.stat = a.stat;
                   s.value = a.value;
                   drop.affixes.push(s);
@@ -299,6 +300,11 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         player.tileY = safe?.y ?? candidate.y;
       }
       this.state.players.set(client.sessionId, player);
+      // If the player logged out while dead, queue an immediate respawn
+      // so they enter the world alive on the first server tick.
+      if (!player.alive) {
+        this.respawnSystem.queueRespawn(client.sessionId, Date.now() - PLAYER_RESPAWN_TIME_MS);
+      }
       client.view = new StateView();
       client.view.add(player);
       this.spatial.addToGrid(player);
@@ -450,7 +456,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       }
     });
 
-    if (entity.type === EntityType.PLAYER) this.onPlayerDeath(entity as Player, killerSessionId);
+    if (entity.entityType === EntityType.PLAYER) this.onPlayerDeath(entity as Player, killerSessionId);
     else this.tickSystem.handleNpcDeath(entity as Npc, killerSessionId);
   }
 

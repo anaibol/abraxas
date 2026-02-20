@@ -20,6 +20,7 @@ import { Player } from "../schema/Player";
 import { Npc } from "../schema/Npc";
 import type { Entity, SpatialLookup } from "../utils/SpatialLookup";
 import type { BuffSystem } from "./BuffSystem";
+import { logger } from "../logger";
 
 type SendToClientFn = <T extends ServerMessageType>(type: T, message?: ServerMessages[T]) => void;
 
@@ -461,6 +462,19 @@ export class CombatSystem {
         return;
       }
 
+      // B002: Melee/ranged attacks also require Line of Sight at resolution time.
+      // Skip for point-blank (dist ≤ 1) to avoid false negatives when adjacent.
+      if (
+        dist > 1 &&
+        !this.hasLineOfSight(attacker.getPosition(), { x: target.tileX, y: target.tileY })
+      ) {
+        broadcast(ServerMessageType.AttackHit, {
+          sessionId: attacker.sessionId,
+          targetSessionId: null,
+        });
+        return;
+      }
+
       if (this.buffSystem.isInvulnerable(target.sessionId, now)) {
         broadcast(ServerMessageType.AttackHit, {
           sessionId: attacker.sessionId,
@@ -481,16 +495,14 @@ export class CombatSystem {
           : calcMeleeDamage(attackerStr, defenderArmor, defenderAgi);
 
       if (result.dodged) {
-        console.log("[resolveAutoAttack] target dodged!");
+        logger.debug({ intent: "auto_attack", result: "dodge", attackerId: attacker.sessionId, targetId: target.sessionId });
         broadcast(ServerMessageType.AttackHit, {
           sessionId: attacker.sessionId,
           targetSessionId: target.sessionId,
           dodged: true,
         });
       } else {
-        console.log(
-          `[resolveAutoAttack] HIT! damage=${result.damage}. hpBefore=${target.hp + result.damage}`,
-        );
+        logger.debug({ intent: "auto_attack", result: "hit", damage: result.damage, hpAfter: target.hp - result.damage });
         target.hp -= result.damage;
         this.interruptCast(target.sessionId, broadcast);
         // B043: Taking damage breaks stealth
@@ -519,7 +531,7 @@ export class CombatSystem {
         }
       }
     } else {
-      console.log(`[resolveAutoAttack] Miss! Target not found or dead.`);
+      logger.debug({ intent: "auto_attack", result: "miss", attackerId: attacker.sessionId });
       broadcast(ServerMessageType.AttackHit, {
         sessionId: attacker.sessionId,
         targetSessionId: null,
