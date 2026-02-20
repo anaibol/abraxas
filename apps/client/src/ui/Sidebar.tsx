@@ -12,6 +12,7 @@ import { SpellsTab } from "./sidebar/SpellsTab";
 import { GroupTab } from "./sidebar/GroupTab";
 import { FriendsTab } from "./sidebar/FriendsTab";
 import type { SidebarProps } from "./sidebar/types";
+import { useAudio } from "../contexts/AudioContext";
 import { useIsMobile } from "../hooks/useIsMobile";
 
 const SIDEBAR_TABS: readonly {
@@ -144,7 +145,13 @@ export function Sidebar({
 					cursor="pointer"
 					transition="all 0.12s"
 					_hover={{ color: T.goldText, bg: T.surface }}
-					onClick={() => setTab(key)}
+					onMouseEnter={() => {
+						if (tab !== key) playUIHover?.();
+					}}
+					onClick={() => {
+						if (tab !== key) playUIClick?.();
+						setTab(key);
+					}}
 				>
 					<Box fontSize="16px" lineHeight="1">{icon}</Box>
 					<Box
