@@ -124,12 +124,12 @@ describe("Arena multiplayer smoke test", () => {
         try {
           return await client.joinOrCreate("arena", opts);
         } catch (e: unknown) {
-          const err = e as Error;
+          const err = e as Error & { code?: number };
           lastErr = err;
           console.error(`[smoke.test] joinWithRetry attempt ${i + 1} failed:`, e);
           // If reservation expired (524), retry after a short delay
           const msg = err?.message || String(e) || "";
-          if (msg.includes("seat reservation expired") || (err as any)?.code === 524) {
+          if (msg.includes("seat reservation expired") || err.code === 524) {
             await wait(300);
             continue;
           }
@@ -268,7 +268,7 @@ describe("Arena multiplayer smoke test", () => {
     });
 
     roomB.send("cast", {
-      spellId: "fireball",
+      abilityId: "fireball",
       targetTileX: 3,
       targetTileY: 4,
     });
