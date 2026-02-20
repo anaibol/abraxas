@@ -128,8 +128,9 @@
     "tame_too_far": "¡Estás demasiado lejos para domar eso!",
     "tame_no_lasso": "¡Necesitas un Lazo para domar animales!",
     "tame_success": "¡Has domado con éxito al {{item}}!",
-    "tame_success_dropped": "¡Domaste al {{item}} pero tus bolsas están llenas. ¡Se ha caído al suelo!",
-    "tame_failed": "¡El animal escapó! Tu lazo ha sido consumido."
+    "tame_success_dropped": "¡Has domado al {{item}} pero tus mochilas están llenas. ¡Se ha caido al suelo!",
+    "tame_failed": "¡El animal se escapó! Tu lazo ha sido consumido.",
+    "safe_zone": "Zona Segura"
   },
   "social": {
     "already_in_group": "El jugador ya está en un grupo",
@@ -143,7 +144,8 @@
     "kicked_from_group": "Has sido expulsado del grupo",
     "new_leader": "{{name}} es ahora el líder del grupo",
     "trade_requested": "{{name}} quiere comerciar contigo",
-    "friend_request": "{{targetName}} quiere ser tu amigo"
+    "friend_request": "{{targetName}} quiere ser tu amigo",
+    "invited_to_guild": "{{name}} invitado al clan"
   },
   "settings": {
     "title": "Ajustes",
@@ -164,7 +166,8 @@
       "spells": "Hechizos",
       "quests": "Misiones",
       "group": "Grupo",
-      "friends": "Amigos"
+      "friends": "Amigos",
+      "guild": "Clan"
     },
     "inventory": {
       "unequip_hint": "{{name}} (clic derecho desequipar)",
@@ -210,6 +213,18 @@
       "str": "FOR",
       "agi": "AGI",
       "int": "INT"
+    },
+    "pvp": "Modo PvP",
+    "pvp_on": "ON",
+    "pvp_off": "OFF",
+    "guild": {
+      "not_in_guild": "No estás en un clan. Únete o crea uno.",
+      "guild_name": "Nombre del clan",
+      "create": "Crear",
+      "guild_members": "Miembros del clan",
+      "leave": "Abandonar clan",
+      "player_name": "Nombre del jugador",
+      "invite": "Invitar"
     }
   },
   "status": {
@@ -652,7 +667,9 @@
     "whisper": "💬 Susurrar",
     "add_friend": "➕ Añadir amigo",
     "group_invite": "⚔️ Invitar al grupo",
-    "trade": "🤝 Comerciar"
+    "guild_invite": "🏰 Invitar al clan",
+    "trade": "🤝 Comerciar",
+    "tame": "🐾 Domar"
   },
   "kill_feed": {
     "killed": "mató a"
