@@ -25,6 +25,10 @@ const BASE_SFX: Record<string, number> = {
   "sfx-levelup": 0.6,
   "sfx-notification": 0.7,
   "sfx-mount": 0.5,
+  "sfx-buff": 0.6,
+  "sfx-stealth": 0.6,
+  "sfx-summon": 0.6,
+  "sfx-magic-hit": 0.5,
 };
 
 export class SoundManager {
@@ -89,6 +93,18 @@ export class SoundManager {
   }
   playMount() {
     this.play("sfx-mount");
+  }
+  playBuff() {
+    this.play("sfx-buff");
+  }
+  playStealth() {
+    this.play("sfx-stealth");
+  }
+  playSummon() {
+    this.play("sfx-summon");
+  }
+  playMagicHit() {
+    this.play("sfx-magic-hit");
   }
 
   playUIClick() {

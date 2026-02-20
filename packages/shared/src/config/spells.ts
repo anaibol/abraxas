@@ -639,15 +639,15 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     fxId: 19,
   },
 
-  /** Ghost: close-range life drain */
+  /** Necromancer/Ghost: close-range life drain */
   soul_drain: {
     id: "soul_drain",
     rangeTiles: 1,
-    manaCost: 0,
+    manaCost: 25,
     baseDamage: 10,
     scalingStat: "int",
-    scalingRatio: 0.5,
-    cooldownMs: 3000,
+    scalingRatio: 0.8,
+    cooldownMs: 8000,
     windupMs: 200,
     effect: "leech",
     damageSchool: "magical",
@@ -656,12 +656,12 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     fxId: 22,
   },
 
-  /** Lich/Boss: long-range dark magic bolt */
+  /** Necromancer/Lich/Boss: long-range dark magic bolt */
   shadow_bolt: {
     id: "shadow_bolt",
     rangeTiles: FULL_VIEWPORT_RANGE,
-    manaCost: 0,
-    baseDamage: 40,
+    manaCost: 15,
+    baseDamage: 30,
     scalingStat: "int",
     scalingRatio: 1.0,
     cooldownMs: 2000,
@@ -672,25 +672,23 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     fxId: 3,
   },
 
-  /** Ghost/Lich: AoE debuff that weakens all nearby enemies' armor */
+  /** Necromancer/Ghost/Lich: AoE debuff that weakens all nearby enemies' armor */
   banshee_wail: {
     id: "banshee_wail",
     rangeTiles: 0,
-    manaCost: 0,
+    manaCost: 30,
     baseDamage: 0,
     scalingStat: "int",
     scalingRatio: 0,
-    cooldownMs: 8000,
-    windupMs: 400,
+    cooldownMs: 15000,
+    windupMs: 600,
     effect: "debuff",
     damageSchool: "magical",
     key: "",
-    durationMs: 6000,
-    // Radius 3 instead of 4 — still a wide area effect but less oppressive
-    // when multiple ghosts or the lich are active simultaneously.
-    aoeRadius: 3,
+    durationMs: 8000,
+    aoeRadius: 4,
     buffStat: "armor",
-    buffAmount: 8,
+    buffAmount: 12,
     fxId: 16,
   },
 

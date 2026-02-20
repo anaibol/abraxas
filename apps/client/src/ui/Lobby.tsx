@@ -1,5 +1,5 @@
 import { type ClassType, getRandomName } from "@abraxas/shared";
-import { Badge, Box, Button, Flex, Grid, IconButton, Input, Text } from "@chakra-ui/react";
+import { Badge, Box, Button, Flex, Grid, IconButton, Input, Spinner, Text } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -26,6 +26,8 @@ const CLASS_TYPES: readonly ClassType[] = [
   "ROGUE",
   "CLERIC",
   "PALADIN",
+  "NECROMANCER",
+  "DRUID",
 ];
 
 const CLASS_INFO: Record<ClassType, { icon: string; color: string }> = {
@@ -50,8 +52,16 @@ const CLASS_INFO: Record<ClassType, { icon: string; color: string }> = {
     color: "#ffca3a",
   },
   PALADIN: {
-    icon: "\u2728",
+    icon: "✨",
     color: "#f8f9fa",
+  },
+  NECROMANCER: {
+    icon: "💀",
+    color: "#8a2be2",
+  },
+  DRUID: {
+    icon: "🌿",
+    color: "#2e8b57",
   },
 };
 
@@ -110,13 +120,17 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
   const [classType, setClassType] = useState<ClassType>("WARRIOR");
   const [error, setError] = useState("");
   const [creating, setCreating] = useState(false);
+  const [isCheckingToken, setIsCheckingToken] = useState(() => !!localStorage.getItem("abraxas_token"));
 
   const [token, setToken] = useState("");
   const [characters, setCharacters] = useState<CharacterSummary[]>([]);
 
   useEffect(() => {
     const stored = localStorage.getItem("abraxas_token");
-    if (!stored) return;
+    if (!stored) {
+      setIsCheckingToken(false);
+      return;
+    }
 
     fetch("/api/me", {
       headers: { Authorization: `Bearer ${stored}` },
@@ -132,6 +146,9 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
       })
       .catch(() => {
         localStorage.removeItem("abraxas_token");
+      })
+      .finally(() => {
+        setIsCheckingToken(false);
       });
   }, []);
 
@@ -330,8 +347,18 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
           mb="8"
         />
 
+        {/* ── Token Validation ── */}
+        {isCheckingToken && (
+          <Flex direction="column" align="center" justify="center" py="10" gap="4" animation={`${entrance} 0.4s ease-out`}>
+            <Spinner color={T.gold} size="xl" borderWidth="3px" />
+            <Text fontSize="12px" color={T.goldMuted} letterSpacing="2px" textTransform="uppercase">
+              {t("lobby.connecting")}
+            </Text>
+          </Flex>
+        )}
+
         {/* ── Account Auth ── */}
-        {(mode === "login" || mode === "register") && (
+        {(mode === "login" || mode === "register") && !isCheckingToken && (
           <Flex
             as="form"
             direction="column"

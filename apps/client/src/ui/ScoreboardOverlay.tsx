@@ -39,6 +39,8 @@ const CLASS_COLOR: Record<string, string> = {
   ROGUE: "#a8d060",
   CLERIC: "#f0d870",
   RANGER: "#78c8a0",
+  NECROMANCER: "#8a2be2",
+  DRUID: "#2e8b57",
 };
 
 const KEYBINDS: { key: string; labelKey: string; categoryKey: string }[] = [
