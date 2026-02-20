@@ -55,13 +55,13 @@ export class PreloaderScene extends Phaser.Scene {
     this.load.audio("sfx-hit2", "audio/kenney_impact/Audio/impactMetal_heavy_001.ogg");
     this.load.audio("sfx-hit3", "audio/kenney_impact/Audio/impactMetal_heavy_002.ogg");
 
-    this.load.audio("sfx-spell", "audio/magic/FX411.mp3");
-    this.load.audio("sfx-death", "audio/sonidos/14.webm");
+    this.load.audio("sfx-spell", "audio/magic/FX411.ogg");
+    this.load.audio("sfx-death", "audio/sonidos/14.ogg");
     this.load.audio("sfx-heal", "audio/magic/Replenish.ogg");
     this.load.audio("sfx-buff", "audio/magic/montage-sfx-20130926@031949.ogg");
-    this.load.audio("sfx-stealth", "audio/magic/shimmer_1.flac_.mp3");
-    this.load.audio("sfx-summon", "audio/magic/ghost_1.flac_.mp3");
-    this.load.audio("sfx-magic-hit", "audio/magic/FX261.mp3");
+    this.load.audio("sfx-stealth", "audio/magic/shimmer_1.ogg");
+    this.load.audio("sfx-summon", "audio/magic/ghost_1.ogg");
+    this.load.audio("sfx-magic-hit", "audio/magic/FX261.ogg");
     
     // New SFX
     this.load.audio("sfx-levelup", "audio/kenney_ui/Audio/maximize_006.ogg");
@@ -77,11 +77,11 @@ export class PreloaderScene extends Phaser.Scene {
     this.load.audio("sfx-click-hover", "audio/kenney_ui/Audio/tick_001.ogg");
     this.load.audio("sfx-click-open", "audio/kenney_ui/Audio/open_001.ogg");
     this.load.audio("sfx-click-close", "audio/kenney_ui/Audio/close_001.ogg");
-    this.load.audio("music-arena", "audio/musica/101.webm");
+    this.load.audio("music-arena", "audio/musica/101.ogg");
 
     // Ambiance
     this.load.audio("ambiance-wind", "audio/ambiance/wind.ogg");
-    this.load.audio("ambiance-crickets", "audio/ambiance/crickets.mp3");
+    this.load.audio("ambiance-crickets", "audio/ambiance/crickets.ogg");
 
     // NPC specific
     this.load.audio("npc-skeleton-rattle", "audio/npc/skeleton_rattle.ogg");
@@ -89,7 +89,7 @@ export class PreloaderScene extends Phaser.Scene {
     this.load.audio("npc-roar", "audio/npc/creatures/roar_01.ogg");
     this.load.audio("npc-scream", "audio/npc/creatures/scream_01.ogg");
     this.load.audio("npc-hurt", "audio/npc/creatures/hurt_01.ogg");
-    this.load.audio("npc-levelup", "audio/kenney_ui/Audio/triumphant_fanfare_001.ogg"); // Using a placeholder for now
+    this.load.audio("npc-levelup", "audio/kenney_ui/Audio/maximize_008.ogg"); // Using an existing asset
   }
 
   create() {
@@ -149,6 +149,8 @@ export class PreloaderScene extends Phaser.Scene {
       this.scene.start("GameScene");
     });
 
+    this.load.audio("sfx-sword-sfx", "audio/npc/sword_sfx.ogg");
+    this.load.audio("sfx-magical-1-0", "audio/spells/magical_1_0.ogg");
     this.load.start();
   }
 }
