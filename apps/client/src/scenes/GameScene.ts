@@ -16,6 +16,7 @@ import { DropManager } from "../systems/DropManager";
 import { InputHandler } from "../systems/InputHandler";
 import { MapBaker } from "../systems/MapBaker";
 import { WeatherManager } from "../managers/WeatherManager";
+import { LightManager } from "../managers/LightManager";
 import type { PlayerState } from "../ui/sidebar/types";
 
 type StateCallback = (state: PlayerState) => void;
@@ -60,6 +61,7 @@ export class GameScene extends Phaser.Scene {
   private audioManager: AudioManager;
   private gameEventHandler!: GameEventHandler;
   private weatherManager!: WeatherManager;
+  private lightManager!: LightManager;
   private ambientOverlay!: Phaser.GameObjects.Graphics;
 
   private collisionGrid: number[][] = [];
@@ -340,10 +342,16 @@ export class GameScene extends Phaser.Scene {
       this.inputHandler,
       this.onConsoleMessage,
       this.onKillFeed,
+      // Camera shake callback — called by GameEventHandler for heavy-impact spells
+      (intensity: number, durationMs: number) => {
+        this.cameras.main.shake(durationMs, intensity);
+      },
+      this.lightManager,
     );
     this.gameEventHandler.setupListeners();
 
     this.weatherManager = new WeatherManager(this);
+    this.lightManager = new LightManager(this);
     this.ambientOverlay = this.add.graphics();
     this.ambientOverlay.setDepth(2000); // Above everything but UI
     this.ambientOverlay.setScrollFactor(0);
@@ -423,6 +431,7 @@ export class GameScene extends Phaser.Scene {
   update(time: number, delta: number) {
     this.inputHandler.update(time, () => this.getMouseTile());
     this.spriteManager.update(delta);
+    this.lightManager.update(time);
 
     if (this.inputHandler.targeting) {
       const lp = this.room.state.players.get(this.room.sessionId);
