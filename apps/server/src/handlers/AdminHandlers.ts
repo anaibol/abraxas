@@ -99,13 +99,51 @@ export class AdminHandlers {
 				logger.info({ room: ctx.roomId, sessionId: client.sessionId, message: `[GM] ${player.name} announced: ${msg}` });
 				break;
 			}
-			default:
-				if (command) {
-					HandlerUtils.sendError(client, `Unknown GM command: ${command}`);
-				} else {
-					HandlerUtils.sendError(client, "Commands: item, gold, xp, heal, spawn, announce");
-				}
-				break;
+		case "tp": {
+			const x = parseInt(args[1]);
+			const y = parseInt(args[2]);
+			if (Number.isNaN(x) || Number.isNaN(y)) {
+				HandlerUtils.sendError(client, "Usage: /gm tp <x> <y>");
+				return;
+			}
+			if (
+				x < 0 || x >= ctx.map.width ||
+				y < 0 || y >= ctx.map.height ||
+				ctx.map.collision[y]?.[x] === 1
+			) {
+				HandlerUtils.sendError(client, "gm.invalid_tile");
+				return;
+			}
+			ctx.systems.movement.teleport(player, x, y);
+			client.send(ServerMessageType.Notification, { message: `[GM] Teleported to ${x}, ${y}` });
+			logger.info({ room: ctx.roomId, sessionId: client.sessionId, message: `[GM] ${player.name} tp to ${x},${y}` });
+			break;
+		}
+		case "goto": {
+			const targetName = args[1];
+			if (!targetName) {
+				HandlerUtils.sendError(client, "Usage: /gm goto <playerName>");
+				return;
+			}
+			const target = Array.from(ctx.state.players.values()).find(
+				(p) => p.name.toLowerCase() === targetName.toLowerCase(),
+			);
+			if (!target) {
+				HandlerUtils.sendError(client, `Player not found: ${targetName}`);
+				return;
+			}
+			ctx.systems.movement.teleport(player, target.tileX, target.tileY);
+			client.send(ServerMessageType.Notification, { message: `[GM] Teleported to ${target.name}` });
+			logger.info({ room: ctx.roomId, sessionId: client.sessionId, message: `[GM] ${player.name} goto ${target.name}` });
+			break;
+		}
+		default:
+			if (command) {
+				HandlerUtils.sendError(client, `Unknown GM command: ${command}`);
+			} else {
+				HandlerUtils.sendError(client, "Commands: item, gold, xp, heal, spawn, announce, tp, goto");
+			}
+			break;
 		}
 	}
 }

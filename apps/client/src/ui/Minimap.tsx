@@ -1,15 +1,15 @@
-import { useEffect, useRef, type FC } from "react";
+import { useEffect, useRef, type FC, type MouseEvent } from "react";
 import type { TileMap } from "@abraxas/shared";
-import type { Player } from "../../../server/src/schema/Player";
-import type { Npc } from "../../../server/src/schema/Npc";
 import { useIsMobile } from "../hooks/useIsMobile";
 
+/** Minimal shape the minimap needs — avoids importing server schema into the client. */
+type MinimapEntity = { tileX: number; tileY: number; alive: boolean; sessionId: string };
 type SchemaMap<T> = { forEach: (cb: (value: T, key: string) => void) => void };
 
 type MinimapProps = {
   map: TileMap;
-  players: SchemaMap<Player> | undefined;
-  npcs: SchemaMap<Npc> | undefined;
+  players: SchemaMap<MinimapEntity> | undefined;
+  npcs: SchemaMap<MinimapEntity> | undefined;
   currentPlayerId: string;
   isGM?: boolean;
   onGMClick?: (tileX: number, tileY: number) => void;
@@ -97,7 +97,7 @@ export const Minimap: FC<MinimapProps> = ({ map, players, npcs, currentPlayerId,
     return () => cancelAnimationFrame(rafId);
   }, [map, size]);
 
-  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handleCanvasClick = (e: MouseEvent<HTMLCanvasElement>) => {
     if (!isGM || !onGMClick) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const relX = e.clientX - rect.left;

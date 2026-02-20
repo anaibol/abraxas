@@ -1,17 +1,16 @@
 import type { Direction, TileMap } from "@abraxas/shared";
 import { DIRECTION_DELTA } from "@abraxas/shared";
 import { logger } from "../logger";
-import { SpatialLookup, Entity } from "../utils/SpatialLookup";
-import { Player } from "../schema/Player";
+import type { SpatialLookup, Entity } from "../utils/SpatialLookup";
 
-export interface MoveResult {
+export type MoveResult = {
 	success: boolean;
 	warp?: {
 		targetMap: string;
 		targetX: number;
 		targetY: number;
 	};
-}
+};
 
 export class MovementSystem {
 	constructor(private spatial: SpatialLookup) {}

@@ -12,7 +12,7 @@ import { EconomyHandlers } from "./EconomyHandlers";
 export type { RoomContext } from "./RoomContext";
 
 export class MessageHandler {
-	constructor(private ctx: RoomContext) {}
+	constructor(public ctx: RoomContext) {}
 
 	/**
 	 * Registers all message handlers with the room.

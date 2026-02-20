@@ -44,12 +44,31 @@ export class MovementHandlers {
 		client: Client,
 		data: ClientMessages[ClientMessageType.GMTeleport],
 	) {
-		const player = HandlerUtils.getActivePlayer(ctx, client);
-		if (!player || player.role !== "ADMIN") {
-			HandlerUtils.sendError(client, "game.error_generic");
+		const player = ctx.state.players.get(client.sessionId);
+		if (!player) return;
+
+		if (player.role !== "GM" && player.role !== "ADMIN") {
+			HandlerUtils.sendError(client, "gm.unauthorized");
 			return;
 		}
 
-		ctx.systems.movement.teleport(player, data.targetTileX, data.targetTileY);
+		const { tileX, tileY } = data;
+
+		if (
+			tileX < 0 ||
+			tileX >= ctx.map.width ||
+			tileY < 0 ||
+			tileY >= ctx.map.height ||
+			ctx.map.collision[tileY]?.[tileX] === 1
+		) {
+			HandlerUtils.sendError(client, "gm.invalid_tile");
+			return;
+		}
+
+		ctx.systems.movement.teleport(player, tileX, tileY);
+
+		client.send(ServerMessageType.Notification, {
+			message: `[GM] Teleported to ${tileX}, ${tileY}`,
+		});
 	}
 }

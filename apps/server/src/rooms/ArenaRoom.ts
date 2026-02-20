@@ -13,6 +13,8 @@ import { verifyToken } from "../database/auth";
 import { prisma } from "../database/db";
 import type { Account } from "../generated/prisma";
 import { MessageHandler } from "../handlers/MessageHandler";
+import { HandlerUtils } from "../handlers/HandlerUtils";
+import { SocialHandlers } from "../handlers/SocialHandlers";
 import { logger } from "../logger";
 import { GameState } from "../schema/GameState";
 import { Player } from "../schema/Player";
@@ -165,7 +167,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 				onSummon: (caster, spellId, x, y) =>
 					this.onSummon(caster, spellId, x, y),
 				gainXp: (p, a) => this.levelService.gainXp(p, a),
-				sendQuestUpdates: (c, u) => this.messageHandler.sendQuestUpdates(c, u),
+				sendQuestUpdates: (c, u) => HandlerUtils.sendQuestUpdates(c, u),
 				findClient: (sid) => this.findClient(sid),
 			});
 
@@ -304,7 +306,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 	private async removePlayer(client: Client) {
 		const player = this.state.players.get(client.sessionId);
 		if (player) {
-			this.messageHandler.handleGroupLeave(client);
+			SocialHandlers.handleGroupLeave(this.messageHandler.ctx, client);
 			await this.playerService.cleanupPlayer(player, this.roomMapName);
 			await this.bankSystem.closeBank(player);
 		}

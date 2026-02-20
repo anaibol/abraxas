@@ -1,24 +1,75 @@
-import React, { useState } from "react";
+import { useState, type ChangeEvent } from "react";
 import { Box, Flex, Text, Grid, Input } from "@chakra-ui/react";
 import { Button } from "./components/Button";
-import { ITEMS, type Item } from "@abraxas/shared";
+import { ITEMS } from "@abraxas/shared";
 import { T, HEX } from "./tokens";
 import { useTranslation } from "react-i18next";
 
-interface BankSlot {
+type BankSlot = {
   itemId: string;
   quantity: number;
   slotIndex: number;
-}
+};
 
-interface BankWindowProps {
+type BankWindowProps = {
   bankItems: BankSlot[];
-  playerInventory: { itemId: string; quantity: number; slotIndex: number }[];
+  playerInventory: BankSlot[];
   onDeposit: (itemId: string, quantity: number, slotIndex: number) => void;
   onWithdraw: (itemId: string, quantity: number, slotIndex: number) => void;
   onClose: () => void;
-}
+};
 
+type ItemGridProps = {
+  slots: BankSlot[];
+  selectedSlotIndex: number | null;
+  onSelect: (slot: BankSlot) => void;
+};
+
+function ItemGrid({ slots, selectedSlotIndex, onSelect }: ItemGridProps) {
+  return (
+    <Grid
+      templateColumns={{ base: "repeat(4, 1fr)", md: "repeat(6, 1fr)" }}
+      gap="2"
+      bg="blackAlpha.400"
+      p="3"
+      borderRadius="8px"
+      border="1px solid"
+      borderColor={T.border}
+    >
+      {[...Array(24).keys()].map((slotIndex) => {
+        const slot = slots.find((it) => it.slotIndex === slotIndex);
+        const def = slot ? ITEMS[slot.itemId] : null;
+        const isSelected = selectedSlotIndex === slotIndex && !!slot;
+
+        return (
+          <Box
+            key={slotIndex}
+            aspectRatio="1"
+            bg={isSelected ? "whiteAlpha.200" : "blackAlpha.600"}
+            border="1px solid"
+            borderColor={isSelected ? T.gold : T.border}
+            borderRadius="4px"
+            cursor={def ? "pointer" : "default"}
+            transition="all 0.15s"
+            _hover={def ? { borderColor: T.goldDim, transform: "scale(1.05)" } : {}}
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            position="relative"
+            onClick={() => { if (slot) onSelect(slot); }}
+          >
+            {def && <Text fontSize="24px">✨</Text>}
+            {slot && slot.quantity > 1 && (
+              <Text position="absolute" bottom="1px" right="2px" fontSize="10px" color="#fff" fontWeight="bold">
+                {slot.quantity}
+              </Text>
+            )}
+          </Box>
+        );
+      })}
+    </Grid>
+  );
+}
 
 export function BankWindow({
   bankItems,
@@ -28,22 +79,22 @@ export function BankWindow({
   onClose,
 }: BankWindowProps) {
   const { t } = useTranslation();
-  const [selectedItem, setSelectedItem] = useState<{
-    itemId: string;
-    quantity: number;
-    slotIndex: number;
-    source: "inventory" | "bank";
-  } | null>(null);
+  const [selectedItem, setSelectedItem] = useState<(BankSlot & { source: "inventory" | "bank" }) | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
 
-  const handleQtyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = parseInt(e.target.value, 10);
-    if (!Number.isNaN(val)) {
-      setQuantity(Math.max(1, Math.min(999, val)));
-    }
+  const handleQtyChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.valueAsNumber;
+    if (!Number.isNaN(val)) setQuantity(Math.max(1, Math.min(999, val)));
   };
 
   const selectedDef = selectedItem ? ITEMS[selectedItem.itemId] : null;
+  const invSelectedSlot = selectedItem?.source === "inventory" ? selectedItem.slotIndex : null;
+  const bankSelectedSlot = selectedItem?.source === "bank" ? selectedItem.slotIndex : null;
+
+  const selectSlot = (slot: BankSlot, source: "inventory" | "bank") => {
+    setSelectedItem({ ...slot, source });
+    setQuantity(1);
+  };
 
   return (
     <Box
@@ -93,94 +144,26 @@ export function BankWindow({
       </Flex>
 
       <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={{ base: "4", md: "8" }}>
-        {/* Inventory Section */}
         <Box>
           <Text color={T.goldMuted} fontSize="12px" mb="4" fontWeight="bold" letterSpacing="2px">
             {t("ui.bank.inventory_label")}
           </Text>
-          <Grid templateColumns={{ base: "repeat(4, 1fr)", md: "repeat(6, 1fr)" }} gap="2" bg="blackAlpha.400" p="3" borderRadius="8px" border="1px solid" borderColor={T.border}>
-            {Array.from({ length: 24 }).map((_, i) => {
-              const invItem = playerInventory.find((it) => it.slotIndex === i);
-              const def = invItem ? ITEMS[invItem.itemId] : null;
-              const isSelected = selectedItem?.source === "inventory" && selectedItem?.slotIndex === i;
-
-              return (
-                <Box
-                  key={i}
-                  aspectRatio="1"
-                  bg={isSelected ? "whiteAlpha.200" : "blackAlpha.600"}
-                  border="1px solid"
-                  borderColor={isSelected ? T.gold : T.border}
-                  borderRadius="4px"
-                  cursor={def ? "pointer" : "default"}
-                  transition="all 0.15s"
-                  _hover={def ? { borderColor: T.goldDim, transform: "scale(1.05)" } : {}}
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
-                  position="relative"
-                  onClick={() => {
-                    if (invItem) {
-                      setSelectedItem({ ...invItem, source: "inventory" });
-                      setQuantity(1);
-                    }
-                  }}
-                >
-                  {def && <Text fontSize="24px">{"\u2728"}</Text>}
-                  {invItem && invItem.quantity > 1 && (
-                    <Text position="absolute" bottom="1px" right="2px" fontSize="10px" color="#fff" fontWeight="bold">
-                      {invItem.quantity}
-                    </Text>
-                  )}
-                </Box>
-              );
-            })}
-          </Grid>
+          <ItemGrid
+            slots={playerInventory}
+            selectedSlotIndex={invSelectedSlot}
+            onSelect={(slot) => selectSlot(slot, "inventory")}
+          />
         </Box>
 
-        {/* Bank Section */}
         <Box>
           <Text color={T.goldMuted} fontSize="12px" mb="4" fontWeight="bold" letterSpacing="2px">
             {t("ui.bank.vault_label")} {bankItems.length} / 24
           </Text>
-          <Grid templateColumns={{ base: "repeat(4, 1fr)", md: "repeat(6, 1fr)" }} gap="2" bg="blackAlpha.400" p="3" borderRadius="8px" border="1px solid" borderColor={T.border}>
-            {Array.from({ length: 24 }).map((_, i) => {
-              const bankItem = bankItems.find((it) => it.slotIndex === i);
-              const def = bankItem ? ITEMS[bankItem.itemId] : null;
-              const isSelected = selectedItem?.source === "bank" && selectedItem?.slotIndex === i;
-
-              return (
-                <Box
-                  key={i}
-                  aspectRatio="1"
-                  bg={isSelected ? "whiteAlpha.200" : "blackAlpha.600"}
-                  border="1px solid"
-                  borderColor={isSelected ? T.gold : T.border}
-                  borderRadius="4px"
-                  cursor={def ? "pointer" : "default"}
-                  transition="all 0.15s"
-                  _hover={def ? { borderColor: T.goldDim, transform: "scale(1.05)" } : {}}
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
-                  position="relative"
-                  onClick={() => {
-                    if (bankItem) {
-                      setSelectedItem({ ...bankItem, source: "bank" });
-                      setQuantity(1);
-                    }
-                  }}
-                >
-                  {def && <Text fontSize="24px">{"\u2728"}</Text>}
-                  {bankItem && bankItem.quantity > 1 && (
-                    <Text position="absolute" bottom="1px" right="2px" fontSize="10px" color="#fff" fontWeight="bold">
-                      {bankItem.quantity}
-                    </Text>
-                  )}
-                </Box>
-              );
-            })}
-          </Grid>
+          <ItemGrid
+            slots={bankItems}
+            selectedSlotIndex={bankSelectedSlot}
+            onSelect={(slot) => selectSlot(slot, "bank")}
+          />
         </Box>
       </Grid>
 
@@ -189,7 +172,7 @@ export function BankWindow({
         {selectedItem ? (
           <Flex gap={{ base: "3", md: "6" }} align={{ base: "flex-start", md: "center" }} direction={{ base: "column", md: "row" }}>
             <Box w="60px" h="60px" bg="blackAlpha.600" border="1px solid" borderColor={T.gold} borderRadius="8px" display="flex" alignItems="center" justifyContent="center">
-               <Text fontSize="32px">{"\u2728"}</Text>
+              <Text fontSize="32px">✨</Text>
             </Box>
             <Box flex="1">
               <Text color={T.gold} fontSize="20px" fontWeight="bold" mb="1">
@@ -199,13 +182,14 @@ export function BankWindow({
                 {selectedItem.source === "inventory" ? t("ui.bank.held_in_bags") : t("ui.bank.stored_in_vault")}
               </Text>
             </Box>
-            
+
             <Flex align="center" gap="4">
               <Box>
                 <Text color={T.goldDark} fontSize="10px" mb="1" fontWeight="bold">{t("ui.bank.quantity")}</Text>
                 <Flex align="center">
                   <Button size="xs" variant="outline" color={T.gold} onClick={() => setQuantity(Math.max(1, quantity - 1))}>-</Button>
                   <Input
+                    type="number"
                     value={quantity}
                     onChange={handleQtyChange}
                     w="50px"

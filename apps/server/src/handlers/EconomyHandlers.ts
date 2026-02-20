@@ -115,6 +115,15 @@ export class EconomyHandlers {
 
 	// ── Bank Handlers ────────────────────────────────────────────────────────
 
+	static async openBank(ctx: RoomContext, client: Client) {
+		const player = HandlerUtils.getActivePlayer(ctx, client);
+		if (!player) return;
+
+		const items = await ctx.systems.bank.openBank(player);
+		client.send(ServerMessageType.BankOpened, {});
+		client.send(ServerMessageType.BankSync, { items });
+	}
+
 	static handleBankDeposit(
 		ctx: RoomContext,
 		client: Client,

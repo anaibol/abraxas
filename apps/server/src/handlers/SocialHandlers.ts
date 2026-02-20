@@ -62,6 +62,6 @@ export class SocialHandlers {
 		client: Client,
 		data: ClientMessages[ClientMessageType.GroupKick],
 	): void {
-		ctx.systems.social.handleKickAttempt(client, data.targetSessionId);
+		ctx.systems.social.handleKickPlayer(client, data.targetSessionId);
 	}
 }

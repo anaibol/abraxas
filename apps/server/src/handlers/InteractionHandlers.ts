@@ -4,6 +4,7 @@ import type { RoomContext } from "./RoomContext";
 import type { Player } from "../schema/Player";
 import type { Npc } from "../schema/Npc";
 import { HandlerUtils } from "./HandlerUtils";
+import { EconomyHandlers } from "./EconomyHandlers";
 import { logger } from "../logger";
 
 export class InteractionHandlers {
@@ -27,7 +28,7 @@ export class InteractionHandlers {
 		if (npc.type === "merchant") {
 			InteractionHandlers.openShop(ctx, client, npc);
 		} else if (npc.type === "banker") {
-			ctx.systems.bank.openBank(client, player);
+			EconomyHandlers.openBank(ctx, client);
 		} else {
 			InteractionHandlers.openDialogue(ctx, client, player, npc);
 		}

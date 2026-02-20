@@ -94,6 +94,7 @@ export const meEndpoint = createEndpoint(
   "/api/me",
   { method: "GET" },
   async (ctx) => {
+    if (!ctx.request) return ctx.json({ error: "Missing request" }, { status: 400 });
     const token = extractBearerToken(ctx.request);
 
     if (!token) {
@@ -132,6 +133,7 @@ export const createCharacterEndpoint = createEndpoint(
     }),
   },
   async (ctx) => {
+    if (!ctx.request) return ctx.json({ error: "Missing request" }, { status: 400 });
     const token = extractBearerToken(ctx.request);
 
     if (!token) {
