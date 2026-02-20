@@ -24,6 +24,7 @@ export type PlayerState = {
   stunned?: boolean;
   meditating?: boolean;
   pvpEnabled?: boolean;
+  inSafeZone?: boolean;
   guildId?: string;
   level?: number;
   xp?: number;
