@@ -4,12 +4,14 @@ import {
   type BroadcastFn,
   DIRECTION_DELTA,
   Direction,
+  EXP_TABLE,
   MathUtils,
   NPC_RESPAWN_TIME_MS,
   NPC_STATS,
   NPC_TYPES,
   NpcState,
   type NpcType,
+  ServerMessageType,
   type TileMap,
 } from "@abraxas/shared";
 import { logger } from "../logger";
@@ -491,6 +493,42 @@ export class NpcSystem {
         this.movementSystem.tryMove(npc, altDir, map, now, tickCount, roomId);
       }
     }
+  }
+
+  public gainExp(npc: Npc, amount: number, roomId: string, broadcast: BroadcastFn): void {
+    if (!npc.alive || !npc.ownerId) return;
+
+    npc.exp += amount;
+
+    const nextLevelExp = EXP_TABLE[npc.level] || 1000000;
+    if (npc.exp >= nextLevelExp) {
+      this.levelUp(npc, roomId, broadcast);
+    }
+  }
+
+  private levelUp(npc: Npc, roomId: string, broadcast: BroadcastFn): void {
+    npc.level++;
+    npc.exp = 0;
+
+    // Stat boosts: ~10% increase per level
+    npc.maxHp = Math.ceil(npc.maxHp * 1.1);
+    npc.hp = npc.maxHp;
+    npc.str = Math.ceil(npc.str * 1.1);
+    npc.agi = Math.ceil(npc.agi * 1.1);
+    npc.intStat = Math.ceil(npc.intStat * 1.1);
+    npc.armor = Math.ceil(npc.armor * 1.1);
+
+    broadcast(ServerMessageType.LevelUp, {
+      sessionId: npc.sessionId,
+      level: npc.level,
+    });
+
+    logger.info({
+      intent: "npc_levelup",
+      sessionId: npc.sessionId,
+      type: npc.type,
+      level: npc.level,
+    });
   }
 
   private getAwayDirection(npc: Npc, target: Entity): Direction {

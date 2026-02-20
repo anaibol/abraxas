@@ -1,8 +1,10 @@
 import {
   type BroadcastFn,
+  type ClassStats,
   type ClientMessages,
   type ClientMessageType,
   type JoinOptions,
+  type NpcType,
   ServerMessageType,
   TICK_MS,
   type TileMap,
@@ -247,9 +249,12 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       // Restore saved companions
       if (player.savedCompanions && player.savedCompanions.length > 0) {
         for (const comp of player.savedCompanions) {
-          const spawnLoc = findSafeSpawn(player.tileX, player.tileY, this.map, this.spatial) ?? player;
+          const spawnLoc = findSafeSpawn(player.tileX, player.tileY, this.map, this.spatial) ?? {
+            x: player.tileX,
+            y: player.tileY,
+          };
           this.npcSystem.spawnNpcAt(
-            comp.type,
+            comp.type as NpcType,
             this.map,
             spawnLoc.x,
             spawnLoc.y,
