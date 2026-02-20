@@ -18,7 +18,7 @@ export class Player extends Char {
   /** Internal DB references — server-only, never synced to clients */
   userId: string = "";
   dbId: string = "";
-  role: string = "USER";
+  @type("string") role: string = "USER";
   @view() @type("uint8") speedOverride: number = 0;
 
   /** Mana — only the local player's mana bar is rendered */

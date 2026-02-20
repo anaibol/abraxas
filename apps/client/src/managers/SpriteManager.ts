@@ -89,6 +89,7 @@ export class SpriteManager {
     sprite.setTilePosition(npc.tileX, npc.tileY);
     sprite.setFacing(npc.facing);
     sprite.updateHpMana(npc.hp, 0);
+    sprite.updateAppearance(npc.overrideBodyId ?? 0, npc.overrideHeadId ?? 0);
     this.updateAlpha(sprite, npc);
   }
 

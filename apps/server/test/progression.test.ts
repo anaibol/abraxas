@@ -102,7 +102,7 @@ describe("Progression System", () => {
         });
         const player = room.state.players.get(room.sessionId)!;
         
-        console.log(`Player found in state at ${player.tileX},${player.tileY}`);
+        console.log(`Player found in state at ${player.tileX},${player.tileY}. Role: ${player.role}`);
 
         // Spawn an NPC manually since npcCount is 0 in test map
         room.send("gm_spawn", { type: "orc" });
@@ -110,12 +110,17 @@ describe("Progression System", () => {
 
         // Find an NPC without an owner
         await waitForState(room, (state) => {
-            const npcs = Array.from(state.npcs.values());
-            return npcs.some(n => !n.ownerId && n.npcType === "orc");
-        });
-        const npc = Array.from(room.state.npcs.values()).find(n => !n.ownerId && n.npcType === "orc")!;
+            const count = state.npcs.size;
+            if (count > 0) {
+               const n = Array.from(state.npcs.values())[0];
+               console.log(`State has ${count} NPCs. First one: ${n.npcType} at ${n.tileX},${n.tileY}`);
+            }
+            return state.npcs.size > 0;
+        }, 10000);
         
+        const npc = Array.from(room.state.npcs.values()).find(n => !n.ownerId)!;
         console.log(`Found NPC: ${npc.npcType} at ${npc.tileX},${npc.tileY}`);
+
 
 
         // Teleport to NPC

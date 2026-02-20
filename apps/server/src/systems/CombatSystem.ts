@@ -575,23 +575,16 @@ export class CombatSystem {
       }
     } else {
       const target = this.spatial.findEntityAtTile(windup.targetTileX, windup.targetTileY);
-      console.log(`[resolveAbility] target found at ${windup.targetTileX},${windup.targetTileY}: ${target?.sessionId} (alive: ${target?.alive})`);
       if (target && target.alive) {
         const valid = this.isValidTarget(attacker, target, ability);
-        console.log(`[resolveAbility] isValidTarget: ${valid}`);
         if (valid) {
           const dist = MathUtils.manhattanDist(attacker.getPosition(), {
             x: target.tileX,
             y: target.tileY,
           });
-          if (dist > ability.rangeTiles) {
-            console.log(`[resolveAbility] Out of range! dist: ${dist}, range: ${ability.rangeTiles}`);
-            return;
-          }
+          if (dist > ability.rangeTiles) return;
           this.applyAbilityToTarget(attacker, target, ability, broadcast, onDeath, now);
         }
-      } else {
-        console.log(`[resolveAbility] No target found at tile or target dead.`);
       }
     }
   }
