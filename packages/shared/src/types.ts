@@ -419,7 +419,7 @@ export type ServerMessages = {
 	};
 	[ServerMessageType.Notification]: {
 		message: string;
-		templateData?: Record<string, any>;
+		templateData?: Record<string, unknown>;
 	};
 	[ServerMessageType.ItemUsed]: { sessionId: string; itemId: string };
 	[ServerMessageType.InvalidTarget]: null;
@@ -429,7 +429,7 @@ export type ServerMessages = {
 	[ServerMessageType.SellItem]: { itemId: string; quantity: number };
 	[ServerMessageType.Error]: {
 		message: string;
-		templateData?: Record<string, any>;
+		templateData?: Record<string, unknown>;
 		silent?: boolean;
 	};
 	[ServerMessageType.FriendRequest]: { targetName: string };

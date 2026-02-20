@@ -6,14 +6,7 @@ export interface InventorySlot {
 	slotIndex: number;
 }
 
-export interface EquipmentState {
-	weapon: string;
-	armor: string;
-	shield: string;
-	helmet: string;
-	ring: string;
-	mount?: string;
-}
+export type EquipmentState = Partial<Record<EquipmentSlot, string>>;
 
 export type PlayerState = {
 	name: string;

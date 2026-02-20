@@ -109,7 +109,8 @@ export class GameScene extends Phaser.Scene {
 		this.room = this.network.getRoom();
 		this.welcome = this.network.getWelcomeData();
 		this.collisionGrid = this.welcome.collision;
-		// Map chunks are baked lazily in update() via scheduleNearbyChunks()
+
+		this.mapBaker = new MapBaker(this, this.welcome);
 
 		this.sound.pauseOnBlur = false;
 
@@ -167,14 +168,22 @@ export class GameScene extends Phaser.Scene {
 			(rangeTiles) => this.onEnterTargeting(rangeTiles),
 			() => this.onExitTargeting(),
 			(tileX, tileY) => {
+				let targetNpc: typeof this.room.state.npcs extends Map<string, infer V> ? V : any = null;
 				let targetNpcId: string | null = null;
 				for (const [id, npc] of this.room.state.npcs) {
 					if (npc.tileX === tileX && npc.tileY === tileY) {
 						targetNpcId = id;
+						targetNpc = npc;
 						break;
 					}
 				}
-				if (targetNpcId) this.network.sendInteract(targetNpcId);
+				if (targetNpcId && targetNpc) {
+					if (targetNpc.type === "horse") {
+						this.network.sendTame(targetNpcId);
+					} else {
+						this.network.sendInteract(targetNpcId);
+					}
+				}
 			},
 			() => {
 				this.audioManager.startRecording((data) =>
@@ -231,7 +240,7 @@ export class GameScene extends Phaser.Scene {
 						"hp", "maxHp", "mana", "maxMana", "alive",
 						"str", "agi", "intStat", "gold", "stealthed", "stunned",
 						"level", "xp", "maxXp",
-						"equipWeapon", "equipArmor", "equipShield", "equipHelmet", "equipRing",
+						"equipWeapon", "equipArmor", "equipShield", "equipHelmet", "equipRing", "equipMount",
 					] as const) {
 						unsub($state.listen(player, field, () => this.pushSidebarUpdate(player)));
 					}
@@ -309,6 +318,7 @@ export class GameScene extends Phaser.Scene {
 	update(time: number, delta: number) {
 		this.inputHandler.update(time, () => this.getMouseTile());
 		this.spriteManager.update(delta);
+		this.mapBaker.update();
 
 		if (this.inputHandler.targeting) {
 			const lp = this.room.state.players.get(this.room.sessionId);
@@ -462,6 +472,7 @@ export class GameScene extends Phaser.Scene {
 				shield: player.equipShield,
 				helmet: player.equipHelmet,
 				ring: player.equipRing,
+				mount: player.equipMount,
 			},
 		});
 	}

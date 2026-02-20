@@ -1,4 +1,4 @@
-import { ServerMessageType, DIRECTION_DELTA } from "@abraxas/shared";
+import { ServerMessageType, DIRECTION_DELTA, type NpcType } from "@abraxas/shared";
 import type { Client } from "@colyseus/core";
 import type { RoomContext } from "./RoomContext";
 import type { Player } from "../schema/Player";
@@ -80,7 +80,7 @@ export class AdminHandlers {
 				break;
 			}
 			case "spawn": {
-				const npcType = args[1] as any;
+				const npcType = args[1] as NpcType;
 				if (!npcType) {
 					HandlerUtils.sendError(client, "Usage: /gm spawn <npcType>");
 					return;

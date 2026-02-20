@@ -53,7 +53,7 @@ export class NetworkManager {
     payload: ClientMessages[T],
   ): void {
     try {
-      this.room?.send(type, payload as unknown as any);
+      this.room?.send(type as string, payload);
     } catch {
       // ignore if not connected
     }

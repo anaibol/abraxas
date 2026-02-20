@@ -3,7 +3,7 @@ import { Box, Flex, Text, Grid } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 import { ITEMS, EQUIPMENT_SLOTS, type EquipmentSlot } from "@abraxas/shared";
 import { T, HEX } from "../tokens";
-import { type PlayerState } from "./types";
+import { type PlayerState, type EquipmentState } from "./types";
 import { useAudio } from "../../contexts/AudioContext";
 
 const RARITY_COLORS: Record<string, string> = {
@@ -18,6 +18,7 @@ const ITEM_ICONS: Record<string, string> = {
 	shield: "\uD83D\uDEE1\uFE0F",
 	helmet: "\u26D1\uFE0F",
 	ring: "\uD83D\uDC8D",
+	mount: "🐎",
 	consumable: "\uD83E\uDDEA",
 };
 
