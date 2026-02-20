@@ -169,10 +169,7 @@ export class SoundManager {
     this.play(key, { volume: 1 - distanceTiles / MAX_AUDIBLE_TILES });
   }
 
-  /** Scales all BASE_SFX values — use as a "master SFX" slider driver. */
-  setMasterSfxVolume(v: number) {
-    for (const k of Object.keys(BASE_SFX)) BASE_SFX[k] = (BASE_SFX[k] ?? 0.5) * v;
-  }
+
 
   playStep() {
     const STEPS = [AudioAssets.STEP_1, AudioAssets.STEP_2, AudioAssets.STEP_3, AudioAssets.STEP_4, AudioAssets.STEP_5];

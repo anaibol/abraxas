@@ -354,6 +354,9 @@ export class GameEventHandler {
       this.soundManager.playLevelUp();
       // ── Item #19: Zoom pulse on level-up ──────────────────────────────────
       this.onCameraZoom?.(1.06, 300);
+    } else {
+      // Companion / NPC levelled up — play a shorter, distinct sound
+      this.soundManager.playNpcLevelUp();
     }
   }
 

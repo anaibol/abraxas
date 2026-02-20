@@ -37,7 +37,7 @@ export class DropSystem {
         drop.nameOverride = instanceData.nameOverride ?? "";
         instanceData.affixes.forEach(a => {
             const s = new ItemAffixSchema();
-            s.type = a.type;
+            s.affixType = a.type;
             s.stat = a.stat;
             s.value = a.value;
             drop.affixes.push(s);
@@ -82,7 +82,7 @@ export class DropSystem {
           rarity: drop.rarity as ItemRarity,
           nameOverride: drop.nameOverride,
           affixes: Array.from(drop.affixes).map((a: ItemAffixSchema) => ({
-            type: a.type,
+            type: a.affixType,
             stat: a.stat as StatType,
             value: a.value
           }))

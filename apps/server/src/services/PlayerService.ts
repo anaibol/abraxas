@@ -180,7 +180,7 @@ export class PlayerService {
         quantity: item.quantity,
         slotIndex: item.slotIndex,
         rarity: item.rarity as any,
-        affixes: Array.from(item.affixes).map(a => ({ type: a.type, stat: a.stat, value: a.value })) as any,
+        affixes: Array.from(item.affixes).map(a => ({ type: a.affixType, stat: a.stat, value: a.value })) as any,
       });
     });
 

@@ -89,7 +89,7 @@ export class BankSystem {
           slotIndex: nextIdx,
           rarity: invItem.rarity as ItemRarity,
           affixes: Array.from(invItem.affixes).map((a) => ({
-            type: a.type,
+            type: a.affixType,
             stat: a.stat as StatType,
             value: a.value,
           })),
@@ -105,7 +105,7 @@ export class BankSystem {
           slotIndex: nextIdx,
           rarity: invItem.rarity as ItemRarity,
           affixes: Array.from(invItem.affixes).map((a) => ({
-            type: a.type,
+            type: a.affixType,
             stat: a.stat as StatType,
             value: a.value,
           })),
