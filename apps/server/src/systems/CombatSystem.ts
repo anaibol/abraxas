@@ -17,6 +17,7 @@ import type { BuffSystem } from "./BuffSystem";
 
 type SendToClientFn = <T extends ServerMessageType>(type: T, message?: ServerMessages[T]) => void;
 
+export class CombatSystem {
   private activeWindups = new Map<string, WindupAction>();
   /** Tracks when each entity last started an auto-attack, for attackCooldownMs enforcement. */
   private lastMeleeMs = new Map<string, number>();

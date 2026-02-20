@@ -480,7 +480,7 @@ export const ITEMS: Record<string, Item> = {
     id: "dragon_mount",
     name: "items.dragon_mount.name",
     slot: "mount",
-    rarity: "epic",
+    rarity: "legendary",
     stats: { speedBonus: 6 },
     goldValue: 5000,
     mountNpcType: "dragon",

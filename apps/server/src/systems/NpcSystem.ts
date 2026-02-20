@@ -105,8 +105,7 @@ export class NpcSystem {
     this.state.npcs.set(npc.sessionId, npc);
     this.spatial.addToGrid(npc);
   }
-
-    npc.spawnY = y;
+  public spawnNpc(type: NpcType, map: TileMap, ownerId?: string): void {
     // Pick a random walkable tile then spiral to avoid any occupied cell
     for (let attempt = 0; attempt < 20; attempt++) {
       const rx = Math.floor(Math.random() * map.width);
