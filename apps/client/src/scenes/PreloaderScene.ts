@@ -78,6 +78,18 @@ export class PreloaderScene extends Phaser.Scene {
     this.load.audio("sfx-click-open", "audio/kenney_ui/Audio/open_001.ogg");
     this.load.audio("sfx-click-close", "audio/kenney_ui/Audio/close_001.ogg");
     this.load.audio("music-arena", "audio/musica/101.webm");
+
+    // Ambiance
+    this.load.audio("ambiance-wind", "audio/ambiance/wind.ogg");
+    this.load.audio("ambiance-crickets", "audio/ambiance/crickets.mp3");
+
+    // NPC specific
+    this.load.audio("npc-skeleton-rattle", "audio/npc/skeleton_rattle.ogg");
+    this.load.audio("npc-grunt", "audio/npc/creatures/grunt_01.ogg");
+    this.load.audio("npc-roar", "audio/npc/creatures/roar_01.ogg");
+    this.load.audio("npc-scream", "audio/npc/creatures/scream_01.ogg");
+    this.load.audio("npc-hurt", "audio/npc/creatures/hurt_01.ogg");
+    this.load.audio("npc-levelup", "audio/kenney_ui/Audio/triumphant_fanfare_001.ogg"); // Using a placeholder for now
   }
 
   create() {

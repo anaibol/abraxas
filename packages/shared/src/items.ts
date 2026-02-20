@@ -1,7 +1,6 @@
-import { type ClassType, EquipmentSlot } from "./types";
+import { type ClassType, EquipmentSlot, type ItemRarity } from "./types";
 
 export type ItemSlot = "weapon" | "armor" | "shield" | "helmet" | "ring" | "mount" | "consumable";
-export type ItemRarity = "common" | "uncommon" | "rare" | "epic" | "legendary";
 
 export type Item = {
   id: string;
