@@ -41,12 +41,6 @@ export type FullCharacter = Prisma.CharacterGetPayload<{
   include: typeof CHAR_INCLUDE;
 }>;
 
-/** Type guard for basic character relations. */
-const charWithStats = Prisma.validator<Prisma.CharacterDefaultArgs>()({
-  include: { stats: true },
-});
-type CharacterWithStats = Prisma.CharacterGetPayload<typeof charWithStats>;
-
 export class PersistenceService {
   static async loadChar(id: string): Promise<FullCharacter | null> {
     return prisma.character.findUnique({

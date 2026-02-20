@@ -139,14 +139,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 				findClientBySessionId: (sid) => this.findClient(sid),
 			});
 
-			this.messageHandler.registerHandlers(
-				<T extends ClientMessageType>(
-					type: T,
-					handler: (client: Client, message: ClientMessages[T]) => void,
-				) => {
-					this.onMessage(type, handler);
-				},
-			);
+			this.messageHandler.registerHandlers((type, handler) => this.onMessage(type, handler));
 
 			this.tickSystem = new TickSystem({
 				state: this.state,
@@ -170,11 +163,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 				findClient: (sid) => this.findClient(sid),
 			});
 
-			if (this.map.npcs) {
-				for (const npcDef of this.map.npcs) {
-					this.npcSystem.spawnNpcAt(npcDef.type, this.map, npcDef.x, npcDef.y);
-				}
-			}
+			for (const n of this.map.npcs ?? []) this.npcSystem.spawnNpcAt(n.type, this.map, n.x, n.y);
 			const npcCount = this.map.npcCount ?? 20;
 			if (npcCount > 0) this.npcSystem.spawnNpcs(npcCount, this.map);
 
@@ -324,9 +313,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 	private onSummon(_caster: Entity, spellId: string, x: number, y: number) {
 		if (spellId === "summon_skeleton") {
 			if (this.state.npcs.size > 200) return;
-			const skeletons = Array.from(this.state.npcs.values()).filter(
-				(n) => n.type === "skeleton",
-			).length;
+			const skeletons = [...this.state.npcs.values()].filter((n) => n.type === "skeleton").length;
 			if (skeletons > 50) return;
 			const count = 2 + Math.floor(Math.random() * 2);
 			for (let i = 0; i < count; i++) {

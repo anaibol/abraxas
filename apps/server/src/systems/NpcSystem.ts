@@ -114,18 +114,12 @@ export class NpcSystem {
     roomId: string,
     broadcast: BroadcastFn,
   ): void {
-    for (let i = this.respawns.length - 1; i >= 0; i--) {
-      const r = this.respawns[i];
-      if (now - r.deadAt >= NPC_RESPAWN_TIME_MS) {
-        const safe = findSafeSpawn(r.spawnX, r.spawnY, map, this.spatial);
-        if (safe) {
-          this.spawnNpcAt(r.type, map, safe.x, safe.y);
-        } else {
-          this.spawnNpc(r.type, map);
-        }
-        this.respawns.splice(i, 1);
-      }
-    }
+    this.respawns = this.respawns.filter((r) => {
+      if (now - r.deadAt < NPC_RESPAWN_TIME_MS) return true;
+      const safe = findSafeSpawn(r.spawnX, r.spawnY, map, this.spatial);
+      safe ? this.spawnNpcAt(r.type, map, safe.x, safe.y) : this.spawnNpc(r.type, map);
+      return false;
+    });
 
     this.state.npcs.forEach((npc) => {
       if (!npc.alive) return;
@@ -198,6 +192,16 @@ export class NpcSystem {
     npc.patrolStepsLeft--;
   }
 
+  /** Returns true and transitions to FLEE if the NPC should flee. */
+  private checkAndFlee(npc: Npc): boolean {
+    const stats = NPC_STATS[npc.type];
+    if (stats.fleesWhenLow && npc.hp / npc.maxHp < FLEE_HP_THRESHOLD) {
+      npc.state = NpcState.FLEE;
+      return true;
+    }
+    return false;
+  }
+
   private updateChase(npc: Npc, map: TileMap, now: number, tickCount: number, roomId: string): void {
     const target = this.spatial.findEntityBySessionId(npc.targetId);
     if (!target || !target.isAttackable()) {
@@ -206,11 +210,7 @@ export class NpcSystem {
       return;
     }
 
-    const stats = NPC_STATS[npc.type];
-    if (stats.fleesWhenLow && npc.hp / npc.maxHp < FLEE_HP_THRESHOLD) {
-      npc.state = NpcState.FLEE;
-      return;
-    }
+    if (this.checkAndFlee(npc)) return;
 
     const dist = MathUtils.manhattanDist(npc.getPosition(), target.getPosition());
     if (dist > AGGRO_RANGE * LEASH_MULTIPLIER) {
@@ -239,12 +239,9 @@ export class NpcSystem {
       return;
     }
 
-    const stats = NPC_STATS[npc.type];
-    if (stats.fleesWhenLow && npc.hp / npc.maxHp < FLEE_HP_THRESHOLD) {
-      npc.state = NpcState.FLEE;
-      return;
-    }
+    if (this.checkAndFlee(npc)) return;
 
+    const stats = NPC_STATS[npc.type];
     const dist = MathUtils.manhattanDist(npc.getPosition(), target.getPosition());
     if (dist > stats.attackRange) {
       npc.state = NpcState.CHASE;

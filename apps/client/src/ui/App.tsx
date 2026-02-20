@@ -358,13 +358,16 @@ export function App() {
     scene.startSpellTargeting(spellId, rangeTiles);
     if (rangeTiles > 0) {
       setPendingSpellId(spellId);
-      // Clear the pending indicator once the player clicks (or cancels) in the game
-      const clearPending = () => setPendingSpellId(null);
       const canvas = game.canvas;
-      const onDown = () => { clearPending(); canvas.removeEventListener("pointerdown", onDown); canvas.removeEventListener("contextmenu", onDown); window.removeEventListener("keydown", onEsc); };
-      const onEsc = (e: KeyboardEvent) => { if (e.key === "Escape") { clearPending(); canvas.removeEventListener("pointerdown", onDown); canvas.removeEventListener("contextmenu", onDown); window.removeEventListener("keydown", onEsc); } };
-      canvas.addEventListener("pointerdown", onDown);
-      canvas.addEventListener("contextmenu", onDown);
+      const cleanup = () => {
+        setPendingSpellId(null);
+        canvas.removeEventListener("pointerdown", cleanup);
+        canvas.removeEventListener("contextmenu", cleanup);
+        window.removeEventListener("keydown", onEsc);
+      };
+      const onEsc = (e: KeyboardEvent) => { if (e.key === "Escape") cleanup(); };
+      canvas.addEventListener("pointerdown", cleanup);
+      canvas.addEventListener("contextmenu", cleanup);
       window.addEventListener("keydown", onEsc);
     }
   }, []);
@@ -372,13 +375,10 @@ export function App() {
   const mobileSpells = useMemo(() => {
     const classStats = CLASS_STATS[playerState.classType?.toUpperCase() ?? "WARRIOR"];
     if (!classStats) return [];
-    return classStats.abilities
-      .map((abilityId) => {
-        const ability = ABILITIES[abilityId];
-        if (!ability) return null;
-        return { key: ability.key, spellId: ability.id, rangeTiles: ability.rangeTiles };
-      })
-      .filter(Boolean) as { key: string; spellId: string; rangeTiles: number }[];
+    return classStats.abilities.flatMap((abilityId) => {
+      const ability = ABILITIES[abilityId];
+      return ability ? [{ key: ability.key, spellId: ability.id, rangeTiles: ability.rangeTiles }] : [];
+    });
   }, [playerState.classType]);
 
   const handleMobileMove = useCallback((direction: Direction) => {
@@ -395,9 +395,6 @@ export function App() {
     scene?.triggerAttack();
   }, []);
 
-  const handleMobileSpell = useCallback((spellId: string, rangeTiles: number) => {
-    handleSpellClick(spellId, rangeTiles);
-  }, [handleSpellClick]);
 
   const handleSendChat = (msg: string) => {
     setIsChatOpen(false);
@@ -611,7 +608,7 @@ export function App() {
             <MobileControls
               onMove={handleMobileMove}
               onAttack={handleMobileAttack}
-              onSpell={handleMobileSpell}
+              onSpell={handleSpellClick}
               spells={mobileSpells}
             />
           )}

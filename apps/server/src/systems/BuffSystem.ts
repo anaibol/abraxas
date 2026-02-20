@@ -98,11 +98,7 @@ export class BuffSystem {
 
 	isInvulnerable(sessionId: string, now: number): boolean {
 		const s = this.state.get(sessionId);
-		if (!s) return false;
-		return (
-			s.buffs.some((b) => b.stat === "invulnerable" && now < b.expiresAt) ||
-			now < s.spawnProtectedUntil
-		);
+		return !!s && (s.buffs.some((b) => b.stat === "invulnerable" && now < b.expiresAt) || now < s.spawnProtectedUntil);
 	}
 
 	isSpawnProtected(sessionId: string, now: number): boolean {
@@ -124,13 +120,7 @@ export class BuffSystem {
 	getBuffBonus(sessionId: string, stat: string, now: number): number {
 		const s = this.state.get(sessionId);
 		if (!s) return 0;
-		let total = 0;
-		for (const b of s.buffs) {
-			if (b.stat === stat && now < b.expiresAt) {
-				total += b.amount;
-			}
-		}
-		return total;
+		return s.buffs.reduce((sum, b) => (b.stat === stat && now < b.expiresAt ? sum + b.amount : sum), 0);
 	}
 
 	/** Process DoTs and expire buffs/stuns. Call every tick. Works for both Players and NPCs. */
@@ -152,33 +142,28 @@ export class BuffSystem {
 			// Expire old buffs
 			s.buffs = s.buffs.filter((b) => now < b.expiresAt);
 
-			// Process DoTs
-			const activeDots: DoT[] = [];
+			// Process DoTs — expire first, then tick the survivors
+			s.dots = s.dots.filter((d) => now < d.expiresAt);
 			for (const dot of s.dots) {
-				if (now >= dot.expiresAt) continue;
-				activeDots.push(dot);
+				if (now - dot.lastTickAt < dot.intervalMs) continue;
+				dot.lastTickAt = now;
+				entity.hp -= dot.damage;
 
-				if (now - dot.lastTickAt >= dot.intervalMs) {
-					dot.lastTickAt = now;
-					entity.hp -= dot.damage;
+				broadcast(ServerMessageType.Damage, {
+					targetSessionId: sessionId,
+					amount: dot.damage,
+					hpAfter: entity.hp,
+					type: "dot",
+				});
 
-					broadcast(ServerMessageType.Damage, {
-						targetSessionId: sessionId,
-						amount: dot.damage,
-						hpAfter: entity.hp,
-						type: "dot",
-					});
-
-					if (entity.hp <= 0) {
-						entity.hp = 0;
-						entity.alive = false;
-						broadcast(ServerMessageType.Death, { sessionId });
-						onDeath(entity);
-						break;
-					}
+				if (entity.hp <= 0) {
+					entity.hp = 0;
+					entity.alive = false;
+					broadcast(ServerMessageType.Death, { sessionId });
+					onDeath(entity);
+					break;
 				}
 			}
-			s.dots = activeDots;
 		}
 	}
 }

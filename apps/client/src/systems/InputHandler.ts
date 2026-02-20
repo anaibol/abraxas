@@ -9,14 +9,6 @@ const KEY_TO_DIRECTION: Record<number, Direction> = {
   [Phaser.Input.Keyboard.KeyCodes.RIGHT]: Direction.RIGHT,
 };
 
-const ABILITY_KEY_CODES: Record<string, number> = {
-  Q: Phaser.Input.Keyboard.KeyCodes.Q,
-  W: Phaser.Input.Keyboard.KeyCodes.W,
-  E: Phaser.Input.Keyboard.KeyCodes.E,
-  R: Phaser.Input.Keyboard.KeyCodes.R,
-  T: Phaser.Input.Keyboard.KeyCodes.T,
-  Y: Phaser.Input.Keyboard.KeyCodes.Y,
-};
 
 type TargetingState =
   | { mode: "spell"; spellId: string; rangeTiles: number }
@@ -107,8 +99,8 @@ export class InputHandler {
 
       for (const abilityId of stats.abilities) {
         const ability = ABILITIES[abilityId];
-        if (!ability) continue;
-        const keyCode = ABILITY_KEY_CODES[ability.key];
+        if (!ability?.key) continue;
+        const keyCode = Phaser.Input.Keyboard.KeyCodes[ability.key as keyof typeof Phaser.Input.Keyboard.KeyCodes];
         if (keyCode != null) {
           this.spellKeys.push({
             key: scene.input.keyboard.addKey(keyCode),
@@ -146,10 +138,10 @@ export class InputHandler {
       }
     }
 
-    for (const [keyCode, key] of Object.entries(this.moveKeys)) {
+    for (const key of Object.values(this.moveKeys)) {
       if (key.isDown) {
         if (time - this.lastMoveSentMs >= this.moveIntervalMs) {
-          const direction = KEY_TO_DIRECTION[Number(keyCode)];
+          const direction = KEY_TO_DIRECTION[key.keyCode];
           if (direction !== undefined) {
             this.network.sendMove(direction);
             this.onLocalMove?.(direction);

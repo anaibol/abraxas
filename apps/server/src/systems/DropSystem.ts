@@ -86,14 +86,9 @@ export class DropSystem {
 
   /** Remove expired drops (older than 60s) */
   expireDrops(drops: MapSchema<Drop>, now: number): void {
-    const toDelete: string[] = [];
-    for (const [id, drop] of drops) {
-      if (drop.spawnedAt > 0 && now - drop.spawnedAt > DROP_EXPIRY_MS) {
-        toDelete.push(id);
-      }
-    }
-    for (const id of toDelete) {
-      drops.delete(id);
-    }
+    const expired = [...drops.entries()]
+      .filter(([, d]) => d.spawnedAt > 0 && now - d.spawnedAt > DROP_EXPIRY_MS)
+      .map(([id]) => id);
+    for (const id of expired) drops.delete(id);
   }
 }

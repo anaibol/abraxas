@@ -739,18 +739,13 @@ export class CombatSystem {
 		if (ability.damageSchool === "physical") {
 			const defenderArmor = this.boosted(target, "armor", now);
 			const defenderAgi = this.boosted(target, "agi", now);
-			if (ability.scalingStat === "agi") {
-				// AGI-scaling physical abilities use ranged formula (no dodge penalty difference needed here)
-				const raw = ability.baseDamage + scalingStatValue * ability.scalingRatio;
-				const reductionMult = 1 - (defenderArmor / (defenderArmor + 50));
-				return Math.max(1, Math.round(raw * reductionMult));
+			// STR-scaling abilities can be dodged; AGI-scaling (ranged) abilities cannot
+			if (ability.scalingStat !== "agi") {
+				const dodgeChance = Math.max(0, (defenderAgi - 10) * 0.01);
+				if (Math.random() < dodgeChance) return 0;
 			}
-			// STR-scaling physical abilities use melee formula
-			const dodgeChance = Math.max(0, (defenderAgi - 10) * 0.01);
-			if (Math.random() < dodgeChance) return 0;
 			const raw = ability.baseDamage + scalingStatValue * ability.scalingRatio;
-			const reductionMult = 1 - (defenderArmor / (defenderArmor + 50));
-			return Math.max(1, Math.round(raw * reductionMult));
+			return Math.max(1, Math.round(raw * (1 - defenderArmor / (defenderArmor + 50))));
 		}
 
 		// magical
@@ -764,13 +759,13 @@ export class CombatSystem {
 	}
 
 	private boosted(entity: Entity, stat: string, now: number): number {
-		let base = 0;
-		if (stat === "str") base = entity.str;
-		else if (stat === "agi") base = entity.agi;
-		else if (stat === "int" || stat === "intStat") base = entity.intStat;
-		else if (stat === "armor") base = entity.armor;
-
-		const bonus = this.buffSystem.getBuffBonus(entity.sessionId, stat, now);
-		return base + bonus;
+		const bases: Record<string, number> = {
+			str: entity.str,
+			agi: entity.agi,
+			int: entity.intStat,
+			intStat: entity.intStat,
+			armor: entity.armor,
+		};
+		return (bases[stat] ?? 0) + this.buffSystem.getBuffBonus(entity.sessionId, stat, now);
 	}
 }
