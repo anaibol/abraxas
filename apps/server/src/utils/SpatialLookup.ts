@@ -72,17 +72,22 @@ export class SpatialLookup {
     return undefined;
   }
 
-  findEntityAtTile(x: number, y: number): Entity | undefined {
+  findEntityAtTile(tx: number, ty: number): Entity | undefined {
+    const x = Number(tx);
+    const y = Number(ty);
     const key = this.getKey(x, y);
     const cell = this.grid.get(key);
 
-    if (!cell || cell.size === 0) return undefined;
+    if (!cell || cell.size === 0) {
+      return undefined;
+    }
 
     // Return first entity found in cell
     for (const sessionId of cell) {
       const entity = this.findEntityBySessionId(sessionId);
-      if (entity && entity.alive && entity.tileX === x && entity.tileY === y) {
-        return entity;
+      if (entity) {
+        const match = entity.alive && Number(entity.tileX) === x && Number(entity.tileY) === y;
+        if (match) return entity;
       }
     }
     return undefined;
