@@ -35,6 +35,7 @@ const CHAR_INCLUDE = {
       },
     },
   },
+  companions: true,
 } as const;
 
 /** Strictly typed Character with all relations included. */
@@ -71,6 +72,7 @@ export class PersistenceService {
       inventory: InventoryEntry[];
       equipment: EquipmentData;
       classType: ClassType;
+      companions: { type: string; level: number; exp: number; hp: number }[];
     },
   ) {
     try {
@@ -196,6 +198,21 @@ export class PersistenceService {
             }
           }
         }
+
+        // --- Save Companions ---
+        await tx.companion.deleteMany({ where: { characterId: char.id } });
+        if (data.companions && data.companions.length > 0) {
+          await tx.companion.createMany({
+            data: data.companions.map((comp) => ({
+              characterId: char.id,
+              type: comp.type,
+              level: comp.level,
+              exp: comp.exp,
+              hp: comp.hp,
+            })),
+          });
+        }
+        // -----------------------
       });
     } catch (e) {
       logger.error({ message: "Failed to save char", error: String(e) });
