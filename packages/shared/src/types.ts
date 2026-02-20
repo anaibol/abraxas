@@ -355,7 +355,10 @@ export interface PlayerEntityState extends BaseEntityState {
 }
 
 export interface NpcEntityState extends BaseEntityState {
-  type: NpcType;
+  /** EntityType discriminator — always "npc" */
+  type?: never;
+  /** The NPC species (e.g. "orc", "wolf") — maps to Npc.npcType on the server */
+  npcType: NpcType;
   classType?: never;
 }
 

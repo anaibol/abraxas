@@ -188,15 +188,15 @@ export class GameScene extends Phaser.Scene {
       (rangeTiles) => this.onEnterTargeting(rangeTiles),
       () => this.onExitTargeting(),
       (tileX, tileY) => {
-        let targetNpc: { id: string; type: string } | undefined;
+        let targetNpc: { id: string; npcType: string } | undefined;
         for (const [id, npc] of this.room.state.npcs) {
           if (npc.tileX === tileX && npc.tileY === tileY) {
-            targetNpc = { id, type: npc.type };
+            targetNpc = { id, npcType: npc.npcType };
             break;
           }
         }
         if (targetNpc) {
-          if (targetNpc.type === "horse") {
+          if (targetNpc.npcType === "horse") {
             this.network.sendTame(targetNpc.id);
           } else {
             this.network.sendInteract(targetNpc.id);
@@ -221,7 +221,7 @@ export class GameScene extends Phaser.Scene {
         }
         for (const [id, npc] of this.room.state.npcs) {
           if (npc.tileX === tileX && npc.tileY === tileY && npc.alive) {
-            this.onNpcRightClick?.(id, i18n.t(`npc.${npc.type}`, npc.type), npc.type, screenX, screenY);
+            this.onNpcRightClick?.(id, i18n.t(`npc.${npc.npcType}`, npc.npcType), npc.npcType, screenX, screenY);
             return;
           }
         }
@@ -321,11 +321,19 @@ export class GameScene extends Phaser.Scene {
         const nState = npc as unknown as NpcEntityState;
         this.spriteManager.addNpc(nState, id);
         this.spriteManager.syncNpc(nState, id);
-        const onChangeUnsub = $state.onChange(npc, () =>
-          this.spriteManager.syncNpc(npc as unknown as NpcEntityState, id),
-        );
-        npcOnChangeUnsubs.set(id, onChangeUnsub);
-        unsub(onChangeUnsub);
+        // Guard: Colyseus throws a refId error when onChange is called on objects
+        // that arrived via the initial state snapshot (before they are fully
+        // registered in the ReferenceTracker).  We catch and ignore those errors
+        // — subsequent server patches will still trigger onChange correctly.
+        try {
+          const onChangeUnsub = $state.onChange(npc, () =>
+            this.spriteManager.syncNpc(npc as unknown as NpcEntityState, id),
+          );
+          npcOnChangeUnsubs.set(id, onChangeUnsub);
+          unsub(onChangeUnsub);
+        } catch (e) {
+          // Expected for snapshot-loaded NPCs — state is already synced above.
+        }
       }),
       $state.onRemove("npcs", (_npc, id) => {
         npcOnChangeUnsubs.get(id)?.();

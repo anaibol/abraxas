@@ -201,6 +201,7 @@ export function App() {
 
   useEffect(() => {
     if (phase !== "game") return;
+    if (window.location.hostname === "localhost") return;
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
