@@ -163,7 +163,11 @@ export type AbilityEffect =
   | "leech"
   /** Heals all same-faction entities within aoeRadius of the target tile. */
   | "aoe_heal"
-  | "summon";
+  | "summon"
+  /** Removes stun from a target ally. */
+  | "cleanse"
+  /** Removes stealth from all enemies in aoeRadius. */
+  | "reveal";
 
 export type Ability = {
   id: string;
