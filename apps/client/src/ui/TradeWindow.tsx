@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Box, Flex, Text, Grid, Button, Input, VStack, HStack } from "@chakra-ui/react";
+import { Button } from "../components/Button";
 import { useTranslation } from "react-i18next";
 import { ITEMS } from "@abraxas/shared";
 import type { TradeState } from "@abraxas/shared";
-import type { InventorySlot } from "./Sidebar";
+import type { InventorySlot } from "./sidebar/types";
 import { T } from "./tokens";
 
 
