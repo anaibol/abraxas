@@ -2,6 +2,7 @@ import type { Direction, TileMap } from "@abraxas/shared";
 import { DIRECTION_DELTA, ITEMS } from "@abraxas/shared";
 import { logger } from "../logger";
 import type { Entity, SpatialLookup } from "../utils/SpatialLookup";
+import type { BuffSystem } from "./BuffSystem";
 
 type MoveResult = {
   success: boolean;
@@ -13,7 +14,7 @@ type MoveResult = {
 };
 
 export class MovementSystem {
-  constructor(private spatial: SpatialLookup) {}
+  constructor(private spatial: SpatialLookup, private buffSystem: BuffSystem) {}
 
   /** Instantly moves an entity to the target tile, updating the spatial grid. */
   teleport(entity: Entity, tileX: number, tileY: number): void {
@@ -53,6 +54,10 @@ export class MovementSystem {
       const mountBonus = ITEMS[entity.equipMount]?.stats?.speedBonus ?? 0;
       speed += mountBonus;
     }
+
+    // Apply speed buffs from BuffSystem
+    speed += this.buffSystem.getBuffBonus(entity.sessionId, "speed", now);
+
     if (speed <= 0) return { success: false };
     const moveIntervalMs = 1000 / speed;
 

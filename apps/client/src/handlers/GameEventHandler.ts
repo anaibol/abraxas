@@ -49,6 +49,7 @@ export class GameEventHandler {
     on(ServerMessageType.Damage, (data) => this.onDamage(data));
     on(ServerMessageType.Death, (data) => this.onDeath(data));
     on(ServerMessageType.Heal, (data) => this.onHeal(data));
+    on(ServerMessageType.LevelUp, (data) => this.onLevelUp(data));
     on(ServerMessageType.BuffApplied, (data) => this.onBuffApplied(data));
     on(ServerMessageType.StunApplied, (data) => this.onStunApplied(data));
     on(ServerMessageType.Respawn, (data) => this.onRespawn(data));
@@ -102,7 +103,12 @@ export class GameEventHandler {
     if (isRanged) {
       this.soundManager.playBow();
     } else {
-      this.soundManager.playAttack();
+      const npc = this.room.state.npcs.get(data.sessionId);
+      if (npc) {
+        this.soundManager.playNpcAttack(npc.type);
+      } else {
+        this.soundManager.playAttack();
+      }
     }
   }
 

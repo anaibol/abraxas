@@ -39,6 +39,9 @@ export class SoundManager {
   private music: Phaser.Sound.BaseSound | null = null;
   private unsubscribe: (() => void) | null = null;
 
+  private currentAmbiance: Phaser.Sound.BaseSound | null = null;
+  private ambianceVolume = 0.3;
+
   constructor(private scene: Phaser.Scene) {
     this.unsubscribe = gameSettings.subscribe((s) => {
       this.applyMusicVolume(s.musicVolume);
@@ -96,8 +99,64 @@ export class SoundManager {
     this.play("sfx-notification");
   }
   playMount() {
-    this.play("sfx-mount");
+    this.scene.sound.play("sfx-mount", { volume: 0.5 });
   }
+
+  // Ambiance
+  startAmbiance(key: "ambiance-wind" | "ambiance-crickets") {
+    if (this.currentAmbiance) {
+      if (this.currentAmbiance.key === key) return;
+      this.stopAmbiance();
+    }
+    this.currentAmbiance = this.scene.sound.add(key, { loop: true, volume: 0 });
+    this.currentAmbiance.play();
+    this.scene.tweens.add({
+      targets: this.currentAmbiance,
+      volume: this.ambianceVolume,
+      duration: 2000,
+    });
+  }
+
+  stopAmbiance() {
+    if (!this.currentAmbiance) return;
+    const sound = this.currentAmbiance;
+    this.scene.tweens.add({
+      targets: sound,
+      volume: 0,
+      duration: 2000,
+      onComplete: () => {
+        sound.stop();
+        sound.destroy();
+      },
+    });
+    this.currentAmbiance = null;
+  }
+
+  // NPC Specific
+  playNpcAttack(type: string) {
+    if (type.includes("skeleton")) {
+      this.scene.sound.play("npc-skeleton-rattle", { volume: 0.4 });
+    } else if (["dragon", "troll", "bear", "orc"].includes(type)) {
+      this.scene.sound.play("npc-roar", { volume: 0.5 });
+    } else {
+      this.scene.sound.play("npc-grunt", { volume: 0.4 });
+    }
+  }
+
+  playNpcDeath(type: string) {
+    if (type.includes("skeleton")) {
+      this.scene.sound.play("npc-skeleton-rattle", { volume: 0.6 });
+    } else if (["dragon", "troll", "bear", "orc"].includes(type)) {
+      this.scene.sound.play("npc-scream", { volume: 0.6 });
+    } else {
+      this.scene.sound.play("npc-hurt", { volume: 0.5 });
+    }
+  }
+
+  playNpcLevelUp() {
+    this.scene.sound.play("npc-levelup", { volume: 0.5 });
+  }
+
   playBuff() {
     this.play("sfx-buff");
   }

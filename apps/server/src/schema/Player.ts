@@ -37,12 +37,12 @@ export class Player extends Char {
   @view() @type([InventoryItem]) inventory = new ArraySchema<InventoryItem>();
 
   /** Equipment — only the owning client's sidebar renders these */
-  @view() @type("string") equipWeapon: string = "";
-  @view() @type("string") equipArmor: string = "";
-  @view() @type("string") equipShield: string = "";
-  @view() @type("string") equipHelmet: string = "";
-  @view() @type("string") equipRing: string = "";
-  @view() @type("string") equipMount: string = "";
+  @view() @type(InventoryItem) equipWeapon?: InventoryItem;
+  @view() @type(InventoryItem) equipArmor?: InventoryItem;
+  @view() @type(InventoryItem) equipShield?: InventoryItem;
+  @view() @type(InventoryItem) equipHelmet?: InventoryItem;
+  @view() @type(InventoryItem) equipRing?: InventoryItem;
+  @view() @type(InventoryItem) equipMount?: InventoryItem;
 
   /** Temporary storage for reconstructed companions on login */
   savedCompanions: { type: string; level: number; exp: number; hp: number }[] = [];

@@ -127,8 +127,7 @@ export class GameScene extends Phaser.Scene {
 
     this.sound.pauseOnBlur = false;
 
-    this.soundManager = new SoundManager(this);
-    this.soundManager.startMusic();
+
 
     this.muteKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.BACKTICK);
     this.muteKey?.on("down", () => {

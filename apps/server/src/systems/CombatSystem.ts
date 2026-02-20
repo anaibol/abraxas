@@ -494,7 +494,8 @@ export class CombatSystem {
         if (!isAlly || !candidate.alive) continue;
         const scalingStat = this.boosted(attacker, ability.scalingStat, now);
         const healAmount = calcHealAmount(ability.baseDamage, scalingStat, ability.scalingRatio);
-        candidate.hp = Math.min(candidate.maxHp, candidate.hp + healAmount);
+        const maxHp = this.boosted(candidate, "hp", now);
+        candidate.hp = Math.min(maxHp, candidate.hp + healAmount);
         broadcast(ServerMessageType.Heal, {
           sessionId: candidate.sessionId,
           amount: healAmount,
@@ -583,8 +584,13 @@ export class CombatSystem {
             y: target.tileY,
           });
           if (dist > ability.rangeTiles) return;
+          console.log(`[resolveAbility] SUCCESS targeting ${target.sessionId} at ${target.tileX},${target.tileY}`);
           this.applyAbilityToTarget(attacker, target, ability, broadcast, onDeath, now);
+        } else {
+          console.log(`[resolveAbility] isValidTarget FAILED for ${target.sessionId}`);
         }
+      } else {
+        console.log(`[resolveAbility] No alive target found at ${windup.targetTileX},${windup.targetTileY}.`);
       }
     }
   }
@@ -753,7 +759,8 @@ export class CombatSystem {
       }
     } else if (ability.effect === "heal") {
       const heal = calcHealAmount(ability.baseDamage, scalingStatValue, ability.scalingRatio);
-      target.hp = Math.min(target.maxHp, target.hp + heal);
+      const maxHp = this.boosted(target, "hp", now);
+      target.hp = Math.min(maxHp, target.hp + heal);
       broadcast(ServerMessageType.Heal, {
         sessionId: target.sessionId,
         amount: heal,
@@ -847,6 +854,7 @@ export class CombatSystem {
       int: entity.intStat,
       intStat: entity.intStat,
       armor: entity.armor,
+      hp: entity.maxHp,
     };
     return (bases[stat] ?? 0) + this.buffSystem.getBuffBonus(entity.sessionId, stat, now);
   }

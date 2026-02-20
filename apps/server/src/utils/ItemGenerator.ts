@@ -1,5 +1,5 @@
 import { type ItemAffix, type ItemRarity } from "@abraxas/shared";
-import { AFFIXES, type AffixDef } from "@abraxas/shared/src/config/affixes";
+import { AFFIXES, type AffixDef } from "@abraxas/shared";
 
 export interface GeneratedItem {
   rarity: ItemRarity;
@@ -19,7 +19,7 @@ export class ItemGenerator {
     else if (rarity === "legendary") affixCount = 4;
 
     if (affixCount > 0) {
-      const availableAffixes = AFFIXES.filter(a => a.minLevel <= level);
+      const availableAffixes = AFFIXES.filter((a: AffixDef) => a.minLevel <= level);
       const chosen = new Set<string>();
 
       for (let i = 0; i < affixCount && chosen.size < availableAffixes.length; i++) {
@@ -57,11 +57,11 @@ export class ItemGenerator {
   private static generateName(rarity: ItemRarity, affixes: ItemAffix[]): string | undefined {
     if (rarity === "common") return undefined;
 
-    const prefix = affixes.find(a => AFFIXES.find(d => d.id === a.type)?.type === "prefix");
-    const suffix = affixes.find(a => AFFIXES.find(d => d.id === a.type)?.type === "suffix");
+    const prefix = affixes.find((a: ItemAffix) => AFFIXES.find((d: AffixDef) => d.id === a.type)?.type === "prefix");
+    const suffix = affixes.find((a: ItemAffix) => AFFIXES.find((d: AffixDef) => d.id === a.type)?.type === "suffix");
 
-    const prefixName = prefix ? AFFIXES.find(d => d.id === prefix.type)?.name : "";
-    const suffixName = suffix ? AFFIXES.find(d => d.id === suffix.type)?.name : "";
+    const prefixName = prefix ? AFFIXES.find((d: AffixDef) => d.id === prefix.type)?.name : "";
+    const suffixName = suffix ? AFFIXES.find((d: AffixDef) => d.id === suffix.type)?.name : "";
 
     if (prefixName && suffixName) {
       return `${prefixName} %ITEM% ${suffixName}`;

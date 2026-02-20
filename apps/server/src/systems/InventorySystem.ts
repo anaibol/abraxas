@@ -40,6 +40,7 @@ export class InventorySystem {
     player: Player,
     itemId: string,
     quantity: number = 1,
+    instanceData?: { rarity: string; nameOverride?: string; affixes: { type: string; stat: string; value: number }[] },
     onError?: (msg: string) => void,
   ): boolean {
     const def = ITEMS[itemId];
@@ -69,6 +70,19 @@ export class InventorySystem {
         item.itemId = itemId;
         item.quantity = quantity;
         item.slotIndex = i;
+        
+        if (instanceData) {
+            item.rarity = instanceData.rarity;
+            item.nameOverride = instanceData.nameOverride;
+            instanceData.affixes.forEach(a => {
+                const s = new (require("../schema/InventoryItem").ItemAffixSchema)();
+                s.type = a.type;
+                s.stat = a.stat;
+                s.value = a.value;
+                item.affixes.push(s);
+            });
+        }
+
         player.inventory.push(item);
         return true;
       }
@@ -90,8 +104,14 @@ export class InventorySystem {
     return true;
   }
 
-  equipItem(player: Player, itemId: string, onError?: (msg: string) => void): boolean {
-    const def = ITEMS[itemId];
+  equipItem(player: Player, slotIndex: number, onError?: (msg: string) => void): boolean {
+    const item = player.inventory.find(i => i.slotIndex === slotIndex);
+    if (!item) {
+      onError?.("game.item_not_found");
+      return false;
+    }
+
+    const def = ITEMS[item.itemId];
     if (!def) {
       onError?.("Invalid item");
       return false;
@@ -107,57 +127,72 @@ export class InventorySystem {
       return false;
     }
 
-    // Check item is in inventory
-    if (!this.findItem(player, itemId)) {
-      onError?.("game.item_not_found");
-      return false;
-    }
-
     const slotKey = EQUIP_SLOT_MAP[def.slot];
     if (!slotKey) {
       onError?.("game.invalid_equip_slot");
       return false;
     }
 
-    // After the consumable check above, def.slot is narrowed to EquipmentSlot
-    if (player[slotKey]) {
-      if (player.inventory.length >= MAX_INVENTORY_SLOTS) {
+    const currentEquip = player[slotKey];
+    if (currentEquip) {
+      // Inventory is full check (minus the one we are equipping)
+      if (player.inventory.length > MAX_INVENTORY_SLOTS) {
         onError?.("game.inventory_full");
         return false;
       }
       this.unequipItem(player, def.slot);
     }
 
-    if (this.removeItem(player, itemId)) {
-      player[slotKey] = itemId;
-      this.recalcStats(player);
-      return true;
-    }
-    return false;
+    // Remove from inventory
+    const idx = player.inventory.indexOf(item);
+    player.inventory.splice(idx, 1);
+
+    // Set as equipment
+    (player[slotKey] as any) = item;
+    this.recalcStats(player);
+    return true;
   }
 
   unequipItem(player: Player, slot: EquipmentSlot, onError?: (msg: string) => void): boolean {
     const slotKey = EQUIP_SLOT_MAP[slot];
     if (!slotKey) return false;
 
-    const itemId = player[slotKey];
-    if (!itemId) return false;
+    const item = player[slotKey];
+    if (!item) return false;
 
-    if (!this.addItem(player, itemId, 1, onError)) return false;
+    // Find empty slot for unequipped item
+    const usedSlots = new Set(player.inventory.map(i => i.slotIndex));
+    let freeIdx = -1;
+    for (let i = 0; i < MAX_INVENTORY_SLOTS; i++) {
+        if (!usedSlots.has(i)) {
+            freeIdx = i;
+            break;
+        }
+    }
 
-    player[slotKey] = "";
+    if (freeIdx === -1) {
+        onError?.("game.inventory_full");
+        return false;
+    }
+
+    item.slotIndex = freeIdx;
+    player.inventory.push(item);
+
+    (player[slotKey] as any) = undefined;
     this.recalcStats(player);
     return true;
   }
 
-  useItem(player: Player, itemId: string, onError?: (msg: string) => void): boolean {
-    const def = ITEMS[itemId];
+  useItem(player: Player, slotIndex: number, onError?: (msg: string) => void): boolean {
+    const item = player.inventory.find(i => i.slotIndex === slotIndex);
+    if (!item) {
+        onError?.("game.item_not_found");
+        return false;
+    }
+
+    const def = ITEMS[item.itemId];
     if (!def || !def.consumeEffect) {
       onError?.("game.item_not_usable");
-      return false;
-    }
-    if (!this.findItem(player, itemId)) {
-      onError?.("game.item_not_found");
       return false;
     }
 
@@ -168,7 +203,12 @@ export class InventorySystem {
       player.mana = Math.min(player.maxMana, player.mana + def.consumeEffect.healMana);
     }
 
-    this.removeItem(player, itemId);
+    if (item.quantity > 1) {
+        item.quantity--;
+    } else {
+        const idx = player.inventory.indexOf(item);
+        player.inventory.splice(idx, 1);
+    }
     return true;
   }
 
@@ -183,9 +223,9 @@ export class InventorySystem {
     };
 
     for (const slotKey of Object.values(EQUIP_SLOT_MAP)) {
-      const itemId = player[slotKey];
-      if (!itemId) continue;
-      const def = ITEMS[itemId];
+      const item = (player as any)[slotKey] as InventoryItem | undefined;
+      if (!item) continue;
+      const def = ITEMS[item.itemId];
       if (!def) continue;
 
       bonuses.str += def.stats.str ?? 0;
@@ -194,6 +234,16 @@ export class InventorySystem {
       bonuses.hp += def.stats.hp ?? 0;
       bonuses.mana += def.stats.mana ?? 0;
       bonuses.armor += def.stats.armor ?? 0;
+
+      // Affix bonuses
+      for (const affix of item.affixes) {
+          if (affix.stat === "str") bonuses.str += affix.value;
+          else if (affix.stat === "agi") bonuses.agi += affix.value;
+          else if (affix.stat === "int") bonuses.int += affix.value;
+          else if (affix.stat === "hp") bonuses.hp += affix.value;
+          else if (affix.stat === "mana") bonuses.mana += affix.value;
+          else if (affix.stat === "armor") bonuses.armor += affix.value;
+      }
     }
 
     return bonuses;
@@ -217,8 +267,8 @@ export class InventorySystem {
     player.mana = Math.min(player.mana, player.maxMana);
 
     // Apply speed bonus from equipped mount
-    const mountItemId = player.equipMount;
-    const mountDef = mountItemId ? ITEMS[mountItemId] : undefined;
+    const mount = player.equipMount;
+    const mountDef = mount ? ITEMS[mount.itemId] : undefined;
     player.speedOverride = mountDef?.stats.speedBonus ?? 0;
   }
 
@@ -231,35 +281,35 @@ export class InventorySystem {
     const basicKept = new Set<string>();
 
     for (const slotKey of Object.values(EQUIP_SLOT_MAP)) {
-      const itemId = player[slotKey];
-      if (!itemId) continue;
-      if (basicItems.has(itemId)) {
-        basicKept.add(itemId);
+      const item = (player as any)[slotKey] as InventoryItem | undefined;
+      if (!item) continue;
+      if (basicItems.has(item.itemId)) {
+        basicKept.add(item.itemId);
       } else {
-        dropped.push({ itemId, quantity: 1 });
-        player[slotKey] = "";
+        dropped.push({ itemId: item.itemId, quantity: 1 });
+        (player as any)[slotKey] = undefined;
       }
     }
 
     // Keep one non-stackable or the full stack of a stackable basic item,
     // as long as it isn't already covered by an equipped slot above.
-    const toRestore: { itemId: string; quantity: number }[] = [];
+    const toRestore: InventoryItem[] = [];
 
     player.inventory.forEach((item) => {
       if (!item?.itemId) return;
       if (basicItems.has(item.itemId) && !basicKept.has(item.itemId)) {
         basicKept.add(item.itemId);
-        const keepQty = ITEMS[item.itemId]?.stackable ? item.quantity : 1;
-        toRestore.push({ itemId: item.itemId, quantity: keepQty });
-        if (item.quantity > keepQty)
-          dropped.push({ itemId: item.itemId, quantity: item.quantity - keepQty });
+        // Basic items are usually not randomized/affixed, but we keep the object anyway
+        toRestore.push(item);
       } else {
         dropped.push({ itemId: item.itemId, quantity: item.quantity });
       }
     });
 
     player.inventory.clear();
-    for (const { itemId, quantity } of toRestore) this.addItem(player, itemId, quantity);
+    toRestore.forEach(item => {
+        player.inventory.push(item);
+    });
 
     this.recalcStats(player);
     return dropped;

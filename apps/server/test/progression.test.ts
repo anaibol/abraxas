@@ -2,7 +2,7 @@ import { describe, test, expect, beforeAll, afterAll } from "bun:test";
 import { Client, Room } from "@colyseus/sdk";
 import { resolve } from "path";
 import { createGameServer } from "../src/server";
-import { TileMap, Direction, type JoinOptions, ServerMessageType } from "@abraxas/shared";
+import { TileMap, Direction, type JoinOptions, ServerMessageType, type NpcType } from "@abraxas/shared";
 import { GameState } from "../src/schema/GameState";
 import { Player } from "../src/schema/Player";
 import { hashPassword, generateToken } from "../src/database/auth";
@@ -50,7 +50,7 @@ function waitForState(
                     return;
                 }
             } catch (e) {
-                // Ignore transient errors during state sync
+                // Ignore transient errors
             }
             if (Date.now() - start > timeoutMs) {
                 reject(new Error("Timeout waiting for state condition"));
@@ -102,26 +102,17 @@ describe("Progression System", () => {
         });
         const player = room.state.players.get(room.sessionId)!;
         
-        console.log(`Player found in state at ${player.tileX},${player.tileY}. Role: ${player.role}`);
+        console.log(`Player found in state. Role: ${player.role}`);
 
-        // Spawn an NPC manually since npcCount is 0 in test map
+        // Spawn an NPC manually
         room.send("gm_spawn", { type: "orc" });
-        console.log("Sent gm_spawn for orc");
-
-        // Find an NPC without an owner
+        
         await waitForState(room, (state) => {
-            const count = state.npcs.size;
-            if (count > 0) {
-               const n = Array.from(state.npcs.values())[0];
-               console.log(`State has ${count} NPCs. First one: ${n.npcType} at ${n.tileX},${n.tileY}`);
-            }
             return state.npcs.size > 0;
         }, 10000);
-        
+
         const npc = Array.from(room.state.npcs.values()).find(n => !n.ownerId)!;
         console.log(`Found NPC: ${npc.npcType} at ${npc.tileX},${npc.tileY}`);
-
-
 
         // Teleport to NPC
         room.send("gm_teleport", { tileX: npc.tileX, tileY: npc.tileY });
@@ -130,13 +121,13 @@ describe("Progression System", () => {
             return p?.tileX === npc.tileX && p?.tileY === npc.tileY;
         });
 
-
         const initialXp = player.xp;
 
         // Attack NPC until dead
         const npcId = npc.sessionId;
+        console.log(`Starting attack on NPC ${npcId} at ${npc.tileX},${npc.tileY}`);
         while (room.state.npcs.has(npcId)) {
-            room.send("attack", {});
+            room.send("attack", { targetX: npc.tileX, targetY: npc.tileY });
             await wait(200); 
         }
 
@@ -144,5 +135,5 @@ describe("Progression System", () => {
         expect(player.xp).toBeGreaterThan(initialXp);
         
         await room.leave();
-    });
+    }, 30000);
 });

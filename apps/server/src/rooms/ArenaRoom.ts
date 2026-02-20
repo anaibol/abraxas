@@ -95,7 +95,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 
       this.drops = new DropSystem(this.inventorySystem);
       this.spatial = new SpatialLookup(this.state);
-      this.movement = new MovementSystem(this.spatial);
+      this.movement = new MovementSystem(this.spatial, this.buffSystem);
       this.combat = new CombatSystem(this.state, this.spatial, this.buffSystem, this.map);
       this.npcSystem = new NpcSystem(
         this.state,
@@ -198,8 +198,8 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 
       for (const n of this.map.npcs ?? []) this.npcSystem.spawnNpcAt(n.type, this.map, n.x, n.y);
       const npcCount = this.map.npcCount ?? 0;
-      for (let i = 0; i < npcCount; i++) {
-        this.npcSystem.spawnNpcAtRandom(this.map);
+      if (npcCount > 0) {
+        this.npcSystem.spawnNpcs(npcCount, this.map);
       }
 
       this.setSimulationInterval((dt) => this.tickSystem.tick(dt), TICK_MS);

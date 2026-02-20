@@ -4,6 +4,7 @@ export * from "./config";
 export * from "./i18n";
 export * from "./items";
 export * from "./loot";
+export * from "./config/affixes";
 export * from "./types";
 export * from "./utils/MathUtils";
 export * from "./utils/names";
