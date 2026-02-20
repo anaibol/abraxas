@@ -7,7 +7,7 @@ import { CameraController } from "../systems/CameraController";
 import { SoundManager } from "../assets/SoundManager";
 import { TILE_SIZE, DIRECTION_DELTA, ITEMS, i18n } from "@abraxas/shared";
 import type { Direction } from "@abraxas/shared";
-import type { PlayerState } from "../ui/Sidebar";
+import type { PlayerState } from "../ui/sidebar/types";
 import { SpriteManager } from "../managers/SpriteManager";
 import { EffectManager } from "../managers/EffectManager";
 import { GameEventHandler } from "../handlers/GameEventHandler";
@@ -19,7 +19,7 @@ import type { Drop } from "../../../server/src/schema/Drop";
 
 type StateCallback = (state: PlayerState) => void;
 type KillFeedCallback = (killer: string, victim: string) => void;
-export type ConsoleCallback = (text: string, color?: string, channel?: "global" | "party" | "whisper" | "system" | "combat") => void;
+export type ConsoleCallback = (text: string, color?: string, channel?: "global" | "group" | "whisper" | "system" | "combat") => void;
 export type PlayerRightClickCallback = (sessionId: string, name: string, screenX: number, screenY: number) => void;
 export type GMMapClickCallback = (tileX: number, tileY: number) => void;
 
@@ -28,7 +28,7 @@ export class GameScene extends Phaser.Scene {
 	private onStateUpdate: StateCallback;
 	private onKillFeed?: KillFeedCallback;
 	private onConsoleMessage?: ConsoleCallback;
-	private onReady?: () => void;
+	private onReady?: (sm: SoundManager) => void;
 	private onPttChange?: (recording: boolean) => void;
 	private onPlayerRightClick?: PlayerRightClickCallback;
 	private onGMMapClick?: GMMapClickCallback;
@@ -84,7 +84,7 @@ export class GameScene extends Phaser.Scene {
 		onStateUpdate: StateCallback,
 		onKillFeed?: KillFeedCallback,
 		onConsoleMessage?: ConsoleCallback,
-		onReady?: () => void,
+		onReady?: (sm: SoundManager) => void,
 		onPttChange?: (recording: boolean) => void,
 		onPlayerRightClick?: PlayerRightClickCallback,
 		onGMMapClick?: GMMapClickCallback,
@@ -290,7 +290,7 @@ export class GameScene extends Phaser.Scene {
 
 		document.addEventListener("visibilitychange", this.handleVisibilityChange);
 
-		this.onReady?.();
+		this.onReady?.(this.soundManager);
 	}
 
 	update(time: number, delta: number) {
@@ -536,7 +536,7 @@ export class GameScene extends Phaser.Scene {
 		const chPxW = chW * T;
 		const chPxH = chH * T;
 
-		const g = this.make.graphics({ add: false });
+		const g = this.make.graphics();
 
 		g.fillStyle(0x4a8c2a, 1);
 		g.fillRect(0, 0, chPxW, chPxH);

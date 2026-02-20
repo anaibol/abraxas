@@ -9,16 +9,16 @@ import {
 } from "@abraxas/shared";
 import type { GameState } from "../../../server/src/schema/GameState";
 import { type NetworkManager } from "../network/NetworkManager";
-import { type KillStats } from "./ScoreboardOverlay";
+import { type KillStats } from "../ui/ScoreboardOverlay";
 import { toaster } from "../ui/toaster";
 
 export type RoomListenerCallbacks = {
   t: (key: string, options?: Record<string, unknown>) => string;
-  addConsoleMessage: (text: string, color?: string, channel?: "global" | "party" | "whisper" | "system" | "combat") => void;
+  addConsoleMessage: (text: string, color?: string, channel?: "global" | "group" | "whisper" | "system" | "combat") => void;
   setShopData: (data: { npcId: string; inventory: string[] } | null) => void;
   setDialogueData: (data: { npcId: string; text: string; options: { text: string; action: string; data?: unknown }[] } | null) => void;
   setQuests: (fn: (prev: PlayerQuestState[]) => PlayerQuestState[]) => void;
-  setPartyData: (data: { partyId: string; leaderId: string; members: { sessionId: string; name: string }[] } | null) => void;
+  setGroupData: (data: { groupId: string; leaderId: string; members: { sessionId: string; name: string }[] } | null) => void;
   setBankData: (data: { items: { itemId: string; quantity: number; slotIndex: number }[] } | null) => void;
   setTradeData: (data: TradeState | null) => void;
   setKillStats: (fn: (prev: Record<string, KillStats>) => Record<string, KillStats>) => void;
@@ -36,7 +36,7 @@ export function useRoomListeners(
     const {
       t, addConsoleMessage,
       setShopData, setDialogueData, setQuests,
-      setPartyData, setBankData, setTradeData,
+      setGroupData, setBankData, setTradeData,
       setKillStats, networkRef,
     } = cb;
 
@@ -68,11 +68,11 @@ export function useRoomListeners(
 
     on(ServerMessageType.Chat, (data) => {
       const color =
-        data.channel === "party" ? "#aaaaff"
+        data.channel === "group" ? "#aaaaff"
         : data.channel === "whisper" ? "#ff88ff"
         : "#ffffff";
       const channel =
-        data.channel === "party" ? "party"
+        data.channel === "group" ? "group"
         : data.channel === "whisper" ? "whisper"
         : "global";
       addConsoleMessage(`${data.senderName}: ${data.message}`, color, channel);
@@ -100,19 +100,19 @@ export function useRoomListeners(
       });
     });
 
-    on(ServerMessageType.PartyInvited, (data) => {
+    on(ServerMessageType.GroupInvited, (data) => {
       toaster.create({
-        title: t("sidebar.tabs.party"),
-        description: t("social.invited_to_party", { name: data.inviterName }),
+        title: t("sidebar.tabs.group"),
+        description: t("social.invited_to_group", { name: data.inviterName }),
         action: {
           label: t("sidebar.friends.accept"),
-          onClick: () => network.sendPartyAccept(data.partyId),
+          onClick: () => network.sendGroupAccept(data.groupId),
         },
       });
     });
 
-    on(ServerMessageType.PartyUpdate, (data) => {
-      setPartyData(data.partyId ? data : null);
+    on(ServerMessageType.GroupUpdate, (data) => {
+      setGroupData(data.groupId ? data : null);
     });
 
     on(ServerMessageType.FriendInvited, (data) => {
