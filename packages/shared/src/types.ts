@@ -35,7 +35,11 @@ export type NpcType =
 	| "spider"
 	| "ghost"
 	| "lich"
-	| "banker";
+	| "banker"
+	| "zombie"
+	| "troll"
+	| "bat"
+	| "dark_knight";
 
 export enum NpcState {
 	IDLE = "idle",
