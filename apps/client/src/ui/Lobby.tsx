@@ -209,7 +209,13 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
         return;
       }
 
-      setCharacters((prev) => [...prev, data as CharacterSummary]);
+      const newCharacter: CharacterSummary = {
+        id: data.id,
+        name: data.name,
+        class: data.class,
+        level: data.level,
+      };
+      setCharacters((prev) => [...prev, newCharacter]);
       setCharName("");
       setClassType("WARRIOR");
       setMode("character_select");

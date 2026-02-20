@@ -108,10 +108,18 @@ export class PlayerSprite {
     this.classType = classType;
     this.isLocal = isLocal;
 
-    const stats = CLASS_STATS[classType]
-      ?? (NPC_STATS as Record<string, typeof NPC_STATS[keyof typeof NPC_STATS]>)[classType]
-      ?? CLASS_STATS.WARRIOR;
-    if (!CLASS_STATS[classType] && !(NPC_STATS as Record<string, unknown>)[classType]) {
+    type ClassKey = keyof typeof CLASS_STATS;
+    type NpcKey = keyof typeof NPC_STATS;
+    const isClass = classType in CLASS_STATS;
+    const isNpc = classType in NPC_STATS;
+
+    const stats = isClass
+      ? CLASS_STATS[classType as ClassKey]
+      : isNpc
+      ? NPC_STATS[classType as NpcKey]
+      : CLASS_STATS.WARRIOR;
+
+    if (!isClass && !isNpc) {
       console.warn(`No stats found for class/type: ${classType}, defaulting to warrior`);
     }
     this.pixelsPerSecond = stats.speedTilesPerSecond * TILE_SIZE;
@@ -124,10 +132,14 @@ export class PlayerSprite {
       throw new Error("AoGrhResolver not found in registry");
     }
 
-    const appearance =
-      CLASS_APPEARANCE[classType] ??
-      NPC_APPEARANCE[classType] ??
-      CLASS_APPEARANCE.WARRIOR;
+    const isClassApp = classType in CLASS_APPEARANCE;
+    const isNpcApp = classType in NPC_APPEARANCE;
+
+    const appearance = isClassApp
+      ? CLASS_APPEARANCE[classType as ClassKey]
+      : isNpcApp
+      ? NPC_APPEARANCE[classType as NpcKey]
+      : CLASS_APPEARANCE.WARRIOR;
     const bodyEntryResult = this.resolver.getBodyEntry(appearance.bodyId);
     if (!bodyEntryResult) {
       throw new Error(`No body entry found for bodyId ${appearance.bodyId} (class/type: ${classType})`);

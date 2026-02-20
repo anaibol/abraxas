@@ -5,7 +5,7 @@ import type { InventoryEntry, EquipmentData } from "@abraxas/shared";
 import { logger } from "../logger";
 
 /** Maps EquipmentData keys to Prisma EquipSlot enum values. */
-const EQUIPMENT_SLOT_MAP: Partial<Record<keyof EquipmentData, EquipSlot>> = {
+const EQUIPMENT_SLOT_MAP: Record<string, EquipSlot | undefined> = {
   weapon: EquipSlot.WEAPON_MAIN,
   shield: EquipSlot.WEAPON_OFF,
   helmet: EquipSlot.HEAD,
@@ -164,11 +164,9 @@ export class PersistenceService {
           }
         }
 
-        for (const key of Object.keys(data.equipment) as (keyof EquipmentData)[]) {
+        for (const [key, itemCode] of Object.entries(data.equipment)) {
           const schemaSlot = EQUIPMENT_SLOT_MAP[key];
           if (!schemaSlot) continue;
-
-          const itemCode = data.equipment[key];
 
           if (!itemCode) {
             await tx.equipment.deleteMany({

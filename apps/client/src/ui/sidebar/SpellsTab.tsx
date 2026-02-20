@@ -213,13 +213,11 @@ export function SpellsTab({
 										color={T.goldDark}
 										lineHeight="1.3"
 										overflow="hidden"
-										style={
-											{
-												display: "-webkit-box",
-												WebkitLineClamp: 2,
-												WebkitBoxOrient: "vertical",
-											} as CSSProperties
-										}
+										style={{
+											display: "-webkit-box",
+											WebkitLineClamp: 2,
+											WebkitBoxOrient: "vertical",
+										}}
 									>
 										{t(`spells.${spell.id}.desc`, { defaultValue: "" })}
 									</Text>

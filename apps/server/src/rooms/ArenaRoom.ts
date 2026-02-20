@@ -69,7 +69,16 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 	private bankSystem!: BankSystem;
 
 	private broadcastMessage: BroadcastFn = (type, data, options) => {
-		this.broadcast(String(type), data, options);
+		const broadcastOpts: { except?: Client | Client[] } = {};
+		if (options?.except) {
+			const isClient = (obj: unknown): obj is Client => typeof obj === "object" && obj !== null && "sessionId" in obj;
+			if (Array.isArray(options.except) && options.except.every(isClient)) {
+				broadcastOpts.except = options.except;
+			} else if (isClient(options.except)) {
+				broadcastOpts.except = options.except;
+			}
+		}
+		this.broadcast(String(type), data, broadcastOpts);
 	};
 
 	async onCreate(options: JoinOptions & { mapName?: string }) {

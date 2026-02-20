@@ -255,12 +255,12 @@ export class GuildSystem {
 
 		const guildName = members[0].guild.name;
 
-		const memberPayload = members.map((m) => {
+		const memberPayload: ServerMessages[ServerMessageType.GuildUpdate]["members"] = members.map((m) => {
 			const sessionId = this.findSessionIdByDbId(m.characterId);
 			return {
 				sessionId: sessionId ?? undefined,
 				name: m.character.name,
-				role: m.role as "LEADER" | "OFFICER" | "MEMBER",
+				role: m.role === "LEADER" ? "LEADER" : m.role === "OFFICER" ? "OFFICER" : "MEMBER",
 				online: !!sessionId,
 			};
 		});

@@ -635,8 +635,7 @@ export class CombatSystem {
 		/** When true, skips the CastHit broadcast (AoE callers broadcast it once themselves). */
 		suppressCastHit = false,
 	) {
-		// Merchants are invulnerable
-		if ("type" in target && (target as { type: string }).type === "merchant")
+		if ("type" in target && target.type === "merchant")
 			return;
 
 		const isSelfCast = attacker.sessionId === target.sessionId;

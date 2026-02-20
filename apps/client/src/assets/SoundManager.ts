@@ -1,5 +1,5 @@
 import { gameSettings } from "../settings/gameSettings";
-import type Phaser from "phaser";
+import Phaser from "phaser";
 
 // Base volumes baked into each sound; settings scale these.
 const BASE_MUSIC_VOL = 0.15;
@@ -37,7 +37,9 @@ export class SoundManager {
   private applyMusicVolume(vol: number) {
     if (!this.music) return;
     // Phaser WebAudioSound / HTML5Sound both expose `setVolume`
-    (this.music as Phaser.Sound.WebAudioSound).setVolume(BASE_MUSIC_VOL * vol);
+    if (this.music instanceof Phaser.Sound.WebAudioSound || this.music instanceof Phaser.Sound.HTML5AudioSound) {
+      this.music.setVolume(BASE_MUSIC_VOL * vol);
+    }
   }
 
   private play(key: string, opts?: Phaser.Types.Sound.SoundConfig) {

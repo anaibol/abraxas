@@ -623,10 +623,10 @@ export type ClientMessages = {
 	[ClientMessageType.GMTeleport]: { tileX: number; tileY: number };
 };
 
-export type BroadcastFn = <T extends keyof ServerMessages>(
+export type BroadcastFn<TClient = unknown> = <T extends keyof ServerMessages>(
 	type: T,
 	data: ServerMessages[T],
-	options?: { except?: unknown; exceptSessionId?: string },
+	options?: { except?: TClient | TClient[]; exceptSessionId?: string },
 ) => void;
 
 export interface StatBonuses {

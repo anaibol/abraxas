@@ -23,9 +23,17 @@ export function generateToken(payload: AuthPayload): string {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
 }
 
+function isAuthPayload(obj: unknown): obj is AuthPayload {
+  return typeof obj === "object" && obj !== null && "userId" in obj && "email" in obj && "role" in obj;
+}
+
 export function verifyToken(token: string): AuthPayload | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as AuthPayload;
+    const decoded = jwt.verify(token, JWT_SECRET);
+    if (isAuthPayload(decoded)) {
+      return decoded;
+    }
+    return null;
   } catch {
     return null;
   }

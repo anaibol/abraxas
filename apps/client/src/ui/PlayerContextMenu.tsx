@@ -36,7 +36,7 @@ export function PlayerContextMenu({
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      if (menuRef.current && e.target instanceof Node && !menuRef.current.contains(e.target)) {
         onClose();
       }
     };

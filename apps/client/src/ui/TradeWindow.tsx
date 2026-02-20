@@ -197,7 +197,7 @@ export function TradeWindow({
                 return { ...slot, quantity: availableQty };
               }).filter(slot => slot.quantity > 0)}
               selectedSlotIndex={null}
-              onSelect={(slot) => addItem(slot as InventorySlot)}
+              onSelect={(slot) => addItem(slot)}
               maxSlots={Math.max(24, Math.ceil(playerInventory.length / 8) * 8)}
             />
             {/* Click items in offer to remove */}

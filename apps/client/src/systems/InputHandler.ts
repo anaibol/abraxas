@@ -100,8 +100,10 @@ export class InputHandler {
       for (const abilityId of stats.abilities) {
         const ability = ABILITIES[abilityId];
         if (!ability?.key) continue;
-        const keyCode = Phaser.Input.Keyboard.KeyCodes[ability.key as keyof typeof Phaser.Input.Keyboard.KeyCodes];
-        if (keyCode != null) {
+        const keyCodes = Object.entries(Phaser.Input.Keyboard.KeyCodes);
+        const match = keyCodes.find(([k]) => k === ability.key);
+        const keyCode = match ? match[1] : undefined;
+        if (typeof keyCode === "number") {
           this.spellKeys.push({
             key: scene.input.keyboard.addKey(keyCode),
             spellId: ability.id,

@@ -36,6 +36,7 @@ export class PlayerService {
     player.classType = char.class;
     player.tileX = char.x;
     player.tileY = char.y;
+    player.pvpEnabled = char.pvpEnabled;
 
     const stats = char.stats;
     if (stats) {

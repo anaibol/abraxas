@@ -11,13 +11,13 @@ function extractBearerToken(req: Request): string | null {
   return authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
 }
 
-export const healthEndpoint = createEndpoint(
+export const healthEndpoint: ReturnType<typeof createEndpoint> = createEndpoint(
   "/health",
   { method: "GET" },
   async (ctx) => ctx.json({ ok: true }),
 );
 
-export const registerEndpoint = createEndpoint(
+export const registerEndpoint: ReturnType<typeof createEndpoint> = createEndpoint(
   "/api/register",
   {
     method: "POST",
@@ -53,7 +53,7 @@ export const registerEndpoint = createEndpoint(
   },
 );
 
-export const loginEndpoint = createEndpoint(
+export const loginEndpoint: ReturnType<typeof createEndpoint> = createEndpoint(
   "/api/login",
   {
     method: "POST",
@@ -90,7 +90,7 @@ export const loginEndpoint = createEndpoint(
   },
 );
 
-export const meEndpoint = createEndpoint(
+export const meEndpoint: ReturnType<typeof createEndpoint> = createEndpoint(
   "/api/me",
   { method: "GET" },
   async (ctx) => {
@@ -116,7 +116,7 @@ export const meEndpoint = createEndpoint(
   },
 );
 
-export const createCharacterEndpoint = createEndpoint(
+export const createCharacterEndpoint: ReturnType<typeof createEndpoint> = createEndpoint(
   "/api/characters",
   {
     method: "POST",

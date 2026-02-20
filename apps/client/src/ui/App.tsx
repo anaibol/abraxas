@@ -361,7 +361,8 @@ export function App() {
   const handleSpellClick = useCallback((spellId: string, rangeTiles: number) => {
     const game = phaserGameRef.current;
     if (!game) return;
-    const scene = game.scene.getScene("GameScene") as GameScene | null;
+    const scene = game.scene.getScene("GameScene");
+    if (!(scene instanceof GameScene)) return;
     if (!scene) return;
     scene.startSpellTargeting(spellId, rangeTiles);
     if (rangeTiles > 0) {
@@ -392,14 +393,16 @@ export function App() {
   const handleMobileMove = useCallback((direction: Direction) => {
     const game = phaserGameRef.current;
     if (!game) return;
-    const scene = game.scene.getScene("GameScene") as GameScene | null;
+    const scene = game.scene.getScene("GameScene");
+    if (!(scene instanceof GameScene)) return;
     scene?.triggerMove(direction);
   }, []);
 
   const handleMobileAttack = useCallback(() => {
     const game = phaserGameRef.current;
     if (!game) return;
-    const scene = game.scene.getScene("GameScene") as GameScene | null;
+    const scene = game.scene.getScene("GameScene");
+    if (!(scene instanceof GameScene)) return;
     scene?.triggerAttack();
   }, []);
 

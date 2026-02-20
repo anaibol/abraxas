@@ -17,7 +17,8 @@ const spin = keyframes`
 
 export function LoadingScreen() {
   const { t } = useTranslation();
-  const tips = t("loading.tips", { returnObjects: true }) as string[];
+  const tipsRaw = t("loading.tips", { returnObjects: true });
+  const tips = Array.isArray(tipsRaw) ? tipsRaw.map(String) : [];
   const [tipIndex, setTipIndex] = useState(() => Math.floor(Math.random() * 7));
 
   useEffect(() => {

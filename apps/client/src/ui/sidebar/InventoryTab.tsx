@@ -47,7 +47,7 @@ export function InventoryTab({
 			{state.equipment && (
 				<Flex gap="1" mb="2" justify="center">
 					{EQUIPMENT_SLOTS.map((slot) => {
-						const equipped = state.equipment![slot];
+						const equipped = state.equipment?.[slot];
 						const def = equipped ? ITEMS[equipped] : null;
 						return (
 							<Box

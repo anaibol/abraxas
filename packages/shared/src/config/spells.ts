@@ -51,6 +51,15 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     id: "fireball",key: "",
     requiredLevel: 1,
     fxId: 3,
+    manaCost: 25,
+    baseDamage: 30,
+    scalingStat: "int",
+    scalingRatio: 1.0,
+    cooldownMs: 2000,
+    windupMs: 300,
+    effect: "damage",
+    damageSchool: "magical",
+    rangeTiles: FULL_VIEWPORT_RANGE,
   },
 
   /** W — Ranged single-target: deals damage and applies an AGI slow */
@@ -58,6 +67,15 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     id: "ice_bolt",key: "",
     requiredLevel: 3,
     fxId: 22,
+    manaCost: 15,
+    baseDamage: 15,
+    scalingStat: "int",
+    scalingRatio: 0.6,
+    cooldownMs: 4000,
+    windupMs: 300,
+    effect: "damage",
+    damageSchool: "magical",
+    rangeTiles: FULL_VIEWPORT_RANGE,
     buffStat: "agi",
     buffAmount: -6,
     durationMs: 3000,
@@ -489,9 +507,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
 };
 
 export const ABILITIES: Record<string, Ability> = Object.fromEntries(
-  Object.entries(_ABILITIES).map(([k, v]) => [
-    k,
-    {
+  Object.entries(_ABILITIES).map(([k, v]) => {
+    const rawAbility: any = {
       rangeTiles: 1,
       manaCost: 0,
       baseDamage: 0,
@@ -503,8 +520,9 @@ export const ABILITIES: Record<string, Ability> = Object.fromEntries(
       damageSchool: "physical",
       ...v,
       id: k,
-    } as Ability
-  ])
+    };
+    return [k, rawAbility];
+  })
 );
 
 /** @deprecated Use `ABILITIES` instead. */
