@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button } from "../components/Button";
+import { Button } from "./components/Button";
 import { useTranslation } from "react-i18next";
 import { ITEMS } from "@abraxas/shared";
 import type { TradeState } from "@abraxas/shared";
