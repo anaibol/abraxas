@@ -22,6 +22,10 @@ export class DropManager {
     private effectManager?: EffectManager,
   ) {}
 
+  get count(): number {
+    return this.visuals.size;
+  }
+
   updateLabels(playerTileX: number, playerTileY: number) {
     for (const [, v] of this.visuals) {
       const dist = Math.abs(v.tileX - playerTileX) + Math.abs(v.tileY - playerTileY);

@@ -41,7 +41,7 @@ export class PreloaderScene extends Phaser.Scene {
     this.load.json("idx-fxs", "indices/fxs.json");
 
     // Load all audio assets from manifest
-    for (const [key, path] of Object.entries(AudioAssets)) {
+    for (const [_key, path] of Object.entries(AudioAssets)) {
       this.load.audio(path, path);
     }
   }

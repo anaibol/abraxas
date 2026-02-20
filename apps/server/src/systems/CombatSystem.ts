@@ -99,8 +99,8 @@ export class CombatSystem {
     now: number,
     broadcast: BroadcastFn,
     getSendToClient: (sessionId: string) => SendToClientFn | undefined,
-    onDeath: (entity: Entity, killerSessionId?: string) => void,
-    onSummon?: (caster: Entity, abilityId: string, x: number, y: number) => void,
+    _onDeath: (entity: Entity, killerSessionId?: string) => void,
+    _onSummon?: (caster: Entity, abilityId: string, x: number, y: number) => void,
   ) {
     const entities = [...this.state.players.values(), ...this.state.npcs.values()];
     for (const entity of entities) {

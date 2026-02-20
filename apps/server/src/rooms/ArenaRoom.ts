@@ -225,25 +225,52 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         }
       });
 
-      PersistenceService.loadPersistentNpcs(this.roomMapName).then((npcs) => {
-        for (const n of npcs) {
-          this.npcSystem.spawnNpcAt(n.npcType as NpcType, this.map, n.tileX, n.tileY, undefined, n.level, {
-              isUnique: n.isUnique,
-              uniqueId: n.uniqueId || undefined,
-              dbId: n.id
-          });
-        }
-      });
+      // ── NPC persistence: DB-first spawn ──────────────────────────────────
+      // If the DB already has NPC rows for this map, restore them — the world
+      // is resuming from a previous session (positions, HP, and levels carry over).
+      // If the DB is empty this is a fresh boot; spawn from map config + random
+      // count and immediately persist so the next restart can restore them.
+      const savedNpcs = await PersistenceService.loadPersistentNpcs(this.roomMapName);
 
-      for (const n of this.map.npcs ?? []) {
-          // Check if this NPC is already loaded from persistence 
-          // (Basic implementation: if a persistent NPC exists at this location, skip)
-          // For now just spawning them as usual but unique ones should be handled carefully.
+      if (savedNpcs.length > 0) {
+        // Resume world — recreate each NPC from its saved state.
+        for (const n of savedNpcs) {
+          this.npcSystem.spawnNpcAt(
+            n.npcType as NpcType,
+            this.map,
+            n.tileX,
+            n.tileY,
+            undefined,
+            n.level,
+            { isUnique: n.isUnique, uniqueId: n.uniqueId || undefined, dbId: n.id },
+          );
+        }
+      } else {
+        // Fresh boot — spawn from authoritative map sources, then persist.
+        for (const n of this.map.npcs ?? []) {
           this.npcSystem.spawnNpcAt(n.type, this.map, n.x, n.y);
-      }
-      const npcCount = this.map.npcCount ?? 0;
-      if (npcCount > 0) {
-        this.npcSystem.spawnNpcs(npcCount, this.map);
+        }
+        const npcCount = this.map.npcCount ?? 0;
+        if (npcCount > 0) {
+          this.npcSystem.spawnNpcs(npcCount, this.map);
+        }
+
+        // Persist the newly-spawned world so the next restart restores it.
+        const toSave = Array.from(this.state.npcs.values()).map((npc) => ({
+          npcType: npc.npcType,
+          tileX: npc.tileX,
+          tileY: npc.tileY,
+          spawnX: npc.spawnX,
+          spawnY: npc.spawnY,
+          level: npc.level,
+          hp: npc.hp,
+          maxHp: npc.maxHp,
+          isUnique: npc.isUnique ?? false,
+          uniqueId: npc.uniqueId,
+        }));
+        PersistenceService.savePersistentNpcs(this.roomMapName, toSave).catch((e) =>
+          logger.error({ message: "Failed to persist initial NPC spawn", error: String(e) }),
+        );
       }
 
       this.setSimulationInterval((dt) => this.tickSystem.tick(dt), TICK_MS);

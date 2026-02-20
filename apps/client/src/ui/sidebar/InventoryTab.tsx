@@ -1,6 +1,5 @@
 import { EQUIPMENT_SLOTS, type EquipmentSlot, ITEMS } from "@abraxas/shared";
 import { Box, Flex, Grid, Text } from "@chakra-ui/react";
-import React from "react";
 import { useTranslation } from "react-i18next";
 import { useAudio } from "../../contexts/AudioContext";
 import { HEX, T } from "../tokens";

@@ -53,12 +53,6 @@ export class GameEventHandler {
     return sessionId === this.room.sessionId;
   }
 
-  private getLocalPlayerTile(): { tileX: number; tileY: number } | null {
-    const lp = this.room.state.players.get(this.room.sessionId);
-    if (!lp) return null;
-    return { tileX: lp.tileX, tileY: lp.tileY };
-  }
-
   setupListeners() {
     const on = <T extends keyof ServerMessages>(
       type: T,
