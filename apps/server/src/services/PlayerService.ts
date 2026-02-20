@@ -140,6 +140,7 @@ export class PlayerService {
       helmet: player.equipHelmet,
       armor: player.equipArmor,
       ring: player.equipRing,
+      mount: player.equipMount,
     };
 
     await PersistenceService.saveChar(player.dbId, {

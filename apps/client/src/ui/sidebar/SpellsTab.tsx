@@ -62,6 +62,7 @@ const EFFECT_LABELS: Record<string, { label: string; color: string }> = {
 interface SpellsTabProps {
 	classSpells: Spell[];
 	currentMana: number;
+	playerLevel: number;
 	pendingSpellId?: string | null;
 	onSpellClick?: (id: string, range: number) => void;
 }
@@ -69,6 +70,7 @@ interface SpellsTabProps {
 export function SpellsTab({
 	classSpells,
 	currentMana,
+	playerLevel,
 	pendingSpellId,
 	onSpellClick,
 }: SpellsTabProps) {
@@ -89,9 +91,10 @@ export function SpellsTab({
 			) : (
 				<Flex direction="column" gap="1.5">
 					{classSpells.map((spell) => {
+						const isLocked = !!spell.requiredLevel && playerLevel < spell.requiredLevel;
 						const isPending = pendingSpellId === spell.id;
 						const noMana = currentMana < spell.manaCost;
-						const isDisabled = noMana;
+						const isDisabled = isLocked || noMana;
 						const effectMeta = EFFECT_LABELS[spell.effect];
 						const rangeLabel =
 							spell.rangeTiles > 0
@@ -112,7 +115,8 @@ export function SpellsTab({
 								borderRadius="3px"
 								cursor={isDisabled ? "not-allowed" : "pointer"}
 								transition="all 0.12s"
-								opacity={isDisabled ? 0.45 : 1}
+								opacity={isLocked ? 0.3 : isDisabled ? 0.45 : 1}
+								filter={isLocked ? "grayscale(100%)" : "none"}
 								_hover={
 									isDisabled ? {} : { bg: T.surface, borderColor: T.gold }
 								}
@@ -126,11 +130,13 @@ export function SpellsTab({
 									}
 								}}
 								title={
-									isDisabled
-										? t("game.not_enough_mana_cost", { cost: spell.manaCost })
-										: spell.rangeTiles > 0
-											? t("sidebar.inventory.spell_click_hint")
-											: undefined
+									isLocked
+										? `Unlocks at level ${spell.requiredLevel}`
+										: isDisabled
+											? t("game.not_enough_mana_cost", { cost: spell.manaCost })
+											: spell.rangeTiles > 0
+												? t("sidebar.inventory.spell_click_hint")
+												: undefined
 								}
 								position="relative"
 							>
@@ -152,7 +158,7 @@ export function SpellsTab({
 								>
 									{SPELL_ICONS[spell.id] || "✨"}
 									{/* Keybind badge */}
-									{spell.key && (
+									{spell.key && !isLocked && (
 										<Box
 											position="absolute"
 											bottom="-1px"

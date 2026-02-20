@@ -281,7 +281,7 @@ export class NpcSystem {
     }
 
     npc.facing = MathUtils.getDirection(npc.getPosition(), target.getPosition());
-    if (stats.abilities.length > 0 && this.tryUseAbility(npc, now, broadcast, map)) return;
+    if (stats.abilities.length > 0 && this.tryUseAbility(npc, now, broadcast)) return;
 
     this.combatSystem.tryAttack(npc, target.tileX, target.tileY, broadcast, now);
   }
@@ -349,7 +349,7 @@ export class NpcSystem {
     return Math.abs(dx) >= Math.abs(dy) ? (dx >= 0 ? Direction.RIGHT : Direction.LEFT) : (dy > 0 ? Direction.DOWN : Direction.UP);
   }
 
-  private tryUseAbility(npc: Npc, now: number, broadcast: BroadcastFn, map: TileMap): boolean {
+  private tryUseAbility(npc: Npc, now: number, broadcast: BroadcastFn): boolean {
     const stats = NPC_STATS[npc.type];
     if (!stats?.abilities.length) return false;
     const target = this.spatial.findEntityBySessionId(npc.targetId);
@@ -379,7 +379,7 @@ export class NpcSystem {
 
     // If the chosen ability is a summon, actually spawn the minion server-side.
     if (didCast && ABILITIES[abilityId]?.effect === "summon") {
-      this.handleSummonCast(npc, map);
+      this.handleSummonCast(npc);
     }
 
     return didCast;
@@ -390,7 +390,8 @@ export class NpcSystem {
    * configured on the summoner's NpcStats.summonType, adjacent to the summoner,
    * up to MAX_SUMMONS total live summons.
    */
-  private handleSummonCast(summoner: Npc, map: TileMap): void {
+  private handleSummonCast(summoner: Npc): void {
+    const map = this.currentMap;
     const stats = NPC_STATS[summoner.type];
     if (!stats.summonType) return;
 
@@ -409,7 +410,7 @@ export class NpcSystem {
       const ty = summoner.tileY + dy;
       if (tx < 0 || ty < 0 || tx >= map.width || ty >= map.height) continue;
       if (map.collision[ty]?.[tx] !== 0) continue;
-      if (this.spatial.getEntitiesAt(tx, ty).length > 0) continue;
+      if (this.spatial.isTileOccupied(tx, ty)) continue;
       this.spawnNpcAt(stats.summonType, map, tx, ty);
       return;
     }

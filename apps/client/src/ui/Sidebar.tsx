@@ -185,6 +185,7 @@ export function Sidebar({
 					<SpellsTab
 						classSpells={classSpells}
 						currentMana={state.mana}
+						playerLevel={state.level ?? 1}
 						pendingSpellId={pendingSpellId}
 						onSpellClick={onSpellClick}
 					/>

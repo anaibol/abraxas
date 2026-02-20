@@ -42,6 +42,7 @@ export class PlayerSprite {
   private weaponSprite: Phaser.GameObjects.Sprite | null = null;
   private shieldSprite: Phaser.GameObjects.Sprite | null = null;
   private helmetSprite: Phaser.GameObjects.Sprite | null = null;
+  private mountSprite: Phaser.GameObjects.Sprite | null = null;
   private nameText: Phaser.GameObjects.Text;
   private hpBarGfx: Phaser.GameObjects.Graphics;
   private speakingIcon: Phaser.GameObjects.Text;
@@ -66,6 +67,7 @@ export class PlayerSprite {
   private curWeaponAoId: number = 0;
   private curShieldAoId: number = 0;
   private curHelmetAoId: number = 0;
+  private curMountItemId: string = "";
 
   public predictedTileX: number = 0;
   public predictedTileY: number = 0;
@@ -380,7 +382,7 @@ export class PlayerSprite {
   }
 
   /** Update equipment visuals based on item IDs from server. Pass empty string for an empty slot. */
-  updateEquipment(weaponItemId: string, shieldItemId: string, helmetItemId: string) {
+  updateEquipment(weaponItemId: string, shieldItemId: string, helmetItemId: string, mountItemId: string = "") {
     const newWeaponAoId = weaponItemId ? (ITEMS[weaponItemId]?.aoWeaponId ?? 0) : 0;
     const newShieldAoId = shieldItemId ? (ITEMS[shieldItemId]?.aoShieldId ?? 0) : 0;
     const newHelmetAoId = helmetItemId ? (ITEMS[helmetItemId]?.aoHelmetId ?? 0) : 0;
@@ -413,7 +415,53 @@ export class PlayerSprite {
       if (newHelmetAoId) this.updateHeadPosition();
     }
 
+    // Mount rendering
+    if (mountItemId !== this.curMountItemId) {
+      this.curMountItemId = mountItemId;
+      this.updateMountSprite(mountItemId);
+    }
+
     this.updateZOrder();
+  }
+
+  /** Creates or removes the mount sprite based on whether a mount is equipped. */
+  private updateMountSprite(mountItemId: string) {
+    // Remove existing mount sprite
+    if (this.mountSprite) {
+      this.container.remove(this.mountSprite, true);
+      this.mountSprite = null;
+      // Restore normal body Y offset
+      this.bodySprite.setY(TILE_SIZE / 2);
+      this.headSprite?.setY(0);
+    }
+
+    if (!mountItemId) return;
+
+    // Use the NPC appearance of the mount type
+    const mountItem = ITEMS[mountItemId];
+    if (!mountItem?.mountNpcType) return;
+
+    const mountAppearance = NPC_APPEARANCE[mountItem.mountNpcType];
+    if (!mountAppearance) return;
+
+    const scene = this.container.scene;
+    const mountBodyEntry = this.resolver.getBodyEntry(mountAppearance.bodyId);
+    if (!mountBodyEntry) return;
+
+    const mountGrhId = mountBodyEntry[this.dirName];
+    const mountStatic = this.resolver.resolveStaticGrh(mountGrhId);
+    if (!mountStatic) return;
+
+    this.mountSprite = scene.add.sprite(0, TILE_SIZE * 0.6, `ao-${mountStatic.grafico}`, `grh-${mountStatic.id}`);
+    this.mountSprite.setOrigin(0.5, 1);
+    this.mountSprite.setDepth(2);
+    this.container.addAt(this.mountSprite, 0);
+
+    // Shift the rider slightly upward so it sits on the mount
+    this.bodySprite.setY(TILE_SIZE / 2 - 12);
+    this.headSprite?.setY(-12);
+
+    this.resolver.ensureAnimation(scene, mountGrhId, "mount");
   }
 
   // ── Status effect API ─────────────────────────────────────────────────────

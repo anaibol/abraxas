@@ -180,7 +180,7 @@ export class CombatSystem {
 
 		if (isRanged) {
 			const target = this.spatial.findEntityAtTile(targetTileX, targetTileY);
-			if (!target || !target.alive || target.sessionId === attacker.sessionId) {
+			if (!target || !target.alive || !this.canAttack(attacker, target)) {
 				sendToClient?.(ServerMessageType.InvalidTarget);
 				return false;
 			}
@@ -251,6 +251,14 @@ export class CombatSystem {
 				console.log("[tryCast] FAIL class restriction. abilities:", classStats.abilities);
 				sendToClient?.(ServerMessageType.Notification, {
 					message: "game.class_restricted",
+				});
+				return false;
+			}
+
+			if (ability.requiredLevel && caster.level < ability.requiredLevel) {
+				console.log(`[tryCast] FAIL level requirement. level=${caster.level} required=${ability.requiredLevel}`);
+				sendToClient?.(ServerMessageType.Notification, {
+					message: "game.skill_locked",
 				});
 				return false;
 			}
@@ -366,7 +374,7 @@ export class CombatSystem {
 			windup.targetTileY,
 		);
 
-		if (target && target.alive && target.sessionId !== attacker.sessionId) {
+		if (target && target.alive && this.canAttack(attacker, target)) {
 			const stats = attacker.getStats()!;
 			const dist = MathUtils.manhattanDist(attacker.getPosition(), {
 				x: target.tileX,
@@ -506,13 +514,14 @@ export class CombatSystem {
 					aoeRadius,
 				);
 				for (const victim of victims) {
-					if (victim.sessionId === attacker.sessionId) continue;
-					if (this.sameFaction(attacker, victim)) continue;
+					if (!this.isValidTarget(attacker, victim, ability)) continue;
 					// Suppress per-victim CastHit; the main one was already broadcast above.
 					this.applyAbilityToTarget(attacker, victim, ability, broadcast, onDeath, now, true);
 				}
 			} else {
-				this.applyAbilityToTarget(attacker, attacker, ability, broadcast, onDeath, now);
+				if (this.isValidTarget(attacker, attacker, ability)) {
+					this.applyAbilityToTarget(attacker, attacker, ability, broadcast, onDeath, now);
+				}
 			}
 			return;
 		}
@@ -533,9 +542,7 @@ export class CombatSystem {
 				aoeRadius,
 			);
 			for (const victim of victims) {
-				if (victim.sessionId === attacker.sessionId) continue;
-				// Skip same-faction targets (player vs player AOE ok, but NPC won't hit NPC)
-				if (this.sameFaction(attacker, victim)) continue;
+				if (!this.isValidTarget(attacker, victim, ability)) continue;
 
 				// LOS check for AOE
 				if (
@@ -555,7 +562,7 @@ export class CombatSystem {
 				windup.targetTileX,
 				windup.targetTileY,
 			);
-			if (target && target.alive && target.sessionId !== attacker.sessionId) {
+			if (target && target.alive && this.isValidTarget(attacker, target, ability)) {
 				const dist = MathUtils.manhattanDist(attacker.getPosition(), {
 					x: target.tileX,
 					y: target.tileY,
@@ -568,15 +575,48 @@ export class CombatSystem {
 
 	private sameFaction(a: Entity, b: Entity): boolean {
 		if (a instanceof Player && b instanceof Player) {
-			// Group members are same faction (prevent friendly fire)
 			if (a.groupId && a.groupId === b.groupId) return true;
-			return false; // Players can hit other players not in their group
+			if (a.guildId && a.guildId === b.guildId) return true;
+			return false;
 		}
-		// NPCs of same type are same faction
 		if (!(a instanceof Player) && !(b instanceof Player)) {
 			return a.type === b.type;
 		}
-		return false; // Player vs NPC always ok
+		return false;
+	}
+
+	private canAttack(attacker: Entity, target: Entity): boolean {
+		if (attacker.sessionId === target.sessionId) return false;
+		if (this.sameFaction(attacker, target)) return false;
+		if (attacker instanceof Player && target instanceof Player) {
+			if (!attacker.pvpEnabled || !target.pvpEnabled) return false;
+			if (this.isInSafeZone(attacker.tileX, attacker.tileY) || this.isInSafeZone(target.tileX, target.tileY)) return false;
+		}
+		return true;
+	}
+
+	private isValidTarget(attacker: Entity, target: Entity, ability: Ability): boolean {
+		const harmful = 
+			["damage", "dot", "stun", "debuff", "leech"].includes(ability.effect) || 
+			ability.baseDamage > 0 || 
+			ability.buffStat === "stun";
+
+		if (harmful) {
+			return this.canAttack(attacker, target);
+		} else {
+			if (attacker.sessionId === target.sessionId) return true;
+			return this.sameFaction(attacker, target);
+		}
+	}
+
+	private isInSafeZone(x: number, y: number): boolean {
+		if (!this.map.safeZones) return false;
+		for (const zone of this.map.safeZones) {
+			if (x >= zone.x && x < zone.x + zone.w && y >= zone.y && y < zone.y + zone.h) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private applyAbilityToTarget(

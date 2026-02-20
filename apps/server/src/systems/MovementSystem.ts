@@ -1,5 +1,5 @@
 import type { Direction, TileMap } from "@abraxas/shared";
-import { DIRECTION_DELTA } from "@abraxas/shared";
+import { DIRECTION_DELTA, ITEMS } from "@abraxas/shared";
 import { logger } from "../logger";
 import type { SpatialLookup, Entity } from "../utils/SpatialLookup";
 
@@ -46,7 +46,6 @@ export class MovementSystem {
 		}
 		// Apply mount speed bonus if a mount is equipped
 		if ('equipMount' in entity && typeof entity.equipMount === 'string' && entity.equipMount) {
-			const { ITEMS } = await import("@abraxas/shared").catch(() => ({ ITEMS: {} as Record<string, { stats?: { speedBonus?: number } }> }));
 			const mountBonus = ITEMS[entity.equipMount]?.stats?.speedBonus ?? 0;
 			speed += mountBonus;
 		}
