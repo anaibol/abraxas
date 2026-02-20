@@ -46,6 +46,14 @@ export class ChatService {
       return;
     }
 
+    if (safeText.startsWith("/")) {
+      const senderClient = this.findClientBySessionId(player.sessionId);
+      senderClient?.send(ServerMessageType.Notification, {
+        message: `Unknown command: ${safeText.split(" ")[0]}`,
+      });
+      return;
+    }
+
     // Global chat
     this.broadcast(ServerMessageType.Chat, {
       senderId: player.sessionId,

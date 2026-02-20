@@ -49,6 +49,7 @@ import { Lobby } from "./Lobby";
 import { MerchantShop } from "./MerchantShop";
 import { Minimap } from "./Minimap";
 import { MobileControls } from "./MobileControls";
+import { NpcContextMenu, type NpcContextTarget } from "./NpcContextMenu";
 import { PlayerContextMenu, type PlayerContextTarget } from "./PlayerContextMenu";
 import { QuestDialogue } from "./QuestDialogue";
 import { type KillStats, ScoreboardOverlay } from "./ScoreboardOverlay";
@@ -56,6 +57,7 @@ import { SettingsModal } from "./SettingsModal";
 import { Sidebar } from "./Sidebar";
 import type { PlayerState } from "./sidebar/types";
 import { TradeWindow } from "./TradeWindow";
+import { SummonOverlay } from "./SummonOverlay";
 import { system } from "./theme";
 import { toaster } from "./toaster";
 import { HEX, T } from "./tokens";
@@ -133,9 +135,11 @@ export function App() {
   const [killStats, setKillStats] = useState<Record<string, KillStats>>({});
   const [pendingSpellId, setPendingSpellId] = useState<string | null>(null);
   const [playerContextMenu, setPlayerContextMenu] = useState<PlayerContextTarget | null>(null);
+  const [npcContextMenu, setNpcContextMenu] = useState<NpcContextTarget | null>(null);
   const isMobile = useIsMobile();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showSummonOverlay, setShowSummonOverlay] = useState(false);
   const [isGM, setIsGM] = useState(false);
   const { settings: gameSettingsState } = useGameSettings();
 
@@ -321,6 +325,9 @@ export function App() {
               (sessionId, name, screenX, screenY) => {
                 setPlayerContextMenu({ sessionId, name, screenX, screenY });
               },
+              (sessionId, name, type, screenX, screenY) => {
+                setNpcContextMenu({ sessionId, name, type, screenX, screenY });
+              },
               (tileX, tileY) => {
                 networkRef.current?.sendGMTeleport(tileX, tileY);
               },
@@ -435,7 +442,12 @@ export function App() {
       return;
     }
 
-    networkRef.current?.sendChat(msg);
+    if (trimmed === "/cc" && isGM) {
+      setShowSummonOverlay(true);
+      return;
+    }
+
+    networkRef.current?.sendChat(trimmed);
   };
 
   useEffect(() => {
@@ -683,6 +695,12 @@ export function App() {
             />
           )}
           {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+          {showSummonOverlay && roomRef.current && (
+            <SummonOverlay 
+              onSummon={(npcType) => networkRef.current?.sendChat(`/gm spawn ${npcType}`)} 
+              onClose={() => setShowSummonOverlay(false)} 
+            />
+          )}
         </>
       )}
 
@@ -712,6 +730,15 @@ export function App() {
                 }
               : undefined
           }
+        />
+      )}
+
+      {/* NPC context menu */}
+      {npcContextMenu && (
+        <NpcContextMenu
+          target={npcContextMenu}
+          onTame={(sid) => networkRef.current?.sendTame(sid)}
+          onClose={() => setNpcContextMenu(null)}
         />
       )}
 

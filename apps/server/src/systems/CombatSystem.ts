@@ -207,6 +207,7 @@ export class CombatSystem {
     broadcast(ServerMessageType.AttackStart, {
       sessionId: attacker.sessionId,
       facing: attacker.facing,
+      ...(isRanged ? { targetTileX, targetTileY } : {}),
     });
 
     return true;

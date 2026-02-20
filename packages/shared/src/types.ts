@@ -346,7 +346,12 @@ export type ServerMessages = {
     role?: string;
     safeZones?: { x: number; y: number; w: number; h: number }[];
   };
-  [ServerMessageType.AttackStart]: { sessionId: string; facing: Direction };
+  [ServerMessageType.AttackStart]: {
+    sessionId: string;
+    facing: Direction;
+    targetTileX?: number;
+    targetTileY?: number;
+  };
   [ServerMessageType.AttackHit]: {
     sessionId: string;
     targetSessionId: string | null;

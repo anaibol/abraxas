@@ -30,6 +30,13 @@ type PlayerRightClickCallback = (
   screenX: number,
   screenY: number,
 ) => void;
+type NpcRightClickCallback = (
+  sessionId: string,
+  name: string,
+  type: string,
+  screenX: number,
+  screenY: number,
+) => void;
 export type GMMapClickCallback = (tileX: number, tileY: number) => void;
 
 export class GameScene extends Phaser.Scene {
@@ -40,6 +47,7 @@ export class GameScene extends Phaser.Scene {
   private onReady?: (sm: SoundManager) => void;
   private onPttChange?: (recording: boolean) => void;
   private onPlayerRightClick?: PlayerRightClickCallback;
+  private onNpcRightClick?: NpcRightClickCallback;
   private onGMMapClick?: GMMapClickCallback;
   private room!: Room<GameState>;
   private welcome!: WelcomeData;
@@ -96,6 +104,7 @@ export class GameScene extends Phaser.Scene {
     onReady?: (sm: SoundManager) => void,
     onPttChange?: (recording: boolean) => void,
     onPlayerRightClick?: PlayerRightClickCallback,
+    onNpcRightClick?: NpcRightClickCallback,
     onGMMapClick?: GMMapClickCallback,
   ) {
     super({ key: "GameScene" });
@@ -107,6 +116,7 @@ export class GameScene extends Phaser.Scene {
     this.onReady = onReady;
     this.onPttChange = onPttChange;
     this.onPlayerRightClick = onPlayerRightClick;
+    this.onNpcRightClick = onNpcRightClick;
     this.onGMMapClick = onGMMapClick;
   }
 
@@ -193,6 +203,12 @@ export class GameScene extends Phaser.Scene {
           if (sessionId === this.room.sessionId) continue;
           if (player.tileX === tileX && player.tileY === tileY && player.alive) {
             this.onPlayerRightClick?.(sessionId, player.name, screenX, screenY);
+            return;
+          }
+        }
+        for (const [id, npc] of this.room.state.npcs) {
+          if (npc.tileX === tileX && npc.tileY === tileY && npc.alive) {
+            this.onNpcRightClick?.(id, i18n.t(`npc.${npc.type}`, npc.type), npc.type, screenX, screenY);
             return;
           }
         }
