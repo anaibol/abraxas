@@ -110,7 +110,7 @@ export class ItemHandlers {
     const instanceData = {
         rarity: item.rarity,
         nameOverride: item.nameOverride,
-        affixes: item.affixes.map(a => ({ type: a.type, stat: a.stat, value: a.value }))
+        affixes: item.affixes.map(a => ({ type: a.affixType, stat: a.stat, value: a.value }))
     };
 
     if (ctx.systems.inventory.removeItem(player, data.itemId, qty)) {

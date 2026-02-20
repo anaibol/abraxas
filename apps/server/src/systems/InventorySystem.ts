@@ -81,7 +81,7 @@ export class InventorySystem {
             item.nameOverride = instanceData.nameOverride ?? "";
             instanceData.affixes.forEach(a => {
                 const s = new ItemAffixSchema();
-                s.type = a.type;
+                s.affixType = a.type;
                 s.stat = a.stat;
                 s.value = a.value;
                 item.affixes.push(s);

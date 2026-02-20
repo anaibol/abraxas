@@ -113,6 +113,8 @@ function npcAudio(type: string): { attack: string; atkVol: number; death: string
 
 // ─────────────────────────────────────────────────────────────────────────────
 
+export type PlayOpts = Phaser.Types.Sound.SoundConfig & { sourceX?: number; sourceY?: number };
+
 export class SoundManager {
   private music: Phaser.Sound.BaseSound | null = null;
   private unsubscribe: (() => void) | null = null;
@@ -137,7 +139,31 @@ export class SoundManager {
     }
   }
 
-  private play(key: string, opts?: Phaser.Types.Sound.SoundConfig) {
+  private calculateSpatial(opts?: PlayOpts): { pan: number; volume: number } {
+    if (opts?.sourceX === undefined || opts?.sourceY === undefined) {
+      return { pan: 0, volume: 1 };
+    }
+    const camera = this.scene.cameras.main;
+    const cx = camera.midPoint.x;
+    const cy = camera.midPoint.y;
+    const dx = opts.sourceX - cx;
+    const dy = opts.sourceY - cy;
+
+    // Pan: scale horizontal distance relative to half the camera width.
+    // At edges of screen, pan will be ~±0.8 to ±1.0.
+    const maxPanDist = camera.width * 0.5;
+    const pan = Phaser.Math.Clamp(dx / maxPanDist, -1, 1);
+
+    // Attenuate volume based on distance.
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    // At ~1200px (approx 3/4 screen width on some setups, or just outside), volume becomes 0.
+    const maxDist = 1200;
+    const volume = Phaser.Math.Clamp(1 - dist / maxDist, 0, 1);
+
+    return { pan, volume };
+  }
+
+  private play(key: string, opts?: PlayOpts) {
     if (!this.scene.cache.audio.has(key)) return; // preload guard
     const now = Date.now();
     if (now - (this.lastPlayTime.get(key) ?? 0) < this.SFX_COOLDOWN_MS) return; // throttle
@@ -146,22 +172,28 @@ export class SoundManager {
     this.lastKey = key;
     this.lastKeyAt = now;
     try {
-      const vol = (BASE_SFX[key] ?? opts?.volume ?? 0.5) * gameSettings.get().sfxVolume;
+      const spatial = this.calculateSpatial(opts);
+      const baseOptVol = opts?.volume ?? 1;
+      const baseSfxVol = BASE_SFX[key] ?? 0.5;
+      
+      const vol = baseSfxVol * gameSettings.get().sfxVolume * spatial.volume * baseOptVol;
       const rate = (opts?.rate ?? 1) * (0.92 + Math.random() * 0.16); // ±8% pitch
-      this.scene.sound.play(key, { ...opts, volume: vol, rate });
+
+      const playConfig: Phaser.Types.Sound.SoundConfig = { ...opts, volume: vol, rate, pan: spatial.pan };
+      this.scene.sound.play(key, playConfig);
     } catch { /* noop */ }
   }
 
   /** Resolve a SfxEntry table and play. Falls back to `fallback` if no entry. */
-  private fromTable(table: Partial<Record<string, SfxEntry>>, id: string, fallback?: () => void) {
+  private fromTable(table: Partial<Record<string, SfxEntry>>, id: string, fallback?: () => void, opts?: PlayOpts) {
     const entry = table[id];
-    entry ? this.play(pickSfx(entry)) : fallback?.();
+    entry ? this.play(pickSfx(entry), opts) : fallback?.();
   }
 
   // ── Public playback API ───────────────────────────────────────────────────────
 
-  playSpellSfx(abilityId: string)       { this.fromTable(SPELL_SFX, abilityId, () => this.playSpell()); }
-  playSpellImpactSfx(abilityId: string) { this.fromTable(SPELL_IMPACT_SFX, abilityId); }
+  playSpellSfx(abilityId: string, opts?: PlayOpts)       { this.fromTable(SPELL_SFX, abilityId, () => this.playSpell(opts), opts); }
+  playSpellImpactSfx(abilityId: string, opts?: PlayOpts) { this.fromTable(SPELL_IMPACT_SFX, abilityId, undefined, opts); }
 
   /** Distance-attenuated play — volume drops linearly beyond `MAX_AUDIBLE_TILES`. */
   playAttenuated(key: string, distanceTiles: number) {
@@ -171,47 +203,47 @@ export class SoundManager {
 
 
 
-  playStep() {
+  playStep(opts?: PlayOpts) {
     const STEPS = [AudioAssets.STEP_1, AudioAssets.STEP_2, AudioAssets.STEP_3, AudioAssets.STEP_4, AudioAssets.STEP_5];
-    this.play(STEPS[Math.floor(Math.random() * STEPS.length)]);
+    this.play(STEPS[Math.floor(Math.random() * STEPS.length)], opts);
   }
 
-  playAttack(weaponId?: string) {
-    if (weaponId?.match(/bow|crossbow/))     return this.play(AudioAssets.BOW);
-    if (weaponId?.match(/staff|wand/))       return this.play(AudioAssets.SPELL);
-    if (weaponId?.match(/dagger|knife/))     return this.play(pickSfx([AudioAssets.ATTACK_1, AudioAssets.ATTACK_3]));
-    this.play(pickSfx([AudioAssets.ATTACK_1, AudioAssets.ATTACK_2, AudioAssets.ATTACK_3]));
+  playAttack(weaponId?: string, opts?: PlayOpts) {
+    if (weaponId?.match(/bow|crossbow/))     return this.play(AudioAssets.BOW, opts);
+    if (weaponId?.match(/staff|wand/))       return this.play(AudioAssets.SPELL, opts);
+    if (weaponId?.match(/dagger|knife/))     return this.play(pickSfx([AudioAssets.ATTACK_1, AudioAssets.ATTACK_3]), opts);
+    this.play(pickSfx([AudioAssets.ATTACK_1, AudioAssets.ATTACK_2, AudioAssets.ATTACK_3]), opts);
   }
 
-  playSpell()  { this.play(AudioAssets.SPELL); }
-  playHit()    { this.play(pickSfx([AudioAssets.HIT_1, AudioAssets.HIT_2, AudioAssets.HIT_3])); }
-  playDeath()  { this.play(AudioAssets.DEATH); }
-  playHeal()   { this.play(AudioAssets.HEAL); }
-  playLevelUp(){ this.play(AudioAssets.LEVEL_UP); }
-  playNotification() { this.play(AudioAssets.NOTIFICATION); }
-  playMount()  { this.play(AudioAssets.MOUNT); }
-  playBuff()   { this.play(AudioAssets.BUFF); }
-  playStealth(){ this.play(AudioAssets.STEALTH); }
-  playSummon() { this.play(AudioAssets.SUMMON); }
-  playMagicHit(){ this.play(AudioAssets.MAGIC_HIT); }
-  playBow()   { this.play(AudioAssets.BOW); }
-  playCoins() { this.play(AudioAssets.COINS); }
-  playQuestAccept()   { this.play(AudioAssets.QUEST_ACCEPT); }
-  playQuestComplete() { this.play(AudioAssets.QUEST_COMPLETE); }
-  playUIClick()  { this.play(AudioAssets.CLICK); }
-  playUIHover()  { this.play(AudioAssets.CLICK_HOVER); }
-  playUIOpen()   { this.play(AudioAssets.CLICK_OPEN); }
-  playUIClose()  { this.play(AudioAssets.CLICK_CLOSE); }
+  playSpell(opts?: PlayOpts)  { this.play(AudioAssets.SPELL, opts); }
+  playHit(opts?: PlayOpts)    { this.play(pickSfx([AudioAssets.HIT_1, AudioAssets.HIT_2, AudioAssets.HIT_3]), opts); }
+  playDeath(opts?: PlayOpts)  { this.play(AudioAssets.DEATH, opts); }
+  playHeal(opts?: PlayOpts)   { this.play(AudioAssets.HEAL, opts); }
+  playLevelUp(opts?: PlayOpts){ this.play(AudioAssets.LEVEL_UP, opts); }
+  playNotification(opts?: PlayOpts) { this.play(AudioAssets.NOTIFICATION, opts); }
+  playMount(opts?: PlayOpts)  { this.play(AudioAssets.MOUNT, opts); }
+  playBuff(opts?: PlayOpts)   { this.play(AudioAssets.BUFF, opts); }
+  playStealth(opts?: PlayOpts){ this.play(AudioAssets.STEALTH, opts); }
+  playSummon(opts?: PlayOpts) { this.play(AudioAssets.SUMMON, opts); }
+  playMagicHit(opts?: PlayOpts){ this.play(AudioAssets.MAGIC_HIT, opts); }
+  playBow(opts?: PlayOpts)   { this.play(AudioAssets.BOW, opts); }
+  playCoins(opts?: PlayOpts) { this.play(AudioAssets.COINS, opts); }
+  playQuestAccept(opts?: PlayOpts)   { this.play(AudioAssets.QUEST_ACCEPT, opts); }
+  playQuestComplete(opts?: PlayOpts) { this.play(AudioAssets.QUEST_COMPLETE, opts); }
+  playUIClick(opts?: PlayOpts)  { this.play(AudioAssets.CLICK, opts); }
+  playUIHover(opts?: PlayOpts)  { this.play(AudioAssets.CLICK_HOVER, opts); }
+  playUIOpen(opts?: PlayOpts)   { this.play(AudioAssets.CLICK_OPEN, opts); }
+  playUIClose(opts?: PlayOpts)  { this.play(AudioAssets.CLICK_CLOSE, opts); }
 
-  playNpcAttack(type: string) {
+  playNpcAttack(type: string, opts?: PlayOpts) {
     const { attack, atkVol } = npcAudio(type);
-    this.play(attack, { volume: atkVol });
+    this.play(attack, { ...opts, volume: atkVol });
   }
-  playNpcDeath(type: string) {
+  playNpcDeath(type: string, opts?: PlayOpts) {
     const { death, dthVol } = npcAudio(type);
-    this.play(death, { volume: dthVol });
+    this.play(death, { ...opts, volume: dthVol });
   }
-  playNpcLevelUp() { this.play(AudioAssets.NPC_LEVEL_UP, { volume: 0.5 }); }
+  playNpcLevelUp(opts?: PlayOpts) { this.play(AudioAssets.NPC_LEVEL_UP, { ...opts, volume: 0.5 }); }
 
   startAmbiance(key: typeof AudioAssets.AMBIANCE_WIND | typeof AudioAssets.AMBIANCE_CRICKETS) {
     if (this.currentAmbiance?.key === key) return;

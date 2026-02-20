@@ -169,8 +169,9 @@ export class CombatSystem {
     const lastMelee = this.lastMeleeMs.get(attacker.sessionId) ?? 0;
     const meleeReady = now >= lastMelee + stats.attackCooldownMs;
     const gcdReady = now >= attacker.lastGcdMs + GCD_MS;
-
-      logger.debug({ intent: "try_attack", result: "buffered", meleeReady, gcdReady, hasWindup: this.activeWindups.has(attacker.sessionId) });
+    const hasWindup = this.activeWindups.has(attacker.sessionId);
+    if (!meleeReady || !gcdReady || hasWindup) {
+      logger.debug({ intent: "try_attack", result: "buffered", meleeReady, gcdReady, hasWindup });
       return this.bufferAction(attacker, {
         type: "attack",
         targetTileX,
@@ -262,6 +263,7 @@ export class CombatSystem {
         return false;
       }
 
+      if (ability.requiredLevel && caster.level < ability.requiredLevel) {
         logger.debug({ intent: "try_cast", result: "fail", reason: "level_req", level: caster.level, required: ability.requiredLevel });
         sendToClient?.(ServerMessageType.Notification, {
           message: "game.skill_locked",
@@ -270,6 +272,7 @@ export class CombatSystem {
       }
     }
 
+    if (now < caster.lastGcdMs + GCD_MS || this.activeWindups.has(caster.sessionId)) {
       logger.debug({ intent: "try_cast", result: "buffered", gcdReady: now >= caster.lastGcdMs + GCD_MS, hasWindup: this.activeWindups.has(caster.sessionId) });
       return this.bufferAction(caster, {
         type: "cast",
@@ -289,30 +292,35 @@ export class CombatSystem {
     if (ability.rangeTiles > 0) this.faceToward(caster, targetTileX, targetTileY);
 
     if (caster instanceof Player) {
+      if (ability.manaCost && caster.mana < ability.manaCost) {
         logger.debug({ intent: "try_cast", result: "fail", reason: "no_mana", has: caster.mana, needs: ability.manaCost });
         sendToClient?.(ServerMessageType.Notification, {
           message: "game.not_enough_mana",
         });
         return false;
       }
+      if (ability.soulCost && caster.souls < ability.soulCost) {
         logger.debug({ intent: "try_cast", result: "fail", reason: "no_souls", has: caster.souls, needs: ability.soulCost });
         sendToClient?.(ServerMessageType.Notification, {
           message: "game.not_enough_souls",
         });
         return false;
       }
+      if (ability.rageCost && caster.rage < ability.rageCost) {
         logger.debug({ intent: "try_cast", result: "fail", reason: "no_rage", has: caster.rage, needs: ability.rageCost });
         sendToClient?.(ServerMessageType.Notification, {
           message: "game.not_enough_rage",
         });
         return false;
       }
+      if (ability.energyCost && caster.energy < ability.energyCost) {
         logger.debug({ intent: "try_cast", result: "fail", reason: "no_energy", has: caster.energy, needs: ability.energyCost });
         sendToClient?.(ServerMessageType.Notification, {
           message: "game.not_enough_energy",
         });
         return false;
       }
+      if (ability.focusCost && caster.focus < ability.focusCost) {
         logger.debug({ intent: "try_cast", result: "fail", reason: "no_focus", has: caster.focus, needs: ability.focusCost });
         sendToClient?.(ServerMessageType.Notification, {
           message: "game.not_enough_focus",
@@ -384,7 +392,7 @@ export class CombatSystem {
     };
 
     this.activeWindups.set(caster.sessionId, windup);
-    console.log("[tryCast] SUCCESS - broadcasting CastStart");
+    logger.debug({ intent: "try_cast", result: "success", abilityId });
     broadcast(ServerMessageType.CastStart, {
       sessionId: caster.sessionId,
       abilityId,
