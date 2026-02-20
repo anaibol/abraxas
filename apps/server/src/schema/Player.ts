@@ -9,6 +9,7 @@ export class Player extends Char {
 	@type("string") groupId: string = "";
 	@type("string") classType: ClassType = "WARRIOR";
 	@type("boolean") meditating: boolean = false;
+	@type("boolean") pvpEnabled: boolean = false;
 
 	// ── Private (only visible to the owning client via StateView) ────────────
 
