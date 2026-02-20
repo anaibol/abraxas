@@ -1,15 +1,15 @@
-import { MapSchema, Schema, type } from "@colyseus/schema";
+import { MapSchema, Schema, type as schemaType } from "@colyseus/schema";
 import { Drop } from "./Drop";
 import { Group } from "./Group";
 import { Npc } from "./Npc";
 import { Player } from "./Player";
 
 export class GameState extends Schema {
-  @type({ map: Player }) players = new MapSchema<Player>();
-  @type({ map: Npc }) npcs = new MapSchema<Npc>();
-  @type({ map: Drop }) drops = new MapSchema<Drop>();
-  @type({ map: Group }) groups = new MapSchema<Group>();
-  @type("uint32") tick: number = 0;
-  @type("float32") timeOfDay: number = 12;
-  @type("string") weather: string = "clear";
+  @schemaType({ map: Player }) players = new MapSchema<Player>();
+  @schemaType({ map: Npc }) npcs = new MapSchema<Npc>();
+  @schemaType({ map: Drop }) drops = new MapSchema<Drop>();
+  @schemaType({ map: Group }) groups = new MapSchema<Group>();
+  @schemaType("uint32") tick: number = 0;
+  @schemaType("number") timeOfDay: number = 12;
+  @schemaType("string") weather: string = "clear";
 }

@@ -62,6 +62,7 @@ export class TickSystem {
     
     // Increment game tick
     state.tick++;
+    const now = Date.now();
     
     // 0. Update time of day (0.005 per tick = 200 ticks per hour = 20 seconds. 24*20 = 480s = 8 min day cycle)
     // Using 0.0025 for a 16 min day cycle or 0.00166 for 24 min cycle.

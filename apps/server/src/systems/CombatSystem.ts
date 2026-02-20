@@ -595,13 +595,8 @@ export class CombatSystem {
             y: target.tileY,
           });
           if (dist > ability.rangeTiles) return;
-          console.log(`[resolveAbility] SUCCESS targeting ${target.sessionId} at ${target.tileX},${target.tileY}`);
           this.applyAbilityToTarget(attacker, target, ability, broadcast, onDeath, now);
-        } else {
-          console.log(`[resolveAbility] isValidTarget FAILED for ${target.sessionId}`);
         }
-      } else {
-        console.log(`[resolveAbility] No alive target found at ${windup.targetTileX},${windup.targetTileY}.`);
       }
     }
   }

@@ -1,21 +1,17 @@
 import { resolve } from "node:path";
 import type { TileMap } from "@abraxas/shared";
 import { logger } from "../logger";
+import { addToRegistry, getFromRegistry } from "./MapRegistry";
 
-let _maps: Map<string, TileMap> | undefined;
-function getMaps(): Map<string, TileMap> {
-  if (!_maps) _maps = new Map<string, TileMap>();
-  return _maps;
-}
 const mapsDir = resolve(import.meta.dir, "../../../packages/shared/src/maps");
 
 export function setMap(mapName: string, mapData: TileMap): void {
-  getMaps().set(mapName, mapData);
+  addToRegistry(mapName, mapData);
 }
 
 export async function getMap(mapName: string): Promise<TileMap | undefined> {
-  const maps = getMaps();
-  if (maps.has(mapName)) return maps.get(mapName);
+  const existing = getFromRegistry(mapName);
+  if (existing) return existing;
 
   try {
     const mapPath = resolve(mapsDir, `${mapName}.json`);
@@ -25,7 +21,7 @@ export async function getMap(mapName: string): Promise<TileMap | undefined> {
       return undefined;
     }
     const mapData: TileMap = await file.json();
-    maps.set(mapName, mapData);
+    addToRegistry(mapName, mapData);
     return mapData;
   } catch (e) {
     logger.error({ message: "Error loading map", mapName, error: String(e) });

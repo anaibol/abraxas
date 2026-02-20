@@ -211,7 +211,7 @@ export class EconomyHandlers {
     }
 
     if (
-      ctx.systems.inventory.addItem(player, data.itemId, quantity, undefined, (msg) =>
+      ctx.systems.inventory.addItem(player, data.itemId, quantity, undefined, (msg: string) =>
         HandlerUtils.sendError(client, msg),
       )
     ) {

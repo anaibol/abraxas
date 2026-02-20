@@ -265,6 +265,7 @@ export class PlayerSprite {
       this.setIdleFrame();
     }
     this.updateHeadPosition();
+    this.playPoof();
   }
 
   setTilePosition(tileX: number, tileY: number) {
@@ -840,7 +841,26 @@ export class PlayerSprite {
     this.refreshTint();
   }
 
-  // ── Meditation texture helper (unchanged position in file) ─────────────────
+  playPoof() {
+    const scene = this.container.scene;
+    if (!scene) return;
+    this.ensureStatusTextures(scene);
+
+    const emitter = scene.add.particles(this.renderX, this.renderY, "status-dot", {
+      speed: { min: 40, max: 100 },
+      angle: { min: 0, max: 360 },
+      scale: { start: 0.8, end: 0 },
+      alpha: { start: 0.8, end: 0 },
+      lifespan: 500,
+      quantity: 15,
+      tint: [0xffffff, 0xcccccc, 0x888888],
+    });
+    emitter.setDepth(this.container.depth + 10);
+    emitter.explode();
+    scene.time.delayedCall(500, () => emitter.destroy());
+  }
+
+  // ── Meditation ─────────────────────────────────────────────────────────────
 
   private ensureFireTexture(scene: Phaser.Scene) {
     if (scene.textures.exists("meditation-fire")) return;

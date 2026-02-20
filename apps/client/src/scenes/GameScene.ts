@@ -15,6 +15,7 @@ import { CameraController } from "../systems/CameraController";
 import { DropManager } from "../systems/DropManager";
 import { InputHandler } from "../systems/InputHandler";
 import { MapBaker } from "../systems/MapBaker";
+import { WeatherManager } from "../managers/WeatherManager";
 import type { PlayerState } from "../ui/sidebar/types";
 
 type StateCallback = (state: PlayerState) => void;
@@ -58,6 +59,8 @@ export class GameScene extends Phaser.Scene {
   private soundManager!: SoundManager;
   private audioManager: AudioManager;
   private gameEventHandler!: GameEventHandler;
+  private weatherManager!: WeatherManager;
+  private ambientOverlay!: Phaser.GameObjects.Graphics;
 
   private collisionGrid: number[][] = [];
   private stateUnsubscribers: (() => void)[] = [];
@@ -336,6 +339,20 @@ export class GameScene extends Phaser.Scene {
     );
     this.gameEventHandler.setupListeners();
 
+    this.weatherManager = new WeatherManager(this);
+    this.ambientOverlay = this.add.graphics();
+    this.ambientOverlay.setDepth(2000); // Above everything but UI
+    this.ambientOverlay.setScrollFactor(0);
+
+    unsub(
+      $state.listen("timeOfDay", (val) => this.updateAmbientLighting(val)),
+      $state.listen("weather", (val) => this.weatherManager.updateWeather(val)),
+    );
+
+    // Initial state
+    this.updateAmbientLighting(this.room.state.timeOfDay);
+    this.weatherManager.updateWeather(this.room.state.weather);
+
     if (import.meta.env.DEV) {
       this.debugText = this.add.text(10, 10, "", {
         fontSize: "16px",
@@ -350,7 +367,50 @@ export class GameScene extends Phaser.Scene {
 
     document.addEventListener("visibilitychange", this.handleVisibilityChange);
 
-    this.onReady?.(this.soundManager);
+  private updateAmbientLighting(time: number) {
+    const width = this.cameras.main.width;
+    const height = this.cameras.main.height;
+    this.ambientOverlay.clear();
+
+    let color = 0xffffff;
+    let alpha = 0;
+
+    // 0-5: Night (Deep Blue/Purple tint)
+    // 5-8: Dawn (Orange/Pink tint)
+    // 8-17: Day (No tint)
+    // 17-20: Dusk (Vibrant Orange/Red)
+    // 20-24: Night
+
+    if (time < 5 || time > 20) {
+      color = 0x111144; // Deep night blue
+      alpha = 0.5;
+    } else if (time >= 5 && time < 8) {
+      // Dawn transition
+      const t = (time - 5) / 3;
+      color = Phaser.Display.Color.Interpolate.ColorWithColor(
+        Phaser.Display.Color.ValueToColor(0x111144),
+        Phaser.Display.Color.ValueToColor(0xff8844),
+        100,
+        t * 100
+      ).color;
+      alpha = 0.5 * (1 - t);
+    } else if (time >= 17 && time < 20) {
+      // Dusk transition
+      const t = (time - 17) / 3;
+      color = Phaser.Display.Color.Interpolate.ColorWithColor(
+        Phaser.Display.Color.ValueToColor(0xffffff),
+        Phaser.Display.Color.ValueToColor(0xcc4400),
+        100,
+        t * 100
+      ).color;
+      alpha = 0.4 * t;
+    }
+
+    if (alpha > 0) {
+      this.ambientOverlay.fillStyle(color, alpha);
+      this.ambientOverlay.setBlendMode(Phaser.BlendModes.MULTIPLY);
+      this.ambientOverlay.fillRect(0, 0, width, height);
+    }
   }
 
   update(time: number, delta: number) {
