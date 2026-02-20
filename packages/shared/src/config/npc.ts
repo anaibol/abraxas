@@ -269,7 +269,8 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 
 };
 
-export const NPC_TYPES = Object.keys(NPC_STATS) as NpcType[];
+const npcStatsKeysAny: any = Object.keys(NPC_STATS);
+export const NPC_TYPES: NpcType[] = npcStatsKeysAny;
 
 export interface DropTableEntry {
 	itemId: string;

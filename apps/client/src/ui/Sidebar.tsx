@@ -10,19 +10,21 @@ import { SidebarFooter } from "./sidebar/SidebarFooter";
 import { InventoryTab } from "./sidebar/InventoryTab";
 import { SpellsTab } from "./sidebar/SpellsTab";
 import { GroupTab } from "./sidebar/GroupTab";
+import { GuildTab } from "./sidebar/GuildTab";
 import { FriendsTab } from "./sidebar/FriendsTab";
 import type { SidebarProps } from "./sidebar/types";
 import { useAudio } from "../contexts/AudioContext";
 import { useIsMobile } from "../hooks/useIsMobile";
 
 const SIDEBAR_TABS: readonly {
-	key: "inv" | "spells" | "quests" | "group" | "friends";
+	key: "inv" | "spells" | "quests" | "group" | "guild" | "friends";
 	icon: string;
 }[] = [
 	{ key: "inv",     icon: "⚔️" },
 	{ key: "spells",  icon: "📖" },
 	{ key: "quests",  icon: "📜" },
 	{ key: "group",   icon: "⚔️" },
+	{ key: "guild",   icon: "🛡️" },
 	{ key: "friends", icon: "👥" },
 ];
 
@@ -46,6 +48,13 @@ export function Sidebar({
 	onFriendAccept,
 	onWhisper,
 	onTradeRequest,
+	guildMembers = [],
+	onGuildCreate,
+	onGuildInvite,
+	onGuildLeave,
+	onGuildKick,
+	onGuildPromote,
+	onGuildDemote,
 	selectedItemId,
 	onSelectItem,
 	onSpellClick,
@@ -57,7 +66,7 @@ export function Sidebar({
 	const isMobile = useIsMobile();
 	const { t } = useTranslation();
 	const [tab, setTab] = useState<
-		"inv" | "spells" | "quests" | "group" | "friends"
+		"inv" | "spells" | "quests" | "group" | "guild" | "friends"
 	>("inv");
 	const [inviteId, setInviteId] = useState("");
 	const [friendName, setFriendName] = useState("");
@@ -202,6 +211,18 @@ export function Sidebar({
 						onGroupLeave={onGroupLeave}
 						onGroupKick={onGroupKick}
 						onTradeRequest={onTradeRequest}
+					/>
+				)}
+				{tab === "guild" && (
+					<GuildTab
+						guildId={state.guildId}
+						guildMembers={guildMembers}
+						onGuildCreate={onGuildCreate}
+						onGuildInvite={onGuildInvite}
+						onGuildLeave={onGuildLeave}
+						onGuildKick={onGuildKick}
+						onGuildPromote={onGuildPromote}
+						onGuildDemote={onGuildDemote}
 					/>
 				)}
 				{tab === "friends" && (

@@ -525,5 +525,3 @@ export const ABILITIES: Record<string, Ability> = Object.fromEntries(
   })
 );
 
-/** @deprecated Use `ABILITIES` instead. */
-export const SPELLS = ABILITIES;
