@@ -21,7 +21,7 @@ export class GuildService {
 	static async getGuildMembers(guildId: string) {
 		return prisma.guildMember.findMany({
 			where: { guildId },
-			include: { character: true },
+			include: { character: true, guild: true },
 		});
 	}
 
