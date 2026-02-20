@@ -15,6 +15,9 @@ export const NPC_APPEARANCE: Record<string, { bodyId: number; headId: number }> 
   bat: { bodyId: 50, headId: 0 },
   dark_knight: { bodyId: 3, headId: 0 },
   horse: { bodyId: 65, headId: 0 },
+  skeleton_archer: { bodyId: 35, headId: 0 },
+  vampire: { bodyId: 70, headId: 0 },
+  gargoyle: { bodyId: 50, headId: 0 },
 };
 
 export const NPC_STATS: Record<NpcType, NpcStats> = {
@@ -263,6 +266,53 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
     passive: true,
     fleesWhenLow: true,
   },
+  skeleton_archer: {
+    hp: 80,
+    str: 10,
+    agi: 20,
+    int: 5,
+    speedTilesPerSecond: 5,
+    attackRange: 6,
+    attackCooldownMs: 800,
+    attackWindupMs: 200,
+    armor: 12,
+    abilities: [],
+    expReward: 65,
+    minLevel: 10,
+    maxLevel: 25,
+  },
+  vampire: {
+    hp: 200,
+    str: 20,
+    agi: 25,
+    int: 20,
+    speedTilesPerSecond: 6,
+    attackRange: 1,
+    attackCooldownMs: 700,
+    attackWindupMs: 150,
+    armor: 25,
+    abilities: ["soul_drain"],
+    expReward: 180,
+    abilityCastChance: 0.6,
+    minLevel: 20,
+    maxLevel: 35,
+  },
+  gargoyle: {
+    hp: 300,
+    str: 25,
+    agi: 10,
+    int: 5,
+    speedTilesPerSecond: 3,
+    attackRange: 1,
+    attackCooldownMs: 1200,
+    attackWindupMs: 300,
+    armor: 40,
+    abilities: [],
+    expReward: 220,
+    abilityCastChance: 0.3,
+    minLevel: 20,
+    maxLevel: 35,
+  },
 };
 
 const npcStatsKeysAny: any = Object.keys(NPC_STATS);
@@ -352,6 +402,24 @@ export const NPC_DROPS: Record<string, DropTableEntry[]> = {
   banker: [],
   // Horse is a mount — no combat drops
   horse: [],
+  skeleton_archer: [
+    { itemId: "health_potion", chance: 0.2, min: 1, max: 2 },
+    { itemId: "hunting_bow", chance: 0.05, min: 1, max: 1 },
+    { itemId: "bone_sword", chance: 0.03, min: 1, max: 1 },
+    { itemId: "gold", chance: 0.5, min: 15, max: 30 },
+  ],
+  vampire: [
+    { itemId: "great_health_potion", chance: 0.2, min: 1, max: 3 },
+    { itemId: "vampire_cape", chance: 0.05, min: 1, max: 1 },
+    { itemId: "blood_amulet", chance: 0.03, min: 1, max: 1 },
+    { itemId: "gold", chance: 0.8, min: 50, max: 120 },
+  ],
+  gargoyle: [
+    { itemId: "great_health_potion", chance: 0.2, min: 1, max: 2 },
+    { itemId: "plate_armor", chance: 0.02, min: 1, max: 1 },
+    { itemId: "bone_sword", chance: 0.05, min: 1, max: 1 },
+    { itemId: "gold", chance: 0.7, min: 40, max: 100 },
+  ],
 };
 
 /**

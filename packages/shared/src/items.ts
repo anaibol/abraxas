@@ -240,6 +240,16 @@ export const ITEMS: Record<string, Item> = {
     goldValue: 15,
     aoWeaponId: 12,
   },
+  bone_sword: {
+    id: "bone_sword",
+    name: "items.bone_sword.name",
+    slot: "weapon",
+    rarity: "uncommon",
+    stats: { str: 12, agi: 3 },
+    goldValue: 95,
+    requiredClass: ["WARRIOR", "PALADIN", "ROGUE"],
+    aoWeaponId: 21,
+  },
 
   // --- ARMOR ---
   tunic: {
@@ -293,6 +303,15 @@ export const ITEMS: Record<string, Item> = {
     stats: { agi: 5, armor: 4 },
     goldValue: 60,
     requiredClass: ["ROGUE", "RANGER"],
+  },
+  vampire_cape: {
+    id: "vampire_cape",
+    name: "items.vampire_cape.name",
+    slot: "armor",
+    rarity: "rare",
+    stats: { armor: 6, agi: 10, str: 5, hp: 40 },
+    goldValue: 350,
+    requiredClass: ["ROGUE", "RANGER", "WARRIOR", "MAGE", "CLERIC", "PALADIN"],
   },
 
   // --- SHIELDS ---
@@ -377,6 +396,14 @@ export const ITEMS: Record<string, Item> = {
     rarity: "uncommon",
     stats: { hp: 50 },
     goldValue: 120,
+  },
+  blood_amulet: {
+    id: "blood_amulet",
+    name: "items.blood_amulet.name",
+    slot: "ring",
+    rarity: "rare",
+    stats: { hp: 80, str: 8 },
+    goldValue: 400,
   },
 
   // --- CONSUMABLES ---

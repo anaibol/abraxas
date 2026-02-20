@@ -25,6 +25,8 @@ export class MapBaker {
 			1: 0x555555, // Wall / Mountain
 			2: 0x1b3a12, // Tree
 			3: 0x1e4c6b, // Water
+			4: 0x111111, // Dark Stone (Catacombs Floor)
+			5: 0x222222, // Dark Wall (Catacombs Wall)
 		};
 
 		for (let y = 0; y < height; y++) {
@@ -42,8 +44,8 @@ export class MapBaker {
 				this.graphics.fillStyle(color, 1);
 				this.graphics.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
 				
-				// Optional: draw subtle grid lines for grass tiles to make it look like a map
-				if (color === colors[0]) {
+				// Optional: draw subtle grid lines for grass and stone tiles
+				if (color === colors[0] || color === colors[4]) {
 					this.graphics.lineStyle(1, 0x000000, 0.1);
 					this.graphics.strokeRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
 				}
