@@ -3,7 +3,7 @@ import { ITEMS } from "@abraxas/shared";
 import type { NetworkManager } from "../network/NetworkManager";
 import type { Room } from "@colyseus/sdk";
 import type { GameState } from "../../../server/src/schema/GameState";
-import type { InventorySlot } from "../ui/Sidebar";
+import type { InventorySlot } from "../ui/sidebar/types";
 
 type Deps = {
 	phase: "lobby" | "game";

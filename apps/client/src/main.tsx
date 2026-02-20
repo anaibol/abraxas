@@ -2,6 +2,7 @@ import { createRoot } from "react-dom/client";
 import { I18nextProvider } from "react-i18next";
 import { i18n } from "@abraxas/shared";
 import { App } from "./ui/App";
+import { AudioProvider } from "./contexts/AudioContext";
 
 const savedLang = localStorage.getItem("abraxas_lang");
 if (savedLang) {
@@ -10,6 +11,8 @@ if (savedLang) {
 
 createRoot(document.getElementById("root")!).render(
   <I18nextProvider i18n={i18n}>
-    <App />
+    <AudioProvider>
+      <App />
+    </AudioProvider>
   </I18nextProvider>,
 );
