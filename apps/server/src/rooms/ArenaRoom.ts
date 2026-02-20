@@ -69,7 +69,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 	private bankSystem!: BankSystem;
 
 	private broadcastMessage: BroadcastFn = (type, data, options) => {
-		this.broadcast(type as any, data as any, options as any);
+		this.broadcast(type as string, data, options);
 	};
 
 	async onCreate(options: JoinOptions & { mapName?: string }) {
