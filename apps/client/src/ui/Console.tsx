@@ -16,7 +16,19 @@ interface ConsoleProps {
   onSendChat?: (message: string) => void;
   isChatOpen?: boolean;
   prefillMessage?: string;
+  isGM?: boolean;
 }
+
+const GM_COMMANDS: { usage: string; desc: string }[] = [
+  { usage: "/gm heal",                  desc: "Restore HP & mana to full" },
+  { usage: "/gm item <id> [qty]",       desc: "Give yourself an item" },
+  { usage: "/gm gold <amount>",         desc: "Give yourself gold" },
+  { usage: "/gm xp <amount>",           desc: "Give yourself XP" },
+  { usage: "/gm tp <x> <y>",           desc: "Teleport to tile coordinates" },
+  { usage: "/gm goto <name>",           desc: "Teleport to a player" },
+  { usage: "/gm spawn <npcType>",       desc: "Spawn an NPC in front of you" },
+  { usage: "/gm announce <msg>",        desc: "Broadcast a server message" },
+];
 
 type Channel = "all" | "global" | "group" | "whisper" | "system" | "combat";
 
@@ -29,12 +41,21 @@ const TABS: { id: Channel; labelKey: string; color: string }[] = [
   { id: "combat", labelKey: "console.tab_combat", color: "#f84" },
 ];
 
-export function Console({ messages, onSendChat, isChatOpen, prefillMessage }: ConsoleProps) {
+export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM }: ConsoleProps) {
   const { t } = useTranslation();
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [inputValue, setInputValue] = useState("");
   const [activeChannel, setActiveChannel] = useState<Channel>("all");
+  const [tabIndex, setTabIndex] = useState(-1);
+
+  const gmHints = useMemo(() => {
+    if (!isGM || !inputValue.startsWith("/gm")) return [];
+    const sub = inputValue.slice(3).trimStart().split(" ")[0].toLowerCase();
+    return GM_COMMANDS.filter(c =>
+      sub === "" || c.usage.split(" ")[1]?.startsWith(sub),
+    );
+  }, [isGM, inputValue]);
 
   useEffect(() => {
     if (prefillMessage && isChatOpen) {
@@ -86,10 +107,22 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage }: Co
   }, [isChatOpen]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Tab" && isGM && gmHints.length > 0) {
+      e.preventDefault();
+      const nextIndex = (tabIndex + 1) % gmHints.length;
+      setTabIndex(nextIndex);
+      const cmd = gmHints[nextIndex].usage;
+      // Fill up to the first placeholder (strip < ... > args)
+      const base = cmd.replace(/<[^>]+>/g, "").replace(/\[[^\]]+\]/g, "").trimEnd();
+      setInputValue(base);
+      return;
+    }
+    if (e.key !== "Tab") setTabIndex(-1);
     if (e.key === "Enter") {
       const prefix = activeChannel === "group" ? "/p " : "";
       onSendChat?.(prefix + inputValue);
       setInputValue("");
+      setTabIndex(-1);
     }
     e.stopPropagation();
   };
@@ -158,6 +191,34 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage }: Co
         <div ref={bottomRef} />
       </Box>
       
+      {isChatOpen && gmHints.length > 0 && (
+        <Box
+          bg="rgba(8, 6, 18, 0.96)"
+          borderTop="1px solid rgba(212, 168, 67, 0.35)"
+          px="10px"
+          py="4px"
+        >
+          {gmHints.map((hint, i) => (
+            <HStack key={hint.usage} gap="2" py="1px">
+              <Text
+                fontSize="11px"
+                fontWeight="700"
+                color={i === tabIndex ? "#ffaa33" : "#d4a843"}
+                fontFamily="'Courier New', monospace"
+                flexShrink={0}
+              >
+                {hint.usage}
+              </Text>
+              <Text fontSize="11px" color="rgba(255,255,255,0.45)" noOfLines={1}>
+                {hint.desc}
+              </Text>
+            </HStack>
+          ))}
+          <Text fontSize="10px" color="rgba(255,255,255,0.25)" mt="2px">
+            Tab to cycle
+          </Text>
+        </Box>
+      )}
       <Box 
         h={isChatOpen ? "40px" : "0px"} 
         transition="height 0.1s" 
@@ -168,7 +229,7 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage }: Co
             ref={inputRef}
             type="text"
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={(e) => { setInputValue(e.target.value); setTabIndex(-1); }}
             onKeyDown={handleKeyDown}
             style={{
                 width: "100%",

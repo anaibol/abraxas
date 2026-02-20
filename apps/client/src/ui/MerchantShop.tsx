@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { Box, Flex, Text, Grid, Input } from "@chakra-ui/react";
 import { Button } from "./components/Button";
 import { ITEMS, type Item } from "@abraxas/shared";
-import { T, HEX } from "./tokens";
 import { useTranslation } from "react-i18next";
+import { useAudio } from "../contexts/AudioContext";
 
 interface MerchantShopProps {
   npcId: string;
@@ -18,6 +18,7 @@ interface MerchantShopProps {
 
 export function MerchantShop({ npcId, merchantInventory, playerGold, playerInventory, onBuy, onSell, onClose }: MerchantShopProps) {
   const { t } = useTranslation();
+  const { playUIClick, playUIHover } = useAudio();
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [tab, setTab] = useState<"buy" | "sell">("buy");
   const [quantity, setQuantity] = useState<number>(1);
@@ -96,7 +97,8 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
           borderBottom={tab === "buy" ? "3px solid" : "none"}
           borderColor={T.gold}
           _hover={{ color: T.gold }}
-          onClick={() => { setTab("buy"); setSelectedItem(null); setQuantity(1); }}
+          onMouseEnter={() => { if (tab !== "buy") playUIHover?.(); }}
+          onClick={() => { playUIClick?.(); setTab("buy"); setSelectedItem(null); setQuantity(1); }}
         >
           {t("ui.merchant.tab_buy")}
         </Box>
@@ -111,7 +113,8 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
           borderBottom={tab === "sell" ? "3px solid" : "none"}
           borderColor={T.gold}
           _hover={{ color: T.gold }}
-          onClick={() => { setTab("sell"); setSelectedItem(null); setQuantity(1); }}
+          onMouseEnter={() => { if (tab !== "sell") playUIHover?.(); }}
+          onClick={() => { playUIClick?.(); setTab("sell"); setSelectedItem(null); setQuantity(1); }}
         >
           {t("ui.merchant.tab_sell")}
         </Box>
@@ -135,7 +138,8 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
                   cursor="pointer"
                   transition="all 0.2s"
                   _hover={{ borderColor: T.goldDim, transform: "translateY(-2px)", boxShadow: "0 4px 12px rgba(0,0,0,0.4)" }}
-                  onClick={() => { setSelectedItem(item); setQuantity(1); }}
+                  onMouseEnter={() => { if (!isSelected) playUIHover?.(); }}
+                  onClick={() => { if (!isSelected) playUIClick?.(); setSelectedItem(item); setQuantity(1); }}
                 >
                   <Flex align="center">
                     <Box 
@@ -178,7 +182,8 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
                   cursor="pointer"
                   transition="all 0.2s"
                   _hover={{ borderColor: T.goldDim, transform: "translateY(-2px)" }}
-                  onClick={() => { setSelectedItem(item); setQuantity(1); }}
+                  onMouseEnter={() => { if (!isSelected) playUIHover?.(); }}
+                  onClick={() => { if (!isSelected) playUIClick?.(); setSelectedItem(item); setQuantity(1); }}
                 >
                   <Flex align="center">
                     <Box w="40px" h="40px" bg="#000" mr="4" border="1px solid" borderColor={T.border}></Box>
