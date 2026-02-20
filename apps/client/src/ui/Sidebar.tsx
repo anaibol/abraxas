@@ -144,14 +144,18 @@ export function Sidebar({
             justify="center"
             py="2"
             gap="0.5"
-            bg={tab === key ? T.surface : T.darkest}
+            bg={tab === key ? T.surface : "transparent"}
             color={tab === key ? T.gold : T.goldDark}
             borderBottom="2px solid"
             borderBottomColor={tab === key ? T.gold : "transparent"}
             mb="-2px"
             cursor="pointer"
-            transition="all 0.12s"
-            _hover={{ color: T.goldText, bg: T.surface }}
+            transition="all 0.2s cubic-bezier(0.16, 1, 0.3, 1)"
+            _hover={{ 
+              color: T.goldText, 
+              bg: T.surface, 
+              transform: tab === key ? "none" : "translateY(-1px)",
+            }}
             onMouseEnter={() => {
               if (tab !== key) playUIHover?.();
             }}
@@ -160,7 +164,7 @@ export function Sidebar({
               setTab(key);
             }}
           >
-            <Box fontSize="16px" lineHeight="1">
+            <Box fontSize="16px" lineHeight="1" transition="transform 0.2s" _groupHover={{ transform: "scale(1.1)" }}>
               {icon}
             </Box>
             <Box
