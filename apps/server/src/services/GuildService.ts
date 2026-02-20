@@ -1,6 +1,5 @@
-import { PrismaClient, GuildRole } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { GuildRole } from "../generated/prisma";
+import { prisma } from "../database/db";
 
 export class GuildService {
 	static async createGuild(name: string, founderCharacterId: string) {

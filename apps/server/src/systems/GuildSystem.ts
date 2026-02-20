@@ -2,7 +2,7 @@ import { Client } from "@colyseus/core";
 import { GameState } from "../schema/GameState";
 import { ServerMessageType, ServerMessages } from "@abraxas/shared";
 import { GuildService } from "../services/GuildService";
-import { GuildRole } from "@prisma/client";
+import { GuildRole } from "../generated/prisma";
 
 export class GuildSystem {
 	private invitations = new Map<
