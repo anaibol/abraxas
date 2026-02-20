@@ -9,19 +9,19 @@ import { CharacterHeader } from "./sidebar/CharacterHeader";
 import { SidebarFooter } from "./sidebar/SidebarFooter";
 import { InventoryTab } from "./sidebar/InventoryTab";
 import { SpellsTab } from "./sidebar/SpellsTab";
-import { PartyTab } from "./sidebar/PartyTab";
+import { GroupTab } from "./sidebar/GroupTab";
 import { FriendsTab } from "./sidebar/FriendsTab";
 import type { SidebarProps } from "./sidebar/types";
 import { useIsMobile } from "../hooks/useIsMobile";
 
 const SIDEBAR_TABS: readonly {
-	key: "inv" | "spells" | "quests" | "party" | "friends";
+	key: "inv" | "spells" | "quests" | "group" | "friends";
 	icon: string;
 }[] = [
 	{ key: "inv",     icon: "⚔️" },
 	{ key: "spells",  icon: "📖" },
 	{ key: "quests",  icon: "📜" },
-	{ key: "party",   icon: "⚔️" },
+	{ key: "group",   icon: "⚔️" },
 	{ key: "friends", icon: "👥" },
 ];
 
@@ -33,12 +33,12 @@ export function Sidebar({
 	onUseItem,
 	// onDropItem, // Used in App.tsx typically
 	quests,
-	partyId = "",
+	groupId = "",
 	leaderId = "",
-	partyMembers = [],
-	onPartyInvite,
-	onPartyLeave,
-	onPartyKick,
+	groupMembers = [],
+	onGroupInvite,
+	onGroupLeave,
+	onGroupKick,
 	friends = [],
 	pendingFriendRequests = [],
 	onFriendRequest,
@@ -56,7 +56,7 @@ export function Sidebar({
 	const isMobile = useIsMobile();
 	const { t } = useTranslation();
 	const [tab, setTab] = useState<
-		"inv" | "spells" | "quests" | "party" | "friends"
+		"inv" | "spells" | "quests" | "group" | "friends"
 	>("inv");
 	const [inviteId, setInviteId] = useState("");
 	const [friendName, setFriendName] = useState("");
@@ -181,17 +181,17 @@ export function Sidebar({
 						onSpellClick={onSpellClick}
 					/>
 				)}
-				{tab === "quests" && <QuestLog quests={quests} />}
-				{tab === "party" && (
-					<PartyTab
-						partyId={partyId}
+				{tab === "quests" && <QuestLog quests={quests ?? []} />}
+				{tab === "group" && (
+					<GroupTab
+						groupId={groupId}
 						leaderId={leaderId}
-						partyMembers={partyMembers}
+						groupMembers={groupMembers}
 						inviteId={inviteId}
 						setInviteId={setInviteId}
-						onPartyInvite={onPartyInvite}
-						onPartyLeave={onPartyLeave}
-						onPartyKick={onPartyKick}
+						onGroupInvite={onGroupInvite}
+						onGroupLeave={onGroupLeave}
+						onGroupKick={onGroupKick}
 						onTradeRequest={onTradeRequest}
 					/>
 				)}
@@ -205,7 +205,7 @@ export function Sidebar({
 						onFriendAccept={onFriendAccept}
 						onWhisper={onWhisper}
 						onTradeRequest={onTradeRequest}
-						onPartyInvite={onPartyInvite}
+						onGroupInvite={onGroupInvite}
 					/>
 				)}
 			</Box>
