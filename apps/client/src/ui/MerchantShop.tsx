@@ -5,6 +5,7 @@ import { ITEMS, type Item } from "@abraxas/shared";
 import { useTranslation } from "react-i18next";
 import { useAudio } from "../contexts/AudioContext";
 import { ItemGrid } from "./components/ItemGrid";
+import { T, HEX } from "./tokens";
 
 interface MerchantShopProps {
   npcId: string;

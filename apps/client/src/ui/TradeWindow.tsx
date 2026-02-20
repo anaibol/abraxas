@@ -9,6 +9,9 @@ import type { InventorySlot } from "./sidebar/types";
 import { T } from "./tokens";
 
 
+import { useAudio } from "../contexts/AudioContext";
+import { ItemGrid } from "./components/ItemGrid";
+
 const ITEM_ICONS: Record<string, string> = {
   weapon: "⚔️", armor: "🛡️", shield: "🛡️", helmet: "⛑️",
   ring: "💍", consumable: "🧪",
@@ -190,41 +193,16 @@ export function TradeWindow({
             <Text fontSize="11px" color={T.goldDark} letterSpacing="2px" textTransform="uppercase" mb="1.5">
               {t("trade.add_items_hint")}
             </Text>
-            <Grid templateColumns={{ base: "repeat(6, 1fr)", md: "repeat(8, 1fr)" }} gap="1">
-              {playerInventory.map((slot) => {
-                const def = ITEMS[slot.itemId];
+            <ItemGrid
+              slots={playerInventory.map(slot => {
                 const inOffer = offerItems.find((i) => i.itemId === slot.itemId);
                 const availableQty = slot.quantity - (inOffer?.quantity ?? 0);
-                return (
-                  <Box
-                    key={slot.slotIndex}
-                    aspectRatio="1"
-                    bg={T.darkest}
-                    border="1px solid"
-                    borderColor={inOffer ? T.gold : T.border}
-                    borderRadius="2px"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                    cursor={availableQty > 0 ? "pointer" : "not-allowed"}
-                    opacity={availableQty > 0 ? 1 : 0.4}
-                    title={def ? `${def.name}${slot.quantity > 1 ? ` (${availableQty} available)` : ""}` : ""}
-                    onMouseEnter={() => { if (availableQty > 0) playUIHover?.(); }}
-                    onClick={() => { if (availableQty > 0) { playUIClick?.(); addItem(slot); } }}
-                    _hover={availableQty > 0 ? { borderColor: T.gold, bg: T.surface } : {}}
-                    pos="relative"
-                    fontSize="14px"
-                  >
-                    {def ? (ITEM_ICONS[def.slot] || "✨") : ""}
-                    {slot.quantity > 1 && (
-                      <Text pos="absolute" bottom="0" right="1px" fontSize="10px" color="#fff" fontFamily={T.mono}>
-                        {slot.quantity}
-                      </Text>
-                    )}
-                  </Box>
-                );
-              })}
-            </Grid>
+                return { ...slot, quantity: availableQty };
+              }).filter(slot => slot.quantity > 0)}
+              selectedSlotIndex={null}
+              onSelect={(slot) => addItem(slot as InventorySlot)}
+              maxSlots={Math.max(24, Math.ceil(playerInventory.length / 8) * 8)}
+            />
             {/* Click items in offer to remove */}
             {offerItems.length > 0 && (
               <Box mt="2">
