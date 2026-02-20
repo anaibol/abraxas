@@ -4,7 +4,7 @@ import { VIEWPORT_TILES_X } from "./constants";
 /** Range that covers the entire visible viewport (half the canonical width). */
 const FULL_VIEWPORT_RANGE = Math.floor(VIEWPORT_TILES_X / 2);
 
-export const ABILITIES: Record<string, Ability> = {
+const _ABILITIES: Record<string, Partial<Ability>> = {
   // ── WARRIOR ──────────────────────────────────────────────────────────────
 
   /** Q — Self-buff: +STR for burst window */
@@ -487,6 +487,25 @@ export const ABILITIES: Record<string, Ability> = {
     fxId: 16,
   },
 };
+
+export const ABILITIES: Record<string, Ability> = Object.fromEntries(
+  Object.entries(_ABILITIES).map(([k, v]) => [
+    k,
+    {
+      rangeTiles: 1,
+      manaCost: 0,
+      baseDamage: 0,
+      scalingStat: "str",
+      scalingRatio: 0,
+      cooldownMs: 1000,
+      windupMs: 200,
+      effect: "damage",
+      damageSchool: "physical",
+      ...v,
+      id: k,
+    } as Ability
+  ])
+);
 
 /** @deprecated Use `ABILITIES` instead. */
 export const SPELLS = ABILITIES;
