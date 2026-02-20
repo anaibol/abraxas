@@ -1,4 +1,4 @@
-import type { Ability, NpcStats } from "@abraxas/shared";
+import { type Ability, EntityType, type NpcStats } from "@abraxas/shared";
 import { type BufferedAction, Direction, type WindupAction } from "@abraxas/shared";
 import { Schema, type } from "@colyseus/schema";
 
@@ -8,7 +8,7 @@ import { Schema, type } from "@colyseus/schema";
  * and are common across character types.
  */
 export abstract class Char extends Schema {
-  @type("string") type: string = "";
+  @type("string") type: EntityType = EntityType.NPC;
   @type("string") sessionId: string = "";
   @type("string") name: string = "";
   @type("uint16") tileX: number = 0;

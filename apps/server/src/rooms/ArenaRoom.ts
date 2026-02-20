@@ -249,21 +249,20 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       // Restore saved companions
       if (player.savedCompanions && player.savedCompanions.length > 0) {
         for (const comp of player.savedCompanions) {
-          const spawnLoc = findSafeSpawn(player.tileX, player.tileY, this.map, this.spatial) ?? {
-            x: player.tileX,
-            y: player.tileY,
-          };
+          const spawnLoc = findSafeSpawn(player.tileX, player.tileY, this.map, this.spatial) ?? player;
+          const sx = "x" in spawnLoc ? spawnLoc.x : spawnLoc.tileX;
+          const sy = "y" in spawnLoc ? spawnLoc.y : spawnLoc.tileY;
+
           this.npcSystem.spawnNpcAt(
             comp.type as NpcType,
             this.map,
-            spawnLoc.x,
-            spawnLoc.y,
+            sx,
+            sy,
             player.sessionId,
           );
           
           // Apply saved level and HP
           // Note: spawnNpcAt operates synchronously and pushes to this.state.npcs,
-          // so we can find the most recently added npc with this ownerId.
           const npcs = Array.from(this.state.npcs.values());
           const newNpc = npcs[npcs.length - 1];
           if (newNpc && newNpc.ownerId === player.sessionId) {

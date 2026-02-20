@@ -92,12 +92,25 @@ export class NpcSystem {
     npc.spawnY = y;
 
     const stats = NPC_STATS[type];
-    npc.hp = stats.hp;
-    npc.maxHp = stats.hp;
-    npc.str = stats.str;
-    npc.agi = stats.agi;
-    npc.intStat = stats.int;
-    npc.armor = stats.armor;
+    
+    // Determine initial level
+    let level = 1;
+    if (stats.minLevel !== undefined && stats.maxLevel !== undefined) {
+      level = Math.floor(Math.random() * (stats.maxLevel - stats.minLevel + 1)) + stats.minLevel;
+    } else if (stats.minLevel !== undefined) {
+      level = stats.minLevel;
+    }
+    npc.level = level;
+
+    // Scale stats based on level (10% increase per level above 1)
+    const scale = 1 + (npc.level - 1) * 0.1;
+    npc.maxHp = Math.ceil(stats.hp * scale);
+    npc.hp = npc.maxHp;
+    npc.str = Math.ceil(stats.str * scale);
+    npc.agi = Math.ceil(stats.agi * scale);
+    npc.intStat = Math.ceil(stats.int * scale);
+    npc.armor = Math.ceil(stats.armor * scale);
+
     npc.alive = true;
     npc.state = NpcState.IDLE;
     npc.targetId = "";
@@ -170,7 +183,7 @@ export class NpcSystem {
 
   /** Returns the effective aggro radius for this NPC (bosses get a bonus). */
   private getAggroRange(npc: Npc): number {
-    return NPC_STATS[npc.type].rareSpawn
+    return NPC_STATS[npc.npcType].rareSpawn
       ? Math.floor(AGGRO_RANGE * BOSS_AGGRO_MULTIPLIER)
       : AGGRO_RANGE;
   }
@@ -500,23 +513,26 @@ export class NpcSystem {
 
     npc.exp += amount;
 
-    const nextLevelExp = EXP_TABLE[npc.level] || 1000000;
-    if (npc.exp >= nextLevelExp) {
+    let nextLevelExp = EXP_TABLE[npc.level] || npc.level * 1000;
+    while (npc.exp >= nextLevelExp) {
+      npc.exp -= nextLevelExp;
       this.levelUp(npc, roomId, broadcast);
+      nextLevelExp = EXP_TABLE[npc.level] || npc.level * 1000;
     }
   }
 
   private levelUp(npc: Npc, roomId: string, broadcast: BroadcastFn): void {
     npc.level++;
-    npc.exp = 0;
 
-    // Stat boosts: ~10% increase per level
-    npc.maxHp = Math.ceil(npc.maxHp * 1.1);
+    // Stat boosts: ~10% increase per level based on base stats
+    const stats = NPC_STATS[npc.type];
+    const scale = 1 + (npc.level - 1) * 0.1;
+    npc.maxHp = Math.ceil(stats.hp * scale);
     npc.hp = npc.maxHp;
-    npc.str = Math.ceil(npc.str * 1.1);
-    npc.agi = Math.ceil(npc.agi * 1.1);
-    npc.intStat = Math.ceil(npc.intStat * 1.1);
-    npc.armor = Math.ceil(npc.armor * 1.1);
+    npc.str = Math.ceil(stats.str * scale);
+    npc.agi = Math.ceil(stats.agi * scale);
+    npc.intStat = Math.ceil(stats.int * scale);
+    npc.armor = Math.ceil(stats.armor * scale);
 
     broadcast(ServerMessageType.LevelUp, {
       sessionId: npc.sessionId,
@@ -528,6 +544,7 @@ export class NpcSystem {
       sessionId: npc.sessionId,
       type: npc.type,
       level: npc.level,
+      room: roomId,
     });
   }
 

@@ -581,6 +581,14 @@ export class CombatSystem {
   }
 
   private sameFaction(a: Entity, b: Entity): boolean {
+    // Check for owner-pet or pet-pet relation
+    const aOwnerId = (a as any).ownerId;
+    const bOwnerId = (b as any).ownerId;
+
+    if (aOwnerId && aOwnerId === b.sessionId) return true;
+    if (bOwnerId && bOwnerId === a.sessionId) return true;
+    if (aOwnerId && bOwnerId && aOwnerId === bOwnerId) return true;
+
     if (a instanceof Player && b instanceof Player) {
       if (a.groupId && a.groupId === b.groupId) return true;
       if (a.guildId && a.guildId === b.guildId) return true;

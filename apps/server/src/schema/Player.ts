@@ -1,10 +1,11 @@
 import type { Ability, ClassStats, ClassType } from "@abraxas/shared";
-import { ABILITIES, CLASS_STATS } from "@abraxas/shared";
+import { ABILITIES, CLASS_STATS, EntityType } from "@abraxas/shared";
 import { ArraySchema, type, view } from "@colyseus/schema";
 import { Char } from "./Char";
 import { InventoryItem } from "./InventoryItem";
 
 export class Player extends Char {
+  type = EntityType.PLAYER;
   // ── Shared (visible to all clients) ─────────────────────────────────────
   @type("string") groupId: string = "";
   @type("string") guildId: string = "";

@@ -1,10 +1,11 @@
 import type { Ability, NpcStats, NpcType } from "@abraxas/shared";
-import { ABILITIES, NPC_STATS, NpcState } from "@abraxas/shared";
+import { ABILITIES, EntityType, NPC_STATS, NpcState } from "@abraxas/shared";
 import { type } from "@colyseus/schema";
 import { Char } from "./Char";
 
 export class Npc extends Char {
-  @type("string") type: NpcType = "orc";
+  type = EntityType.NPC;
+  @type("string") npcType: NpcType = "orc";
   @type("number") spellCastPercent = 0;
 
   @type("string") ownerId?: string;
@@ -30,7 +31,7 @@ export class Npc extends Char {
   pathTargetTileY: number = -1;
 
   getStats(): NpcStats | undefined {
-    return NPC_STATS[this.type];
+    return NPC_STATS[this.npcType];
   }
 
   getAbility(abilityId: string): Ability | undefined {
