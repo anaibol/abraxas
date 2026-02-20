@@ -251,7 +251,7 @@ export type Ability = {
   dotDurationMs?: number;
   /** Fraction of damage returned as healing to the caster (used by "leech" effect). */
   leechRatio?: number;
-  /** Optional body and head IDs to override the character appearance (used for shapeshifting). */
+  summonType?: string;
   appearanceOverride?: { bodyId: number; headId: number };
 };
 

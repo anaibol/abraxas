@@ -133,7 +133,7 @@ export class GameScene extends Phaser.Scene {
     this.soundManager.startMusic();
 
     // Start ambiance based on map
-    if (this.welcome.roomMapName.includes("arena")) {
+    if (this.welcome.roomMapName && this.welcome.roomMapName.includes("arena")) {
       this.soundManager.startAmbiance("ambiance-wind");
     } else {
       this.soundManager.startAmbiance("ambiance-crickets");
@@ -238,13 +238,13 @@ export class GameScene extends Phaser.Scene {
 
     unsub(
       $state.onAdd("players", (player, sessionId) => {
-        this.spriteManager.addPlayer(player, sessionId);
-        this.spriteManager.syncPlayer(player, sessionId);
+        this.spriteManager.addPlayer(player as any, sessionId);
+        this.spriteManager.syncPlayer(player as any, sessionId);
         const isLocal = sessionId === this.room.sessionId;
 
         // Phaser sprite sync: fires on any property change (position, hp, facing…)
         const onChangeUnsub = $state.onChange(player, () => {
-          this.spriteManager.syncPlayer(player, sessionId);
+          this.spriteManager.syncPlayer(player as any, sessionId);
         });
         playerOnChangeUnsubs.set(sessionId, onChangeUnsub);
         unsub(onChangeUnsub);
@@ -315,9 +315,9 @@ export class GameScene extends Phaser.Scene {
         this.spriteManager.removePlayer(sessionId);
       }),
       $state.onAdd("npcs", (npc, id) => {
-        this.spriteManager.addNpc(npc, id);
-        this.spriteManager.syncNpc(npc, id);
-        const onChangeUnsub = $state.onChange(npc, () => this.spriteManager.syncNpc(npc, id));
+        this.spriteManager.addNpc(npc as any, id);
+        this.spriteManager.syncNpc(npc as any, id);
+        const onChangeUnsub = $state.onChange(npc, () => this.spriteManager.syncNpc(npc as any, id));
         npcOnChangeUnsubs.set(id, onChangeUnsub);
         unsub(onChangeUnsub);
       }),
@@ -366,6 +366,9 @@ export class GameScene extends Phaser.Scene {
     }
 
     document.addEventListener("visibilitychange", this.handleVisibilityChange);
+
+    this.onReady?.(this.soundManager);
+  }
 
   private updateAmbientLighting(time: number) {
     const width = this.cameras.main.width;
@@ -562,12 +565,12 @@ export class GameScene extends Phaser.Scene {
       guildId: player.guildId,
       inventory: this.buildInventory(player),
       equipment: {
-        weapon: player.equipWeapon,
-        armor: player.equipArmor,
-        shield: player.equipShield,
-        helmet: player.equipHelmet,
-        ring: player.equipRing,
-        mount: player.equipMount,
+        weapon: player.equipWeapon?.itemId,
+        armor: player.equipArmor?.itemId,
+        shield: player.equipShield?.itemId,
+        helmet: player.equipHelmet?.itemId,
+        ring: player.equipRing?.itemId,
+        mount: player.equipMount?.itemId,
       },
     });
   }

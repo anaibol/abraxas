@@ -421,10 +421,10 @@ export class CombatSystem {
         return;
       }
 
-      const attackerStr = this.boosted(attacker, "str", now);
-      const attackerAgi = this.boosted(attacker, "agi", now);
-      const defenderArmor = this.boosted(target, "armor", now);
-      const defenderAgi = this.boosted(target, "agi", now);
+      const attackerStr = this.boosted(attacker, StatType.STR, now);
+      const attackerAgi = this.boosted(attacker, StatType.AGI, now);
+      const defenderArmor = this.boosted(target, StatType.ARMOR, now);
+      const defenderAgi = this.boosted(target, StatType.AGI, now);
 
       const result =
         windup.type === "ranged"

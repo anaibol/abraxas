@@ -1,4 +1,4 @@
-import { type ItemAffix, type ItemRarity } from "@abraxas/shared";
+import { type ItemAffix, ItemRarity } from "@abraxas/shared";
 import { AFFIXES, type AffixDef } from "@abraxas/shared";
 
 export interface GeneratedItem {
@@ -13,10 +13,10 @@ export class ItemGenerator {
     const affixes: ItemAffix[] = [];
     
     let affixCount = 0;
-    if (rarity === "uncommon") affixCount = 1;
-    else if (rarity === "rare") affixCount = 2;
-    else if (rarity === "epic") affixCount = 3;
-    else if (rarity === "legendary") affixCount = 4;
+    if (rarity === ItemRarity.UNCOMMON) affixCount = 1;
+    else if (rarity === ItemRarity.RARE) affixCount = 2;
+    else if (rarity === ItemRarity.EPIC) affixCount = 3;
+    else if (rarity === ItemRarity.LEGENDARY) affixCount = 4;
 
     if (affixCount > 0) {
       const availableAffixes = AFFIXES.filter((a: AffixDef) => a.minLevel <= level);
@@ -47,15 +47,15 @@ export class ItemGenerator {
 
   private static rollRarity(): ItemRarity {
     const roll = Math.random();
-    if (roll < 0.01) return "legendary";
-    if (roll < 0.05) return "epic";
-    if (roll < 0.15) return "rare";
-    if (roll < 0.40) return "uncommon";
-    return "common";
+    if (roll < 0.01) return ItemRarity.LEGENDARY;
+    if (roll < 0.05) return ItemRarity.EPIC;
+    if (roll < 0.15) return ItemRarity.RARE;
+    if (roll < 0.40) return ItemRarity.UNCOMMON;
+    return ItemRarity.COMMON;
   }
 
   private static generateName(rarity: ItemRarity, affixes: ItemAffix[]): string | undefined {
-    if (rarity === "common") return undefined;
+    if (rarity === ItemRarity.COMMON) return undefined;
 
     const prefix = affixes.find((a: ItemAffix) => AFFIXES.find((d: AffixDef) => d.id === a.type)?.type === "prefix");
     const suffix = affixes.find((a: ItemAffix) => AFFIXES.find((d: AffixDef) => d.id === a.type)?.type === "suffix");
