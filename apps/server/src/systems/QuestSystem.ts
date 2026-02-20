@@ -19,11 +19,10 @@ export class QuestSystem {
     const questStates = new Map<string, PlayerQuestState>();
     for (const dbQuest of dbQuests) {
       const code = dbQuest.quest.code;
-      const progressAny: any = dbQuest.progressJson;
       questStates.set(code, {
         questId: code,
         status: dbQuest.status,
-        progress: progressAny ?? {},
+        progress: dbQuest.progressJson ?? {},
       });
     }
     this.charQuests.set(charId, questStates);
