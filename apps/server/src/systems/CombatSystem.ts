@@ -161,9 +161,7 @@ export class CombatSystem {
     now: number,
     sendToClient?: SendToClientFn,
   ): boolean {
-    console.log(
-      `[tryAttack] START attacker=${attacker.sessionId} target=${targetTileX},${targetTileY}`,
-    );
+    logger.debug({ intent: "try_attack", attacker: attacker.sessionId, target: `${targetTileX},${targetTileY}` });
     if (this.buffSystem.isStunned(attacker.sessionId, now)) return false;
 
     const stats = attacker.getStats()!;
@@ -172,10 +170,7 @@ export class CombatSystem {
     const meleeReady = now >= lastMelee + stats.attackCooldownMs;
     const gcdReady = now >= attacker.lastGcdMs + GCD_MS;
 
-    if (!meleeReady || !gcdReady || this.activeWindups.has(attacker.sessionId)) {
-      console.log(
-        `[tryAttack] BUFFERING: melee=${meleeReady} gcd=${gcdReady} windup=${this.activeWindups.has(attacker.sessionId)}`,
-      );
+      logger.debug({ intent: "try_attack", result: "buffered", meleeReady, gcdReady, hasWindup: this.activeWindups.has(attacker.sessionId) });
       return this.bufferAction(attacker, {
         type: "attack",
         targetTileX,
@@ -225,7 +220,7 @@ export class CombatSystem {
     attacker.lastGcdMs = now;
     this.lastMeleeMs.set(attacker.sessionId, now);
     this.activeWindups.set(attacker.sessionId, windup);
-    console.log(`[tryAttack] SUCCESS broadcasting AttackStart for ${attacker.sessionId}`);
+    logger.debug({ intent: "try_attack", result: "success", attacker: attacker.sessionId });
     broadcast(ServerMessageType.AttackStart, {
       sessionId: attacker.sessionId,
       facing: attacker.facing,
@@ -244,17 +239,15 @@ export class CombatSystem {
     now: number,
     sendToClient?: SendToClientFn,
   ): boolean {
-    console.log(
-      `[tryCast] START caster=${caster.sessionId} ability=${abilityId} target=${targetTileX},${targetTileY}`,
-    );
+    logger.debug({ intent: "try_cast", caster: caster.sessionId, ability: abilityId, target: `${targetTileX},${targetTileY}` });
     if (this.buffSystem.isStunned(caster.sessionId, now)) {
-      console.log("[tryCast] FAIL stunned");
+      logger.debug({ intent: "try_cast", result: "fail", reason: "stunned" });
       return false;
     }
 
     const ability = ABILITIES[abilityId];
     if (!ability) {
-      console.log("[tryCast] FAIL no ability", abilityId);
+      logger.debug({ intent: "try_cast", result: "fail", reason: "no_ability", abilityId });
       return false;
     }
 
@@ -262,17 +255,14 @@ export class CombatSystem {
     if (caster instanceof Player) {
       const classStats = caster.getStats();
       if (classStats && !classStats.abilities.includes(abilityId)) {
-        console.log("[tryCast] FAIL class restriction. abilities:", classStats.abilities);
+        logger.debug({ intent: "try_cast", result: "fail", reason: "class_restricted", abilityId });
         sendToClient?.(ServerMessageType.Notification, {
           message: "game.class_restricted",
         });
         return false;
       }
 
-      if (ability.requiredLevel && caster.level < ability.requiredLevel) {
-        console.log(
-          `[tryCast] FAIL level requirement. level=${caster.level} required=${ability.requiredLevel}`,
-        );
+        logger.debug({ intent: "try_cast", result: "fail", reason: "level_req", level: caster.level, required: ability.requiredLevel });
         sendToClient?.(ServerMessageType.Notification, {
           message: "game.skill_locked",
         });
@@ -280,10 +270,7 @@ export class CombatSystem {
       }
     }
 
-    if (now < caster.lastGcdMs + GCD_MS || this.activeWindups.has(caster.sessionId)) {
-      console.log(
-        `[tryCast] BUFFERING. now=${now} gcd=${caster.lastGcdMs + GCD_MS} windup=${this.activeWindups.has(caster.sessionId)}`,
-      );
+      logger.debug({ intent: "try_cast", result: "buffered", gcdReady: now >= caster.lastGcdMs + GCD_MS, hasWindup: this.activeWindups.has(caster.sessionId) });
       return this.bufferAction(caster, {
         type: "cast",
         spellId: abilityId,
@@ -295,43 +282,38 @@ export class CombatSystem {
 
     const cd = caster.spellCooldowns.get(abilityId) || 0;
     if (now < cd) {
-      console.log(`[tryCast] FAIL cooldown. now=${now} cd=${cd}`);
+      logger.debug({ intent: "try_cast", result: "fail", reason: "cooldown", abilityId, now, cd });
       return false;
     }
 
     if (ability.rangeTiles > 0) this.faceToward(caster, targetTileX, targetTileY);
 
     if (caster instanceof Player) {
-      if (caster.mana < ability.manaCost) {
-        console.log(`[tryCast] FAIL mana. has=${caster.mana} needs=${ability.manaCost}`);
+        logger.debug({ intent: "try_cast", result: "fail", reason: "no_mana", has: caster.mana, needs: ability.manaCost });
         sendToClient?.(ServerMessageType.Notification, {
           message: "game.not_enough_mana",
         });
         return false;
       }
-      if (ability.soulCost && caster.souls < ability.soulCost) {
-        console.log(`[tryCast] FAIL souls. has=${caster.souls} needs=${ability.soulCost}`);
+        logger.debug({ intent: "try_cast", result: "fail", reason: "no_souls", has: caster.souls, needs: ability.soulCost });
         sendToClient?.(ServerMessageType.Notification, {
           message: "game.not_enough_souls",
         });
         return false;
       }
-      if (ability.rageCost && caster.rage < ability.rageCost) {
-        console.log(`[tryCast] FAIL rage. has=${caster.rage} needs=${ability.rageCost}`);
+        logger.debug({ intent: "try_cast", result: "fail", reason: "no_rage", has: caster.rage, needs: ability.rageCost });
         sendToClient?.(ServerMessageType.Notification, {
           message: "game.not_enough_rage",
         });
         return false;
       }
-      if (ability.energyCost && caster.energy < ability.energyCost) {
-        console.log(`[tryCast] FAIL energy. has=${caster.energy} needs=${ability.energyCost}`);
+        logger.debug({ intent: "try_cast", result: "fail", reason: "no_energy", has: caster.energy, needs: ability.energyCost });
         sendToClient?.(ServerMessageType.Notification, {
           message: "game.not_enough_energy",
         });
         return false;
       }
-      if (ability.focusCost && caster.focus < ability.focusCost) {
-        console.log(`[tryCast] FAIL focus. has=${caster.focus} needs=${ability.focusCost}`);
+        logger.debug({ intent: "try_cast", result: "fail", reason: "no_focus", has: caster.focus, needs: ability.focusCost });
         sendToClient?.(ServerMessageType.Notification, {
           message: "game.not_enough_focus",
         });
