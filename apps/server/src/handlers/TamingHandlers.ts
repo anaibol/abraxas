@@ -62,7 +62,7 @@ export class TamingHandlers {
     // Consume one lasso regardless of success
     const lassoItem = player.inventory.find(i => i.itemId === "lasso");
     if (lassoItem) {
-      ctx.systems.inventory.removeItem(player, lassoItem.slotIndex, 1);
+      ctx.systems.inventory.removeItem(player, lassoItem.itemId, 1);
     }
 
     // Taming chance by class

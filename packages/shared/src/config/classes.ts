@@ -24,8 +24,17 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     attackWindupMs: 120,
     armor: 10,
     maxCompanions: 1,
-    // Q: war_cry (self STR buff) | W: shield_bash (stun) | E: whirlwind (AoE dmg) | R: battle_shout (AoE debuff)
-    abilities: ["war_cry", "shield_bash", "whirlwind", "battle_shout"],
+    // Q: war_cry | W: shield_bash | E: whirlwind | R: battle_shout | T: leap | Y: execute | U: cleave | I: berserker_rage
+    abilities: [
+      "war_cry",
+      "shield_bash",
+      "whirlwind",
+      "battle_shout",
+      "leap",
+      "execute",
+      "cleave",
+      "berserker_rage",
+    ],
   },
   MAGE: {
     hp: 140,
@@ -39,14 +48,19 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     attackWindupMs: 120,
     armor: 2,
     maxCompanions: 1,
-    // Q: fireball | W: ice_bolt | E: thunderstorm (AoE) | R: mana_shield | T: frost_nova (AoE stun) | Y: arcane_surge (nuke)
+    // fireball | ice_bolt | thunderstorm | blink | mana_shield | frost_nova | elemental_infusion | arcane_surge | spell_echo | meteor_strike | chain_lightning
     abilities: [
       "fireball",
       "ice_bolt",
       "thunderstorm",
+      "blink",
       "mana_shield",
       "frost_nova",
+      "elemental_infusion",
       "arcane_surge",
+      "spell_echo",
+      "meteor_strike",
+      "chain_lightning",
     ],
   },
   RANGER: {

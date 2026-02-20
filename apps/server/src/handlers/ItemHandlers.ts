@@ -55,7 +55,7 @@ export class ItemHandlers {
   ): void {
     const player = HandlerUtils.getActivePlayer(ctx, client);
     if (!player) return;
-    ctx.systems.inventory.equipItem(player, data.slotIndex, (msg) =>
+    ctx.systems.inventory.equipItem(player, data.itemId, (msg) =>
       HandlerUtils.sendError(client, msg),
     );
   }
@@ -80,17 +80,14 @@ export class ItemHandlers {
     const player = HandlerUtils.getActivePlayer(ctx, client);
     if (!player) return;
     
-    const item = player.inventory.find(i => i.slotIndex === data.slotIndex);
-    const itemId = item?.itemId; // Keep for message
-
     if (
-      ctx.systems.inventory.useItem(player, data.slotIndex, (msg) =>
+      ctx.systems.inventory.useItem(player, data.itemId, (msg) =>
         HandlerUtils.sendError(client, msg),
       )
     ) {
       ctx.broadcast(ServerMessageType.ItemUsed, {
         sessionId: client.sessionId,
-        itemId: itemId || "",
+        itemId: data.itemId,
       });
     }
   }
@@ -103,7 +100,7 @@ export class ItemHandlers {
     const player = HandlerUtils.getActivePlayer(ctx, client);
     if (!player) return;
 
-    const item = player.inventory.find((s) => s.slotIndex === data.slotIndex);
+    const item = player.inventory.find((s) => s.itemId === data.itemId);
     if (!item) return;
 
     const qty = data.quantity ?? item.quantity ?? 1;
@@ -116,7 +113,7 @@ export class ItemHandlers {
         affixes: item.affixes.map(a => ({ type: a.type, stat: a.stat, value: a.value }))
     };
 
-    if (ctx.systems.inventory.removeItem(player, data.slotIndex, qty)) {
+    if (ctx.systems.inventory.removeItem(player, data.itemId, qty)) {
       const tile = spiralSearch(player.tileX, player.tileY, 20, (x, y) => {
         if (x < 0 || x >= ctx.map.width || y < 0 || y >= ctx.map.height) return false;
         if (ctx.map.collision[y]?.[x] === 1) return false;

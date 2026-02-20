@@ -155,7 +155,7 @@ export class PlayerService {
           // Find the item in the inventory to get its slotIndex
           const item = player.inventory.find(i => i.itemId === itemId);
           if (item) {
-            this.inventorySystem.equipItem(player, item.slotIndex);
+            this.inventorySystem.equipItem(player, item.itemId);
           }
         }
       }
@@ -176,6 +176,8 @@ export class PlayerService {
         itemId: item.itemId,
         quantity: item.quantity,
         slotIndex: item.slotIndex,
+        rarity: item.rarity as any,
+        affixes: Array.from(item.affixes).map(a => ({ type: a.type, stat: a.stat, value: a.value })) as any,
       });
     });
 

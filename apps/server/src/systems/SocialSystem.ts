@@ -5,7 +5,7 @@ import { Group } from "../schema/Group";
 import { Player } from "../schema/Player";
 
 export class SocialSystem {
-  private invitations = new Map<string, { groupId: string; inviterSessionId: string }>();
+  private invitations = new Map<string, { groupId: string; inviterSessionId: string; expiresAt: number }>();
 
   constructor(
     private state: GameState,
@@ -47,10 +47,12 @@ export class SocialSystem {
       }
     }
 
-    // Send invitation to target
+    // Send invitation to target (expires in 60s)
+    const expiresAt = Date.now() + 60000;
     this.invitations.set(targetSessionId, {
       groupId,
       inviterSessionId: inviter.sessionId,
+      expiresAt,
     });
     const targetClient = this.findClient(targetSessionId);
     if (targetClient) {
@@ -63,11 +65,24 @@ export class SocialSystem {
         templateData: { name: target.name },
       });
     }
+
+    // Periodic cleanup of stale invitations
+    this.cleanupStaleInvitations();
+  }
+
+  private cleanupStaleInvitations(): void {
+    const now = Date.now();
+    for (const [targetId, invite] of this.invitations.entries()) {
+      if (now > invite.expiresAt) {
+        this.invitations.delete(targetId);
+      }
+    }
   }
 
   handleAcceptInvite(client: Client, groupId: string): void {
     const invite = this.invitations.get(client.sessionId);
-    if (!invite || invite.groupId !== groupId) {
+    if (!invite || invite.groupId !== groupId || Date.now() > invite.expiresAt) {
+      this.invitations.delete(client.sessionId);
       this.sendError(client, "social.no_invite");
       return;
     }

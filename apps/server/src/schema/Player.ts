@@ -29,6 +29,26 @@ export class Player extends Char {
   @view() @type("uint8") souls: number = 0;
   @view() @type("uint8") maxSouls: number = 20;
 
+  /** Rage — Warrior-only resource */
+  @view() @type("uint8") rage: number = 0;
+  @view() @type("uint8") maxRage: number = 100;
+
+  /** Energy — Rogue-only resource */
+  @view() @type("uint8") energy: number = 0;
+  @view() @type("uint8") maxEnergy: number = 100;
+
+  /** Focus — Ranger-only resource */
+  @view() @type("uint8") focus: number = 0;
+  @view() @type("uint8") maxFocus: number = 100;
+
+  /** Holy Power — Paladin-only resource */
+  @view() @type("uint8") holyPower: number = 0;
+  @view() @type("uint8") maxHolyPower: number = 5;
+
+  /** Combo Points — Rogue-only resource */
+  @view() @type("uint8") comboPoints: number = 0;
+  @view() @type("uint8") maxComboPoints: number = 5;
+
   /** Economy — no other player should see your gold */
   @view() @type("uint32") gold: number = 0;
 

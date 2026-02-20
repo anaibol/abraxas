@@ -42,7 +42,7 @@ export interface SidebarProps {
   onEquip?: (itemId: string) => void;
   onUnequip?: (slot: EquipmentSlot) => void;
   onUseItem?: (itemId: string) => void;
-  onDropItem?: (itemId: string) => void;
+  onDropItem?: (itemId: string, quantity?: number) => void;
   quests?: PlayerQuestState[];
   groupId?: string;
   leaderId?: string;

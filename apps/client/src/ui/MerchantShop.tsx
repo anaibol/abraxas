@@ -14,7 +14,7 @@ interface MerchantShopProps {
   playerGold: number;
   playerInventory: { itemId: string; quantity: number }[];
   onBuy: (itemId: string, quantity: number) => void;
-  onSell: (itemId: string, quantity: number) => void;
+  onSell: (itemId: string, quantity: number, npcId?: string) => void;
   onClose: () => void;
 }
 
@@ -308,7 +308,7 @@ export function MerchantShop({
             onClick={() => {
               playCoins?.();
               if (tab === "buy") onBuy(selectedItem.id, quantity);
-              else onSell(selectedItem.id, quantity);
+              else onSell(selectedItem.id, quantity, npcId);
             }}
           >
             {tab === "buy" ? t("ui.merchant.confirm_buy") : t("ui.merchant.confirm_sell")}

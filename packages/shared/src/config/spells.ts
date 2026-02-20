@@ -79,6 +79,68 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     aoeRadius: 3,
     durationMs: 2500,
   },
+  /** T — Leap: Jumps to a target tile, dealing damage and stunning nearby enemies */
+  leap: {
+    id: "leap",
+    key: "",
+    requiredLevel: 18,
+    fxId: 17,
+    rageCost: 20,
+    baseDamage: 20,
+    scalingStat: StatType.STR,
+    scalingRatio: 0.8,
+    cooldownMs: 15000,
+    windupMs: 300,
+    effect: "teleport",
+    damageSchool: DamageSchool.PHYSICAL,
+    rangeTiles: 5,
+    aoeRadius: 2,
+  },
+  /** Y — Execute: Deals massive damage to targets below 20% HP */
+  execute: {
+    id: "execute",
+    key: "",
+    requiredLevel: 25,
+    fxId: 2,
+    rageCost: 30,
+    baseDamage: 100,
+    scalingStat: StatType.STR,
+    scalingRatio: 2.5,
+    cooldownMs: 10000,
+    windupMs: 400,
+    effect: "damage",
+    damageSchool: DamageSchool.PHYSICAL,
+    rangeTiles: 1,
+  },
+  /** Cleave (Passive-ish Active): Hits 2 additional nearby targets */
+  cleave: {
+    id: "cleave",
+    key: "",
+    requiredLevel: 4,
+    fxId: 14,
+    rageCost: 15,
+    baseDamage: 25,
+    scalingStat: StatType.STR,
+    scalingRatio: 0.7,
+    cooldownMs: 4000,
+    aoeRadius: 2,
+    effect: "aoe",
+    damageSchool: DamageSchool.PHYSICAL,
+    rangeTiles: 1,
+  },
+  /** Berserker Rage: Instantly gain 30 Rage */
+  berserker_rage: {
+    id: "berserker_rage",
+    key: "",
+    requiredLevel: 12,
+    fxId: 16,
+    manaCost: 0,
+    cooldownMs: 30000,
+    effect: "buff",
+    buffStat: StatType.RAGE,
+    buffAmount: 30,
+    durationMs: 0,
+  },
 
   // ── MAGE ─────────────────────────────────────────────────────────────────
 
@@ -233,6 +295,42 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     effect: "aoe",
     damageSchool: DamageSchool.MAGICAL,
     aoeRadius: 3,
+  },
+  /** Q — Blink: Teleports the caster forward */
+  blink: {
+    id: "blink",
+    key: "",
+    requiredLevel: 4,
+    fxId: 10,
+    manaCost: 25,
+    cooldownMs: 12000,
+    windupMs: 100,
+    effect: "teleport",
+    rangeTiles: 6,
+  },
+  /** W — Elemental Infusion: Next 3 spells deal 20% more damage */
+  elemental_infusion: {
+    id: "elemental_infusion",
+    key: "",
+    requiredLevel: 12,
+    fxId: 18,
+    manaCost: 30,
+    cooldownMs: 25000,
+    durationMs: 10000,
+    buffStat: StatType.INT,
+    buffAmount: 15,
+    effect: "buff",
+  },
+  /** E — Spell Echo: Next spell casts twice (special logic needed) */
+  spell_echo: {
+    id: "spell_echo",
+    key: "",
+    requiredLevel: 22,
+    fxId: 18,
+    manaCost: 40,
+    cooldownMs: 45000,
+    durationMs: 8000,
+    effect: "buff",
   },
 
   // ── RANGER ───────────────────────────────────────────────────────────────
@@ -824,6 +922,16 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     buffAmount: 15,
     appearanceOverride: { bodyId: 50, headId: 0 }, // Gargoyle-like/Ancient body
     fxId: 15,
+  },
+  /** Druid: Mimic — Copy the appearance of any creature you see */
+  mimic: {
+    id: "mimic",
+    rangeTiles: 6,
+    manaCost: 20,
+    cooldownMs: 60000,
+    durationMs: 30000,
+    effect: "mirror_shape",
+    fxId: 10, // Same as blink/warp for visual flavor
   },
   /** Necromancer: Consume 5 souls to raise a Zombie (stronger than skeleton) */
   summon_zombie: {

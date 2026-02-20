@@ -406,7 +406,32 @@ export function App() {
     }
   }, []);
 
+  const mobileSpells = useMemo(() => {
+    const classStats = CLASS_STATS[playerState.classType?.toUpperCase() ?? "WARRIOR"];
+    if (!classStats) return [];
+    return classStats.abilities.flatMap((abilityId) => {
+      const ability = ABILITIES[abilityId];
+      return ability
+        ? [{ key: ability.key, spellId: ability.id, rangeTiles: ability.rangeTiles ?? 0 }]
+        : [];
+    });
+  }, [playerState.classType]);
 
+  const handleMobileMove = useCallback((direction: Direction) => {
+    const game = phaserGameRef.current;
+    if (!game) return;
+    const scene = game.scene.getScene("GameScene");
+    if (!(scene instanceof GameScene)) return;
+    scene?.triggerMove(direction);
+  }, []);
+
+  const handleMobileAttack = useCallback(() => {
+    const game = phaserGameRef.current;
+    if (!game) return;
+    const scene = game.scene.getScene("GameScene");
+    if (!(scene instanceof GameScene)) return;
+    scene?.triggerAttack();
+  }, []);
 
   const handleSendChat = (msg: string) => {
     setIsChatOpen(false);
@@ -528,7 +553,12 @@ export function App() {
                 onEquip={(itemId) => networkRef.current?.sendEquip(itemId)}
                 onUnequip={(slot) => networkRef.current?.sendUnequip(slot)}
                 onUseItem={(itemId) => networkRef.current?.sendUseItem(itemId)}
-                onDropItem={(itemId) => networkRef.current?.sendDropItem(itemId)}
+                onDropItem={(itemId) => {
+                  const item = playerState.inventory?.find(i => i.itemId === itemId);
+                  if (item) {
+                    setDropDialog({ itemId: item.itemId, itemName: ITEMS[item.itemId]?.name || item.itemId, maxQty: item.quantity });
+                  }
+                }}
                 groupId={groupData?.groupId}
                 leaderId={groupData?.leaderId}
                 groupMembers={groupData?.members || []}
@@ -585,8 +615,8 @@ export function App() {
               <BankWindow
                 bankItems={bankData.items}
                 playerInventory={(playerState.inventory ?? []).map((it) => ({
-                  ...it,
-                  slotIndex: it.slotIndex,
+                    ...it,
+                    slotIndex: 0 // BankWindow might need slotIndex but player inventory items don't have it natively in playerState
                 }))}
                 onDeposit={(itemId, qty, slot) =>
                   networkRef.current?.sendBankDeposit(itemId, qty, slot)
@@ -737,5 +767,3 @@ export function App() {
     </ChakraProvider>
   );
 }
-
-// ── Drop quantity dialog ──────────────────────────────────────────────────────

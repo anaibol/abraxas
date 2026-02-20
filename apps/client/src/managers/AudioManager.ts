@@ -15,7 +15,13 @@ export class AudioManager {
     }
 
     this.onDataAvailable = onData;
-    this.mediaRecorder = new MediaRecorder(this.stream);
+    
+    // Explicitly use Opus for best quality/performance
+    const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+      ? "audio/webm;codecs=opus"
+      : "audio/ogg;codecs=opus";
+
+    this.mediaRecorder = new MediaRecorder(this.stream, { mimeType });
 
     this.mediaRecorder.ondataavailable = async (event) => {
       if (event.data.size > 0 && this.onDataAvailable) {

@@ -1,0 +1,20 @@
+{
+  "wishlist": [
+    {
+      "id": "new-wind-ambiance",
+      "query": "ambient wind",
+      "type": "audio",
+      "category": "ambiance",
+      "status": "completed",
+      "importedUrl": "https://opengameart.org/content/ambient-mountain-river-wind-and-forest-and-waterfall"
+    },
+    {
+      "id": "new-magic-sfx",
+      "query": "magic spell sfx",
+      "type": "audio",
+      "category": "spells",
+      "status": "completed",
+      "importedUrl": "https://opengameart.org/content/magic-spell-sfx"
+    }
+  ]
+}

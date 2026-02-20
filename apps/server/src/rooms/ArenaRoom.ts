@@ -97,7 +97,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       this.drops = new DropSystem(this.inventorySystem);
       this.spatial = new SpatialLookup(this.state);
       this.movement = new MovementSystem(this.spatial, this.buffSystem);
-      this.combat = new CombatSystem(this.state, this.spatial, this.buffSystem, this.map);
+      this.combat = new CombatSystem(this.state, this.spatial, this.buffSystem, this.map, this.roomMapName);
       this.npcSystem = new NpcSystem(
         this.state,
         this.movement,
