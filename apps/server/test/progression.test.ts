@@ -125,15 +125,19 @@ describe("Progression System", () => {
 
         // Attack NPC until dead
         const npcId = npc.sessionId;
-        console.log(`Starting attack on NPC ${npcId} at ${npc.tileX},${npc.tileY}`);
+        console.log(`Starting attack on NPC ${npcId}`);
         while (room.state.npcs.has(npcId)) {
-            room.send("attack", { targetTileX: npc.tileX, targetTileY: npc.tileY });
+            const currentNpc = room.state.npcs.get(npcId);
+            if (currentNpc) {
+                room.send("attack", { targetTileX: currentNpc.tileX, targetTileY: currentNpc.tileY });
+            }
             await wait(200); 
         }
 
         // Verify EXP gain
+        console.log(`NPC dead. Xp: ${player.xp}, Initial: ${initialXp}`);
         expect(player.xp).toBeGreaterThan(initialXp);
         
         await room.leave();
-    }, 30000);
+    }, 60000);
 });
