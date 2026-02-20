@@ -59,7 +59,26 @@ export class TickSystem {
 
   tick(deltaTime: number) {
     const { state, map, roomId, systems, broadcast } = this.opts;
+    
+    // Increment game tick
     state.tick++;
+    
+    // 0. Update time of day (0.005 per tick = 200 ticks per hour = 20 seconds. 24*20 = 480s = 8 min day cycle)
+    // Using 0.0025 for a 16 min day cycle or 0.00166 for 24 min cycle.
+    // Let's go with 0.00166 for ~24 min per full cycle.
+    state.timeOfDay += 0.00166;
+    if (state.timeOfDay >= 24) {
+      state.timeOfDay = 0;
+    }
+
+    // Basic weather randomization every 1000 ticks (~1.6 min)
+    if (state.tick % 1000 === 0) {
+      const rnd = Math.random();
+      if (rnd < 0.7) state.weather = "clear";
+      else if (rnd < 0.85) state.weather = "rain";
+      else state.weather = "snow";
+    }
+
     const now = Date.now();
 
     // 1. Buffs — resolves DoTs and expires effects for both Players and NPCs
@@ -93,9 +112,6 @@ export class TickSystem {
     systems.drops.expireDrops(state.drops, now);
 
     // 5. Natural Regeneration
-    // Mana — normal: +1% maxMana every 20 ticks
-    //        meditating: +2% maxMana every 5 ticks (~8x faster)
-    // HP   — passive: +0.5% maxHp every 30 ticks
     for (const player of state.players.values()) {
       if (!player.alive) continue;
       if (player.meditating && state.tick % 5 === 0) restoreStat(player, "mana", 0.02);
@@ -150,7 +166,6 @@ export class TickSystem {
     const stats = NPC_STATS[killedNpc.npcType];
     
     if (stats && typeof stats.expReward === "number") {
-      // Find all living companions of this player to share EXP
       const activeCompanions: Npc[] = [];
       state.npcs.forEach((n) => {
         if (n.ownerId === player.sessionId && n.alive) {
@@ -159,7 +174,6 @@ export class TickSystem {
       });
 
       if (activeCompanions.length > 0) {
-        // Share EXP: 50% to player, 50% split among companions
         const playerExp = Math.ceil(stats.expReward * 0.5);
         const companionExp = Math.max(1, Math.floor((stats.expReward * 0.5) / activeCompanions.length));
         
@@ -168,7 +182,6 @@ export class TickSystem {
           systems.npc.gainExp(comp, companionExp, this.opts.roomId, this.opts.broadcast);
         }
       } else {
-        // 100% to player if no companions
         this.opts.gainXp(player, stats.expReward);
       }
     }
@@ -185,8 +198,8 @@ export class TickSystem {
       for (const entry of dropTable) {
         if (Math.random() < entry.chance) {
           const qty = Math.floor(Math.random() * (entry.max - entry.min + 1)) + entry.min;
-          const ox = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
-          const oy = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
+          const ox = Math.floor(Math.random() * 3) - 1;
+          const oy = Math.floor(Math.random() * 3) - 1;
           const tx = Math.max(0, Math.min(this.opts.map.width - 1, killedNpc.tileX + ox));
           const ty = Math.max(0, Math.min(this.opts.map.height - 1, killedNpc.tileY + oy));
 

@@ -7,7 +7,7 @@ import {
   MAX_INVENTORY_SLOTS,
   type StatBonuses,
 } from "@abraxas/shared";
-import { InventoryItem } from "../schema/InventoryItem";
+import { InventoryItem, ItemAffixSchema } from "../schema/InventoryItem";
 import type { Player } from "../schema/Player";
 
 /** The subset of Player property keys that hold equipment item IDs. */
@@ -28,7 +28,11 @@ const EQUIP_SLOT_MAP: Record<EquipmentSlot, EquipSlotKey> = {
   mount: "equipMount",
 };
 
+import type { BuffSystem } from "./BuffSystem";
+
 export class InventorySystem {
+  constructor(private buffSystem?: BuffSystem) {}
+
   private findItem(player: Player, itemId: string): InventoryItem | undefined {
     for (const item of player.inventory) {
       if (item.itemId === itemId) return item;
@@ -75,7 +79,7 @@ export class InventorySystem {
             item.rarity = instanceData.rarity;
             item.nameOverride = instanceData.nameOverride ?? "";
             instanceData.affixes.forEach(a => {
-                const s = new (require("../schema/InventoryItem").ItemAffixSchema)();
+                const s = new ItemAffixSchema();
                 s.type = a.type;
                 s.stat = a.stat;
                 s.value = a.value;
@@ -249,7 +253,7 @@ export class InventorySystem {
     return bonuses;
   }
 
-  recalcStats(player: Player): void {
+  recalcStats(player: Player, now: number = Date.now()): void {
     const base = CLASS_STATS[player.classType];
     if (!base) return;
 
@@ -263,6 +267,16 @@ export class InventorySystem {
     player.armor = base.armor + equip.armor;
     player.maxHp = base.hp + equip.hp + lvl * levelBonus.hp;
     player.maxMana = base.mana + equip.mana + lvl * levelBonus.mana;
+
+    if (this.buffSystem) {
+      player.str += this.buffSystem.getBuffBonus(player.sessionId, "str", now);
+      player.agi += this.buffSystem.getBuffBonus(player.sessionId, "agi", now);
+      player.intStat += this.buffSystem.getBuffBonus(player.sessionId, "int", now);
+      player.armor += this.buffSystem.getBuffBonus(player.sessionId, "armor", now);
+      player.maxHp += this.buffSystem.getBuffBonus(player.sessionId, "hp", now);
+      player.maxMana += this.buffSystem.getBuffBonus(player.sessionId, "mana", now);
+    }
+
     player.hp = Math.min(player.hp, player.maxHp);
     player.mana = Math.min(player.mana, player.maxMana);
 

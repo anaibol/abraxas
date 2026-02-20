@@ -81,7 +81,9 @@
     "gold_picked_up": "{{name}} picked up {{amount}} gold",
     "gold_picked": "{{name}} picked up {{amount}} gold",
     "class_restricted": "Class restricted",
-    "not_enough_mana": "Not enough mana",
+    "not_enough_mana": "Not enough mana!",
+    "not_enough_souls": "Not enough souls!",
+    "target_out_of_range": "Target out of range!",
     "not_enough_mana_cost": "Not enough mana ({{cost}} required)",
     "inventory_full": "Inventory full",
     "item_picked_up": "{{name}} picked up {{item}}",
@@ -476,6 +478,22 @@
     "bear_form": {
       "name": "Bear Form",
       "desc": "Channel the spirit of nature to transform into a bear, massively increasing your HP."
+    },
+    "cat_form": {
+      "name": "Cat Form",
+      "desc": "Transform into a swift cat, increasing Agility and Movement Speed."
+    },
+    "tree_form": {
+      "name": "Tree Form",
+      "desc": "Take the form of an ancient tree, boosting Intelligence and Mana regeneration."
+    },
+    "summon_zombie": {
+      "name": "Summon Zombie",
+      "desc": "Consume souls to raise a sturdy zombie minion."
+    },
+    "soul_blast": {
+      "name": "Soul Blast",
+      "desc": "Unleash collected souls in a devastating blast of necrotic energy."
     },
     "curse": {
       "name": "Curse",

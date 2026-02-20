@@ -223,6 +223,7 @@ export type Ability = {
   aoeRadius?: number;
   buffStat?: string;
   buffAmount?: number;
+  soulCost?: number;
   dotDamage?: number;
   dotIntervalMs?: number;
   dotDurationMs?: number;

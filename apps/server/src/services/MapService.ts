@@ -2,14 +2,19 @@ import { resolve } from "node:path";
 import type { TileMap } from "@abraxas/shared";
 import { logger } from "../logger";
 
-const maps = new Map<string, TileMap>();
+let _maps: Map<string, TileMap> | undefined;
+function getMaps(): Map<string, TileMap> {
+  if (!_maps) _maps = new Map<string, TileMap>();
+  return _maps;
+}
 const mapsDir = resolve(import.meta.dir, "../../../packages/shared/src/maps");
 
 export function setMap(mapName: string, mapData: TileMap): void {
-  maps.set(mapName, mapData);
+  getMaps().set(mapName, mapData);
 }
 
 export async function getMap(mapName: string): Promise<TileMap | undefined> {
+  const maps = getMaps();
   if (maps.has(mapName)) return maps.get(mapName);
 
   try {

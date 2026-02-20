@@ -1,48 +1,52 @@
 import type { Ability, ClassStats, ClassType } from "@abraxas/shared";
 import { ABILITIES, CLASS_STATS, EntityType } from "@abraxas/shared";
-import { ArraySchema, type, view } from "@colyseus/schema";
+import { ArraySchema, type as schemaType, view } from "@colyseus/schema";
 import { Char } from "./Char";
 import { InventoryItem } from "./InventoryItem";
 
 export class Player extends Char {
   type = EntityType.PLAYER;
   // ── Shared (visible to all clients) ─────────────────────────────────────
-  @type("string") groupId: string = "";
-  @type("string") guildId: string = "";
-  @type("string") classType: ClassType = "WARRIOR";
-  @type("boolean") meditating: boolean = false;
-  @type("boolean") pvpEnabled: boolean = false;
+  @schemaType("string") groupId: string = "";
+  @schemaType("string") guildId: string = "";
+  @schemaType("string") classType: ClassType = "WARRIOR";
+  @schemaType("boolean") meditating: boolean = false;
+  @schemaType("boolean") pvpEnabled: boolean = false;
 
   // ── Private (only visible to the owning client via StateView) ────────────
 
   /** Internal DB references — server-only, never synced to clients */
   userId: string = "";
   dbId: string = "";
-  @type("string") role: string = "USER";
-  @view() @type("uint8") speedOverride: number = 0;
+  @schemaType("string") role: string = "USER";
+  @view() @schemaType("uint8") speedOverride: number = 0;
 
   /** Mana — only the local player's mana bar is rendered */
-  @view() @type("int32") mana: number = 0;
-  @view() @type("int32") maxMana: number = 0;
+  @view() @schemaType("int32") mana: number = 0;
+  @view() @schemaType("int32") maxMana: number = 0;
+
+  /** Souls — Necromancer-only resource */
+  @view() @schemaType("uint8") souls: number = 0;
+  @view() @schemaType("uint8") maxSouls: number = 20;
 
   /** Economy — no other player should see your gold */
-  @view() @type("uint32") gold: number = 0;
+  @view() @schemaType("uint32") gold: number = 0;
 
   /** Progression — XP is private */
-  @view() @type("uint8") level: number = 1;
-  @view() @type("uint32") xp: number = 0;
-  @view() @type("uint32") maxXp: number = 100;
+  @view() @schemaType("uint8") level: number = 1;
+  @view() @schemaType("uint32") xp: number = 0;
+  @view() @schemaType("uint32") maxXp: number = 100;
 
   /** Inventory — only the owning client needs item contents */
-  @view() @type([InventoryItem]) inventory = new ArraySchema<InventoryItem>();
+  @view() @schemaType([InventoryItem]) inventory = new ArraySchema<InventoryItem>();
 
   /** Equipment — only the owning client's sidebar renders these */
-  @view() @type(InventoryItem) equipWeapon?: InventoryItem;
-  @view() @type(InventoryItem) equipArmor?: InventoryItem;
-  @view() @type(InventoryItem) equipShield?: InventoryItem;
-  @view() @type(InventoryItem) equipHelmet?: InventoryItem;
-  @view() @type(InventoryItem) equipRing?: InventoryItem;
-  @view() @type(InventoryItem) equipMount?: InventoryItem;
+  @view() @schemaType(InventoryItem) equipWeapon?: InventoryItem;
+  @view() @schemaType(InventoryItem) equipArmor?: InventoryItem;
+  @view() @schemaType(InventoryItem) equipShield?: InventoryItem;
+  @view() @schemaType(InventoryItem) equipHelmet?: InventoryItem;
+  @view() @schemaType(InventoryItem) equipRing?: InventoryItem;
+  @view() @schemaType(InventoryItem) equipMount?: InventoryItem;
 
   /** Temporary storage for reconstructed companions on login */
   savedCompanions: { type: string; level: number; exp: number; hp: number }[] = [];

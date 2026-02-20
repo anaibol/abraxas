@@ -799,6 +799,57 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     appearanceOverride: { bodyId: 75, headId: 0 },
     fxId: 15, // Nature-y green burst
   },
+  /** Druid: Spirit of the Cat — SPD/AGI buff and appearance change */
+  cat_form: {
+    id: "cat_form",
+    rangeTiles: 0,
+    manaCost: 30,
+    cooldownMs: 30000,
+    durationMs: 20000,
+    effect: "buff",
+    buffStat: "agi",
+    buffAmount: 15,
+    appearanceOverride: { bodyId: 65, headId: 0 }, // Wolf/Cat-like body
+    fxId: 15,
+  },
+  /** Druid: Spirit of the Tree — INT/Mana buff and appearance change */
+  tree_form: {
+    id: "tree_form",
+    rangeTiles: 0,
+    manaCost: 50,
+    cooldownMs: 45000,
+    durationMs: 20000,
+    effect: "buff",
+    buffStat: "int",
+    buffAmount: 15,
+    appearanceOverride: { bodyId: 50, headId: 0 }, // Gargoyle-like/Ancient body
+    fxId: 15,
+  },
+  /** Necromancer: Consume 5 souls to raise a Zombie (stronger than skeleton) */
+  summon_zombie: {
+    id: "summon_zombie",
+    rangeTiles: 2,
+    manaCost: 0,
+    cooldownMs: 5000,
+    effect: "summon",
+    soulCost: 5,
+    summonType: "zombie",
+    fxId: 19, // Dark portal
+  },
+  /** Necromancer: Unleash souls for massive damage */
+  soul_blast: {
+    id: "soul_blast",
+    rangeTiles: 6,
+    manaCost: 0,
+    cooldownMs: 2000,
+    baseDamage: 20,
+    scalingStat: "int",
+    scalingRatio: 1.5,
+    effect: "damage",
+    damageSchool: "magical",
+    soulCost: 1, // Consumes 1 per cast
+    fxId: 18, // Purple burst
+  },
 };
 
 export const ABILITIES: Record<string, Ability> = Object.fromEntries(

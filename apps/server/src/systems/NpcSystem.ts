@@ -90,6 +90,7 @@ export class NpcSystem {
     tileY: number,
     ownerId?: string,
     forcedLevel?: number,
+    persistenceData?: { isUnique: boolean; uniqueId?: string; dbId?: string },
   ): Npc {
     const npc = new Npc();
     npc.sessionId = crypto.randomUUID();
@@ -98,6 +99,12 @@ export class NpcSystem {
     npc.tileY = tileY;
     npc.spawnX = tileX;
     npc.spawnY = tileY;
+
+    if (persistenceData) {
+      npc.isUnique = persistenceData.isUnique;
+      npc.uniqueId = persistenceData.uniqueId;
+      npc.dbId = persistenceData.dbId;
+    }
 
     // Determine initial level
     if (forcedLevel !== undefined) {

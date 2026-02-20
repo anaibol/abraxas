@@ -24,7 +24,7 @@ export class AdminHandlers {
           return;
         }
         if (
-          ctx.systems.inventory.addItem(player, itemId, qty, (msg) =>
+          ctx.systems.inventory.addItem(player, itemId, qty, undefined, (msg) =>
             HandlerUtils.sendError(client, msg),
           )
         ) {

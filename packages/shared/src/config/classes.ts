@@ -129,6 +129,8 @@ export const CLASS_STATS: Record<string, ClassStats> = {
       "banshee_wail",
       "hemorrhage",
       "summon_skeleton",
+      "summon_zombie",
+      "soul_blast",
     ],
   },
   DRUID: {
@@ -152,6 +154,8 @@ export const CLASS_STATS: Record<string, ClassStats> = {
       "cleansing_rain",
       "thunderstorm",
       "bear_form",
+      "cat_form",
+      "tree_form",
     ],
   },
 };

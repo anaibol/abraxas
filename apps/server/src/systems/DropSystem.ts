@@ -7,15 +7,15 @@ import type { InventorySystem } from "./InventorySystem";
 export class DropSystem {
   constructor(private inventorySystem: InventorySystem) {}
 
-  private createDrop(drops: MapSchema<Drop>, tileX: number, tileY: number, itemType: string): Drop {
-    const id = crypto.randomUUID();
+  public createDrop(drops: MapSchema<Drop>, tileX: number, tileY: number, itemType: string, id?: string): Drop {
+    const dropId = id || crypto.randomUUID();
     const drop = new Drop();
-    drop.id = id;
+    drop.id = dropId;
     drop.itemType = itemType;
     drop.tileX = tileX;
     drop.tileY = tileY;
     drop.spawnedAt = Date.now();
-    drops.set(id, drop);
+    drops.set(dropId, drop);
     return drop;
   }
 

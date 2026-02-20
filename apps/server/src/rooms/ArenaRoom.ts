@@ -57,7 +57,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
   private buffSystem = new BuffSystem();
   private combat!: CombatSystem;
   private drops!: DropSystem;
-  private inventorySystem = new InventorySystem();
+  private inventorySystem = new InventorySystem(this.buffSystem);
   private respawnSystem = new RespawnSystem();
   private npcSystem!: NpcSystem;
   private social!: SocialSystem;
@@ -196,7 +196,46 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         findClient: (sid) => this.findClient(sid),
       });
 
-      for (const n of this.map.npcs ?? []) this.npcSystem.spawnNpcAt(n.type, this.map, n.x, n.y);
+      // Load persistent state
+      PersistenceService.loadWorldDrops(this.roomMapName).then((drops) => {
+        for (const d of drops) {
+          const drop = this.drops.createDrop(this.state.drops, d.tileX, d.tileY, d.itemType as any, d.id);
+          drop.itemId = d.itemId || "";
+          drop.quantity = d.quantity;
+          drop.goldAmount = d.goldAmount;
+          drop.spawnedAt = d.spawnedAt.getTime();
+          
+          if (d.item) {
+              drop.rarity = d.item.rarity || "common";
+              drop.nameOverride = d.item.nameOverride || "";
+              const affixes = (d.item.affixesJson as any) || [];
+              affixes.forEach((a: any) => {
+                  const s = new (require("../schema/InventoryItem").ItemAffixSchema)();
+                  s.type = a.type;
+                  s.stat = a.stat;
+                  s.value = a.value;
+                  drop.affixes.push(s);
+              });
+          }
+        }
+      });
+
+      PersistenceService.loadPersistentNpcs(this.roomMapName).then((npcs) => {
+        for (const n of npcs) {
+          this.npcSystem.spawnNpcAt(n.npcType as NpcType, this.map, n.tileX, n.tileY, undefined, n.level, {
+              isUnique: n.isUnique,
+              uniqueId: n.uniqueId || undefined,
+              dbId: n.id
+          });
+        }
+      });
+
+      for (const n of this.map.npcs ?? []) {
+          // Check if this NPC is already loaded from persistence 
+          // (Basic implementation: if a persistent NPC exists at this location, skip)
+          // For now just spawning them as usual but unique ones should be handled carefully.
+          this.npcSystem.spawnNpcAt(n.type, this.map, n.x, n.y);
+      }
       const npcCount = this.map.npcCount ?? 0;
       if (npcCount > 0) {
         this.npcSystem.spawnNpcs(npcCount, this.map);
@@ -388,6 +427,11 @@ export class ArenaRoom extends Room<{ state: GameState }> {
           const manaGain = Math.floor((player.maxMana ?? 100) * 0.05);
           player.hp = Math.min(player.maxHp, player.hp + hpGain);
           player.mana = Math.min(player.maxMana ?? 100, (player.mana ?? 0) + manaGain);
+
+          // Add a soul
+          if (player.souls < player.maxSouls) {
+            player.souls++;
+          }
 
           this.broadcast(ServerMessageType.Heal, {
             sessionId: player.sessionId,

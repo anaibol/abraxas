@@ -13,6 +13,6 @@ export class Drop extends Schema {
 
   // Instance data
   @type("string") rarity: string = "common";
-  @type("string") nameOverride?: string;
-  @type({ [0]: ItemAffixSchema }) affixes = new ArraySchema<ItemAffixSchema>();
+  @type("string") nameOverride: string = "";
+  @type([ItemAffixSchema]) affixes = new ArraySchema<ItemAffixSchema>();
 }

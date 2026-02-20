@@ -89,25 +89,26 @@ export class PlayerService {
     if (char.equipments) {
       for (const eq of char.equipments) {
         if (eq.item?.itemDef) {
-          const code = eq.item.itemDef.code;
+          const invItem = new InventoryItem();
+          invItem.itemId = eq.item.itemDef.code;
           switch (eq.slot) {
             case "WEAPON_MAIN":
-              player.equipWeapon = code;
+              player.equipWeapon = invItem;
               break;
             case "WEAPON_OFF":
-              player.equipShield = code;
+              player.equipShield = invItem;
               break;
             case "HEAD":
-              player.equipHelmet = code;
+              player.equipHelmet = invItem;
               break;
             case "CHEST":
-              player.equipArmor = code;
+              player.equipArmor = invItem;
               break;
             case "RING1":
-              player.equipRing = code;
+              player.equipRing = invItem;
               break;
             case "MOUNT":
-              player.equipMount = code;
+              player.equipMount = invItem;
               break;
           }
         }
@@ -151,7 +152,11 @@ export class PlayerService {
         this.inventorySystem.addItem(player, itemId);
         const def = ITEMS[itemId];
         if (def && def.slot !== "consumable") {
-          this.inventorySystem.equipItem(player, itemId);
+          // Find the item in the inventory to get its slotIndex
+          const item = player.inventory.find(i => i.itemId === itemId);
+          if (item) {
+            this.inventorySystem.equipItem(player, item.slotIndex);
+          }
         }
       }
       this.inventorySystem.recalcStats(player);
@@ -175,12 +180,12 @@ export class PlayerService {
     });
 
     const equipment: EquipmentData = {
-      weapon: player.equipWeapon,
-      shield: player.equipShield,
-      helmet: player.equipHelmet,
-      armor: player.equipArmor,
-      ring: player.equipRing,
-      mount: player.equipMount,
+      weapon: player.equipWeapon?.itemId,
+      shield: player.equipShield?.itemId,
+      helmet: player.equipHelmet?.itemId,
+      armor: player.equipArmor?.itemId,
+      ring: player.equipRing?.itemId,
+      mount: player.equipMount?.itemId,
     };
 
     const saveData = {

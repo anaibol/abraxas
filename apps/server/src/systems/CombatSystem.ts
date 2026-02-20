@@ -305,6 +305,13 @@ export class CombatSystem {
         });
         return false;
       }
+      if (ability.soulCost && pCaster.souls < ability.soulCost) {
+        console.log(`[tryCast] FAIL souls. has=${pCaster.souls} needs=${ability.soulCost}`);
+        sendToClient?.(ServerMessageType.Notification, {
+          message: "game.not_enough_souls",
+        });
+        return false;
+      }
     }
 
     if (ability.rangeTiles > 0) {
@@ -330,7 +337,11 @@ export class CombatSystem {
     }
 
     if (caster.type === EntityType.PLAYER) {
-      (caster as Player).mana -= ability.manaCost;
+      const p = caster as Player;
+      p.mana -= ability.manaCost;
+      if (ability.soulCost) {
+        p.souls -= ability.soulCost;
+      }
     }
 
     caster.lastGcdMs = now;
