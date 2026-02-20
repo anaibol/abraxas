@@ -100,7 +100,10 @@ export class NpcSystem {
     npc.state = NpcState.IDLE;
     npc.targetId = "";
     npc.patrolStepsLeft = 0;
-    if (ownerId) npc.ownerId = ownerId;
+    if (ownerId) {
+      npc.ownerId = ownerId;
+      npc.state = NpcState.FOLLOW;
+    }
 
     this.state.npcs.set(npc.sessionId, npc);
     this.spatial.addToGrid(npc);
@@ -154,8 +157,11 @@ export class NpcSystem {
         case NpcState.RETURN:
           this.updateReturn(npc, map, now, tickCount, roomId);
           break;
+        case NpcState.FOLLOW:
+          this.updateFollow(npc, map, now, tickCount, roomId);
+          break;
         default:
-          npc.state = NpcState.IDLE;
+          npc.state = npc.ownerId ? NpcState.FOLLOW : NpcState.IDLE;
       }
     });
   }
@@ -173,6 +179,11 @@ export class NpcSystem {
   }
 
   private updateIdle(npc: Npc, tickCount: number): void {
+    if (npc.ownerId) {
+      npc.state = NpcState.FOLLOW;
+      return;
+    }
+
     const stats = NPC_STATS[npc.type];
     if (stats.passive) return;
     if (tickCount % IDLE_SCAN_INTERVAL !== 0) return;
@@ -257,9 +268,11 @@ export class NpcSystem {
 
     const stats = NPC_STATS[npc.type];
     const dist = MathUtils.manhattanDist(npc.getPosition(), target.getPosition());
-    if (dist > AGGRO_RANGE * LEASH_MULTIPLIER) {
+    const maxLeash = npc.ownerId ? AGGRO_RANGE * 2 : AGGRO_RANGE * LEASH_MULTIPLIER;
+    
+    if (dist > maxLeash) {
       npc.targetId = "";
-      npc.state = NpcState.RETURN;
+      npc.state = npc.ownerId ? NpcState.FOLLOW : NpcState.RETURN;
       return;
     }
 
@@ -279,7 +292,7 @@ export class NpcSystem {
     const target = this.spatial.findEntityBySessionId(npc.targetId);
     if (!target || !target.isAttackable()) {
       npc.targetId = "";
-      npc.state = NpcState.RETURN;
+      npc.state = npc.ownerId ? NpcState.FOLLOW : NpcState.RETURN;
       return;
     }
 
@@ -302,14 +315,14 @@ export class NpcSystem {
     const threat = this.spatial.findEntityBySessionId(npc.targetId);
     if (!threat || !threat.alive) {
       npc.targetId = "";
-      npc.state = NpcState.RETURN;
+      npc.state = npc.ownerId ? NpcState.FOLLOW : NpcState.RETURN;
       return;
     }
 
     const dist = MathUtils.manhattanDist(npc.getPosition(), threat.getPosition());
     if (dist > AGGRO_RANGE) {
       npc.targetId = "";
-      npc.state = NpcState.RETURN;
+      npc.state = npc.ownerId ? NpcState.FOLLOW : NpcState.RETURN;
       return;
     }
 
@@ -342,6 +355,69 @@ export class NpcSystem {
     }
     npc.hp = Math.min(npc.maxHp, npc.hp + Math.ceil(npc.maxHp * 0.02));
     this.moveTowards(npc, npc.spawnX, npc.spawnY, map, now, tickCount, roomId);
+  }
+
+  private updateFollow(
+    npc: Npc,
+    map: TileMap,
+    now: number,
+    tickCount: number,
+    roomId: string,
+  ): void {
+    if (!npc.ownerId) {
+      npc.state = NpcState.RETURN;
+      return;
+    }
+
+    const owner = this.spatial.findEntityBySessionId(npc.ownerId);
+    if (!owner || !owner.alive) {
+      // Owner is gone or dead. Let companion idle here until owner returns/revives.
+      return;
+    }
+
+    // Leash to owner if too far
+    const distToOwner = MathUtils.manhattanDist(npc.getPosition(), owner.getPosition());
+    if (distToOwner > 15) {
+      // Teleport companion to owner if extremely far away (e.g. owner respawned/warped)
+      npc.tileX = owner.tileX;
+      npc.tileY = owner.tileY;
+      npc.path = [];
+      return;
+    }
+
+    // Assist owner in combat
+    if (tickCount % IDLE_SCAN_INTERVAL === 0) {
+      // If owner has an active attack buffer/windup, attack their target
+      if (owner.bufferedAction?.type === "attack") {
+        const t = this.spatial.findEntityAtTile(owner.bufferedAction.targetTileX!, owner.bufferedAction.targetTileY!);
+        if (t && t.alive && t.sessionId !== npc.sessionId) {
+          npc.targetId = t.sessionId;
+          npc.state = NpcState.CHASE;
+          return;
+        }
+      }
+      
+      // Defend owner: scan for nearby hostiles targeting the owner
+      const nearbyEnemies = this.spatial.findEntitiesInRadius(owner.tileX, owner.tileY, AGGRO_RANGE);
+      for (const enemy of nearbyEnemies) {
+        if (enemy instanceof Npc && enemy.targetId === owner.sessionId) {
+          npc.targetId = enemy.sessionId;
+          npc.state = NpcState.CHASE;
+          return;
+        }
+      }
+    }
+
+    // Move to tether range
+    if (distToOwner > 2) {
+      this.moveTowards(npc, owner.tileX, owner.tileY, map, now, tickCount, roomId);
+    } else {
+      npc.path = [];
+      // Naturally regenerate HP while following and resting
+      if (tickCount % 20 === 0 && npc.hp < npc.maxHp) {
+        npc.hp = Math.min(npc.maxHp, npc.hp + Math.ceil(npc.maxHp * 0.05));
+      }
+    }
   }
 
   private moveTowards(
@@ -483,12 +559,19 @@ export class NpcSystem {
     const stats = NPC_STATS[summoner.type];
     if (!stats.summonType) return;
 
+    // Use dynamic limit if summoner is a Player's companion, otherwise fallback to 3
+    let cap = 3;
+    const owner = summoner.ownerId ? this.spatial.findEntityBySessionId(summoner.ownerId) : null;
+    if (owner && owner.getStats() && "maxCompanions" in owner.getStats()!) {
+      cap = (owner.getStats() as import("@abraxas/shared").ClassStats).maxCompanions;
+    }
+
     // Count how many minions this specific summoner has alive to enforce the cap.
     let liveMinions = 0;
     this.state.npcs.forEach((n) => {
       if (n.ownerId === summoner.sessionId && n.alive) liveMinions++;
     });
-    if (liveMinions >= MAX_SUMMONS) return;
+    if (liveMinions >= cap) return;
 
     // Try to place the minion in one of the four adjacent tiles.
     const dirs = [Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT];
