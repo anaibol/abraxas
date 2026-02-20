@@ -1,4 +1,4 @@
-import type { Spell } from "@abraxas/shared";
+import type { Ability } from "@abraxas/shared";
 import { Box, Flex, Text } from "@chakra-ui/react";
 import React, { type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
@@ -60,7 +60,7 @@ const EFFECT_LABELS: Record<string, { label: string; color: string }> = {
 };
 
 interface SpellsTabProps {
-  classSpells: Spell[];
+  classSpells: Ability[];
   currentMana: number;
   playerLevel: number;
   pendingSpellId?: string | null;
