@@ -329,6 +329,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 
       this.friends.setUserOnline(auth.id, client.sessionId);
       await this.friends.sendUpdateToUser(auth.id, client.sessionId);
+      if (player.dbId) this.guild.registerPlayer(player.dbId, client.sessionId);
       const quests = await this.quests.loadCharQuests(char.id);
       client.send(ServerMessageType.QuestList, { quests });
       this.sendWelcome(client, player);
@@ -417,6 +418,8 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     this.buffSystem.removePlayer(client.sessionId);
     this.respawnSystem.removePlayer(client.sessionId);
     this.trade.cancel(client.sessionId);
+    if (player?.dbId) this.guild.unregisterPlayer(player.dbId);
+    if (player?.userId) this.friends.setUserOffline(player.userId);
   }
 
   private onEntityDeath(entity: Entity, killerSessionId?: string) {

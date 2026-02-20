@@ -8,13 +8,26 @@ import { HandlerUtils } from "../handlers/HandlerUtils";
 export class GuildSystem {
   private invitations = new Map<
     string,
-    { guildId: string; inviterSessionId: string; guildName: string }
+    { guildId: string; inviterSessionId: string; guildName: string; timer: ReturnType<typeof setTimeout> }
   >();
+
+  /** O(1) reverse lookup: dbId → sessionId. Updated on join/leave. */
+  private dbIdToSessionId = new Map<string, string>();
 
   constructor(
     private state: GameState,
     private findClient: (sessionId: string) => Client | undefined,
   ) {}
+
+  /** Call on player join to register their dbId in the O(1) lookup. */
+  registerPlayer(dbId: string, sessionId: string): void {
+    this.dbIdToSessionId.set(dbId, sessionId);
+  }
+
+  /** Call on player leave to remove them from the O(1) lookup. */
+  unregisterPlayer(dbId: string): void {
+    this.dbIdToSessionId.delete(dbId);
+  }
 
   async handleCreateGuild(client: Client, name: string): Promise<void> {
     const player = this.state.players.get(client.sessionId);
@@ -75,10 +88,15 @@ export class GuildSystem {
       return;
     }
 
+    // Clear any existing invite before replacing (re-invite case)
+    this.clearInvitation(targetSessionId);
+
+    const timer = setTimeout(() => this.invitations.delete(targetSessionId), 60_000);
     this.invitations.set(targetSessionId, {
       guildId: inviter.guildId,
       inviterSessionId: inviter.sessionId,
       guildName: memberRecord.guild.name,
+      timer,
     });
 
     const targetClient = this.findClient(targetSessionId);
@@ -91,6 +109,14 @@ export class GuildSystem {
       client.send(ServerMessageType.Notification, {
         message: `Invited ${target.name} to the guild.`,
       });
+    }
+  }
+
+  private clearInvitation(sessionId: string): void {
+    const existing = this.invitations.get(sessionId);
+    if (existing) {
+      clearTimeout(existing.timer);
+      this.invitations.delete(sessionId);
     }
   }
 
@@ -110,7 +136,7 @@ export class GuildSystem {
     try {
       await GuildService.addMember(guildId, player.dbId);
       player.guildId = guildId;
-      this.invitations.delete(client.sessionId);
+      this.clearInvitation(client.sessionId);
 
       await this.broadcastGuildUpdate(guildId);
       this.broadcastToGuild(guildId, ServerMessageType.Notification, {
@@ -308,9 +334,6 @@ export class GuildSystem {
   }
 
   private findSessionIdByDbId(dbId: string): string | null {
-    for (const [sessionId, player] of this.state.players) {
-      if (player.dbId === dbId) return sessionId;
-    }
-    return null;
+    return this.dbIdToSessionId.get(dbId) ?? null;
   }
 }

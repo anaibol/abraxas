@@ -22,48 +22,52 @@ export class Player extends Char {
   @type("string") equipMountId: string = "";
 
   // ── Private (only visible to the owning client via StateView) ────────────
+  // Note: Privacy is guaranteed by client.view.add(player) in ArenaRoom.onJoin,
+  // which scopes ALL @type() fields on this Player to the owning client.
+  // @view() should only be used on nested Schema objects (ArraySchema/child Schemas),
+  // NOT on scalar primitives — it causes refId desync in the client decoder.
 
   /** Internal DB references — server-only, never synced to clients */
   userId: string = "";
   dbId: string = "";
   @type("string") role: string = "USER";
-  @view() @type("uint8") speedOverride: number = 0;
+  @type("uint8") speedOverride: number = 0;
 
   /** Mana — only the local player's mana bar is rendered */
-  @view() @type("int32") mana: number = 0;
-  @view() @type("int32") maxMana: number = 0;
+  @type("int32") mana: number = 0;
+  @type("int32") maxMana: number = 0;
 
   /** Souls — Necromancer-only resource */
-  @view() @type("uint8") souls: number = 0;
-  @view() @type("uint8") maxSouls: number = 20;
+  @type("uint8") souls: number = 0;
+  @type("uint8") maxSouls: number = 20;
 
   /** Rage — Warrior-only resource */
-  @view() @type("uint8") rage: number = 0;
-  @view() @type("uint8") maxRage: number = 100;
+  @type("uint8") rage: number = 0;
+  @type("uint8") maxRage: number = 100;
 
   /** Energy — Rogue-only resource */
-  @view() @type("uint8") energy: number = 0;
-  @view() @type("uint8") maxEnergy: number = 100;
+  @type("uint8") energy: number = 0;
+  @type("uint8") maxEnergy: number = 100;
 
   /** Focus — Ranger-only resource */
-  @view() @type("uint8") focus: number = 0;
-  @view() @type("uint8") maxFocus: number = 100;
+  @type("uint8") focus: number = 0;
+  @type("uint8") maxFocus: number = 100;
 
   /** Holy Power — Paladin-only resource */
-  @view() @type("uint8") holyPower: number = 0;
-  @view() @type("uint8") maxHolyPower: number = 5;
+  @type("uint8") holyPower: number = 0;
+  @type("uint8") maxHolyPower: number = 5;
 
   /** Combo Points — Rogue-only resource */
-  @view() @type("uint8") comboPoints: number = 0;
-  @view() @type("uint8") maxComboPoints: number = 5;
+  @type("uint8") comboPoints: number = 0;
+  @type("uint8") maxComboPoints: number = 5;
 
   /** Economy — no other player should see your gold */
-  @view() @type("uint32") gold: number = 0;
+  @type("uint32") gold: number = 0;
 
   /** Progression — XP is private */
-  @view() @type("uint8") level: number = 1;
-  @view() @type("uint32") xp: number = 0;
-  @view() @type("uint32") maxXp: number = 100;
+  @type("uint8") level: number = 1;
+  @type("uint32") xp: number = 0;
+  @type("uint32") maxXp: number = 100;
 
   /** Inventory — only the owning client needs item contents */
   @view() @type([InventoryItem]) inventory = new ArraySchema<InventoryItem>();

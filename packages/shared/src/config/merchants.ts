@@ -1,8 +1,54 @@
 export const MERCHANT_INVENTORY: Record<string, string[]> = {
   general_store: [
-    "health_potion", "mana_potion", 
-    "iron_dagger", "iron_sword", "magic_staff", "short_bow", "holy_mace",
-    "wooden_shield", "leather_armor"
+    "health_potion", "mana_potion", "great_health_potion", "great_mana_potion",
+    "antidote", "lasso", "blank_scroll", "shiny_bead",
+    "club", "dagger", "leather_armor", "tunic", "wooden_shield", "leather_cap",
   ],
-  blacksmith: ["iron_sword", "steel_sword", "chainmail", "iron_helmet", "iron_shield"],
+  blacksmith: [
+    // Weapons
+    "iron_sword", "steel_sword", "battle_axe", "war_hammer", "bronze_axe",
+    "holy_mace", "blessed_hammer",
+    // Armor & shields
+    "studded_armor", "scale_armor", "chainmail", "battle_plate", "plate_armor",
+    "wooden_shield", "iron_shield", "knight_shield", "buckler",
+    // Helmets
+    "iron_helmet", "chainmail_hood", "plate_helm", "leather_cap",
+  ],
+  arcane_shop: [
+    // Mage
+    "magic_staff", "crystal_wand", "arcane_staff", "staff_of_ice", "void_orb",
+    // Cleric/Druid/Necro
+    "healing_rod", "elder_staff", "bishop_staff", "bone_wand", "death_scepter",
+    "gnarled_staff", "nature_wand",
+    // Armor & accessories
+    "mage_robes", "silk_robes", "druid_robes", "necro_shroud",
+    "wizard_hat", "arcane_circlet",
+    "ring_of_intellect", "amulet_of_mana", "mage_ward",
+    // Consumables
+    "mana_potion", "great_mana_potion", "elixir_of_intellect",
+    "scroll_of_fireball", "scroll_of_healing", "blank_scroll", "enchant_dust",
+  ],
+  ranger_outpost: [
+    // Weapons
+    "short_bow", "hunting_bow", "composite_bow", "longbow", "crossbow",
+    "dagger", "iron_dagger", "poisoned_shiv",
+    // Armor
+    "leather_armor", "shadow_cloak", "elven_cloak", "ranger_hood",
+    // Consumables & materials
+    "health_potion", "antidote", "greater_antidote",
+    "elixir_of_agility", "elixir_of_strength",
+    "lasso", "wolf_pelt", "bat_wing",
+  ],
+  thieves_guild: [
+    // Weapons
+    "dagger_dual", "twin_daggers", "sap", "poisoned_shiv", "shadow_daggers",
+    // Armor
+    "shadow_cloak", "shadow_shroud", "elven_cloak",
+    // Accessories
+    "ring_of_shadows", "amulet_of_speed",
+    // Consumables
+    "antidote", "smoke_bomb_item", "elixir_of_agility",
+    // Collectibles & materials
+    "lucky_coin", "shiny_bead", "strange_gem",
+  ],
 };

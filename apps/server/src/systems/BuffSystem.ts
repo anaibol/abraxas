@@ -140,6 +140,25 @@ export class BuffSystem {
     s.dots = [];
   }
 
+  /** Remove all active DoTs and debuff buffs (for antidote items). */
+  clearDebuffs(sessionId: string): void {
+    const s = this.state.get(sessionId);
+    if (!s) return;
+    s.dots = [];
+    // Keep positive buffs (str, agi, etc.) — only remove debuff-type buffs
+    s.buffs = s.buffs.filter(b => !["poison", "weakness", "slow", "burn", "curse"].includes(b.id));
+  }
+
+  /** Apply a temporary stat buff from an elixir item. Uses the existing buff slot. */
+  applyTempBuff(
+    player: { sessionId: string },
+    stat: string,
+    amount: number,
+    durationMs: number,
+  ): void {
+    this.addBuff(player.sessionId, `elixir_${stat}`, stat, amount, durationMs, Date.now());
+  }
+
   getBuffBonus(sessionId: string, stat: string, now: number): number {
     const s = this.state.get(sessionId);
     if (!s) return 0;

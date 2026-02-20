@@ -692,6 +692,16 @@ export class CombatSystem {
     }
   }
 
+  /** Shared Rage generation logic applied to both attacker and defender on any hit. */
+  private applyRageOnHit(attacker: Entity, target: Entity): void {
+    if (attacker instanceof Player && attacker.classType === "WARRIOR") {
+      attacker.rage = Math.min(attacker.maxRage, attacker.rage + 5);
+    }
+    if (target instanceof Player && target.classType === "WARRIOR") {
+      target.rage = Math.min(target.maxRage, target.rage + 3);
+    }
+  }
+
   private sameFaction(a: Entity, b: Entity): boolean {
     // Check for owner-pet or pet-pet relation
     const aOwnerId = a instanceof Npc ? a.ownerId : undefined;
@@ -801,6 +811,8 @@ export class CombatSystem {
       const damage = this.calcAbilityDamage(attacker, target, ability, scalingStatValue, now);
       target.hp -= damage;
       this.interruptCast(target.sessionId, broadcast);
+      // B043: spell damage also breaks stealth
+      this.buffSystem.breakStealth(target.sessionId);
       broadcast(ServerMessageType.Damage, {
         targetSessionId: target.sessionId,
         amount: damage,
@@ -810,14 +822,7 @@ export class CombatSystem {
       if (target.hp <= 0) {
         onDeath(target, attacker.sessionId);
       }
-
-      // Rage Generation
-      if (attacker instanceof Player && attacker.classType === "WARRIOR") {
-        attacker.rage = Math.min(attacker.maxRage, attacker.rage + 5);
-      }
-      if (target instanceof Player && target.classType === "WARRIOR") {
-        target.rage = Math.min(target.maxRage, target.rage + 3);
-      }
+      this.applyRageOnHit(attacker, target);
 
       const healBack = Math.max(1, Math.round(damage * (ability.leechRatio ?? 0)));
       attacker.hp = Math.min(attacker.maxHp, attacker.hp + healBack);
@@ -830,6 +835,8 @@ export class CombatSystem {
       const damage = this.calcAbilityDamage(attacker, target, ability, scalingStatValue, now);
       target.hp -= damage;
       this.interruptCast(target.sessionId, broadcast);
+      // B043: spell damage also breaks stealth
+      this.buffSystem.breakStealth(target.sessionId);
       broadcast(ServerMessageType.Damage, {
         targetSessionId: target.sessionId,
         amount: damage,
@@ -839,14 +846,7 @@ export class CombatSystem {
       if (target.hp <= 0) {
         onDeath(target, attacker.sessionId);
       }
-
-      // Rage Generation
-      if (attacker instanceof Player && attacker.classType === "WARRIOR") {
-        attacker.rage = Math.min(attacker.maxRage, attacker.rage + 5);
-      }
-      if (target instanceof Player && target.classType === "WARRIOR") {
-        target.rage = Math.min(target.maxRage, target.rage + 3);
-      }
+      this.applyRageOnHit(attacker, target);
 
       // Apply secondary stat modifier (e.g. ice_bolt AGI slow) if defined alongside damage
       if (

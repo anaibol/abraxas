@@ -22,7 +22,7 @@ type EquipSlotKey =
   | "equipRing"
   | "equipMount";
 
-const EQUIP_SLOT_MAP: Record<EquipmentSlot, EquipSlotKey> = {
+const EQUIP_SLOT_MAP: Partial<Record<EquipmentSlot, EquipSlotKey>> = {
   weapon: "equipWeapon",
   armor: "equipArmor",
   shield: "equipShield",
@@ -121,7 +121,7 @@ export class InventorySystem {
       onError?.("Invalid item");
       return false;
     }
-    if (def.slot === "consumable") {
+    if (def.slot === "consumable" || def.slot === "material") {
       onError?.("game.cannot_equip_consumable");
       return false;
     }
@@ -211,11 +211,24 @@ export class InventorySystem {
       return false;
     }
 
-    if (def.consumeEffect.healHp) {
-      player.hp = Math.min(player.maxHp, player.hp + def.consumeEffect.healHp);
+    const fx = def.consumeEffect;
+
+    if (fx.healHp)       player.hp   = Math.min(player.maxHp,   player.hp   + fx.healHp);
+    if (fx.healMana)     player.mana = Math.min(player.maxMana, player.mana + fx.healMana);
+
+    // Antidote — remove active DoT / debuff effects
+    if (fx.cureDebuff && this.buffSystem) {
+      this.buffSystem.clearDebuffs(player.sessionId);
     }
-    if (def.consumeEffect.healMana) {
-      player.mana = Math.min(player.maxMana, player.mana + def.consumeEffect.healMana);
+
+    // Elixir — temporary stat buff
+    if (fx.buffStat && fx.buffAmount && fx.buffDurationMs && this.buffSystem) {
+      this.buffSystem.applyTempBuff(
+        player,
+        fx.buffStat,
+        fx.buffAmount,
+        fx.buffDurationMs,
+      );
     }
 
     if (item.quantity > 1) {
@@ -226,6 +239,7 @@ export class InventorySystem {
     }
     return true;
   }
+
 
   private getEquipmentBonuses(player: Player): StatBonuses {
     const bonuses: StatBonuses = {
