@@ -590,6 +590,7 @@ export function App() {
             isChatOpen={isChatOpen}
             onSendChat={(msg) => { setChatPrefill(undefined); handleSendChat(msg); }}
             prefillMessage={chatPrefill}
+            isGM={isGM}
           />
           {/* Mobile chat button */}
           {isMobile && !isChatOpen && (

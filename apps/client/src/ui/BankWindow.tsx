@@ -4,6 +4,7 @@ import { Button } from "./components/Button";
 import { ITEMS } from "@abraxas/shared";
 import { T, HEX } from "./tokens";
 import { useTranslation } from "react-i18next";
+import { useAudio } from "../contexts/AudioContext";
 
 type BankSlot = {
   itemId: string;
@@ -26,6 +27,7 @@ type ItemGridProps = {
 };
 
 function ItemGrid({ slots, selectedSlotIndex, onSelect }: ItemGridProps) {
+  const { playUIClick, playUIHover } = useAudio();
   return (
     <Grid
       templateColumns={{ base: "repeat(4, 1fr)", md: "repeat(6, 1fr)" }}
@@ -56,7 +58,13 @@ function ItemGrid({ slots, selectedSlotIndex, onSelect }: ItemGridProps) {
             alignItems="center"
             justifyContent="center"
             position="relative"
-            onClick={() => { if (slot) onSelect(slot); }}
+            onMouseEnter={() => { if (def && !isSelected) playUIHover?.(); }}
+            onClick={() => { 
+              if (slot && !isSelected) { 
+                playUIClick?.(); 
+                onSelect(slot); 
+              } 
+            }}
           >
             {def && <Text fontSize="24px">✨</Text>}
             {slot && slot.quantity > 1 && (
