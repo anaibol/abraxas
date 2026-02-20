@@ -41,8 +41,19 @@ export class RespawnSystem {
       const player = getPlayer(entry.sessionId);
       if (!player) continue;
 
-      if (!map.spawns || map.spawns.length === 0) continue;
-      const candidate = map.spawns[Math.floor(Math.random() * map.spawns.length)];
+      // Prefer a random tile inside a safe zone so the player respawns in a
+      // protected area. Fall back to a regular spawn point if no safe zones exist.
+      let candidate: { x: number; y: number };
+      if (map.safeZones && map.safeZones.length > 0) {
+        const zone = map.safeZones[Math.floor(Math.random() * map.safeZones.length)];
+        candidate = {
+          x: zone.x + Math.floor(Math.random() * zone.w),
+          y: zone.y + Math.floor(Math.random() * zone.h),
+        };
+      } else {
+        if (!map.spawns || map.spawns.length === 0) continue;
+        candidate = map.spawns[Math.floor(Math.random() * map.spawns.length)];
+      }
 
       const safe = findSpawn
         ? findSpawn(candidate.x, candidate.y)

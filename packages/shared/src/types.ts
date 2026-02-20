@@ -520,6 +520,7 @@ export type ServerMessages = {
     sessionId: string;
     targetSessionId: string | null;
     dodged?: boolean;
+    parried?: boolean;
   };
   [ServerMessageType.CastStart]: {
     sessionId: string;

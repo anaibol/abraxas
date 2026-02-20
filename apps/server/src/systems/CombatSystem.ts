@@ -503,13 +503,6 @@ export class CombatSystem {
           sessionId: attacker.sessionId,
           targetSessionId: target.sessionId,
           dodged: result.dodged,
-        });
-        broadcast(ServerMessageType.Damage, {
-          targetSessionId: target.sessionId,
-          amount: 0,
-          hpAfter: target.hp,
-          type: DamageSchool.PHYSICAL,
-          dodged: result.dodged,
           parried: result.parried,
         });
       } else {

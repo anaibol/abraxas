@@ -8,6 +8,7 @@ import {
   EntityType,
   type NpcType,
   PLAYER_RESPAWN_TIME_MS,
+  SPAWN_PROTECTION_MS,
   ServerMessageType,
   TICK_MS,
   type TileMap,
@@ -286,35 +287,49 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         .catch(() => {});
       const player = await this.playerService.createPlayer(client, char, auth.id);
       player.role = auth.role;
-      // Assign spawn point — spiral outward if the candidate tile is blocked
-      const spawnIndex = this.state.players.size;
-      let spawnsArray = this.map.spawns;
+      // Assign spawn point — prefer safe zone for both initial spawns and
+      // returning players. New players get a dedicated newbieSpawn slot.
+      let candidate: { x: number; y: number } | undefined;
       if (
         this.playerService.isPlayerTotallyNew(player) &&
         this.map.newbieSpawns &&
         this.map.newbieSpawns.length > 0
       ) {
-        spawnsArray = this.map.newbieSpawns;
+        const spawnIndex = this.state.players.size;
+        const spawnsArray = this.map.newbieSpawns;
+        candidate = spawnsArray[spawnIndex % spawnsArray.length];
+      } else if (this.map.safeZones && this.map.safeZones.length > 0) {
+        // Place returning players inside a random safe zone tile
+        const zone = this.map.safeZones[Math.floor(Math.random() * this.map.safeZones.length)];
+        candidate = {
+          x: zone.x + Math.floor(Math.random() * zone.w),
+          y: zone.y + Math.floor(Math.random() * zone.h),
+        };
+      } else if (this.map.spawns && this.map.spawns.length > 0) {
+        const spawnIndex = this.state.players.size;
+        candidate = this.map.spawns[spawnIndex % this.map.spawns.length];
       }
-      const candidate = spawnsArray[spawnIndex % spawnsArray.length];
       if (candidate) {
         const safe = findSafeSpawn(candidate.x, candidate.y, this.map, this.spatial);
         player.tileX = safe?.x ?? candidate.x;
         player.tileY = safe?.y ?? candidate.y;
       }
-      // IMPORTANT: Set up the StateView BEFORE adding the player to state,
-      // so the very first patch includes all view-scoped fields (hp, alive, mana, etc.).
-      // If the view is set up after players.set(), Colyseus sends one patch without
-      // private fields and a second patch with them, causing onAdd to see undefined values.
+      // IMPORTANT: Add the player to state FIRST, then set up the StateView.
+      // Colyseus 0.17+ requires the instance to be attached to the state tree
+      // before it can be added to a view (calling view.add() on a detached
+      // instance throws "Cannot add a detached instance to the StateView").
+      this.state.players.set(client.sessionId, player);
       client.view = new StateView();
       client.view.add(player);
-      this.state.players.set(client.sessionId, player);
       // If the player logged out while dead, queue an immediate respawn
       // so they enter the world alive on the first server tick.
       if (!player.alive) {
         this.respawnSystem.queueRespawn(client.sessionId, Date.now() - PLAYER_RESPAWN_TIME_MS);
       }
       this.spatial.addToGrid(player);
+      // Apply spawn protection immediately on join so nearby NPCs can't
+      // kill the player in the first few ticks before they can react.
+      this.buffSystem.applySpawnProtection(client.sessionId, SPAWN_PROTECTION_MS, Date.now());
 
       // Restore saved companions
       if (player.savedCompanions && player.savedCompanions.length > 0) {
@@ -373,6 +388,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     const player = this.state.players.get(client.sessionId);
     if (!player) return;
 
+    // Player is already in state.players, so view.add() is safe here.
     client.view = new StateView();
     client.view.add(player);
 
