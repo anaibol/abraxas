@@ -24,6 +24,8 @@ enum CharacterClass {
   CLERIC
   RANGER
   PALADIN
+  NECROMANCER
+  DRUID
 }
 
 enum GuildRole {
