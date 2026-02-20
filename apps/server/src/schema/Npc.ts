@@ -4,9 +4,13 @@ import { type } from "@colyseus/schema";
 import { Char } from "./Char";
 
 export class Npc extends Char {
-  type = EntityType.NPC;
   @type("string") npcType: NpcType = "orc";
   @type("uint8") spellCastPercent = 0;
+
+  constructor() {
+    super();
+    this.entityType = EntityType.NPC;
+  }
 
   @type("string") ownerId?: string;
   @type("uint8") level: number = 1;

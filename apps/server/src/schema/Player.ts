@@ -5,10 +5,14 @@ import { Char } from "./Char";
 import { InventoryItem } from "./InventoryItem";
 
 export class Player extends Char {
-  entityType = EntityType.PLAYER;
   // ── Shared (visible to all clients) ─────────────────────────────────────
   @type("string") groupId: string = "";
   @type("string") guildId: string = "";
+
+  constructor() {
+    super();
+    this.entityType = EntityType.PLAYER;
+  }
   @type("string") classType: ClassType = "WARRIOR";
   @type("boolean") meditating: boolean = false;
   @type("boolean") pvpEnabled: boolean = false;
