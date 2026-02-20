@@ -207,7 +207,8 @@ export function TradeWindow({
                     cursor={availableQty > 0 ? "pointer" : "not-allowed"}
                     opacity={availableQty > 0 ? 1 : 0.4}
                     title={def ? `${def.name}${slot.quantity > 1 ? ` (${availableQty} available)` : ""}` : ""}
-                    onClick={() => availableQty > 0 && addItem(slot)}
+                    onMouseEnter={() => { if (availableQty > 0) playUIHover?.(); }}
+                    onClick={() => { if (availableQty > 0) { playUIClick?.(); addItem(slot); } }}
                     _hover={availableQty > 0 ? { borderColor: T.gold, bg: T.surface } : {}}
                     pos="relative"
                     fontSize="14px"
@@ -239,7 +240,8 @@ export function TradeWindow({
                         cursor="pointer"
                         fontSize="12px"
                         color={T.goldText}
-                        onClick={() => removeItem(item.itemId)}
+                        onMouseEnter={() => playUIHover?.()}
+                        onClick={() => { playUIClick?.(); removeItem(item.itemId); }}
                         _hover={{ borderColor: "red.400", color: "red.400" }}
                       >
                         {def?.name ?? item.itemId}{item.quantity > 1 ? ` ×${item.quantity}` : ""}

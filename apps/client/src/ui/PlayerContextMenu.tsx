@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { Box, Flex, Text, VStack } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 import { T } from "./tokens";
+import { useAudio } from "../contexts/AudioContext";
 
 export type PlayerContextTarget = {
   sessionId: string;
@@ -30,6 +31,7 @@ export function PlayerContextMenu({
   onGMTeleportTo,
 }: PlayerContextMenuProps) {
   const { t } = useTranslation();
+  const { playUIClick, playUIHover } = useAudio();
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -134,7 +136,8 @@ export function PlayerContextMenu({
             letterSpacing="0.5px"
             transition="all 0.1s"
             _hover={{ bg: T.raised }}
-            onClick={action.onClick}
+            onMouseEnter={() => playUIHover?.()}
+            onClick={() => { playUIClick?.(); action.onClick(); }}
           >
             {action.label}
           </Box>

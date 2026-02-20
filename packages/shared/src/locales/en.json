@@ -221,7 +221,11 @@
     "spider": "Spider",
     "ghost": "Ghost",
     "lich": "Lich",
-    "banker": "Royal Banker"
+    "banker": "Royal Banker",
+    "zombie": "Zombie",
+    "troll": "Troll",
+    "bat": "Vampire Bat",
+    "dark_knight": "Dark Knight"
   },
   "items": {
     "club": {
