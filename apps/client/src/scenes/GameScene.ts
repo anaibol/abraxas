@@ -168,20 +168,18 @@ export class GameScene extends Phaser.Scene {
 			(rangeTiles) => this.onEnterTargeting(rangeTiles),
 			() => this.onExitTargeting(),
 			(tileX, tileY) => {
-				let targetNpc: typeof this.room.state.npcs extends Map<string, infer V> ? V : any = null;
-				let targetNpcId: string | null = null;
+				let targetNpc: { id: string; type: string } | undefined;
 				for (const [id, npc] of this.room.state.npcs) {
 					if (npc.tileX === tileX && npc.tileY === tileY) {
-						targetNpcId = id;
-						targetNpc = npc;
+						targetNpc = { id, type: npc.type };
 						break;
 					}
 				}
-				if (targetNpcId && targetNpc) {
+				if (targetNpc) {
 					if (targetNpc.type === "horse") {
-						this.network.sendTame(targetNpcId);
+						this.network.sendTame(targetNpc.id);
 					} else {
-						this.network.sendInteract(targetNpcId);
+						this.network.sendInteract(targetNpc.id);
 					}
 				}
 			},
