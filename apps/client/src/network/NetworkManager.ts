@@ -260,6 +260,10 @@ export class NetworkManager {
     this._send(ClientMessageType.Interact, { npcId });
   }
 
+  sendTame(targetSessionId: string) {
+    this._send(ClientMessageType.Tame, { targetSessionId });
+  }
+
   sendBuyItem(itemId: string, quantity: number) {
     this._send(ClientMessageType.BuyItem, { itemId, quantity });
   }
