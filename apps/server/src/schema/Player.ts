@@ -6,7 +6,7 @@ import type { ClassType, ClassStats, Ability } from "@abraxas/shared";
 
 export class Player extends Char {
 	// ── Shared (visible to all clients) ─────────────────────────────────────
-	@type("string") partyId: string = "";
+	@type("string") groupId: string = "";
 	@type("string") classType: ClassType = "WARRIOR";
 	@type("boolean") meditating: boolean = false;
 
