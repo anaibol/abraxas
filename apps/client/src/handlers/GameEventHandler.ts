@@ -8,8 +8,9 @@ import {
   TILE_SIZE,
 } from "@abraxas/shared";
 import type { Room } from "@colyseus/sdk";
-import type { SoundManager } from "../assets/SoundManager";
+import { HEAVY_HIT_ABILITIES, type SoundManager } from "../assets/SoundManager";
 import type { EffectManager } from "../managers/EffectManager";
+import type { LightManager } from "../managers/LightManager";
 import type { SpriteManager } from "../managers/SpriteManager";
 import type { ConsoleCallback } from "../scenes/GameScene";
 import type { InputHandler } from "../systems/InputHandler";
@@ -27,6 +28,10 @@ export class GameEventHandler {
     private inputHandler: InputHandler,
     private onConsoleMessage?: ConsoleCallback,
     private onKillFeed?: (killer: string, victim: string) => void,
+    /** Optional — if provided, heavy-impact spells shake the camera. */
+    private onCameraShake?: (intensity: number, durationMs: number) => void,
+    /** Optional — if provided, spell impacts flash a Lights2D point light. */
+    private lightManager?: LightManager,
   ) {}
 
   private isSelf(sessionId: string): boolean {
@@ -127,23 +132,10 @@ export class GameEventHandler {
       if (this.isSelf(data.sessionId))
         this.onConsoleMessage?.(t("game.you_cast_spell"), "#aaaaff", "combat");
     }
-    
-    const ability = ABILITIES[data.abilityId];
-    if (ability) {
-      if (ability.effect === "heal" || ability.effect === "aoe_heal" || ability.effect === "cleanse") {
-        this.soundManager.playHeal();
-      } else if (ability.effect === "buff") {
-        this.soundManager.playBuff();
-      } else if (ability.effect === "stealth") {
-        this.soundManager.playStealth();
-      } else if (ability.effect === "summon") {
-        this.soundManager.playSummon();
-      } else {
-        this.soundManager.playSpell();
-      }
-    } else {
-      this.soundManager.playSpell();
-    }
+
+    // ── Per-spell SFX ──────────────────────────────────────────────────────────
+    // Each ability now plays its own tailored sound instead of a generic "spell".
+    this.soundManager.playSpellSfx(data.abilityId);
 
     this.effectManager.maybeLaunchProjectile(
       data.sessionId,
@@ -155,10 +147,25 @@ export class GameEventHandler {
 
   private onCastHit(data: ServerMessages["cast_hit"]) {
     this.effectManager.playSpellEffect(data.abilityId, data.targetTileX, data.targetTileY, data.sessionId);
-    
+
     const ability = ABILITIES[data.abilityId];
     if (ability && ability.damageSchool === "magical" && (ability.effect === "damage" || ability.effect === "aoe" || ability.effect === "debuff" || ability.effect === "leech")) {
       this.soundManager.playMagicHit();
+    }
+
+    // ── Camera Shake for heavy-impact spells ───────────────────────────────────
+    if (HEAVY_HIT_ABILITIES.has(data.abilityId)) {
+      this.onCameraShake?.(0.009, 220);
+    }
+
+    // ── Spell-impact light flash ────────────────────────────────────────────────
+    if (this.lightManager) {
+      const px = data.targetTileX * TILE_SIZE + TILE_SIZE / 2;
+      const py = data.targetTileY * TILE_SIZE + TILE_SIZE / 2;
+      const lightColor = this.spellLightColor(data.abilityId);
+      if (lightColor !== null) {
+        this.lightManager.flashLight(px, py, lightColor, 180, 2.5, 350);
+      }
     }
   }
 
@@ -217,21 +224,32 @@ export class GameEventHandler {
     if (effect === "debuff") {
       this.spriteManager.applySpellStateVisual(data.sessionId, data.abilityId, durationMs);
       this.effectManager.showFloatingText(data.sessionId, t("game.buff_weakened"), "#cc44ff");
+      // ── Debuff Glow (red/purple) ──────────────────────────────────────────
+      this.spriteManager.applyGlowFx(data.sessionId, 0xcc44ff, durationMs);
     } else if (effect === "stun") {
       this.spriteManager.applyStunVisual(data.sessionId, durationMs);
       this.effectManager.showFloatingText(data.sessionId, `${t("game.buff_stunned")} ✦`, "#ffff44");
+      // ── Stun Glow (gold) ──────────────────────────────────────────────────
+      this.spriteManager.applyGlowFx(data.sessionId, 0xffdd44, durationMs);
     } else if (effect === "stealth") {
       this.spriteManager.applySpellStateVisual(data.sessionId, data.abilityId, durationMs);
       this.effectManager.showFloatingText(data.sessionId, t("game.buff_stealth"), "#aaddff");
     } else if (data.abilityId === "divine_shield") {
       this.spriteManager.applyInvulnerableVisual(data.sessionId, durationMs);
       this.effectManager.showFloatingText(data.sessionId, t("game.buff_invulnerable"), "#ffffff");
+      // ── Invulnerable Glow (white) ─────────────────────────────────────────
+      this.spriteManager.applyGlowFx(data.sessionId, 0xffffff, durationMs);
     } else if (effect === "dot") {
       this.spriteManager.applySpellStateVisual(data.sessionId, data.abilityId, durationMs);
       this.effectManager.showFloatingText(data.sessionId, t("game.buff_poisoned"), "#44ff44");
+      // ── DoT Glow (green) ──────────────────────────────────────────────────
+      this.spriteManager.applyGlowFx(data.sessionId, 0x44ff44, durationMs);
     } else {
       this.spriteManager.applySpellStateVisual(data.sessionId, data.abilityId, durationMs);
       this.effectManager.showFloatingText(data.sessionId, `${t("game.buff_buffed")} ✦`, "#ffdd44");
+      // ── Positive buff Glow (class-specific or golden) ─────────────────────
+      const buffColor = this.buffGlowColor(data.abilityId);
+      this.spriteManager.applyGlowFx(data.sessionId, buffColor, durationMs);
     }
   }
 
@@ -242,6 +260,7 @@ export class GameEventHandler {
       `${t("game.buff_stunned")} ✦`,
       "#ffff44",
     );
+    this.spriteManager.applyGlowFx(data.targetSessionId, 0xffdd44, data.durationMs ?? 1500);
     if (this.isSelf(data.targetSessionId)) {
       this.onConsoleMessage?.(t("game.you_stunned"), "#ffff44", "combat");
     }
@@ -265,5 +284,42 @@ export class GameEventHandler {
     if (this.isSelf(data.sessionId)) {
       this.soundManager.playLevelUp();
     }
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+
+  /** Returns the light color for a spell impact flash, or null if no flash. */
+  private spellLightColor(abilityId: string): number | null {
+    const FIRE = ["fireball", "meteor_strike", "fire_breath", "war_cry", "execute"];
+    const ICE  = ["ice_bolt", "frost_nova", "frost_breath", "polymorph"];
+    const GOLD = ["holy_nova", "judgment", "consecration", "smite", "holy_bolt", "holy_strike", "lay_on_hands"];
+    const ELEC = ["thunderstorm", "chain_lightning", "leap", "whirlwind"];
+    const DARK = ["shadow_bolt", "soul_drain", "banshee_wail", "curse"];
+    const GRNE = ["heal", "cleansing_rain", "entangling_roots", "poison_arrow", "acid_splash"];
+
+    if (FIRE.includes(abilityId)) return 0xff6622;
+    if (ICE.includes(abilityId))  return 0x88ccff;
+    if (GOLD.includes(abilityId)) return 0xffe066;
+    if (ELEC.includes(abilityId)) return 0xccddff;
+    if (DARK.includes(abilityId)) return 0x9944cc;
+    if (GRNE.includes(abilityId)) return 0x44ee66;
+    return null; // No flash for this ability
+  }
+
+  /** Returns the glow FX colour for a positive buff. */
+  private buffGlowColor(abilityId: string): number {
+    const map: Record<string, number> = {
+      berserker_rage:     0xff3300,
+      battle_shout:       0xff8800,
+      shield_wall:        0x88aacc,
+      mana_shield:        0x4488ff,
+      evasion:            0x44ff88,
+      aura_of_protection: 0xffe066,
+      eagle_eye:          0x88ff44,
+      pet_bond:           0x22dd88,
+      spell_echo:         0xcc44ff,
+      elemental_infusion: 0xff6644,
+    };
+    return map[abilityId] ?? 0xffdd44;
   }
 }

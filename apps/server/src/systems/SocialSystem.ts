@@ -3,6 +3,7 @@ import type { Client } from "@colyseus/core";
 import type { GameState } from "../schema/GameState";
 import { Group } from "../schema/Group";
 import { Player } from "../schema/Player";
+import { HandlerUtils } from "../handlers/HandlerUtils";
 
 export class SocialSystem {
   private invitations = new Map<string, { groupId: string; inviterSessionId: string; expiresAt: number }>();
@@ -12,10 +13,6 @@ export class SocialSystem {
     private findClient: (sessionId: string) => Client | undefined,
   ) {}
 
-  private sendError(client: Client, message: string): void {
-    client.send(ServerMessageType.Error, { message });
-  }
-
   handleInvite(client: Client, targetSessionId: string): void {
     const inviter = this.state.players.get(client.sessionId);
     const target = this.state.players.get(targetSessionId);
@@ -24,7 +21,7 @@ export class SocialSystem {
 
     // Check if target is already in a group
     if (target.groupId) {
-      this.sendError(client, "social.already_in_group");
+      HandlerUtils.sendError(client, "social.already_in_group");
       return;
     }
 
@@ -42,7 +39,7 @@ export class SocialSystem {
     } else {
       const group = this.state.groups.get(groupId);
       if (group && group.leaderSessionId !== inviter.sessionId) {
-        this.sendError(client, "social.leader_only_invite");
+        HandlerUtils.sendError(client, "social.leader_only_invite");
         return;
       }
     }
@@ -83,7 +80,7 @@ export class SocialSystem {
     const invite = this.invitations.get(client.sessionId);
     if (!invite || invite.groupId !== groupId || Date.now() > invite.expiresAt) {
       this.invitations.delete(client.sessionId);
-      this.sendError(client, "social.no_invite");
+      HandlerUtils.sendError(client, "social.no_invite");
       return;
     }
 
@@ -96,7 +93,7 @@ export class SocialSystem {
     }
 
     if (group.memberIds.length >= 5) {
-      this.sendError(client, "social.group_full");
+      HandlerUtils.sendError(client, "social.group_full");
       this.invitations.delete(client.sessionId);
       return;
     }
@@ -147,7 +144,7 @@ export class SocialSystem {
 
     const group = this.state.groups.get(player.groupId);
     if (!group || group.leaderSessionId !== client.sessionId) {
-      this.sendError(client, "social.leader_only_kick");
+      HandlerUtils.sendError(client, "social.leader_only_kick");
       return;
     }
 

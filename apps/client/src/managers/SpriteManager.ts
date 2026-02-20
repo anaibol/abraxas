@@ -202,6 +202,54 @@ export class SpriteManager {
     this.sprites.get(sessionId)?.applyInvulnerable(durationMs);
   }
 
+  /**
+   * Apply a Phaser Post-FX Glow to a sprite for the duration of a buff.
+   *
+   * Uses `preFX.addGlow()` (Phaser 3.60+). If the engine doesn't support
+   * preFX on this object type the call is silently skipped.
+   *
+   * @param color   Hex colour, e.g. 0xffdd44 for gold.
+   * @param durationMs  How long the glow lasts (matches buff duration).
+   */
+  applyGlowFx(sessionId: string, color: number, durationMs: number) {
+    const sprite = this.sprites.get(sessionId);
+    if (!sprite?.container) return;
+
+    // preFX.addGlow() is available in Phaser 3.60+ but may not be in older
+    // @types/phaser definitions — use `any` casts to remain forwards-compatible.
+    const addedGlows: unknown[] = [];
+    for (const child of sprite.container.list) {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const preFX = (child as any).preFX;
+        if (!preFX) continue;
+        const glow = preFX.addGlow(
+          color,
+          4,     // outer glow strength
+          0,     // inner glow strength
+          false, // knockout
+          0.1,   // quality
+          16,    // distance
+        );
+        if (glow) addedGlows.push(glow);
+      } catch (_) {
+        // preFX not supported on this child type — skip silently
+      }
+    }
+
+    if (addedGlows.length === 0) return;
+
+    this.scene.time.delayedCall(durationMs, () => {
+      if (!sprite.container?.scene) return;
+      for (const child of sprite.container.list) {
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (child as any).preFX?.clear();
+        } catch (_) { /* noop */ }
+      }
+    });
+  }
+
   /** Squash-and-crumple tween played when an entity dies. */
   playDeathAnimation(sessionId: string) {
     const sprite = this.sprites.get(sessionId);

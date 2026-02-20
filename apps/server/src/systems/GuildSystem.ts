@@ -3,6 +3,7 @@ import type { Client } from "@colyseus/core";
 import { GuildRole } from "../generated/prisma";
 import type { GameState } from "../schema/GameState";
 import { GuildService } from "../services/GuildService";
+import { HandlerUtils } from "../handlers/HandlerUtils";
 
 export class GuildSystem {
   private invitations = new Map<
@@ -15,22 +16,18 @@ export class GuildSystem {
     private findClient: (sessionId: string) => Client | undefined,
   ) {}
 
-  private sendError(client: Client, message: string): void {
-    client.send(ServerMessageType.Error, { message });
-  }
-
   async handleCreateGuild(client: Client, name: string): Promise<void> {
     const player = this.state.players.get(client.sessionId);
     if (!player || !player.dbId) return;
 
     if (player.guildId) {
-      this.sendError(client, "You are already in a guild.");
+      HandlerUtils.sendError(client, "You are already in a guild.");
       return;
     }
 
     if (player.gold < 1000) {
       // e.g. 1000 gold to create a guild
-      this.sendError(client, "Not enough gold to create a guild.");
+      HandlerUtils.sendError(client, "Not enough gold to create a guild.");
       return;
     }
 
@@ -42,7 +39,7 @@ export class GuildSystem {
       client.send(ServerMessageType.Notification, { message: "Guild created successfully!" });
     } catch (e) {
       player.gold += 1000;
-      this.sendError(client, "Failed to create guild. Name might be taken.");
+      HandlerUtils.sendError(client, "Failed to create guild. Name might be taken.");
     }
   }
 
@@ -60,7 +57,7 @@ export class GuildSystem {
     }
 
     if (!targetSessionId) {
-      this.sendError(client, "Player not found or not online.");
+      HandlerUtils.sendError(client, "Player not found or not online.");
       return;
     }
 
@@ -68,13 +65,13 @@ export class GuildSystem {
     if (!target || target === inviter) return;
 
     if (target.guildId) {
-      this.sendError(client, "Target is already in a guild.");
+      HandlerUtils.sendError(client, "Target is already in a guild.");
       return;
     }
 
     const memberRecord = await GuildService.getMember(inviter.dbId);
     if (!memberRecord || memberRecord.role === GuildRole.MEMBER) {
-      this.sendError(client, "You do not have permission to invite.");
+      HandlerUtils.sendError(client, "You do not have permission to invite.");
       return;
     }
 
@@ -100,7 +97,7 @@ export class GuildSystem {
   async handleAcceptInvite(client: Client, guildId: string): Promise<void> {
     const invite = this.invitations.get(client.sessionId);
     if (!invite || invite.guildId !== guildId) {
-      this.sendError(client, "No pending invite for this guild.");
+      HandlerUtils.sendError(client, "No pending invite for this guild.");
       return;
     }
 
@@ -120,7 +117,7 @@ export class GuildSystem {
         message: `${player.name} has joined the guild!`,
       });
     } catch (e) {
-      this.sendError(client, "Failed to join guild.");
+      HandlerUtils.sendError(client, "Failed to join guild.");
     }
   }
 
@@ -143,7 +140,7 @@ export class GuildSystem {
     if (!memberRecord) return;
 
     if (memberRecord.role === GuildRole.LEADER) {
-      this.sendError(client, "Guild leader cannot leave. Pass leadership or disband.");
+      HandlerUtils.sendError(client, "Guild leader cannot leave. Pass leadership or disband.");
       return;
     }
 
@@ -157,7 +154,7 @@ export class GuildSystem {
       await this.broadcastGuildUpdate(guildId);
       this.sendGuildLeft(client);
     } catch (e) {
-      this.sendError(client, "Failed to leave guild.");
+      HandlerUtils.sendError(client, "Failed to leave guild.");
     }
   }
 
@@ -167,7 +164,7 @@ export class GuildSystem {
 
     const memberRecord = await GuildService.getMember(player.dbId);
     if (!memberRecord || memberRecord.role === GuildRole.MEMBER) {
-      this.sendError(client, "You do not have permission to kick.");
+      HandlerUtils.sendError(client, "You do not have permission to kick.");
       return;
     }
 
@@ -176,7 +173,7 @@ export class GuildSystem {
     const targetMember = members.find((m) => m.character.name === targetName);
 
     if (!targetMember) {
-      this.sendError(client, "Player not found in guild.");
+      HandlerUtils.sendError(client, "Player not found in guild.");
       return;
     }
 
@@ -184,7 +181,7 @@ export class GuildSystem {
       targetMember.role === GuildRole.LEADER ||
       (memberRecord.role === GuildRole.OFFICER && targetMember.role === GuildRole.OFFICER)
     ) {
-      this.sendError(client, "Cannot kick this player.");
+      HandlerUtils.sendError(client, "Cannot kick this player.");
       return;
     }
 
@@ -210,7 +207,7 @@ export class GuildSystem {
         message: `${targetName} was kicked from the guild.`,
       });
     } catch (e) {
-      this.sendError(client, "Failed to kick player.");
+      HandlerUtils.sendError(client, "Failed to kick player.");
     }
   }
 
@@ -220,7 +217,7 @@ export class GuildSystem {
 
     const memberRecord = await GuildService.getMember(player.dbId);
     if (!memberRecord || memberRecord.role !== GuildRole.LEADER) {
-      this.sendError(client, "Only the guild leader can promote.");
+      HandlerUtils.sendError(client, "Only the guild leader can promote.");
       return;
     }
 
@@ -229,7 +226,7 @@ export class GuildSystem {
     const targetMember = members.find((m) => m.character.name === targetName);
 
     if (!targetMember || targetMember.role !== GuildRole.MEMBER) {
-      this.sendError(client, "Invalid promotion target.");
+      HandlerUtils.sendError(client, "Invalid promotion target.");
       return;
     }
 
@@ -237,7 +234,7 @@ export class GuildSystem {
       await GuildService.updateRole(targetMember.characterId, GuildRole.OFFICER);
       await this.broadcastGuildUpdate(guildId);
     } catch (e) {
-      this.sendError(client, "Failed to promote player.");
+      HandlerUtils.sendError(client, "Failed to promote player.");
     }
   }
 
@@ -247,7 +244,7 @@ export class GuildSystem {
 
     const memberRecord = await GuildService.getMember(player.dbId);
     if (!memberRecord || memberRecord.role !== GuildRole.LEADER) {
-      this.sendError(client, "Only the guild leader can demote.");
+      HandlerUtils.sendError(client, "Only the guild leader can demote.");
       return;
     }
 
@@ -256,7 +253,7 @@ export class GuildSystem {
     const targetMember = members.find((m) => m.character.name === targetName);
 
     if (!targetMember || targetMember.role !== GuildRole.OFFICER) {
-      this.sendError(client, "Invalid demotion target.");
+      HandlerUtils.sendError(client, "Invalid demotion target.");
       return;
     }
 
@@ -264,7 +261,7 @@ export class GuildSystem {
       await GuildService.updateRole(targetMember.characterId, GuildRole.MEMBER);
       await this.broadcastGuildUpdate(guildId);
     } catch (e) {
-      this.sendError(client, "Failed to demote player.");
+      HandlerUtils.sendError(client, "Failed to demote player.");
     }
   }
 

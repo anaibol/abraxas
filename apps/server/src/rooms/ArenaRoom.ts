@@ -168,9 +168,9 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       this.onMessage("gm_spawn", (client, message) => {
         const player = this.state.players.get(client.sessionId);
         if (!player) return;
-        console.log(`[GM_SPAWN] From player ${player.sessionId}, role: ${player.role}, type: ${message.type}`);
+        logger.info({ intent: "gm_spawn", sessionId: player.sessionId, role: player.role, npcType: message.type });
         if (player.role !== "ADMIN") {
-          console.log(`[GM_SPAWN] REJECTED: role ${player.role} is not ADMIN`);
+          logger.warn({ intent: "gm_spawn", result: "rejected", role: player.role });
           return;
         }
         this.npcSystem.spawnNpc(message.type as NpcType, this.map);

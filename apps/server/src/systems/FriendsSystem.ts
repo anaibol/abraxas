@@ -3,6 +3,7 @@ import type { Client } from "@colyseus/core";
 import { prisma } from "../database/db";
 import { logger } from "../logger";
 import type { GameState } from "../schema/GameState";
+import { HandlerUtils } from "../handlers/HandlerUtils";
 
 export class FriendsSystem {
   private onlineUsers = new Map<string, string>(); // userId -> sessionId
@@ -54,14 +55,12 @@ export class FriendsSystem {
     });
 
     if (!targetUser) {
-      client.send(ServerMessageType.Error, { message: "Player not found" });
+      HandlerUtils.sendError(client, "Player not found");
       return;
     }
 
     if (targetUser.id === player.userId) {
-      client.send(ServerMessageType.Error, {
-        message: "You cannot friend yourself",
-      });
+      HandlerUtils.sendError(client, "You cannot friend yourself");
       return;
     }
 

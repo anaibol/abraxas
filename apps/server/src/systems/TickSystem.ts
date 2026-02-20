@@ -66,8 +66,6 @@ export class TickSystem {
     state.tick++;
     
     // 0. Update time of day (1 minute real = 1 hour game)
-
-    // 0. Update time of day (1 minute real = 1 hour game)
     state.timeOfDay += (deltaTime / 1000) * (1 / 60);
     if (state.timeOfDay >= 24) {
       state.timeOfDay -= 24;
