@@ -47,33 +47,30 @@ interface TickOptions {
   findClient: (sid: string) => Client | undefined;
 }
 
-/** Restores `ratio * max` (at least 1) of a stat, capped at its max. */
-function restoreStat(player: Player, stat: "hp" | "mana", ratio: number): void {
-  const max = stat === "hp" ? player.maxHp : player.maxMana;
-  const cur = stat === "hp" ? player.hp : player.mana;
-  if (cur >= max) return;
-  const gain = Math.max(1, Math.floor(max * ratio));
-  if (stat === "hp") player.hp = Math.min(max, cur + gain);
-  else player.mana = Math.min(max, cur + gain);
-}
-
 export class TickSystem {
   constructor(private opts: TickOptions) {}
+
+  /** Restores `ratio * max` (at least 1) of a stat, capped at its max. */
+  private static restoreStat(player: Player, stat: "hp" | "mana", ratio: number): void {
+    const max = stat === "hp" ? player.maxHp : player.maxMana;
+    const cur = stat === "hp" ? player.hp : player.mana;
+    if (cur >= max) return;
+    const gain = Math.max(1, Math.floor(max * ratio));
+    if (stat === "hp") player.hp = Math.min(max, cur + gain);
+    else player.mana = Math.min(max, cur + gain);
+  }
 
   tick(deltaTime: number) {
     const { state, map, roomId, systems, broadcast } = this.opts;
     const now = Date.now();
-    
-    // Increment game tick
-    state.tick++;
-    
-    // 0. Update time of day (1 minute real = 1 hour game)
-    state.timeOfDay += (deltaTime / 1000) * (1 / 60);
-    if (state.timeOfDay >= 24) {
-      state.timeOfDay -= 24;
-    }
 
-    // Basic weather randomization every 1000 ticks (~40 seconds)
+    state.tick++;
+
+    // Time of day: 1 real minute = 1 game hour
+    state.timeOfDay += (deltaTime / 1000) * (1 / 60);
+    if (state.timeOfDay >= 24) state.timeOfDay -= 24;
+
+    // Weather randomises every ~40 s
     if (state.tick % 1000 === 0) {
       const rnd = Math.random();
       if (rnd < 0.7) state.weather = "clear";
@@ -89,17 +86,14 @@ export class TickSystem {
       (entity, killerId) => this.opts.onEntityDeath(entity, killerId),
     );
 
-    // 2. NPCs
+    // 2. NPCs + world events
     systems.npc.tick(map, now, state.tick, roomId, broadcast);
     systems.npc.tickRareSpawns(map, now, broadcast);
-
-    // 2b. World Events
     systems.worldEvent.tick(map, now, broadcast);
 
     // 3. Combat
     const { onEntityDeath, onSummon, findClient } = this.opts;
     systems.combat.processWindups(now, broadcast, onEntityDeath, onSummon);
-
     systems.combat.processBufferedActions(
       now,
       broadcast,
@@ -115,42 +109,46 @@ export class TickSystem {
     // 4. Drops
     systems.drops.expireDrops(state.drops, now);
 
-    // 5. Natural Regeneration & Class Resources
+    // 5. Natural regeneration & class resources
+    // Cache mana_spring NPCs once per 20-tick interval to avoid O(players × npcs) work.
+    const manaSprings = state.tick % 20 === 0
+      ? Array.from(state.npcs.values()).filter(
+          (n) => n.npcType === ("mana_spring" as NpcType) && n.alive && n.ownerId,
+        )
+      : null;
+
     for (const player of state.players.values()) {
       if (!player.alive) continue;
 
-      // Mana (Standard)
-      if (player.meditating && state.tick % 5 === 0) restoreStat(player, "mana", 0.02);
-      else if (!player.meditating && state.tick % 20 === 0) restoreStat(player, "mana", 0.01);
+      // Mana
+      if (player.meditating && state.tick % 5 === 0) TickSystem.restoreStat(player, "mana", 0.02);
+      else if (!player.meditating && state.tick % 20 === 0) TickSystem.restoreStat(player, "mana", 0.01);
 
-      // HP (Standard)
-      if (state.tick % 30 === 0) restoreStat(player, "hp", 0.005);
+      // HP
+      if (state.tick % 30 === 0) TickSystem.restoreStat(player, "hp", 0.005);
 
-      // Energy (Rogue) - Rapidly regenerate 10% Every 20 ticks (~0.8s)
+      // Energy (Rogue) — fast regen
       if (player.classType === "ROGUE" && state.tick % 20 === 0) {
         player.energy = Math.min(player.maxEnergy, player.energy + Math.floor(player.maxEnergy * 0.1));
       }
 
-      // Focus (Ranger) - Rapidly regenerate 5% Every 20 ticks (~0.8s)
+      // Focus (Ranger)
       if (player.classType === "RANGER" && state.tick % 20 === 0) {
         player.focus = Math.min(player.maxFocus, player.focus + Math.floor(player.maxFocus * 0.05));
       }
 
-      // Rage (Warrior) - Decay -2 per 50 ticks (~2s) if not at 0
+      // Rage (Warrior) — decays when out of combat
       if (player.classType === "WARRIOR" && state.tick % 50 === 0 && player.rage > 0) {
         player.rage = Math.max(0, player.rage - 2);
       }
 
-      // Mana Spring (Friendly Summon) nearby
-      if (state.tick % 20 === 0) {
-        for (const npc of state.npcs.values()) {
-          if (npc.npcType === ("mana_spring" as NpcType) && npc.alive && npc.ownerId) {
-            const dx = npc.tileX - player.tileX;
-            const dy = npc.tileY - player.tileY;
-            if (dx * dx + dy * dy <= 4 * 4) { // 4 tile radius
-              player.mana = Math.min(player.maxMana, player.mana + 5);
-              // Notification/Broadcast could be added here but might be too noisy
-            }
+      // Mana Spring: nearby friendly summon restores mana
+      if (manaSprings) {
+        for (const npc of manaSprings) {
+          const dx = npc.tileX - player.tileX;
+          const dy = npc.tileY - player.tileY;
+          if (dx * dx + dy * dy <= 16) { // 4-tile radius
+            player.mana = Math.min(player.maxMana, player.mana + 5);
           }
         }
       }
@@ -176,51 +174,36 @@ export class TickSystem {
     systems.npc.handleDeath(npc);
 
     if (killerSessionId) {
-      // If the killer is a Player
+      // Credit the kill to the player, or to a companion's owner
       let killerPlayer = state.players.get(killerSessionId);
-      
-      // If the killer is a Companion, give the kill credit to its Owner
       if (!killerPlayer) {
         const killerNpc = state.npcs.get(killerSessionId);
-        if (killerNpc && killerNpc.ownerId) {
-          killerPlayer = state.players.get(killerNpc.ownerId);
-        }
+        if (killerNpc?.ownerId) killerPlayer = state.players.get(killerNpc.ownerId);
       }
-
       if (killerPlayer?.alive) {
         killerPlayer.npcKills++;
         this.handleNpcKillRewards(killerPlayer, npc);
       }
     }
 
-    broadcast(ServerMessageType.Death, {
-      sessionId: npc.sessionId,
-      killerSessionId,
-    });
-
-    // Feature 91: Notify WorldEventSystem so it can track kill progress
+    broadcast(ServerMessageType.Death, { sessionId: npc.sessionId, killerSessionId });
     systems.worldEvent.onEventNpcDied(npc.sessionId, broadcast);
   }
-
 
   private handleNpcKillRewards(player: Player, killedNpc: Npc) {
     const { systems, state } = this.opts;
     const stats = NPC_STATS[killedNpc.npcType];
-    
-    if (stats && typeof stats.expReward === "number") {
-      const activeCompanions: Npc[] = [];
-      state.npcs.forEach((n) => {
-        if (n.ownerId === player.sessionId && n.alive) {
-          activeCompanions.push(n);
-        }
-      });
 
-      if (activeCompanions.length > 0) {
+    if (stats && typeof stats.expReward === "number") {
+      const companions = Array.from(state.npcs.values()).filter(
+        (n) => n.ownerId === player.sessionId && n.alive,
+      );
+
+      if (companions.length > 0) {
         const playerExp = Math.ceil(stats.expReward * 0.5);
-        const companionExp = Math.max(1, Math.floor((stats.expReward * 0.5) / activeCompanions.length));
-        
+        const companionExp = Math.max(1, Math.floor((stats.expReward * 0.5) / companions.length));
         this.opts.gainXp(player, playerExp);
-        for (const comp of activeCompanions) {
+        for (const comp of companions) {
           systems.npc.gainExp(comp, companionExp, this.opts.roomId, this.opts.broadcast);
         }
       } else {
@@ -235,34 +218,30 @@ export class TickSystem {
       }
     });
 
-    const dropTable = NPC_DROPS[killedNpc.npcType];
-
     // Necromancer soul gain on kill
     if (player.classType === "NECROMANCER" && player.souls < player.maxSouls) {
       player.souls++;
     }
 
-    if (dropTable) {
-      for (const entry of dropTable) {
-        if (Math.random() < entry.chance) {
-          const qty = Math.floor(Math.random() * (entry.max - entry.min + 1)) + entry.min;
-          const ox = Math.floor(Math.random() * 3) - 1;
-          const oy = Math.floor(Math.random() * 3) - 1;
-          let tx = Math.max(0, Math.min(this.opts.map.width - 1, killedNpc.tileX + ox));
-          let ty = Math.max(0, Math.min(this.opts.map.height - 1, killedNpc.tileY + oy));
+    const dropTable = NPC_DROPS[killedNpc.npcType];
+    if (!dropTable) return;
 
-          // Collision check for loot: if blocked, drop at NPC's feet
-          if (this.opts.map.collision[ty]?.[tx] === 1) {
-            tx = killedNpc.tileX;
-            ty = killedNpc.tileY;
-          }
-
-          if (entry.itemId === "gold") {
-            systems.drops.spawnGoldDrop(this.opts.state.drops, tx, ty, qty);
-          } else {
-            systems.drops.spawnItemDrop(this.opts.state.drops, tx, ty, entry.itemId, qty);
-          }
-        }
+    for (const entry of dropTable) {
+      if (Math.random() >= entry.chance) continue;
+      const qty = Math.floor(Math.random() * (entry.max - entry.min + 1)) + entry.min;
+      let tx = killedNpc.tileX + Math.floor(Math.random() * 3) - 1;
+      let ty = killedNpc.tileY + Math.floor(Math.random() * 3) - 1;
+      tx = Math.max(0, Math.min(this.opts.map.width - 1, tx));
+      ty = Math.max(0, Math.min(this.opts.map.height - 1, ty));
+      // Fall back to NPC's tile if scatter position is blocked
+      if (this.opts.map.collision[ty]?.[tx] === 1) {
+        tx = killedNpc.tileX;
+        ty = killedNpc.tileY;
+      }
+      if (entry.itemId === "gold") {
+        systems.drops.spawnGoldDrop(this.opts.state.drops, tx, ty, qty);
+      } else {
+        systems.drops.spawnItemDrop(this.opts.state.drops, tx, ty, entry.itemId, qty);
       }
     }
   }

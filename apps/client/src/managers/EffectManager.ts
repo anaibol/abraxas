@@ -1462,21 +1462,40 @@ export class EffectManager {
   /**
    * Brief ring + spark burst at the tile where a new item/gold just landed.
    * Color matches the item's rarity / type so players can spot rare drops at a glance.
+   * Pass `isGold = true` for a premium golden shower effect.
    */
-  playDropLanded(tileX: number, tileY: number, color: number) {
+  playDropLanded(tileX: number, tileY: number, color: number, isGold = false) {
     this.ensureTextures();
     const px = tileX * TILE_SIZE + TILE_SIZE / 2;
     const py = tileY * TILE_SIZE + TILE_SIZE / 2;
     if (!this.isOnScreen(px, py)) return;
-    this.ring(px, py, color, 8, 3, 300, 0.65, 2);
-    this.burst(px, py, TEX.SPARK, {
-      colors: [color, 0xffffff],
-      count: 8,
-      speed: { min: 20, max: 55 },
-      scale: { start: 0.4, end: 0 },
-      lifespan: { min: 200, max: 450 },
-      radius: 6,
-    });
+
+    if (isGold) {
+      // Two staggered rings + a shower of golden coins arcing upward
+      this.ring(px, py, 0xffdd44, 10, 4, 380, 0.85, 3);
+      this.scene.time.delayedCall(80, () => this.ring(px, py, 0xffaa00, 8, 3, 300, 0.55, 2));
+      this.burst(px, py, TEX.STAR, {
+        colors: [0xffee44, 0xffcc00, 0xffffff],
+        count: 16,
+        speed: { min: 30, max: 90 },
+        scale: { start: 0.75, end: 0 },
+        lifespan: { min: 280, max: 560 },
+        angle: { min: 230, max: 310 }, // arc upward
+        rotate: { start: 0, end: 540 },
+        gravityY: 120,
+        blendMode: Phaser.BlendModes.ADD,
+      });
+    } else {
+      this.ring(px, py, color, 8, 3, 300, 0.65, 2);
+      this.burst(px, py, TEX.SPARK, {
+        colors: [color, 0xffffff],
+        count: 8,
+        speed: { min: 20, max: 55 },
+        scale: { start: 0.4, end: 0 },
+        lifespan: { min: 200, max: 450 },
+        radius: 6,
+      });
+    }
   }
 
   /** Mint flash + rising sparkles when a player respawns at a tile. */
