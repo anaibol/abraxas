@@ -4,6 +4,7 @@ import {
   ABILITIES,
   TileMap,
   Direction,
+  DIRECTION_DELTA,
   NpcType,
   BroadcastFn,
   NPC_RESPAWN_TIME_MS,
@@ -33,6 +34,15 @@ const LEASH_MULTIPLIER = 1.5;
 /** Number of random steps taken during a PATROL wander. */
 const PATROL_STEPS = 4;
 
+/** Max Manhattan distance a patrolling NPC may wander from its spawn point. */
+const PATROL_TETHER_RADIUS = 8;
+
+/** Boss/rare NPCs get a larger initial aggro radius (multiplier of AGGRO_RANGE). */
+const BOSS_AGGRO_MULTIPLIER = 1.5;
+
+/** Max number of live summon minions per summoner. */
+const MAX_SUMMONS = 3;
+
 type RespawnEntry = {
   type: NpcType;
   deadAt: number;
@@ -42,6 +52,8 @@ type RespawnEntry = {
 
 export class NpcSystem {
   private respawns: RespawnEntry[] = [];
+  /** Cached map reference updated each tick; used by handlers that need map access. */
+  private currentMap!: TileMap;
 
   constructor(
     private state: GameState,
@@ -116,6 +128,8 @@ export class NpcSystem {
     roomId: string,
     broadcast: BroadcastFn,
   ): void {
+    // Store map reference for use in state handlers
+    this.currentMap = map;
     this.respawns = this.respawns.filter((r) => {
       if (now - r.deadAt < NPC_RESPAWN_TIME_MS) return true;
       const safe = findSafeSpawn(r.spawnX, r.spawnY, map, this.spatial);
@@ -151,9 +165,16 @@ export class NpcSystem {
     });
   }
 
-  /** Finds the nearest attackable player within AGGRO_RANGE, or null if none. */
+  /** Returns the effective aggro radius for this NPC (bosses get a bonus). */
+  private getAggroRange(npc: Npc): number {
+    return NPC_STATS[npc.type].rareSpawn
+      ? Math.floor(AGGRO_RANGE * BOSS_AGGRO_MULTIPLIER)
+      : AGGRO_RANGE;
+  }
+
+  /** Finds the nearest attackable player within the NPC's aggro range, or null. */
   private scanForAggroTarget(npc: Npc): Player | null {
-    return this.spatial.findNearestPlayer(npc.tileX, npc.tileY, AGGRO_RANGE);
+    return this.spatial.findNearestPlayer(npc.tileX, npc.tileY, this.getAggroRange(npc));
   }
 
   private updateIdle(npc: Npc, tickCount: number): void {
@@ -190,7 +211,15 @@ export class NpcSystem {
     }
 
     const dir = [Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT][Math.floor(Math.random() * 4)];
-    this.movementSystem.tryMove(npc, dir, map, now, tickCount, roomId);
+
+    // Tether: discard the step (but still count it) if it would take the NPC
+    // too far from its spawn point, so it stays in its home area.
+    const { dx, dy } = DIRECTION_DELTA[dir];
+    const nx = npc.tileX + dx;
+    const ny = npc.tileY + dy;
+    if (MathUtils.manhattanDist({ x: nx, y: ny }, { x: npc.spawnX, y: npc.spawnY }) <= PATROL_TETHER_RADIUS) {
+      this.movementSystem.tryMove(npc, dir, map, now, tickCount, roomId);
+    }
     npc.patrolStepsLeft--;
   }
 
@@ -252,7 +281,7 @@ export class NpcSystem {
     }
 
     npc.facing = MathUtils.getDirection(npc.getPosition(), target.getPosition());
-    if (stats.abilities.length > 0 && this.tryUseAbility(npc, now, broadcast)) return;
+    if (stats.abilities.length > 0 && this.tryUseAbility(npc, now, broadcast, map)) return;
 
     this.combatSystem.tryAttack(npc, target.tileX, target.tileY, broadcast, now);
   }
@@ -277,6 +306,16 @@ export class NpcSystem {
   }
 
   private updateReturn(npc: Npc, map: TileMap, now: number, tickCount: number, roomId: string): void {
+    // Re-aggro any player that wanders into range while the NPC is heading home.
+    if (tickCount % IDLE_SCAN_INTERVAL === 0) {
+      const target = this.scanForAggroTarget(npc);
+      if (target) {
+        npc.targetId = target.sessionId;
+        npc.state = NpcState.CHASE;
+        return;
+      }
+    }
+
     const dist = MathUtils.manhattanDist(npc.getPosition(), { x: npc.spawnX, y: npc.spawnY });
     if (dist === 0) {
       npc.hp = npc.maxHp;
@@ -310,7 +349,7 @@ export class NpcSystem {
     return Math.abs(dx) >= Math.abs(dy) ? (dx >= 0 ? Direction.RIGHT : Direction.LEFT) : (dy > 0 ? Direction.DOWN : Direction.UP);
   }
 
-  private tryUseAbility(npc: Npc, now: number, broadcast: BroadcastFn): boolean {
+  private tryUseAbility(npc: Npc, now: number, broadcast: BroadcastFn, map: TileMap): boolean {
     const stats = NPC_STATS[npc.type];
     if (!stats?.abilities.length) return false;
     const target = this.spatial.findEntityBySessionId(npc.targetId);
@@ -336,7 +375,46 @@ export class NpcSystem {
     if (!available.length) return false;
 
     const abilityId = available[Math.floor(Math.random() * available.length)];
-    return this.combatSystem.tryCast(npc, abilityId, target.tileX, target.tileY, broadcast, now);
+    const didCast = this.combatSystem.tryCast(npc, abilityId, target.tileX, target.tileY, broadcast, now);
+
+    // If the chosen ability is a summon, actually spawn the minion server-side.
+    if (didCast && ABILITIES[abilityId]?.effect === "summon") {
+      this.handleSummonCast(npc, map);
+    }
+
+    return didCast;
+  }
+
+  /**
+   * Called after a successful summon cast. Spawns one minion of the type
+   * configured on the summoner's NpcStats.summonType, adjacent to the summoner,
+   * up to MAX_SUMMONS total live summons.
+   */
+  private handleSummonCast(summoner: Npc, map: TileMap): void {
+    const stats = NPC_STATS[summoner.type];
+    if (!stats.summonType) return;
+
+    // Count how many minions of this type are already alive to enforce the cap.
+    let liveMinions = 0;
+    this.state.npcs.forEach((n) => {
+      if (n.type === stats.summonType && n.alive) liveMinions++;
+    });
+    if (liveMinions >= MAX_SUMMONS) return;
+
+    // Try to place the minion in one of the four adjacent tiles.
+    const dirs = [Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT];
+    for (const dir of dirs) {
+      const { dx, dy } = DIRECTION_DELTA[dir];
+      const tx = summoner.tileX + dx;
+      const ty = summoner.tileY + dy;
+      if (tx < 0 || ty < 0 || tx >= map.width || ty >= map.height) continue;
+      if (map.collision[ty]?.[tx] !== 0) continue;
+      if (this.spatial.getEntitiesAt(tx, ty).length > 0) continue;
+      this.spawnNpcAt(stats.summonType, map, tx, ty);
+      return;
+    }
+    // No adjacent tile free — fall back to a random spawn.
+    this.spawnNpc(stats.summonType, map);
   }
 
   handleDeath(npc: Npc): void {
