@@ -633,7 +633,7 @@ export const ABILITIES: Record<string, Ability> = {
     fxId: 3,
   },
 
-  /** Lich/Ghost: AoE debuff that weakens all nearby enemies' INT + armor */
+  /** Ghost/Lich: AoE debuff that weakens all nearby enemies' armor */
   banshee_wail: {
     id: "banshee_wail",
     rangeTiles: 0,
@@ -647,7 +647,9 @@ export const ABILITIES: Record<string, Ability> = {
     damageSchool: "magical",
     key: "",
     durationMs: 6000,
-    aoeRadius: 4,
+    // Radius 3 instead of 4 — still a wide area effect but less oppressive
+    // when multiple ghosts or the lich are active simultaneously.
+    aoeRadius: 3,
     buffStat: "armor",
     buffAmount: 8,
     fxId: 16,
@@ -672,7 +674,7 @@ export const ABILITIES: Record<string, Ability> = {
     fxId: 16,
   },
 
-  /** Dragon/Goblin shaman: wide AoE fire damage around the caster */
+  /** Goblin shaman: small fire splash around the caster */
   fire_breath: {
     id: "fire_breath",
     rangeTiles: 0,
@@ -685,11 +687,13 @@ export const ABILITIES: Record<string, Ability> = {
     effect: "aoe",
     damageSchool: "magical",
     key: "",
-    aoeRadius: 3,
+    // Radius 2 keeps the blast tight — appropriate for a low-tier goblin ability.
+    // (Was 3, which made the AoE unreasonably large for a 30 EXP enemy.)
+    aoeRadius: 2,
     fxId: 3,
   },
 
-  /** Ice/Undead: AoE debuff that slows (reduces AGI) all nearby enemies */
+  /** Lich: AoE frost that slows (reduces AGI) all nearby enemies */
   frost_breath: {
     id: "frost_breath",
     rangeTiles: 0,

@@ -52,7 +52,9 @@ export class NpcSystem {
   ) {}
 
   spawnNpcs(count: number, map: TileMap): void {
-    const types = NPC_TYPES.filter((t) => !NPC_STATS[t].passive);
+    // Exclude passive NPCs (merchants/bankers) and rare/boss NPCs from the
+    // random world-spawn pool. Rare NPCs must be placed via map.npcs entries.
+    const types = NPC_TYPES.filter((t) => !NPC_STATS[t].passive && !NPC_STATS[t].rareSpawn);
 
     for (let i = 0; i < count; i++) {
       const type = types[Math.floor(Math.random() * types.length)];

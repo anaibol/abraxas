@@ -125,7 +125,7 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		armor: 0,
 		// Life drain (leech) + wail to weaken nearby enemies
 		abilities: ["soul_drain", "banshee_wail"],
-		expReward: 55,
+		expReward: 70,
 		// Heavily ability-focused fighter
 		abilityCastChance: 0.55,
 	},
@@ -135,15 +135,19 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		agi: 10,
 		int: 40,
 		speedTilesPerSecond: 2.5,
-		attackRange: 1,
+		// Ranged boss — stays at distance and fires long-range shadow bolts.
+		// High attackRange also enables the kiting back-away behaviour.
+		attackRange: 8,
 		attackCooldownMs: 1500,
 		attackWindupMs: 500,
 		armor: 25,
-		// Full boss toolkit: ranged nuke, AoE bolt, frost slow, summons
+		// Full boss toolkit: ranged nuke, frost slow, AoE debuff, summons
 		abilities: ["shadow_bolt", "frost_breath", "banshee_wail", "summon_skeleton"],
 		expReward: 500,
 		// Boss aggressively rotates its full ability kit
 		abilityCastChance: 0.7,
+		// Bosses should not appear in random spawns — place via map.npcs only
+		rareSpawn: true,
 	},
 	zombie: {
 		hp: 90,
@@ -157,7 +161,7 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		armor: 8,
 		// Bites to apply a slow-ticking, long-lasting disease DoT
 		abilities: ["disease_bite"],
-		expReward: 65,
+		expReward: 60,
 		abilityCastChance: 0.5,
 	},
 	troll: {
@@ -172,7 +176,7 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		armor: 20,
 		// Uses an emergency self-heal when critically low on HP
 		abilities: ["troll_regen"],
-		expReward: 180,
+		expReward: 150,
 		// High chance so it reliably heals itself when desperate
 		abilityCastChance: 0.7,
 	},
@@ -198,15 +202,17 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		agi: 15,
 		int: 12,
 		speedTilesPerSecond: 4,
+		// Melee fighter — closes to adjacent range for both auto-attacks and
+		// point-blank shadow bolt bursts; enrage activates a STR berserker window.
 		attackRange: 1,
 		attackCooldownMs: 900,
 		attackWindupMs: 250,
 		armor: 30,
-		// Enrages for melee burst windows and hurls shadow bolts at range
 		abilities: ["enrage", "shadow_bolt"],
 		expReward: 400,
-		// Aggressively rotates both offensive abilities
 		abilityCastChance: 0.65,
+		// Elite — place via map.npcs; should not appear in random spawns
+		rareSpawn: true,
 	},
 	banker: {
 		hp: 100,
