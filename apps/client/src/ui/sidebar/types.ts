@@ -30,11 +30,14 @@ export type PlayerState = {
 	stealthed?: boolean;
 	stunned?: boolean;
 	meditating?: boolean;
+	pvpEnabled?: boolean;
+	guildId?: string;
 	level?: number;
 	xp?: number;
 	maxXp?: number;
 	inventory?: InventorySlot[];
 	equipment?: EquipmentState;
+	pvpEnabled?: boolean;
 };
 
 export type GroupMember = { sessionId: string; name: string };

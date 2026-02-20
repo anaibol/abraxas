@@ -17,6 +17,7 @@ export const NPC_APPEARANCE: Record<
 	troll: { bodyId: 25, headId: 0 },
 	bat: { bodyId: 50, headId: 0 },
 	dark_knight: { bodyId: 3, headId: 0 },
+	horse: { bodyId: 65, headId: 0 },
 };
 
 export const NPC_STATS: Record<NpcType, NpcStats> = {
@@ -239,6 +240,21 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		armor: 100,
 		abilities: [],
 		passive: true,
+	},
+	horse: {
+		hp: 150,
+		str: 5,
+		agi: 30,
+		int: 3,
+		speedTilesPerSecond: 9,
+		attackRange: 0,
+		attackCooldownMs: 0,
+		attackWindupMs: 0,
+		armor: 5,
+		abilities: [],
+		expReward: 0,
+		passive: true,
+		fleesWhenLow: true,
 	},
 
 };
