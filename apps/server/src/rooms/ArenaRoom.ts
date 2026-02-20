@@ -56,6 +56,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 	private respawnSystem = new RespawnSystem();
 	private npcSystem!: NpcSystem;
 	private social!: SocialSystem;
+	private guild!: GuildSystem;
 	private friends!: FriendsSystem;
 	private messageHandler!: MessageHandler;
 	private playerService!: PlayerService;
@@ -90,6 +91,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 				this.buffSystem,
 			);
 			this.social = new SocialSystem(this.state, (sid) => this.findClient(sid));
+			this.guild = new GuildSystem(this.state, (sid) => this.findClient(sid));
 			this.friends = new FriendsSystem(this.state, (sid) =>
 				this.findClient(sid),
 			);
@@ -131,6 +133,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 					inventory: this.inventorySystem,
 					drops: this.drops,
 					social: this.social,
+					guild: this.guild,
 					friends: this.friends,
 					quests: this.quests,
 					trade: this.trade,
