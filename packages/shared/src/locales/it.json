@@ -113,15 +113,15 @@
     "pong": "Pong! {{rtt}}ms"
   },
   "social": {
-    "already_in_party": "Il giocatore è già in un gruppo",
+    "already_in_group": "Il giocatore è già in un gruppo",
     "leader_only_invite": "Solo il leader del gruppo può invitare",
-    "invited_to_party": "Invitato {{name}} al gruppo",
+    "invited_to_group": "Invitato {{name}} al gruppo",
     "no_invite": "Nessun invito attivo per questo gruppo",
-    "party_full": "Il gruppo è pieno",
-    "joined_party": "{{name}} si è unito al gruppo",
-    "left_party": "{{name}} ha lasciato il gruppo",
+    "group_full": "Il gruppo è pieno",
+    "joined_group": "{{name}} si è unito al gruppo",
+    "left_group": "{{name}} ha lasciato il gruppo",
     "leader_only_kick": "Solo il leader può cacciare i giocatori",
-    "kicked_from_party": "Sei stato cacciato dal gruppo",
+    "kicked_from_group": "Sei stato cacciato dal gruppo",
     "new_leader": "{{name}} è ora il leader del gruppo",
     "friend_request": "{{targetName}} vuole essere tuo amico",
     "trade_requested": "{{name}} vuole commerciare con te"
@@ -144,7 +144,7 @@
       "inv": "Inv",
       "spells": "Incantesimi",
       "quests": "Missioni",
-      "party": "Gruppo",
+      "group": "Gruppo",
       "friends": "Amici"
     },
     "inventory": {
@@ -161,11 +161,11 @@
       "xp": "pe",
       "gold_abbr": "o"
     },
-    "party": {
-      "not_in_party": "Non sei in un gruppo. Invita qualcuno per iniziarne uno.",
+    "group": {
+      "not_in_group": "Non sei in un gruppo. Invita qualcuno per iniziarne uno.",
       "session_id": "ID Sessione",
       "invite": "Invita",
-      "party_id": "ID Gruppo: {{id}}",
+      "group_id": "ID Gruppo: {{id}}",
       "leader_tag": "(L)",
       "trade": "[Scambia]",
       "kick": "[Caccia]",
@@ -176,7 +176,7 @@
       "add": "Aggiungi",
       "no_friends": "Ancora nessun amico.",
       "whisper_tag": "[S]",
-      "party_invite_tag": "[G]",
+      "group_invite_tag": "[G]",
       "trade_tag": "[Scambia]",
       "pending_requests": "Richieste in Sospeso",
       "accept": "[Accetta]"
@@ -185,7 +185,7 @@
       "trade": "[Scambia]",
       "kick": "[Caccia]",
       "whisper": "[S]",
-      "party_invite": "[G]"
+      "group_invite": "[G]"
     },
     "stats": {
       "str": "FOR",
@@ -574,7 +574,7 @@
   "context_menu": {
     "whisper": "💬 Sussurrare",
     "add_friend": "➕ Aggiungi amico",
-    "party_invite": "⚔️ Invita nel gruppo",
+    "group_invite": "⚔️ Invita nel gruppo",
     "trade": "🤝 Scambiare"
   },
   "kill_feed": {
@@ -617,11 +617,11 @@
   "console": {
     "tab_all": "TUTTO",
     "tab_global": "GLOBALE",
-    "tab_party": "GRUPPO",
+    "tab_group": "GRUPPO",
     "tab_whisper": "SUSSURRO",
     "tab_system": "SISTEMA",
     "tab_combat": "COMBATTIMENTO",
-    "placeholder_party": "Messaggio al Gruppo...",
+    "placeholder_group": "Messaggio al Gruppo...",
     "placeholder_default": "Scrivi un messaggio..."
   },
   "quest_status": {

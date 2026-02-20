@@ -113,16 +113,16 @@
     "pong": "Pong! {{rtt}}ms"
   },
   "social": {
-    "already_in_party": "Player is already in a party",
-    "leader_only_invite": "Only the party leader can invite",
-    "invited_to_party": "Invited {{name}} to party",
-    "no_invite": "No active invitation for this party",
-    "party_full": "Party is full",
-    "joined_party": "{{name}} joined the party",
-    "left_party": "{{name}} left the party",
+    "already_in_group": "Player is already in a group",
+    "leader_only_invite": "Only the group leader can invite",
+    "invited_to_group": "Invited {{name}} to group",
+    "no_invite": "No active invitation for this group",
+    "group_full": "Group is full",
+    "joined_group": "{{name}} joined the group",
+    "left_group": "{{name}} left the group",
     "leader_only_kick": "Only the leader can kick players",
-    "kicked_from_party": "You were kicked from the party",
-    "new_leader": "{{name}} is now the party leader",
+    "kicked_from_group": "You were kicked from the group",
+    "new_leader": "{{name}} is now the group leader",
     "friend_request": "{{targetName}} wants to be your friend",
     "trade_requested": "{{name}} wants to trade with you"
   },
@@ -144,7 +144,7 @@
       "inv": "Inv",
       "spells": "Spells",
       "quests": "Quests",
-      "party": "Party",
+      "group": "Group",
       "friends": "Friends"
     },
     "inventory": {
@@ -161,22 +161,22 @@
       "xp": "xp",
       "gold_abbr": "g"
     },
-    "party": {
-      "not_in_party": "Not in a party. Invite someone to start one.",
+    "group": {
+      "not_in_group": "Not in a group. Invite someone to start one.",
       "session_id": "Session ID",
       "invite": "Invite",
-      "party_id": "Party ID: {{id}}",
+      "group_id": "Group ID: {{id}}",
       "leader_tag": "(L)",
       "trade": "[Trade]",
       "kick": "[Kick]",
-      "leave": "Leave Party"
+      "leave": "Leave Group"
     },
     "friends": {
       "friend_name": "Friend name",
       "add": "Add",
       "no_friends": "No friends yet.",
       "whisper_tag": "[W]",
-      "party_invite_tag": "[P]",
+      "group_invite_tag": "[P]",
       "trade_tag": "[Trade]",
       "pending_requests": "Pending Requests",
       "accept": "[Accept]"
@@ -185,7 +185,7 @@
       "trade": "[Trade]",
       "kick": "[Kick]",
       "whisper": "[W]",
-      "party_invite": "[P]"
+      "group_invite": "[P]"
     },
     "stats": {
       "str": "STR",
@@ -574,7 +574,7 @@
   "context_menu": {
     "whisper": "💬 Whisper",
     "add_friend": "➕ Add Friend",
-    "party_invite": "⚔️ Invite to Party",
+    "group_invite": "⚔️ Invite to Group",
     "trade": "🤝 Trade"
   },
   "kill_feed": {
@@ -617,11 +617,11 @@
   "console": {
     "tab_all": "ALL",
     "tab_global": "GLOBAL",
-    "tab_party": "PARTY",
+    "tab_group": "PARTY",
     "tab_whisper": "WHISPER",
     "tab_system": "SYSTEM",
     "tab_combat": "COMBAT",
-    "placeholder_party": "Message Party...",
+    "placeholder_group": "Message Group...",
     "placeholder_default": "Type message..."
   },
   "quest_status": {

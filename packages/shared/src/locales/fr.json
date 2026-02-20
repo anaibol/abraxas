@@ -113,15 +113,15 @@
     "pong": "Pong ! {{rtt}}ms"
   },
   "social": {
-    "already_in_party": "Le joueur est déjà dans un groupe",
+    "already_in_group": "Le joueur est déjà dans un groupe",
     "leader_only_invite": "Seul le chef de groupe peut inviter",
-    "invited_to_party": "{{name}} invité au groupe",
+    "invited_to_group": "{{name}} invité au groupe",
     "no_invite": "Pas d'invitation active pour ce groupe",
-    "party_full": "Le groupe est plein",
-    "joined_party": "{{name}} a rejoint le groupe",
-    "left_party": "{{name}} a quitté le groupe",
+    "group_full": "Le groupe est plein",
+    "joined_group": "{{name}} a rejoint le groupe",
+    "left_group": "{{name}} a quitté le groupe",
     "leader_only_kick": "Seul le chef peut exclure des joueurs",
-    "kicked_from_party": "Vous avez été exclu du groupe",
+    "kicked_from_group": "Vous avez été exclu du groupe",
     "new_leader": "{{name}} est maintenant le chef de groupe",
     "friend_request": "{{targetName}} veut être votre ami",
     "trade_requested": "{{name}} veut commercer avec vous"
@@ -144,7 +144,7 @@
       "inv": "Inv",
       "spells": "Sorts",
       "quests": "Quêtes",
-      "party": "Groupe",
+      "group": "Groupe",
       "friends": "Amis"
     },
     "inventory": {
@@ -161,11 +161,11 @@
       "xp": "xp",
       "gold_abbr": "o"
     },
-    "party": {
-      "not_in_party": "Pas dans un groupe. Invitez quelqu'un pour en commencer un.",
+    "group": {
+      "not_in_group": "Pas dans un groupe. Invitez quelqu'un pour en commencer un.",
       "session_id": "ID de session",
       "invite": "Inviter",
-      "party_id": "ID de groupe : {{id}}",
+      "group_id": "ID de groupe : {{id}}",
       "leader_tag": "(L)",
       "trade": "[Échanger]",
       "kick": "[Exclure]",
@@ -176,7 +176,7 @@
       "add": "Ajouter",
       "no_friends": "Pas encore d'amis.",
       "whisper_tag": "[M]",
-      "party_invite_tag": "[G]",
+      "group_invite_tag": "[G]",
       "trade_tag": "[Échanger]",
       "pending_requests": "Demandes en attente",
       "accept": "[Accepter]"
@@ -185,7 +185,7 @@
       "trade": "[Échanger]",
       "kick": "[Exclure]",
       "whisper": "[M]",
-      "party_invite": "[G]"
+      "group_invite": "[G]"
     },
     "stats": {
       "str": "FOR",
@@ -574,7 +574,7 @@
   "context_menu": {
     "whisper": "💬 Chuchoter",
     "add_friend": "➕ Ajouter ami",
-    "party_invite": "⚔️ Inviter au groupe",
+    "group_invite": "⚔️ Inviter au groupe",
     "trade": "🤝 Échanger"
   },
   "kill_feed": {
@@ -617,11 +617,11 @@
   "console": {
     "tab_all": "TOUT",
     "tab_global": "GLOBAL",
-    "tab_party": "GROUPE",
+    "tab_group": "GROUPE",
     "tab_whisper": "MURMURE",
     "tab_system": "SYSTÈME",
     "tab_combat": "COMBAT",
-    "placeholder_party": "Message au Groupe...",
+    "placeholder_group": "Message au Groupe...",
     "placeholder_default": "Tapez un message..."
   },
   "quest_status": {

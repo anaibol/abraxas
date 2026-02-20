@@ -113,15 +113,15 @@
     "pong": "¡Pong! {{rtt}}ms"
   },
   "social": {
-    "already_in_party": "El jugador ya está en un grupo",
+    "already_in_group": "El jugador ya está en un grupo",
     "leader_only_invite": "Solo el líder del grupo puede invitar",
-    "invited_to_party": "Invitado {{name}} al grupo",
+    "invited_to_group": "Invitado {{name}} al grupo",
     "no_invite": "No hay una invitación activa para este grupo",
-    "party_full": "El grupo está lleno",
-    "joined_party": "{{name}} se ha unido al grupo",
-    "left_party": "{{name}} ha abandonado el grupo",
+    "group_full": "El grupo está lleno",
+    "joined_group": "{{name}} se ha unido al grupo",
+    "left_group": "{{name}} ha abandonado el grupo",
     "leader_only_kick": "Solo el líder puede expulsar jugadores",
-    "kicked_from_party": "Has sido expulsado del grupo",
+    "kicked_from_group": "Has sido expulsado del grupo",
     "new_leader": "{{name}} es ahora el líder del grupo",
     "friend_request": "{{targetName}} quiere ser tu amigo",
     "trade_requested": "{{name}} quiere comerciar contigo"
@@ -144,7 +144,7 @@
       "inv": "Inv",
       "spells": "Hechizos",
       "quests": "Misiones",
-      "party": "Grupo",
+      "group": "Grupo",
       "friends": "Amigos"
     },
     "inventory": {
@@ -161,11 +161,11 @@
       "xp": "pe",
       "gold_abbr": "g"
     },
-    "party": {
-      "not_in_party": "No estás en un grupo. Invita a alguien para empezar uno.",
+    "group": {
+      "not_in_group": "No estás en un grupo. Invita a alguien para empezar uno.",
       "session_id": "ID de Sesión",
       "invite": "Invitar",
-      "party_id": "ID de Grupo: {{id}}",
+      "group_id": "ID de Grupo: {{id}}",
       "leader_tag": "(L)",
       "trade": "[Comerciar]",
       "kick": "[Echar]",
@@ -176,7 +176,7 @@
       "add": "Añadir",
       "no_friends": "Aún no tienes amigos.",
       "whisper_tag": "[S]",
-      "party_invite_tag": "[G]",
+      "group_invite_tag": "[G]",
       "trade_tag": "[Comerciar]",
       "pending_requests": "Peticiones Pendientes",
       "accept": "[Aceptar]"
@@ -185,7 +185,7 @@
       "trade": "[Comerciar]",
       "kick": "[Echar]",
       "whisper": "[S]",
-      "party_invite": "[G]"
+      "group_invite": "[G]"
     },
     "stats": {
       "str": "FOR",
@@ -574,7 +574,7 @@
   "context_menu": {
     "whisper": "💬 Susurrar",
     "add_friend": "➕ Añadir amigo",
-    "party_invite": "⚔️ Invitar al grupo",
+    "group_invite": "⚔️ Invitar al grupo",
     "trade": "🤝 Comerciar"
   },
   "kill_feed": {
@@ -617,11 +617,11 @@
   "console": {
     "tab_all": "TODO",
     "tab_global": "GLOBAL",
-    "tab_party": "GRUPO",
+    "tab_group": "GRUPO",
     "tab_whisper": "SUSURRO",
     "tab_system": "SISTEMA",
     "tab_combat": "COMBATE",
-    "placeholder_party": "Mensaje al Grupo...",
+    "placeholder_group": "Mensaje al Grupo...",
     "placeholder_default": "Escribe un mensaje..."
   },
   "quest_status": {
