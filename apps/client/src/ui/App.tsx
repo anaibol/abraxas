@@ -698,7 +698,14 @@ export function App() {
               mySessionId={roomRef.current.sessionId}
               playerInventory={playerState.inventory ?? []}
               playerGold={playerState.gold ?? 0}
-              onUpdateOffer={(gold, items) => networkRef.current?.sendTradeOfferUpdate(gold, items)}
+              onUpdateOffer={(gold, items) => {
+                const mappedItems = items.map(item => ({
+                  itemId: item.itemId,
+                  quantity: item.quantity,
+                  slotIndex: (item as any).slotIndex ?? 0,
+                }));
+                networkRef.current?.sendTradeOfferUpdate(gold, mappedItems);
+              }}
               onConfirm={() => networkRef.current?.sendTradeConfirm()}
               onCancel={() => networkRef.current?.sendTradeCancel()}
             />

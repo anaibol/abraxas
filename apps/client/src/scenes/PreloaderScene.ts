@@ -1,4 +1,4 @@
-import { CLASS_APPEARANCE, ITEMS, NPC_APPEARANCE } from "@abraxas/shared";
+import { AudioAssets, CLASS_APPEARANCE, ITEMS, NPC_APPEARANCE } from "@abraxas/shared";
 import Phaser from "phaser";
 import { AoGrhResolver } from "../assets/AoGrhResolver";
 
@@ -40,56 +40,10 @@ export class PreloaderScene extends Phaser.Scene {
     this.load.json("idx-cascos", "indices/cascos.json");
     this.load.json("idx-fxs", "indices/fxs.json");
 
-    // Map existing placeholder sounds to new high-quality assets
-    this.load.audio("sfx-step1", "audio/kenney_rpg/Audio/footstep00.ogg");
-    this.load.audio("sfx-step2", "audio/kenney_rpg/Audio/footstep01.ogg");
-    this.load.audio("sfx-step3", "audio/kenney_rpg/Audio/footstep02.ogg");
-    this.load.audio("sfx-step4", "audio/kenney_rpg/Audio/footstep03.ogg");
-    this.load.audio("sfx-step5", "audio/kenney_rpg/Audio/footstep04.ogg");
-
-    this.load.audio("sfx-attack1", "audio/kenney_rpg/Audio/drawKnife1.ogg");
-    this.load.audio("sfx-attack2", "audio/kenney_rpg/Audio/drawKnife2.ogg");
-    this.load.audio("sfx-attack3", "audio/kenney_rpg/Audio/drawKnife3.ogg");
-
-    this.load.audio("sfx-hit1", "audio/kenney_impact/Audio/impactMetal_heavy_000.ogg");
-    this.load.audio("sfx-hit2", "audio/kenney_impact/Audio/impactMetal_heavy_001.ogg");
-    this.load.audio("sfx-hit3", "audio/kenney_impact/Audio/impactMetal_heavy_002.ogg");
-
-    this.load.audio("sfx-spell", "audio/magic/FX411.ogg");
-    this.load.audio("sfx-death", "audio/sonidos/14.ogg");
-    this.load.audio("sfx-heal", "audio/magic/Replenish.ogg");
-    this.load.audio("sfx-buff", "audio/magic/montage-sfx-20130926@031949.ogg");
-    this.load.audio("sfx-stealth", "audio/magic/shimmer_1.ogg");
-    this.load.audio("sfx-summon", "audio/magic/ghost_1.ogg");
-    this.load.audio("sfx-magic-hit", "audio/magic/FX261.ogg");
-    
-    // New SFX
-    this.load.audio("sfx-levelup", "audio/kenney_ui/Audio/maximize_006.ogg");
-    this.load.audio("sfx-notification", "audio/kenney_ui/Audio/bong_001.ogg");
-    this.load.audio("sfx-mount", "audio/kenney_rpg/Audio/clothBelt.ogg");
-    this.load.audio("sfx-bow", "audio/misc/Archers-shooting.ogg");
-    this.load.audio("sfx-coins", "audio/kenney_rpg/Audio/handleCoins.ogg");
-    this.load.audio("sfx-quest-accept", "audio/kenney_ui/Audio/confirmation_001.ogg");
-    this.load.audio("sfx-quest-complete", "audio/kenney_ui/Audio/confirmation_002.ogg");
-
-    // UI Sounds
-    this.load.audio("sfx-click", "audio/kenney_ui/Audio/click_002.ogg");
-    this.load.audio("sfx-click-hover", "audio/kenney_ui/Audio/tick_001.ogg");
-    this.load.audio("sfx-click-open", "audio/kenney_ui/Audio/open_001.ogg");
-    this.load.audio("sfx-click-close", "audio/kenney_ui/Audio/close_001.ogg");
-    this.load.audio("music-arena", "audio/musica/101.ogg");
-
-    // Ambiance
-    this.load.audio("ambiance-wind", "audio/ambiance/wind.ogg");
-    this.load.audio("ambiance-crickets", "audio/ambiance/crickets.ogg");
-
-    // NPC specific
-    this.load.audio("npc-skeleton-rattle", "audio/npc/skeleton_rattle.ogg");
-    this.load.audio("npc-grunt", "audio/npc/creatures/grunt_01.ogg");
-    this.load.audio("npc-roar", "audio/npc/creatures/roar_01.ogg");
-    this.load.audio("npc-scream", "audio/npc/creatures/scream_01.ogg");
-    this.load.audio("npc-hurt", "audio/npc/creatures/hurt_01.ogg");
-    this.load.audio("npc-levelup", "audio/kenney_ui/Audio/maximize_008.ogg"); // Using an existing asset
+    // Load all audio assets from manifest
+    for (const [key, path] of Object.entries(AudioAssets)) {
+      this.load.audio(path, path);
+    }
   }
 
   create() {
@@ -149,8 +103,6 @@ export class PreloaderScene extends Phaser.Scene {
       this.scene.start("GameScene");
     });
 
-    this.load.audio("sfx-sword-sfx", "audio/npc/sword_sfx.ogg");
-    this.load.audio("sfx-magical-1-0", "audio/spells/magical_1_0.ogg");
     this.load.start();
   }
 }

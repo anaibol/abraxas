@@ -1,38 +1,39 @@
+import { AudioAssets } from "@abraxas/shared";
 import Phaser from "phaser";
 import { gameSettings } from "../settings/gameSettings";
 
 // Base volumes baked into each sound; settings scale these.
 const BASE_MUSIC_VOL = 0.15;
-const BASE_SFX: Record<string, number> = {
-  "sfx-step1": 0.4,
-  "sfx-step2": 0.4,
-  "sfx-step3": 0.4,
-  "sfx-step4": 0.4,
-  "sfx-step5": 0.4,
-  "sfx-attack1": 0.5,
-  "sfx-attack2": 0.5,
-  "sfx-attack3": 0.5,
-  "sfx-spell": 0.5,
-  "sfx-hit1": 0.5,
-  "sfx-hit2": 0.5,
-  "sfx-hit3": 0.5,
-  "sfx-death": 0.6,
-  "sfx-heal": 0.5,
-  "sfx-click": 0.4,
-  "sfx-click-hover": 0.2,
-  "sfx-click-open": 0.4,
-  "sfx-click-close": 0.4,
-  "sfx-levelup": 0.6,
-  "sfx-notification": 0.7,
-  "sfx-mount": 0.5,
-  "sfx-buff": 0.6,
-  "sfx-stealth": 0.6,
-  "sfx-summon": 0.6,
-  "sfx-magic-hit": 0.5,
-  "sfx-bow": 0.5,
-  "sfx-coins": 0.7,
-  "sfx-quest-accept": 0.6,
-  "sfx-quest-complete": 0.6,
+const BASE_SFX: Partial<Record<string, number>> = {
+  [AudioAssets.KENNEY_RPG_AUDIO_FOOTSTEP00]: 0.4,
+  [AudioAssets.KENNEY_RPG_AUDIO_FOOTSTEP01]: 0.4,
+  [AudioAssets.KENNEY_RPG_AUDIO_FOOTSTEP02]: 0.4,
+  [AudioAssets.KENNEY_RPG_AUDIO_FOOTSTEP03]: 0.4,
+  [AudioAssets.KENNEY_RPG_AUDIO_FOOTSTEP04]: 0.4,
+  [AudioAssets.KENNEY_RPG_AUDIO_DRAWKNIFE1]: 0.5,
+  [AudioAssets.KENNEY_RPG_AUDIO_DRAWKNIFE2]: 0.5,
+  [AudioAssets.KENNEY_RPG_AUDIO_DRAWKNIFE3]: 0.5,
+  [AudioAssets.MAGIC_FX411]: 0.5,
+  [AudioAssets.KENNEY_IMPACT_AUDIO_IMPACTMETAL_HEAVY_000]: 0.5,
+  [AudioAssets.KENNEY_IMPACT_AUDIO_IMPACTMETAL_HEAVY_001]: 0.5,
+  [AudioAssets.KENNEY_IMPACT_AUDIO_IMPACTMETAL_HEAVY_002]: 0.5,
+  [AudioAssets.SONIDOS_14]: 0.6,
+  [AudioAssets.MAGIC_REPLENISH]: 0.5,
+  [AudioAssets.KENNEY_UI_AUDIO_CLICK_002]: 0.4,
+  [AudioAssets.KENNEY_UI_AUDIO_TICK_001]: 0.2,
+  [AudioAssets.KENNEY_UI_AUDIO_OPEN_001]: 0.4,
+  [AudioAssets.KENNEY_UI_AUDIO_CLOSE_001]: 0.4,
+  [AudioAssets.KENNEY_UI_AUDIO_MAXIMIZE_006]: 0.6,
+  [AudioAssets.KENNEY_UI_AUDIO_BONG_001]: 0.7,
+  [AudioAssets.KENNEY_RPG_AUDIO_CLOTHBELT]: 0.5,
+  [AudioAssets.MAGIC_MONTAGE_SFX_20130926_031949]: 0.6,
+  [AudioAssets.MAGIC_SHIMMER_1]: 0.6,
+  [AudioAssets.MAGIC_GHOST_1]: 0.6,
+  [AudioAssets.MAGIC_FX261]: 0.5,
+  [AudioAssets.MISC_ARCHERS_SHOOTING]: 0.5,
+  [AudioAssets.KENNEY_RPG_AUDIO_HANDLECOINS]: 0.7,
+  [AudioAssets.KENNEY_UI_AUDIO_CONFIRMATION_001]: 0.6,
+  [AudioAssets.KENNEY_UI_AUDIO_CONFIRMATION_002]: 0.6,
 };
 
 export class SoundManager {
@@ -50,7 +51,6 @@ export class SoundManager {
 
   private applyMusicVolume(vol: number) {
     if (!this.music) return;
-    // Phaser WebAudioSound / HTML5Sound both expose `setVolume`
     if (
       this.music instanceof Phaser.Sound.WebAudioSound ||
       this.music instanceof Phaser.Sound.HTML5AudioSound
@@ -69,41 +69,61 @@ export class SoundManager {
     }
   }
 
-  private playRandom(prefix: string, count: number, opts?: Phaser.Types.Sound.SoundConfig) {
-    const rnd = Math.floor(Math.random() * count) + 1; // 1 to count
-    this.play(`${prefix}${rnd}`, opts);
+  playStep() {
+    const steps = [
+      AudioAssets.KENNEY_RPG_AUDIO_FOOTSTEP00,
+      AudioAssets.KENNEY_RPG_AUDIO_FOOTSTEP01,
+      AudioAssets.KENNEY_RPG_AUDIO_FOOTSTEP02,
+      AudioAssets.KENNEY_RPG_AUDIO_FOOTSTEP03,
+      AudioAssets.KENNEY_RPG_AUDIO_FOOTSTEP04,
+    ];
+    this.play(steps[Math.floor(Math.random() * steps.length)]);
   }
 
-  playStep() {
-    this.playRandom("sfx-step", 5);
-  }
   playAttack() {
-    this.playRandom("sfx-attack", 3);
+    const attacks = [
+      AudioAssets.KENNEY_RPG_AUDIO_DRAWKNIFE1,
+      AudioAssets.KENNEY_RPG_AUDIO_DRAWKNIFE2,
+      AudioAssets.KENNEY_RPG_AUDIO_DRAWKNIFE3,
+    ];
+    this.play(attacks[Math.floor(Math.random() * attacks.length)]);
   }
+
   playSpell() {
-    this.play("sfx-spell");
+    this.play(AudioAssets.MAGIC_FX411);
   }
+
   playHit() {
-    this.playRandom("sfx-hit", 3);
+    const hits = [
+      AudioAssets.KENNEY_IMPACT_AUDIO_IMPACTMETAL_HEAVY_000,
+      AudioAssets.KENNEY_IMPACT_AUDIO_IMPACTMETAL_HEAVY_001,
+      AudioAssets.KENNEY_IMPACT_AUDIO_IMPACTMETAL_HEAVY_002,
+    ];
+    this.play(hits[Math.floor(Math.random() * hits.length)]);
   }
+
   playDeath() {
-    this.play("sfx-death");
+    this.play(AudioAssets.SONIDOS_14);
   }
+
   playHeal() {
-    this.play("sfx-heal");
+    this.play(AudioAssets.MAGIC_REPLENISH);
   }
+
   playLevelUp() {
-    this.play("sfx-levelup");
+    this.play(AudioAssets.KENNEY_UI_AUDIO_MAXIMIZE_006);
   }
+
   playNotification() {
-    this.play("sfx-notification");
+    this.play(AudioAssets.KENNEY_UI_AUDIO_BONG_001);
   }
+
   playMount() {
-    this.scene.sound.play("sfx-mount", { volume: 0.5 });
+    this.play(AudioAssets.KENNEY_RPG_AUDIO_CLOTHBELT, { volume: 0.5 });
   }
 
   // Ambiance
-  startAmbiance(key: "ambiance-wind" | "ambiance-crickets") {
+  startAmbiance(key: typeof AudioAssets.AMBIANCE_WIND | typeof AudioAssets.AMBIANCE_CRICKETS) {
     if (this.currentAmbiance) {
       if (this.currentAmbiance.key === key) return;
       this.stopAmbiance();
@@ -132,73 +152,72 @@ export class SoundManager {
     this.currentAmbiance = null;
   }
 
-  // NPC Specific
   playNpcAttack(type: string) {
     if (type.includes("skeleton")) {
-      this.scene.sound.play("npc-skeleton-rattle", { volume: 0.4 });
+      this.play(AudioAssets.NPC_SKELETON_RATTLE, { volume: 0.4 });
     } else if (["dragon", "troll", "bear", "orc"].includes(type)) {
-      this.scene.sound.play("npc-roar", { volume: 0.5 });
+      this.play(AudioAssets.NPC_CREATURES_ROAR_01, { volume: 0.5 });
     } else {
-      this.scene.sound.play("npc-grunt", { volume: 0.4 });
+      this.play(AudioAssets.NPC_CREATURES_GRUNT_01, { volume: 0.4 });
     }
   }
 
   playNpcDeath(type: string) {
     if (type.includes("skeleton")) {
-      this.scene.sound.play("npc-skeleton-rattle", { volume: 0.6 });
+      this.play(AudioAssets.NPC_SKELETON_RATTLE, { volume: 0.6 });
     } else if (["dragon", "troll", "bear", "orc"].includes(type)) {
-      this.scene.sound.play("npc-scream", { volume: 0.6 });
+      this.play(AudioAssets.NPC_CREATURES_SCREAM_01, { volume: 0.6 });
     } else {
-      this.scene.sound.play("npc-hurt", { volume: 0.5 });
+      this.play(AudioAssets.NPC_CREATURES_HURT_01, { volume: 0.5 });
     }
   }
 
   playNpcLevelUp() {
-    this.scene.sound.play("npc-levelup", { volume: 0.5 });
+    this.play(AudioAssets.KENNEY_UI_AUDIO_MAXIMIZE_008, { volume: 0.5 });
   }
 
   playBuff() {
-    this.play("sfx-buff");
+    this.play(AudioAssets.MAGIC_MONTAGE_SFX_20130926_031949);
   }
   playStealth() {
-    this.play("sfx-stealth");
+    this.play(AudioAssets.MAGIC_SHIMMER_1);
   }
   playSummon() {
-    this.play("sfx-summon");
+    this.play(AudioAssets.MAGIC_GHOST_1);
   }
   playMagicHit() {
-    this.play("sfx-magic-hit");
+    this.play(AudioAssets.MAGIC_FX261);
   }
   playBow() {
-    this.play("sfx-bow");
+    this.play(AudioAssets.MISC_ARCHERS_SHOOTING);
   }
   playCoins() {
-    this.play("sfx-coins");
+    this.play(AudioAssets.KENNEY_RPG_AUDIO_HANDLECOINS);
   }
   playQuestAccept() {
-    this.play("sfx-quest-accept");
+    this.play(AudioAssets.KENNEY_UI_AUDIO_CONFIRMATION_001);
   }
   playQuestComplete() {
-    this.play("sfx-quest-complete");
+    this.play(AudioAssets.KENNEY_UI_AUDIO_CONFIRMATION_002);
   }
 
   playUIClick() {
-    this.play("sfx-click");
+    this.play(AudioAssets.KENNEY_UI_AUDIO_CLICK_002);
   }
   playUIHover() {
-    this.play("sfx-click-hover");
+    this.play(AudioAssets.KENNEY_UI_AUDIO_TICK_001);
   }
   playUIOpen() {
-    this.play("sfx-click-open");
+    this.play(AudioAssets.KENNEY_UI_AUDIO_OPEN_001);
   }
   playUIClose() {
-    this.play("sfx-click-close");
+    this.play(AudioAssets.KENNEY_UI_AUDIO_CLOSE_001);
   }
 
   startMusic() {
     if (this.music) return;
     const vol = gameSettings.get().musicVolume;
-    this.music = this.scene.sound.add("music-arena", {
+    this.music = this.scene.sound.add(AudioAssets.MUSICA_101, {
       loop: true,
       volume: BASE_MUSIC_VOL * vol,
     });

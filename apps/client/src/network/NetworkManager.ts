@@ -326,7 +326,7 @@ export class NetworkManager {
     this._send(ClientMessageType.TradeAccept, { requesterSessionId });
   }
 
-  sendTradeOfferUpdate(gold: number, items: { itemId: string; quantity: number; slotIndex: number }[]) {
+  sendTradeOfferUpdate(gold: number, items: { itemId: string; quantity: number }[]) {
     this._send(ClientMessageType.TradeOfferUpdate, { gold, items });
   }
 

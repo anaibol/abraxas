@@ -1,5 +1,5 @@
 import type { Direction, NpcEntityState, PlayerEntityState, WelcomeData } from "@abraxas/shared";
-import { CLASS_STATS, DIRECTION_DELTA, ITEMS, i18n, TILE_SIZE } from "@abraxas/shared";
+import { AudioAssets, CLASS_STATS, DIRECTION_DELTA, ITEMS, i18n, TILE_SIZE, ServerMessageType } from "@abraxas/shared";
 import { Callbacks, type Room } from "@colyseus/sdk";
 import Phaser from "phaser";
 import type { Drop } from "../../../server/src/schema/Drop";
@@ -134,9 +134,9 @@ export class GameScene extends Phaser.Scene {
 
     // Start ambiance based on map
     if (this.welcome.roomMapName && this.welcome.roomMapName.includes("arena")) {
-      this.soundManager.startAmbiance("ambiance-wind");
+      this.soundManager.startAmbiance(AudioAssets.AMBIANCE_WIND);
     } else {
-      this.soundManager.startAmbiance("ambiance-crickets");
+      this.soundManager.startAmbiance(AudioAssets.AMBIANCE_CRICKETS);
     }
 
     this.onReady?.(this.soundManager);
