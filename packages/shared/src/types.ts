@@ -17,6 +17,7 @@ export const EQUIPMENT_SLOTS = [
 	"shield",
 	"helmet",
 	"ring",
+	"mount",
 ] as const;
 export type EquipmentSlot = (typeof EQUIPMENT_SLOTS)[number];
 export type ClassType =
@@ -39,7 +40,8 @@ export type NpcType =
 	| "zombie"
 	| "troll"
 	| "bat"
-	| "dark_knight";
+	| "dark_knight"
+	| "horse";
 
 export enum NpcState {
 	IDLE = "idle",
@@ -105,6 +107,7 @@ export interface TileMap {
 	tileTypes?: number[][];
 	spawns: { x: number; y: number }[];
 	newbieSpawns?: { x: number; y: number }[];
+	safeZones?: { x: number; y: number; w: number; h: number }[];
 	npcCount?: number;
 	merchantCount?: number;
 	npcs?: { type: NpcType; x: number; y: number }[];
@@ -210,6 +213,7 @@ export interface EquipmentData {
 	helmet: string;
 	armor: string;
 	ring: string;
+	mount: string;
 }
 
 export interface TradeOffer {
@@ -254,6 +258,8 @@ export interface PlayerEntityState extends BaseEntityState {
 	equipShield: string;
 	equipHelmet: string;
 	meditating: boolean;
+	guildId?: string;
+	pvpEnabled: boolean;
 	type?: never;
 }
 
@@ -315,11 +321,16 @@ export enum ServerMessageType {
 	// Bank
 	BankOpened = "bank_opened",
 	BankSync = "bank_sync",
+
+	// Guild
+	GuildInvited = "guild_invited",
+	GuildUpdate = "guild_update",
 }
 
 export enum ChatChannel {
 	Global = "global",
 	Group = "group",
+	Guild = "guild",
 	Whisper = "whisper",
 	System = "system",
 }
@@ -462,6 +473,14 @@ export type ServerMessages = {
 	// Bank
 	[ServerMessageType.BankOpened]: {};
 	[ServerMessageType.BankSync]: { items: InventoryEntry[] };
+
+	// Guild
+	[ServerMessageType.GuildInvited]: { guildId: string; inviterName: string; guildName: string };
+	[ServerMessageType.GuildUpdate]: {
+		guildId: string;
+		name: string;
+		members: { sessionId?: string; name: string; role: "LEADER" | "OFFICER" | "MEMBER"; online: boolean }[];
+	};
 };
 
 export type WelcomeData = ServerMessages[ServerMessageType.Welcome];
@@ -501,7 +520,20 @@ export enum ClientMessageType {
 	BankWithdraw = "bank_withdraw",
 	BankClose = "bank_close",
 
+	// PvP
+	TogglePvP = "toggle_pvp",
+
+	// Guilds
+	GuildCreate = "guild_create",
+	GuildInvite = "guild_invite",
+	GuildAccept = "guild_accept",
+	GuildLeave = "guild_leave",
+	GuildKick = "guild_kick",
+	GuildPromote = "guild_promote",
+	GuildDemote = "guild_demote",
+
 	Meditate = "meditate",
+	Tame = "tame",
 
 	// GM commands
 	GMTeleport = "gm_teleport",
@@ -560,6 +592,18 @@ export type ClientMessages = {
 		bankSlotIndex: number;
 	};
 	[ClientMessageType.BankClose]: {};
+
+	// PvP
+	[ClientMessageType.TogglePvP]: {};
+
+	// Guilds
+	[ClientMessageType.GuildCreate]: { name: string };
+	[ClientMessageType.GuildInvite]: { targetSessionId: string };
+	[ClientMessageType.GuildAccept]: { guildId: string };
+	[ClientMessageType.GuildLeave]: {};
+	[ClientMessageType.GuildKick]: { targetName: string };
+	[ClientMessageType.GuildPromote]: { targetName: string };
+	[ClientMessageType.GuildDemote]: { targetName: string };
 
 	[ClientMessageType.Meditate]: {};
 

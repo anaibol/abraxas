@@ -43,8 +43,7 @@ export class PlayerSprite {
   private shieldSprite: Phaser.GameObjects.Sprite | null = null;
   private helmetSprite: Phaser.GameObjects.Sprite | null = null;
   private nameText: Phaser.GameObjects.Text;
-  private hpBarBg: Phaser.GameObjects.Rectangle;
-  private hpBar: Phaser.GameObjects.Rectangle;
+  private hpBarGfx: Phaser.GameObjects.Graphics;
   private speakingIcon: Phaser.GameObjects.Text;
   private chatBubbleText: Phaser.GameObjects.Text | null = null;
 
@@ -169,11 +168,9 @@ export class PlayerSprite {
     });
     this.nameText.setOrigin(0.5, 0);
 
-    const barWidth = TILE_SIZE - 6;
-    this.hpBarBg = scene.add.rectangle(0, TILE_SIZE / 2 + 2, barWidth, 3, 0x333333);
-    this.hpBar = scene.add.rectangle(0, TILE_SIZE / 2 + 2, barWidth, 3, 0x33cc33);
-    this.hpBarBg.setVisible(false);
-    this.hpBar.setVisible(false);
+    this.hpBarGfx = scene.add.graphics();
+    this.hpBarGfx.setVisible(false);
+    this.drawHpBar(1.0);
 
     this.speakingIcon = scene.add.text(0, -45, "🎤", { fontSize: "16px" });
     this.speakingIcon.setOrigin(0.5, 1);
@@ -182,8 +179,7 @@ export class PlayerSprite {
     const containerChildren: Phaser.GameObjects.GameObject[] = [
       this.bodySprite,
       this.nameText,
-      this.hpBarBg,
-      this.hpBar,
+      this.hpBarGfx,
       this.speakingIcon,
     ];
     if (this.headSprite) containerChildren.push(this.headSprite);
@@ -196,8 +192,8 @@ export class PlayerSprite {
       Phaser.Geom.Rectangle.Contains,
     );
     if (!isLocal) {
-      this.container.on("pointerover", () => { this.hpBarBg.setVisible(true); this.hpBar.setVisible(true); });
-      this.container.on("pointerout", () => { this.hpBarBg.setVisible(false); this.hpBar.setVisible(false); });
+      this.container.on("pointerover", () => { this.hpBarGfx.setVisible(true); });
+      this.container.on("pointerout", () => { this.hpBarGfx.setVisible(false); });
     }
 
     this.resolver.ensureAnimation(scene, bodyGrhId, "body");
@@ -422,10 +418,16 @@ export class PlayerSprite {
 
   // ── Status effect API ─────────────────────────────────────────────────────
 
-  /** Ensures a small star texture exists (shared by stun + holy bursts). */
+  /** Ensures small particle textures exist (shared by stun, poison, buff, etc.). */
   private ensureStatusTextures(scene: Phaser.Scene) {
     if (!scene.textures.exists("status-star")) {
       const g = scene.add.graphics();
+      // Soft glow halo behind the star
+      for (let r = 7; r >= 1; r--) {
+        g.fillStyle(0xffffff, Math.pow(1 - r / 7, 1.5) * 0.5);
+        g.fillCircle(8, 8, r);
+      }
+      // Sharp 8-point star on top
       g.fillStyle(0xffffff, 1);
       const cx = 8, cy = 8, outer = 7, inner = 2.5;
       const pts: Phaser.Math.Vector2[] = [];
@@ -439,9 +441,13 @@ export class PlayerSprite {
       g.destroy();
     }
     if (!scene.textures.exists("status-dot")) {
+      // Soft radial glow instead of a flat solid circle
       const g = scene.add.graphics();
-      g.fillStyle(0xffffff, 1);
-      g.fillCircle(4, 4, 4);
+      for (let r = 4; r >= 1; r--) {
+        const a = Math.pow(1 - (r - 1) / 4, 1.8);
+        g.fillStyle(0xffffff, a);
+        g.fillCircle(4, 4, r);
+      }
       g.generateTexture("status-dot", 8, 8);
       g.destroy();
     }
@@ -672,11 +678,17 @@ export class PlayerSprite {
 
   private ensureFireTexture(scene: Phaser.Scene) {
     if (scene.textures.exists("meditation-fire")) return;
-    const gfx = scene.add.graphics();
-    gfx.fillStyle(0xffffff, 1);
-    gfx.fillCircle(6, 6, 6);
-    gfx.generateTexture("meditation-fire", 12, 12);
-    gfx.destroy();
+    // Soft radial glow — the particle tint provides all the fire colouring,
+    // so we just need a clean white glow shape with a bright, crisp centre.
+    const g = scene.add.graphics();
+    for (let r = 8; r >= 1; r--) {
+      const t = (r - 1) / 8;
+      const a = Math.pow(1 - t, 1.6);
+      g.fillStyle(0xffffff, a);
+      g.fillCircle(8, 8, r);
+    }
+    g.generateTexture("meditation-fire", 16, 16);
+    g.destroy();
   }
 
   setMeditating(meditating: boolean) {
@@ -693,7 +705,7 @@ export class PlayerSprite {
         {
           x: { min: -8, max: 8 },
           y: { min: -TILE_SIZE * 1.1, max: -TILE_SIZE * 0.1 },
-          scale: { start: 0.55, end: 0 },
+          scale: { start: 0.42, end: 0 }, // slightly smaller to match the larger 16×16 texture
           alpha: { start: 0.9, end: 0 },
           tint: [0xff2200, 0xff6600, 0xffaa00, 0xffdd00],
           speed: { min: 12, max: 30 },
@@ -710,20 +722,40 @@ export class PlayerSprite {
     }
   }
 
-  updateHpMana(hp: number, _mana: number) {
-    const hpRatio = Math.max(0, hp / this.maxHp);
-    const barWidth = TILE_SIZE - 6;
+  /** Redraws the HP bar Graphics with a border, dark track, coloured fill, and highlight strip. */
+  private drawHpBar(hpRatio: number) {
+    const barW = TILE_SIZE - 4;
+    const barH = 4;
+    const bx = -barW / 2;
+    const by = TILE_SIZE / 2 + 1;
 
-    this.hpBar.width = barWidth * hpRatio;
-    this.hpBar.x = -(barWidth * (1 - hpRatio)) / 2;
+    this.hpBarGfx.clear();
 
-    if (hpRatio > 0.5) {
-      this.hpBar.setFillStyle(0x33cc33);
-    } else if (hpRatio > 0.25) {
-      this.hpBar.setFillStyle(0xcccc33);
-    } else {
-      this.hpBar.setFillStyle(0xcc3333);
+    // 1px dark border/outline
+    this.hpBarGfx.fillStyle(0x000000, 0.75);
+    this.hpBarGfx.fillRect(bx - 1, by - 1, barW + 2, barH + 2);
+
+    // Dark track background
+    this.hpBarGfx.fillStyle(0x111111, 1);
+    this.hpBarGfx.fillRect(bx, by, barW, barH);
+
+    if (hpRatio > 0) {
+      const fillW = Math.max(1, Math.round(barW * hpRatio));
+      const fillColor = hpRatio > 0.5 ? 0x22cc44 : hpRatio > 0.25 ? 0xddcc22 : 0xcc2222;
+      const hlColor   = hpRatio > 0.5 ? 0x44ff77 : hpRatio > 0.25 ? 0xffee55 : 0xff5555;
+
+      // Main fill
+      this.hpBarGfx.fillStyle(fillColor, 1);
+      this.hpBarGfx.fillRect(bx, by, fillW, barH);
+
+      // 1px bright top highlight strip for a subtle 3-D bevel look
+      this.hpBarGfx.fillStyle(hlColor, 0.5);
+      this.hpBarGfx.fillRect(bx, by, fillW, 1);
     }
+  }
+
+  updateHpMana(hp: number, _mana: number) {
+    this.drawHpBar(Math.max(0, hp / this.maxHp));
   }
 
   update(delta: number) {

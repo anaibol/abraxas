@@ -19,6 +19,13 @@ enum CharacterClass {
   ROGUE
   CLERIC
   RANGER
+  PALADIN
+}
+
+enum GuildRole {
+  LEADER
+  OFFICER
+  MEMBER
 }
 
 enum EquipSlot {
@@ -96,6 +103,9 @@ model Character {
   y      Float  @default(0)
   facing String @default("down")
 
+  pvpEnabled  Boolean      @default(false)
+  guildMember GuildMember?
+
   stats      CharacterStats?
   inventory  Inventory?
   bank       Bank?
@@ -104,6 +114,28 @@ model Character {
 
   @@index([accountId])
   @@index([mapId])
+}
+
+model Guild {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  members GuildMember[]
+}
+
+model GuildMember {
+  id      String @id @default(cuid())
+  guildId String
+  guild   Guild  @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  characterId String    @unique
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  role     GuildRole @default(MEMBER)
+  joinedAt DateTime  @default(now())
+
+  @@index([guildId])
 }
 
 model CharacterStats {

@@ -209,7 +209,7 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
               >
                 {hint.usage}
               </Text>
-              <Text fontSize="11px" color="rgba(255,255,255,0.45)" noOfLines={1}>
+              <Text fontSize="11px" color="rgba(255,255,255,0.45)" lineClamp={1}>
                 {hint.desc}
               </Text>
             </HStack>

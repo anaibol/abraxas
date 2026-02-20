@@ -9,7 +9,10 @@ if (savedLang) {
   i18n.changeLanguage(savedLang);
 }
 
-createRoot(document.getElementById("root")!).render(
+const rootElement = document.getElementById("root");
+if (!rootElement) throw new Error("Could not find root element");
+
+createRoot(rootElement).render(
   <I18nextProvider i18n={i18n}>
     <AudioProvider>
       <App />

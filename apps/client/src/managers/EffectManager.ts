@@ -47,63 +47,74 @@ export class EffectManager {
 		if (this.texturesReady) return;
 		this.texturesReady = true;
 
-		// fx-circle — soft radial glow: bright centre fading to transparent edge
+		// fx-circle — soft radial glow with power-curve falloff: very bright centre,
+		// fast transparent fade toward the edge for crisp, punchy glow particles.
 		if (!this.scene.textures.exists(TEX.CIRCLE)) {
 			const g = this.scene.add.graphics();
 			for (let r = 8; r >= 1; r--) {
-				g.fillStyle(0xffffff, 1 - (r - 1) / 8);
+				const t = (r - 1) / 8; // 0 = innermost, 1 = outermost
+				const a = Math.pow(1 - t, 1.8); // power curve → bright centre, quick falloff
+				g.fillStyle(0xffffff, a);
 				g.fillCircle(8, 8, r);
 			}
 			g.generateTexture(TEX.CIRCLE, 16, 16);
 			g.destroy();
 		}
 
-		// fx-star — 4-point star shape
+		// fx-star — 8-point star with a soft glow halo behind it (sparkle / holy / buffs)
 		if (!this.scene.textures.exists(TEX.STAR)) {
 			const g = this.scene.add.graphics();
+			// Soft glow halo drawn first so the crisp star sits on top
+			for (let r = 7; r >= 1; r--) {
+				const a = Math.pow(1 - r / 7, 1.5) * 0.55;
+				g.fillStyle(0xffffff, a);
+				g.fillCircle(8, 8, r);
+			}
+			// Sharp 8-point star
 			g.fillStyle(0xffffff, 1);
-			const outer = 7,
-				inner = 2.5,
-				cx = 8,
-				cy = 8;
+			const outer = 7, inner = 2.5, cx = 8, cy = 8;
 			const pts: Phaser.Math.Vector2[] = [];
 			for (let i = 0; i < 8; i++) {
 				const angle = (i * Math.PI) / 4 - Math.PI / 2;
 				const r = i % 2 === 0 ? outer : inner;
-				pts.push(
-					new Phaser.Math.Vector2(
-						cx + r * Math.cos(angle),
-						cy + r * Math.sin(angle),
-					),
-				);
+				pts.push(new Phaser.Math.Vector2(cx + r * Math.cos(angle), cy + r * Math.sin(angle)));
 			}
 			g.fillPoints(pts, true);
 			g.generateTexture(TEX.STAR, 16, 16);
 			g.destroy();
 		}
 
-		// fx-shard — elongated diamond / ice crystal
+		// fx-shard — elongated diamond with soft fringe for ice / wind shards
 		if (!this.scene.textures.exists(TEX.SHARD)) {
 			const g = this.scene.add.graphics();
+			// Slightly larger translucent outer shadow for a frosted-edge look
+			g.fillStyle(0xffffff, 0.35);
+			g.fillPoints([
+				new Phaser.Math.Vector2(6, 0),
+				new Phaser.Math.Vector2(12, 3),
+				new Phaser.Math.Vector2(6, 6),
+				new Phaser.Math.Vector2(0, 3),
+			], true);
+			// Bright inner core
 			g.fillStyle(0xffffff, 1);
-			g.fillPoints(
-				[
-					new Phaser.Math.Vector2(6, 0),
-					new Phaser.Math.Vector2(12, 3),
-					new Phaser.Math.Vector2(6, 6),
-					new Phaser.Math.Vector2(0, 3),
-				],
-				true,
-			);
+			g.fillPoints([
+				new Phaser.Math.Vector2(6, 1),
+				new Phaser.Math.Vector2(11, 3),
+				new Phaser.Math.Vector2(6, 5),
+				new Phaser.Math.Vector2(1, 3),
+			], true);
 			g.generateTexture(TEX.SHARD, 12, 6);
 			g.destroy();
 		}
 
-		// fx-smoke — large soft blob with inverse radial fade
+		// fx-smoke — large feathered blob; cubic easing for very diffuse, cloud-like edges
 		if (!this.scene.textures.exists(TEX.SMOKE)) {
 			const g = this.scene.add.graphics();
-			for (let r = 16; r >= 1; r--) {
-				const a = Math.pow(1 - r / 16, 0.4) * 0.85;
+			const steps = 32; // sub-pixel steps → smoother gradient
+			for (let i = 0; i <= steps; i++) {
+				const r = 16 * (1 - i / steps);
+				const t = r / 16; // 1=outer, 0=centre
+				const a = Math.pow(1 - t, 0.38) * 0.8;
 				g.fillStyle(0xffffff, a);
 				g.fillCircle(16, 16, r);
 			}
@@ -111,34 +122,49 @@ export class EffectManager {
 			g.destroy();
 		}
 
-		// fx-spark — bright 8×8 plus/cross shape (replaces flat pixel square)
+		// fx-spark — bright plus/cross with a radial glow centre for hot-ember / electric looks
 		if (!this.scene.textures.exists(TEX.SPARK)) {
-			const g = this.scene.add.graphics();
+			const g = this.scene.make.graphics({ add: false });
+			// Soft radial glow behind the cross
+			for (let r = 4; r >= 1; r--) {
+				const a = Math.pow(1 - (r - 1) / 4, 2) * 0.55;
+				g.fillStyle(0xffffff, a);
+				g.fillCircle(4, 4, r);
+			}
+			// Bright cross bars
 			g.fillStyle(0xffffff, 1);
-			g.fillRect(3, 0, 2, 8); // vertical bar
-			g.fillRect(0, 3, 8, 2); // horizontal bar
+			g.fillRect(3, 0, 2, 8); // vertical
+			g.fillRect(0, 3, 8, 2); // horizontal
 			g.generateTexture(TEX.SPARK, 8, 8);
 			g.destroy();
 		}
 
-		// fx-ring — thin circle outline particle (orbits / halos)
+		// fx-ring — thin circle outline with a soft double-stroke glow (orbiting rings / halos)
 		if (!this.scene.textures.exists(TEX.RING)) {
-			const g = this.scene.add.graphics();
+			const g = this.scene.make.graphics({ add: false });
+			// Soft outer glow
+			g.lineStyle(4, 0xffffff, 0.28);
+			g.strokeCircle(8, 8, 6);
+			// Bright core stroke
 			g.lineStyle(2, 0xffffff, 1);
 			g.strokeCircle(8, 8, 6);
 			g.generateTexture(TEX.RING, 16, 16);
 			g.destroy();
 		}
 
-		// fx-cross — larger plus/cross shape for holy, heal and divine effects (12×12)
+		// fx-cross — plus/cross with a soft circular glow behind it (holy, heal, divine)
 		if (!this.scene.textures.exists(TEX.CROSS)) {
-			const g = this.scene.add.graphics();
+			const g = this.scene.make.graphics({ add: false });
+			// Soft glow disc behind the cross
+			for (let r = 5; r >= 1; r--) {
+				const a = Math.pow(1 - r / 5, 1.5) * 0.45;
+				g.fillStyle(0xffffff, a);
+				g.fillCircle(6, 6, r);
+			}
+			// Sharp cross arms
 			g.fillStyle(0xffffff, 1);
-			g.fillRect(4, 0, 4, 12); // vertical bar
-			g.fillRect(0, 4, 12, 4); // horizontal bar
-			// Bright centre pixel
-			g.fillStyle(0xffffff, 1);
-			g.fillRect(4, 4, 4, 4);
+			g.fillRect(4, 0, 4, 12);  // vertical
+			g.fillRect(0, 4, 12, 4);  // horizontal
 			g.generateTexture(TEX.CROSS, 12, 12);
 			g.destroy();
 		}

@@ -5,7 +5,7 @@ import type { WelcomeData } from "@abraxas/shared";
 import { InputHandler } from "../systems/InputHandler";
 import { CameraController } from "../systems/CameraController";
 import { SoundManager } from "../assets/SoundManager";
-import { TILE_SIZE, DIRECTION_DELTA, ITEMS, i18n } from "@abraxas/shared";
+import { TILE_SIZE, DIRECTION_DELTA, ITEMS, i18n, CLASS_STATS } from "@abraxas/shared";
 import type { Direction } from "@abraxas/shared";
 import type { PlayerState } from "../ui/sidebar/types";
 import { SpriteManager } from "../managers/SpriteManager";
@@ -233,6 +233,17 @@ export class GameScene extends Phaser.Scene {
 					] as const) {
 						unsub($state.listen(player, field, () => this.pushSidebarUpdate(player)));
 					}
+
+					unsub(
+						$state.listen(player, "speedOverride", (newVal) => {
+							if (newVal > 0) {
+								this.inputHandler.setSpeed(newVal);
+							} else {
+								const stats = CLASS_STATS[player.classType];
+								this.inputHandler.setSpeed(stats.speedTilesPerSecond);
+							}
+						})
+					);
 
 					// Inventory: item add/remove and per-item quantity changes
 					unsub(

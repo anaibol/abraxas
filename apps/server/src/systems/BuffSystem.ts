@@ -1,4 +1,4 @@
-import type { Char } from "../schema/Char";
+import type { Entity } from "../utils/SpatialLookup";
 import {
 	Buff,
 	BroadcastFn,
@@ -126,9 +126,9 @@ export class BuffSystem {
 	/** Process DoTs and expire buffs/stuns. Call every tick. Works for both Players and NPCs. */
 	tick(
 		now: number,
-		getEntity: (sessionId: string) => Char | undefined,
+		getEntity: (sessionId: string) => Entity | undefined,
 		broadcast: BroadcastFn,
-		onDeath: (entity: Char) => void,
+		onDeath: (entity: Entity) => void,
 	): void {
 		for (const [sessionId, s] of this.state.entries()) {
 			const entity = getEntity(sessionId);

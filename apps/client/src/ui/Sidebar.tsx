@@ -61,6 +61,7 @@ export function Sidebar({
 	>("inv");
 	const [inviteId, setInviteId] = useState("");
 	const [friendName, setFriendName] = useState("");
+	const { playUIClick, playUIHover } = useAudio();
 
 	const stats = CLASS_STATS[state.classType];
 	const classSpells =
