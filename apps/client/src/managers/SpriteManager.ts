@@ -230,163 +230,82 @@ export class SpriteManager {
     this.sprites.get(sessionId)?.applyInvulnerable(durationMs);
   }
 
+  // ── preFX helpers ─────────────────────────────────────────────────────────────────
   /**
-   * Apply a Post-FX Glow aura to a sprite for the duration of a buff.
-   *
-   * Improvements applied:
-   *  #41 — Fade-out on expiry (outerStrength tweens to 0 before clear)
-   *  #42 — Fade-in on apply  (outerStrength tweens from 0 to target)
-   *  #43 — Cancel existing glow before applying a new one
-   *  #44 — outerStrength is parameterised so callers can vary intensity
-   *  #45 — Tracked per session in activeGlows map
+   * Run `fn` against each child's preFX in a sprite container, swallowing
+   * errors for objects that don't support preFX (Phaser 3.60+).
    */
-  applyGlowFx(sessionId: string, color: number, durationMs: number, strength = 4) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private forEachPreFX(sessionId: string, fn: (preFX: any) => void) {
     const sprite = this.sprites.get(sessionId);
     if (!sprite?.container) return;
-
-    // ── Item #43: Cancel any existing glow before adding a new one ────────────
-    this.clearGlowFx(sessionId);
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const getPreFX = (child: unknown): any => (child as any).preFX;
-
-    const glows: unknown[] = [];
-    for (const child of sprite.container.list) {
-      try {
-        const preFX = getPreFX(child);
-        if (!preFX) continue;
-        // ── Item #42: Fade-in — start outerStrength at 0, tween up ────────────
-        const glow = preFX.addGlow(color, 0, 0, false, 0.1, 16);
-        if (!glow) continue;
-        glows.push(glow);
-
-        this.scene.tweens.add({
-          targets: glow,
-          outerStrength: strength,
-          duration: 200,
-          ease: "Quad.Out",
-        });
-      } catch (_) { /* preFX not available on this type */ }
-    }
-
-    if (glows.length === 0) return;
-
-    // ── Item #45: Track in map ────────────────────────────────────────────────
-    const activeList = glows.map(g => ({ glowRef: g, expireAt: Date.now() + durationMs, color }));
-    this.activeGlows.set(sessionId, activeList);
-
-    // ── Item #41: Fade-out before expiry ─────────────────────────────────────
-    const FADE_OUT_MS = Math.min(500, durationMs * 0.25);
-    this.scene.time.delayedCall(durationMs - FADE_OUT_MS, () => {
-      if (!sprite.container?.scene) return;
-      for (const g of glows) {
-        try {
-          this.scene.tweens.add({
-            targets: g,
-            outerStrength: 0,
-            duration: FADE_OUT_MS,
-            ease: "Quad.In",
-            onComplete: () => {
-              try { (g as any).destroy?.(); } catch (_) {}
-            },
-          });
-        } catch (_) {}
-      }
+    sprite.container.list.forEach(child => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const preFX = (child as any).preFX;
+      if (preFX) try { fn(preFX); } catch { /* unsupported child type */ }
     });
+  }
 
+  /** Add a glow to every child and return the created glow objects. */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private collectGlows(sessionId: string, color: number, innerStrength = 0): any[] {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const glows: any[] = [];
+    this.forEachPreFX(sessionId, preFX => {
+      const g = preFX.addGlow(color, 0, innerStrength, false, 0.1, 16);
+      if (g) glows.push(g);
+    });
+    return glows;
+  }
+
+  applyGlowFx(sessionId: string, color: number, durationMs: number, strength = 4) {
+    this.clearGlowFx(sessionId); // cancel-before-apply (#43)
+    const glows = this.collectGlows(sessionId, color);
+    if (!glows.length) return;
+
+    this.activeGlows.set(sessionId, glows.map(g => ({ glowRef: g, expireAt: Date.now() + durationMs, color })));
+    // Fade in (#42)
+    this.scene.tweens.add({ targets: glows, outerStrength: strength, duration: 200, ease: "Quad.Out" });
+    // Fade out before expiry (#41), then clear (#43/#45)
+    const fadeMs = Math.min(500, durationMs * 0.25);
+    this.scene.time.delayedCall(durationMs - fadeMs, () =>
+      this.scene.tweens.add({ targets: glows, outerStrength: 0, duration: fadeMs, ease: "Quad.In" }),
+    );
     this.scene.time.delayedCall(durationMs, () => {
-      if (!sprite.container?.scene) return;
-      for (const child of sprite.container.list) {
-        try { (child as any).preFX?.clear(); } catch (_) {}
-      }
+      this.forEachPreFX(sessionId, p => p.clear());
       this.activeGlows.delete(sessionId);
     });
   }
 
-  /**
-   * Item #47 — Immediately clear all active glows on a sprite.
-   * Called on death, target change, etc.
-   */
   clearGlowFx(sessionId: string) {
-    const sprite = this.sprites.get(sessionId);
-    if (!sprite?.container) {
-      this.activeGlows.delete(sessionId);
-      return;
-    }
-    for (const child of sprite.container.list) {
-      try { (child as any).preFX?.clear(); } catch (_) {}
-    }
+    this.forEachPreFX(sessionId, p => p.clear());
     this.activeGlows.delete(sessionId);
   }
 
-  /**
-   * Item #48 — Outline glow on the currently targeted enemy.
-   * Clears the previous target's outline before applying a new one.
-   */
+  /** White preFX outline on the targeted enemy; auto-clears previous target (#48). */
   setTargetOutline(sessionId: string | null) {
-    // Clear previous outline
-    if (this.targetOutlineSession && this.targetOutlineSession !== sessionId) {
-      this.clearTargetOutline(this.targetOutlineSession);
-    }
+    if (this.targetOutlineSession && this.targetOutlineSession !== sessionId)
+      this.forEachPreFX(this.targetOutlineSession, p => p.clear());
     this.targetOutlineSession = sessionId;
-    if (!sessionId) return;
-
-    const sprite = this.sprites.get(sessionId);
-    if (!sprite?.container) return;
-    for (const child of sprite.container.list) {
-      try {
-        const preFX = (child as any).preFX;
-        if (!preFX) continue;
-        preFX.addGlow(0xffffff, 2, 2, false, 0.08, 12);
-      } catch (_) {}
-    }
+    if (sessionId) this.forEachPreFX(sessionId, p => p.addGlow(0xffffff, 2, 2, false, 0.08, 12));
   }
 
-  private clearTargetOutline(sessionId: string) {
-    const sprite = this.sprites.get(sessionId);
-    if (!sprite?.container) return;
-    for (const child of sprite.container.list) {
-      try { (child as any).preFX?.clear(); } catch (_) {}
-    }
-  }
-
-  // ── Item #50: Low-HP pulsing red glow on local player ────────────────────────
   private startLowHpGlow(sessionId: string) {
-    const sprite = this.sprites.get(sessionId);
-    if (!sprite?.container) return;
-
-    const glows: unknown[] = [];
-    for (const child of sprite.container.list) {
-      try {
-        const preFX = (child as any).preFX;
-        if (!preFX) continue;
-        const glow = preFX.addGlow(0xff2200, 0, 0, false, 0.1, 16);
-        if (glow) glows.push(glow);
-      } catch (_) {}
-    }
-    if (glows.length === 0) return;
-
+    const glows = this.collectGlows(sessionId, 0xff2200);
+    if (!glows.length) return;
     const tween = this.scene.tweens.add({
-      targets: glows,
-      outerStrength: { from: 0, to: 8 },
-      duration: 600,
-      yoyo: true,
-      repeat: -1,
-      ease: "Sine.InOut",
+      targets: glows, outerStrength: { from: 0, to: 8 },
+      duration: 600, yoyo: true, repeat: -1, ease: "Sine.InOut",
     });
     this.lowHpGlowTweens.set(sessionId, tween);
   }
 
   private stopLowHpGlow(sessionId: string) {
-    const tween = this.lowHpGlowTweens.get(sessionId);
-    if (tween) {
-      tween.stop();
-      this.lowHpGlowTweens.delete(sessionId);
-      this.clearGlowFx(sessionId);
-    }
+    this.lowHpGlowTweens.get(sessionId)?.stop();
+    this.lowHpGlowTweens.delete(sessionId);
+    this.clearGlowFx(sessionId);
   }
 
-  /** Squash-and-crumple tween played when an entity dies. */
   playDeathAnimation(sessionId: string) {
     const sprite = this.sprites.get(sessionId);
     if (!sprite?.container) return;

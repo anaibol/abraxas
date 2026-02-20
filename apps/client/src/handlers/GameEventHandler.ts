@@ -359,30 +359,30 @@ export class GameEventHandler {
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
-  /**
-   * Returns the LightPreset and duration for a spell impact flash, or null.
-   * Items #35–#38.
-   */
-  private spellLightPreset(abilityId: string): { preset: LightPreset; durationMs: number } | null {
+  /** Flat ability→preset lookup for spell impact light flashes. */
+  private readonly SPELL_LIGHT_MAP = new Map<string, { preset: LightPreset; durationMs: number }>([
     // Fire
-    if (["fireball", "meteor_strike", "fire_breath", "war_cry", "execute"].includes(abilityId))
-      return { preset: LightPreset.EXPLOSION, durationMs: 400 };
+    ...(["fireball", "meteor_strike", "fire_breath", "war_cry", "execute"]
+        .map(id => [id, { preset: LightPreset.EXPLOSION, durationMs: 400 }] as const)),
     // Ice
-    if (["ice_bolt", "frost_nova", "frost_breath", "polymorph"].includes(abilityId))
-      return { preset: LightPreset.FROST, durationMs: 600 };
+    ...(["ice_bolt", "frost_nova", "frost_breath", "polymorph"]
+        .map(id => [id, { preset: LightPreset.FROST, durationMs: 600 }] as const)),
     // Holy
-    if (["holy_nova", "judgment", "consecration", "smite", "holy_bolt", "holy_strike", "lay_on_hands"].includes(abilityId))
-      return { preset: LightPreset.HOLY, durationMs: 500 };
+    ...(["holy_nova", "judgment", "consecration", "smite", "holy_bolt", "holy_strike", "lay_on_hands"]
+        .map(id => [id, { preset: LightPreset.HOLY, durationMs: 500 }] as const)),
     // Electric
-    if (["thunderstorm", "chain_lightning", "leap", "whirlwind"].includes(abilityId))
-      return { preset: LightPreset.ELECTRIC, durationMs: 350 };
-    // Shadow / Dark (item #38)
-    if (["shadow_bolt", "soul_drain", "banshee_wail", "curse"].includes(abilityId))
-      return { preset: LightPreset.SHADOW, durationMs: 500 };
-    // Heal / Nature (item #37)
-    if (["heal", "cleansing_rain", "entangling_roots", "poison_arrow", "acid_splash"].includes(abilityId))
-      return { preset: LightPreset.HEAL, durationMs: 700 };
-    return null;
+    ...(["thunderstorm", "chain_lightning", "leap", "whirlwind"]
+        .map(id => [id, { preset: LightPreset.ELECTRIC, durationMs: 350 }] as const)),
+    // Shadow
+    ...(["shadow_bolt", "soul_drain", "banshee_wail", "curse"]
+        .map(id => [id, { preset: LightPreset.SHADOW, durationMs: 500 }] as const)),
+    // Nature / Heal
+    ...(["heal", "cleansing_rain", "entangling_roots", "poison_arrow", "acid_splash"]
+        .map(id => [id, { preset: LightPreset.HEAL, durationMs: 700 }] as const)),
+  ]);
+
+  private spellLightPreset(abilityId: string) {
+    return this.SPELL_LIGHT_MAP.get(abilityId) ?? null;
   }
 
   /** Returns the glow colour for a positive buff. */
