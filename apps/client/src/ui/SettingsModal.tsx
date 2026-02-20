@@ -16,7 +16,7 @@ type SettingsModalProps = {
 };
 
 export function SettingsModal({ onClose }: SettingsModalProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { settings, updateSettings } = useGameSettings();
 
   return (

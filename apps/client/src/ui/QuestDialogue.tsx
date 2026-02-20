@@ -1,4 +1,4 @@
-import { Box, Flex, Text, Button, VStack } from "@chakra-ui/react";
+import { Button } from "../components/Button";
 import { useTranslation } from "react-i18next";
 import { T } from "./tokens";
 
