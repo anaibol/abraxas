@@ -145,6 +145,7 @@ describe("Arena multiplayer smoke test", () => {
         accountId: userA.id,
         name: nameA,
         class: "WARRIOR",
+        pvpEnabled: true,
         stats: { create: { hp: 100, maxHp: 100, mp: 50, maxMp: 50, str: 10, agi: 10, int: 10 } },
         inventory: { create: { size: 40 } },
       }
@@ -156,6 +157,7 @@ describe("Arena multiplayer smoke test", () => {
         accountId: userB.id,
         name: nameB,
         class: "MAGE",
+        pvpEnabled: true,
         stats: { create: { hp: 80, maxHp: 80, mp: 100, maxMp: 100, str: 5, agi: 8, int: 15 } },
         inventory: { create: { size: 40 } },
       }
