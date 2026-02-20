@@ -87,6 +87,11 @@ export function App() {
   const [friendsData, setFriendsData] = useState<
     { id: string; name: string; online: boolean }[]
   >([]);
+  const [guildData, setGuildData] = useState<{
+    guildId: string;
+    name: string;
+    members: { sessionId?: string; name: string; role: "LEADER" | "OFFICER" | "MEMBER"; online: boolean }[];
+  } | null>(null);
   const [pendingFriendRequests, setPendingFriendRequests] = useState<
     { id: string; name: string }[]
   >([]);
@@ -134,6 +139,7 @@ export function App() {
     setDialogueData,
     setQuests,
     setGroupData,
+    setGuildData,
     setBankData,
     setTradeData,
     setKillStats,
@@ -512,6 +518,13 @@ export function App() {
                 onGroupInvite={(sid: string) => networkRef.current?.sendGroupInvite(sid)}
                 onGroupLeave={() => networkRef.current?.sendGroupLeave()}
                 onGroupKick={(sid: string) => networkRef.current?.sendGroupKick(sid)}
+                guildMembers={guildData?.members || []}
+                onGuildCreate={(name: string) => networkRef.current?.sendGuildCreate(name)}
+                onGuildInvite={(name: string) => networkRef.current?.sendGuildInvite(name)}
+                onGuildLeave={() => networkRef.current?.sendGuildLeave()}
+                onGuildKick={(name: string) => networkRef.current?.sendGuildKick(name)}
+                onGuildPromote={(name: string) => networkRef.current?.sendGuildPromote(name)}
+                onGuildDemote={(name: string) => networkRef.current?.sendGuildDemote(name)}
                 friends={friendsData}
                 pendingFriendRequests={pendingFriendRequests}
                 onFriendRequest={(name: string) => networkRef.current?.sendFriendRequest(name)}

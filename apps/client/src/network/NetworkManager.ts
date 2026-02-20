@@ -8,7 +8,7 @@ import type {
   ClientMessages,
 } from "@abraxas/shared";
 import { ClientMessageType, ServerMessageType } from "@abraxas/shared";
-import { GameState } from "../../../server/src/schema/GameState";
+import type { GameState } from "../../../server/src/schema/GameState";
 
 /**
  * Room type as seen from the client side.
@@ -48,12 +48,12 @@ export class NetworkManager {
   }
 
   /** Type-safe send — payload type is inferred from ClientMessages[T]. */
-  private _send<T extends keyof ClientMessages>(
+  private _send<T extends Extract<keyof ClientMessages, string>>(
     type: T,
     payload: ClientMessages[T],
   ): void {
     try {
-      this.room?.send(type as string, payload);
+      this.room?.send(type, payload);
     } catch {
       // ignore if not connected
     }
@@ -91,13 +91,12 @@ export class NetworkManager {
       this.client.auth.token = token;
     }
 
-    // Passing the GameState class (not just its type) tells the SDK the client
-    // already knows the schema shape → server skips sending the full definition,
-    // reducing join bandwidth.
-    this.room = await this.client.joinOrCreate(
+    // We use the <GameState> generic type, but we no longer pass the class itself
+    // to avoid bundling the entire server-side schema module into the client build.
+    // The server will send the full definition down on the first connect.
+    this.room = await this.client.joinOrCreate<GameState>(
       "arena",
       { charId, classType, mapName },
-      GameState,
     );
 
     const welcomePromise = new Promise<WelcomeData>((resolve) => {
@@ -246,6 +245,35 @@ export class NetworkManager {
     this._send(ClientMessageType.GroupKick, { targetSessionId });
   }
 
+  // Guild System
+  sendGuildCreate(name: string) {
+    this._send(ClientMessageType.GuildCreate, { name });
+  }
+
+  sendGuildInvite(targetName: string) {
+    this._send(ClientMessageType.GuildInvite, { targetName });
+  }
+
+  sendGuildAccept(guildId: string) {
+    this._send(ClientMessageType.GuildAccept, { guildId });
+  }
+
+  sendGuildLeave() {
+    this._send(ClientMessageType.GuildLeave, {});
+  }
+
+  sendGuildKick(targetName: string) {
+    this._send(ClientMessageType.GuildKick, { targetName });
+  }
+
+  sendGuildPromote(targetName: string) {
+    this._send(ClientMessageType.GuildPromote, { targetName });
+  }
+
+  sendGuildDemote(targetName: string) {
+    this._send(ClientMessageType.GuildDemote, { targetName });
+  }
+
   // Friend System
   sendFriendRequest(targetName: string) {
     this._send(ClientMessageType.FriendRequest, { targetName });
@@ -317,6 +345,10 @@ export class NetworkManager {
   // GM commands
   sendGMTeleport(tileX: number, tileY: number) {
     this._send(ClientMessageType.GMTeleport, { tileX, tileY });
+  }
+
+  sendTogglePvP() {
+    this._send(ClientMessageType.TogglePvP, {});
   }
 
   disconnect() {

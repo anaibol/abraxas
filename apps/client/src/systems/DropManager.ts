@@ -3,18 +3,20 @@ import { TILE_SIZE, ITEMS, i18n } from "@abraxas/shared";
 import type { Drop } from "../../../server/src/schema/Drop";
 import type { EffectManager } from "../managers/EffectManager";
 
-export interface DropVisual {
-	arc: Phaser.GameObjects.Arc;
-	tween: Phaser.Tweens.Tween;
-	emitter: Phaser.GameObjects.Particles.ParticleEmitter;
-	label: Phaser.GameObjects.Text;
-	color: number;
-	tileX: number;
-	tileY: number;
-}
 
 export class DropManager {
-	private visuals = new Map<string, DropVisual>();
+	private visuals = new Map<
+		string,
+		{
+			arc: Phaser.GameObjects.Arc;
+			tween: Phaser.Tweens.Tween;
+			emitter: Phaser.GameObjects.Particles.ParticleEmitter;
+			label: Phaser.GameObjects.Text;
+			color: number;
+			tileX: number;
+			tileY: number;
+		}
+	>();
 
 	constructor(
 		private scene: Phaser.Scene,

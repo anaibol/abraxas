@@ -17,8 +17,10 @@ type MinimapProps = {
 
 export const Minimap: FC<MinimapProps> = ({ map, players, npcs, currentPlayerId, isGM, onGMClick }) => {
   const isMobile = useIsMobile();
-  const size = isMobile ? 110 : 200;
+  const size = isMobile ? 120 : 200;
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const VISIBLE_TILES = 80;
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: players/npcs are stable mutable MapSchema refs read live by the RAF loop; currentPlayerId never changes during a session
   useEffect(() => {
@@ -31,12 +33,9 @@ export const Minimap: FC<MinimapProps> = ({ map, players, npcs, currentPlayerId,
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const scaleX = size / map.width;
-    const scaleY = size / map.height;
-
     const bgCanvas = document.createElement("canvas");
-    bgCanvas.width = canvas.width;
-    bgCanvas.height = canvas.height;
+    bgCanvas.width = map.width;
+    bgCanvas.height = map.height;
     const bgCtx = bgCanvas.getContext("2d");
     if (!bgCtx) return;
 
@@ -58,34 +57,67 @@ export const Minimap: FC<MinimapProps> = ({ map, players, npcs, currentPlayerId,
           map.tileTypes?.[y]?.[x] ??
           (map.collision[y]?.[x] === 1 ? 1 : 0);
         bgCtx.fillStyle = TILE_COLORS[tileType] ?? TILE_COLORS[0];
-        bgCtx.fillRect(x * scaleX, y * scaleY, scaleX, scaleY);
+        bgCtx.fillRect(x, y, 1, 1);
       }
     }
 
     let rafId: number;
 
     const render = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(bgCanvas, 0, 0);
+      let cx = map.width / 2;
+      let cy = map.height / 2;
+      players?.forEach((p) => {
+        if (p.sessionId === currentPlayerId) {
+          cx = p.tileX;
+          cy = p.tileY;
+        }
+      });
+
+      const TILE_SCALE = size / VISIBLE_TILES;
+      const sX = cx - VISIBLE_TILES / 2;
+      const sY = cy - VISIBLE_TILES / 2;
+
+      ctx.fillStyle = VOID_COLOR;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.imageSmoothingEnabled = false;
+
+      const sRectX = Math.max(0, sX);
+      const sRectY = Math.max(0, sY);
+      const sRectW = Math.min(map.width - sRectX, VISIBLE_TILES - (sRectX - sX));
+      const sRectH = Math.min(map.height - sRectY, VISIBLE_TILES - (sRectY - sY));
+
+      if (sRectW > 0 && sRectH > 0) {
+        const dX = (sRectX - sX) * TILE_SCALE;
+        const dY = (sRectY - sY) * TILE_SCALE;
+        const dW = sRectW * TILE_SCALE;
+        const dH = sRectH * TILE_SCALE;
+        ctx.drawImage(bgCanvas, sRectX, sRectY, sRectW, sRectH, dX, dY, dW, dH);
+      }
 
       npcs?.forEach((npc) => {
         if (!npc.alive) return;
+        const px = (npc.tileX - sX) * TILE_SCALE;
+        const py = (npc.tileY - sY) * TILE_SCALE;
         ctx.fillStyle = "#e03030";
         ctx.beginPath();
-        ctx.arc(npc.tileX * scaleX + scaleX / 2, npc.tileY * scaleY + scaleY / 2, Math.max(2, scaleX), 0, Math.PI * 2);
+        ctx.arc(px + TILE_SCALE / 2, py + TILE_SCALE / 2, Math.max(2, TILE_SCALE), 0, Math.PI * 2);
         ctx.fill();
       });
 
       players?.forEach((player) => {
         if (!player.alive) return;
         const isSelf = player.sessionId === currentPlayerId;
+        const px = (player.tileX - sX) * TILE_SCALE;
+        const py = (player.tileY - sY) * TILE_SCALE;
+        
         ctx.fillStyle = isSelf ? "#00ff66" : "#4488ff";
         ctx.beginPath();
-        ctx.arc(player.tileX * scaleX + scaleX / 2, player.tileY * scaleY + scaleY / 2, Math.max(2.5, scaleX * 1.2), 0, Math.PI * 2);
+        ctx.arc(px + TILE_SCALE / 2, py + TILE_SCALE / 2, Math.max(2.5, TILE_SCALE * 1.5), 0, Math.PI * 2);
         ctx.fill();
         if (isSelf) {
           ctx.strokeStyle = "#ffffff";
-          ctx.lineWidth = 0.8;
+          ctx.lineWidth = Math.max(0.8, TILE_SCALE * 0.4);
           ctx.stroke();
         }
       });
@@ -102,8 +134,22 @@ export const Minimap: FC<MinimapProps> = ({ map, players, npcs, currentPlayerId,
     const rect = e.currentTarget.getBoundingClientRect();
     const relX = e.clientX - rect.left;
     const relY = e.clientY - rect.top;
-    const tileX = Math.floor((relX / size) * map.width);
-    const tileY = Math.floor((relY / size) * map.height);
+
+    let cx = map.width / 2;
+    let cy = map.height / 2;
+    players?.forEach((p) => {
+      if (p.sessionId === currentPlayerId) {
+        cx = p.tileX;
+        cy = p.tileY;
+      }
+    });
+
+    const TILE_SCALE = size / VISIBLE_TILES;
+    const sX = cx - VISIBLE_TILES / 2;
+    const sY = cy - VISIBLE_TILES / 2;
+
+    const tileX = Math.floor(sX + relX / TILE_SCALE);
+    const tileY = Math.floor(sY + relY / TILE_SCALE);
     onGMClick(tileX, tileY);
   };
 
@@ -116,7 +162,8 @@ export const Minimap: FC<MinimapProps> = ({ map, players, npcs, currentPlayerId,
         right: isMobile ? "64px" : "20px",
         border: isGM ? "2px solid rgba(212, 168, 67, 0.85)" : "2px solid rgba(212, 168, 67, 0.5)",
         backgroundColor: "rgba(10, 8, 20, 0.85)",
-        borderRadius: "4px",
+        borderRadius: "50%",
+        overflow: "hidden",
         width: `${size}px`,
         height: `${size}px`,
         zIndex: 40,

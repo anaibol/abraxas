@@ -55,6 +55,13 @@ export interface SidebarProps {
 	onFriendAccept?: (id: string) => void;
 	onWhisper?: (targetName: string) => void;
 	onTradeRequest?: (targetSessionId: string) => void;
+	guildMembers?: { sessionId?: string; name: string; role: "LEADER" | "OFFICER" | "MEMBER"; online: boolean }[];
+	onGuildCreate?: (name: string) => void;
+	onGuildInvite?: (targetName: string) => void;
+	onGuildLeave?: () => void;
+	onGuildKick?: (targetName: string) => void;
+	onGuildPromote?: (targetName: string) => void;
+	onGuildDemote?: (targetName: string) => void;
 	selectedItemId?: string | null;
 	onSelectItem?: (itemId: string | null) => void;
 	onSpellClick?: (spellId: string, rangeTiles: number) => void;

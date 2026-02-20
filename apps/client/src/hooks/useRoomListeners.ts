@@ -19,6 +19,7 @@ export type RoomListenerCallbacks = {
   setDialogueData: (data: { npcId: string; text: string; options: { text: string; action: string; data?: unknown }[] } | null) => void;
   setQuests: (fn: (prev: PlayerQuestState[]) => PlayerQuestState[]) => void;
   setGroupData: (data: { groupId: string; leaderId: string; members: { sessionId: string; name: string }[] } | null) => void;
+  setGuildData: (data: { guildId: string; name: string; members: { sessionId?: string; name: string; role: "LEADER" | "OFFICER" | "MEMBER"; online: boolean }[] } | null) => void;
   setBankData: (data: { items: { itemId: string; quantity: number; slotIndex: number }[] } | null) => void;
   setTradeData: (data: TradeState | null) => void;
   setKillStats: (fn: (prev: Record<string, KillStats>) => Record<string, KillStats>) => void;
@@ -36,7 +37,7 @@ export function useRoomListeners(
     const {
       t, addConsoleMessage,
       setShopData, setDialogueData, setQuests,
-      setGroupData, setBankData, setTradeData,
+      setGroupData, setGuildData, setBankData, setTradeData,
       setKillStats, networkRef,
     } = cb;
 
@@ -113,6 +114,21 @@ export function useRoomListeners(
 
     on(ServerMessageType.GroupUpdate, (data) => {
       setGroupData(data.groupId ? data : null);
+    });
+
+    on(ServerMessageType.GuildInvited, (data) => {
+      toaster.create({
+        title: t("sidebar.tabs.guild", { defaultValue: "Guild" }),
+        description: t("social.invited_to_guild", { name: data.inviterName, guild: data.guildName }),
+        action: {
+          label: t("sidebar.friends.accept", { defaultValue: "Accept" }),
+          onClick: () => network.sendGuildAccept(data.guildId),
+        },
+      });
+    });
+
+    on(ServerMessageType.GuildUpdate, (data) => {
+      setGuildData(data.guildId ? data : null);
     });
 
     on(ServerMessageType.FriendInvited, (data) => {
