@@ -1,5 +1,4 @@
 import type { BarkTrigger, NpcStats, NpcType } from "../types";
-import { FactionId } from "../types";
 
 export const NPC_APPEARANCE: Record<string, { bodyId: number; headId: number }> = {
   orc: { bodyId: 30, headId: 0 },
@@ -47,7 +46,6 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     minLevel: 10,
     maxLevel: 25,
     aggroRange: 5,
-    faction: FactionId.MONSTER,
     barks: {
       aggro: ["RAAAAGH!", "You dare come here?!", "CRUSH!"],
       low_hp: ["You'll pay for this!", "ARGH!", "Not done yet!"],
@@ -72,7 +70,6 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     minLevel: 5,
     maxLevel: 15,
     aggroRange: 5,
-    faction: FactionId.UNDEAD,
     barks: {
       aggro: ["*rattles*", "Join us...", "The dead hunger!"],
       low_hp: ["*creaks*", "Crumbling..."],
@@ -97,7 +94,6 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     minLevel: 1,
     maxLevel: 10,
     aggroRange: 3,
-    faction: FactionId.MONSTER,
     barks: {
       aggro: ["Hehehe!", "Kill kill kill!", "Goblins ATTACK!"],
       low_hp: ["Retreat!", "Help meee!", "Too strong!"],
@@ -120,7 +116,6 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     minLevel: 1,
     maxLevel: 10,
     aggroRange: 6,
-    faction: FactionId.BEASTKIN,
     barks: {
       aggro: ["*GROWL*", "*HOWL*", "*SNARL*"],
       low_hp: ["*whimper*", "*yelp*"],
@@ -138,7 +133,6 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     armor: 100,
     abilities: [],
     passive: true,
-    faction: FactionId.HUMAN,
     barks: {
       idle: ["Welcome, adventurer!", "Fine wares, fine prices!", "Step right up!"],
     },
@@ -162,7 +156,6 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     minLevel: 5,
     maxLevel: 15,
     aggroRange: 4,
-    faction: FactionId.BEASTKIN,
     barks: {
       aggro: ["*hiss*", "*skitter*"],
     },
@@ -185,7 +178,6 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     minLevel: 10,
     maxLevel: 25,
     aggroRange: 5,
-    faction: FactionId.UNDEAD,
     barks: {
       aggro: ["*wailing*", "You cannot escape death...", "Join the void..."],
       low_hp: ["Not yet!", "*screech*"],
@@ -214,7 +206,6 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     summonType: "skeleton",
     minLevel: 30,
     aggroRange: 8,
-    faction: FactionId.UNDEAD,
     barks: {
       aggro: [
         "Foolish mortal! Your bones will serve me!",
@@ -250,7 +241,6 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     minLevel: 5,
     maxLevel: 15,
     aggroRange: 4,
-    faction: FactionId.UNDEAD,
     barks: {
       aggro: ["*groan*", "*moan*", "...braaiins..."],
       low_hp: ["*gurgle*"],
@@ -274,7 +264,6 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     minLevel: 20,
     maxLevel: 40,
     aggroRange: 5,
-    faction: FactionId.MONSTER,
     barks: {
       aggro: ["TROLL SMASH!", "You small, me hungry.", "CRUSH!"],
       low_hp: ["TROLL HEAL!", "You no win!", "GRAAAH!"],
@@ -298,7 +287,6 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     minLevel: 1,
     maxLevel: 10,
     aggroRange: 3,
-    faction: FactionId.BEASTKIN,
     barks: {
       aggro: ["*SCREECH*", "*flap flap*"],
     },
@@ -323,7 +311,6 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     minLevel: 20,
     maxLevel: 40,
     aggroRange: 7,
-    faction: FactionId.UNDEAD,
     barks: {
       aggro: [
         "For the Dark Lord!",
@@ -349,7 +336,6 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     armor: 100,
     abilities: [],
     passive: true,
-    faction: FactionId.HUMAN,
     barks: {
       idle: ["Your gold is safe with us.", "Deposits and withdrawals here!", "Banking hours: always."],
     },
@@ -368,7 +354,6 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     expReward: 0,
     passive: true,
     fleesWhenLow: true,
-    faction: FactionId.BEASTKIN,
   },
   skeleton_archer: {
     hp: 80,
@@ -385,7 +370,6 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     minLevel: 10,
     maxLevel: 25,
     aggroRange: 6,
-    faction: FactionId.UNDEAD,
     barks: {
       aggro: ["*twang*", "Target acquired.", "*rattles*"],
     },
@@ -406,7 +390,6 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     minLevel: 20,
     maxLevel: 35,
     aggroRange: 6,
-    faction: FactionId.UNDEAD,
     barks: {
       aggro: ["I hunger...", "Your blood calls to me.", "Come, let me taste you."],
       low_hp: ["Impossible... I cannot die!", "This wounds me deeply."],
@@ -428,7 +411,6 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     minLevel: 20,
     maxLevel: 35,
     aggroRange: 5,
-    faction: FactionId.MONSTER,
     barks: {
       aggro: ["*stone grinding*", "BEGONE!", "*ROAR*"],
     },
@@ -449,7 +431,6 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     minLevel: 15,
     maxLevel: 25,
     aggroRange: 5,
-    faction: FactionId.BEASTKIN,
     barks: {
       aggro: ["*TRUMPET*", "*STOMP*"],
     },
@@ -470,7 +451,6 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     minLevel: 40,
     maxLevel: 50,
     aggroRange: 8,
-    faction: FactionId.MONSTER,
     rareSpawn: true,
     barks: {
       aggro: [
@@ -505,7 +485,6 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     minLevel: 8,
     maxLevel: 15,
     aggroRange: 5,
-    faction: FactionId.BEASTKIN,
     barks: {
       aggro: ["*GROWL*", "*ROAR*"],
     },
@@ -517,7 +496,6 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     armor: 5,
     abilities: [],
     expReward: 0,
-    faction: FactionId.NEUTRAL,
   },
   explosive_trap: {
     hp: 10,
@@ -526,7 +504,6 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     armor: 0,
     abilities: [],
     expReward: 0,
-    faction: FactionId.NEUTRAL,
   },
   phantom_pet: {
     hp: 100,
@@ -536,7 +513,6 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     armor: 10,
     abilities: [],
     expReward: 0,
-    faction: FactionId.NEUTRAL,
   },
   decoy: {
     hp: 200,
@@ -545,7 +521,6 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     armor: 20,
     abilities: [],
     expReward: 0,
-    faction: FactionId.NEUTRAL,
   },
 };
 
