@@ -9,6 +9,9 @@ import type { InventorySlot } from "./sidebar/types";
 import { T } from "./tokens";
 
 
+// Import removed. dup import
+import { ItemGrid } from "./components/ItemGrid";
+
 import { useAudio } from "../contexts/AudioContext";
 import { ItemGrid } from "./components/ItemGrid";
 
