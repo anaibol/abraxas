@@ -96,7 +96,7 @@ export function SpellsTab({
             const noMana = currentMana < spell.manaCost;
             const isDisabled = isLocked || noMana;
             const effectMeta = EFFECT_LABELS[spell.effect];
-            const rangeTiles = spell.rangeTiles ?? 0;
+            const rangeTiles = spell.rangeTiles;
             const rangeLabel =
               rangeTiles > 0
                 ? `${t("sidebar.inventory.range")}: ${rangeTiles}`

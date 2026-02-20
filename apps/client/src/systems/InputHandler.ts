@@ -111,7 +111,7 @@ export class InputHandler {
           this.spellKeys.push({
             key: scene.input.keyboard.addKey(keyCode),
             spellId: ability.id,
-            rangeTiles: ability.rangeTiles ?? 0,
+            rangeTiles: ability.rangeTiles,
           });
         }
       }

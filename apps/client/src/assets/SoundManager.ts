@@ -37,9 +37,9 @@ const BASE_SFX: Partial<Record<string, number>> = {
 };
 
 // ── Spell-specific SFX routing ────────────────────────────────────────────────
-// Maps ability IDs to the audio asset path they should play.
-// Unmapped abilities fall back to their general category in GameEventHandler.
-const SPELL_SFX: Partial<Record<string, string>> = {
+// Maps ability IDs to the audio asset path(s) they should play.
+// Array values = random pick each cast to avoid audio fatigue (item #4).
+const SPELL_SFX: Partial<Record<string, string | string[]>> = {
   // Mage
   fireball:           AudioAssets.SPELL,
   fire_breath:        AudioAssets.SPELL,
@@ -56,12 +56,12 @@ const SPELL_SFX: Partial<Record<string, string>> = {
   mana_spring:        AudioAssets.HEAL,
   mana_shield:        AudioAssets.SUMMON,
   polymorph:          AudioAssets.MAGIC_HIT,
-  // Warrior
+  // Warrior — melee abilities randomize between attack sounds (item #4)
   war_cry:            AudioAssets.NPC_ROAR,
   battle_shout:       AudioAssets.NPC_ROAR,
-  whirlwind:          AudioAssets.ATTACK_1,
-  shield_bash:        AudioAssets.HIT_1,
-  cleave:             AudioAssets.ATTACK_2,
+  whirlwind:          [AudioAssets.ATTACK_1, AudioAssets.ATTACK_2, AudioAssets.ATTACK_3],
+  shield_bash:        [AudioAssets.HIT_1, AudioAssets.HIT_2],
+  cleave:             [AudioAssets.ATTACK_2, AudioAssets.ATTACK_3],
   execute:            AudioAssets.HIT_3,
   leap:               AudioAssets.NPC_ROAR,
   berserker_rage:     AudioAssets.NPC_ROAR,
@@ -73,25 +73,25 @@ const SPELL_SFX: Partial<Record<string, string>> = {
   lay_on_hands:       AudioAssets.HEAL,
   aura_of_protection: AudioAssets.SUMMON,
   // Cleric
-  holy_strike:        AudioAssets.HIT_1,
+  holy_strike:        [AudioAssets.HIT_1, AudioAssets.HIT_2],
   holy_nova:          AudioAssets.BUFF,
   smite:              AudioAssets.SPELL,
   divine_shield:      AudioAssets.SUMMON,
   heal:               AudioAssets.HEAL,
-  // Ranger
-  multi_shot:         AudioAssets.BOW,
+  // Ranger — all bow shots randomized
+  multi_shot:         [AudioAssets.BOW, AudioAssets.BOW, AudioAssets.ATTACK_1],
   poison_arrow:       AudioAssets.BOW,
   aimed_shot:         AudioAssets.BOW,
   eagle_eye:          AudioAssets.STEALTH,
   barrage:            AudioAssets.BOW,
-  // Rogue
-  backstab:           AudioAssets.ATTACK_3,
+  // Rogue — stab sounds randomized
+  backstab:           [AudioAssets.ATTACK_3, AudioAssets.ATTACK_1],
   envenom:            AudioAssets.ATTACK_1,
   smoke_bomb:         AudioAssets.MAGIC_HIT,
-  hemorrhage:         AudioAssets.ATTACK_2,
+  hemorrhage:         [AudioAssets.ATTACK_2, AudioAssets.ATTACK_3],
   shadowstep:         AudioAssets.STEALTH,
   pickpocket:         AudioAssets.COINS,
-  fan_of_knives:      AudioAssets.ATTACK_3,
+  fan_of_knives:      [AudioAssets.ATTACK_3, AudioAssets.ATTACK_1, AudioAssets.ATTACK_2],
   // Necromancer
   shadow_bolt:        AudioAssets.SUMMON,
   soul_drain:         AudioAssets.SUMMON,
@@ -102,6 +102,27 @@ const SPELL_SFX: Partial<Record<string, string>> = {
   cleansing_rain:     AudioAssets.HEAL,
   entangling_roots:   AudioAssets.MAGIC_HIT,
   acid_splash:        AudioAssets.SPELL,
+};
+
+// ── Spell-impact SFX: separate sound that plays ON HIT, not on cast ───────────
+// (item #9 — cast_start plays SPELL_SFX, cast_hit plays SPELL_IMPACT_SFX)
+export const SPELL_IMPACT_SFX: Partial<Record<string, string | string[]>> = {
+  fireball:           AudioAssets.SPELL,
+  meteor_strike:      AudioAssets.SPELL,
+  fire_breath:        AudioAssets.SPELL,
+  ice_bolt:           AudioAssets.MAGIC_HIT,
+  frost_nova:         AudioAssets.MAGIC_HIT,
+  thunderstorm:       [AudioAssets.BUFF, AudioAssets.MAGIC_HIT],
+  chain_lightning:    AudioAssets.MAGIC_HIT,
+  shadow_bolt:        AudioAssets.MAGIC_HIT,
+  banshee_wail:       AudioAssets.NPC_SCREAM,
+  execute:            AudioAssets.HIT_3,
+  whirlwind:          [AudioAssets.HIT_1, AudioAssets.HIT_2],
+  holy_nova:          AudioAssets.BUFF,
+  consecration:       AudioAssets.BUFF,
+  earthquake:         [AudioAssets.HIT_1, AudioAssets.HIT_3],
+  meteor_fall:        AudioAssets.HIT_3,
+  acid_splash:        AudioAssets.MAGIC_HIT,
 };
 
 /**
@@ -131,6 +152,15 @@ export class SoundManager {
   private currentAmbiance: Phaser.Sound.BaseSound | null = null;
   private ambianceVolume = 0.3;
 
+  // ── Item #1: SFX cooldown throttle per key ───────────────────────────────────
+  // Prevents 10 simultaneous hit sounds from piling up on multi-hits.
+  private lastPlayTime = new Map<string, number>();
+  private readonly SFX_COOLDOWN_MS = 80;
+
+  // ── Item #5: Don't repeat same key twice in <100ms ────────────────────────────
+  private lastPlayedKey: string | null = null;
+  private lastPlayedAt = 0;
+
   constructor(private scene: Phaser.Scene) {
     this.unsubscribe = gameSettings.subscribe((s) => {
       this.applyMusicVolume(s.musicVolume);
@@ -148,22 +178,82 @@ export class SoundManager {
   }
 
   private play(key: string, opts?: Phaser.Types.Sound.SoundConfig) {
+    // ── Item #8: Preload guard ────────────────────────────────────────────────
+    if (!this.scene.sound.get(key) && !this.scene.cache.audio.has(key)) {
+      // Asset not loaded yet — silently skip
+      return;
+    }
+
+    // ── Item #1: Throttle — skip if this key was played too recently ──────────
+    const now = Date.now();
+    const lastT = this.lastPlayTime.get(key) ?? 0;
+    if (now - lastT < this.SFX_COOLDOWN_MS) return;
+    this.lastPlayTime.set(key, now);
+
+    // ── Item #5: Skip exact repeat within 100ms ───────────────────────────────
+    if (this.lastPlayedKey === key && now - this.lastPlayedAt < 100) return;
+    this.lastPlayedKey = key;
+    this.lastPlayedAt = now;
+
     try {
       const baseVol = BASE_SFX[key] ?? opts?.volume ?? 0.5;
       const sfxVol = gameSettings.get().sfxVolume;
-      this.scene.sound.play(key, { ...opts, volume: baseVol * sfxVol });
+
+      // ── Item #2: Pitch randomization (±8%) ───────────────────────────────────
+      const rate = (opts?.rate ?? 1) * (0.92 + Math.random() * 0.16);
+
+      this.scene.sound.play(key, { ...opts, volume: baseVol * sfxVol, rate });
     } catch (e) {
       console.warn("Sound play failed:", e);
     }
   }
 
-  /** Play the most appropriate SFX for a given ability ID. */
+  /**
+   * Play the most appropriate SFX for a given ability ID.
+   * Supports array values in SPELL_SFX — picks one at random (item #4).
+   */
   playSpellSfx(abilityId: string) {
-    const sfxKey = SPELL_SFX[abilityId];
-    if (sfxKey) {
-      this.play(sfxKey);
-    } else {
-      this.playSpell(); // Generic fallback
+    const sfxEntry = SPELL_SFX[abilityId];
+    if (!sfxEntry) {
+      this.playSpell();
+      return;
+    }
+    const key = Array.isArray(sfxEntry)
+      ? sfxEntry[Math.floor(Math.random() * sfxEntry.length)]
+      : sfxEntry;
+    this.play(key);
+  }
+
+  /**
+   * Play the impact SFX for a spell (fires on cast_hit, not cast_start).
+   * Item #9 — separate cast vs. impact audio.
+   */
+  playSpellImpactSfx(abilityId: string) {
+    const sfxEntry = SPELL_IMPACT_SFX[abilityId];
+    if (!sfxEntry) return; // Only impacts with defined sounds
+    const key = Array.isArray(sfxEntry)
+      ? sfxEntry[Math.floor(Math.random() * sfxEntry.length)]
+      : sfxEntry;
+    this.play(key);
+  }
+
+  /**
+   * Item #3 — Distance-attenuated SFX: play at reduced volume based on
+   * tile distance from the local player. Pass `distanceTiles = 0` for self.
+   */
+  playAttenuated(key: string, distanceTiles: number) {
+    const MAX_AUDIBLE = 18; // tiles beyond which sound is inaudible
+    if (distanceTiles >= MAX_AUDIBLE) return;
+    const attenuationFactor = 1 - distanceTiles / MAX_AUDIBLE;
+    this.play(key, { volume: attenuationFactor });
+  }
+
+  /**
+   * Item #7 — Master volume that multiplicatively scales all BASE_SFX values.
+   */
+  setMasterSfxVolume(v: number) {
+    for (const key of Object.keys(BASE_SFX)) {
+      BASE_SFX[key] = (BASE_SFX[key] ?? 0.5) * v;
     }
   }
 
@@ -178,12 +268,25 @@ export class SoundManager {
     this.play(steps[Math.floor(Math.random() * steps.length)]);
   }
 
-  playAttack() {
-    const attacks = [
-      AudioAssets.ATTACK_1,
-      AudioAssets.ATTACK_2,
-      AudioAssets.ATTACK_3,
-    ];
+  // ── Item #6: Attack sounds per weapon type ────────────────────────────────────
+  /**
+   * Play an attack sound that tries to match the equipped weapon type.
+   * @param weaponId — the equipped weapon item id (e.g. "iron_sword", "staff_mage")
+   */
+  playAttack(weaponId?: string) {
+    if (weaponId) {
+      if (weaponId.includes("bow") || weaponId.includes("crossbow")) {
+        return this.play(AudioAssets.BOW);
+      }
+      if (weaponId.includes("staff") || weaponId.includes("wand")) {
+        return this.play(AudioAssets.SPELL);
+      }
+      if (weaponId.includes("dagger") || weaponId.includes("knife")) {
+        const daggers = [AudioAssets.ATTACK_1, AudioAssets.ATTACK_3];
+        return this.play(daggers[Math.floor(Math.random() * daggers.length)]);
+      }
+    }
+    const attacks = [AudioAssets.ATTACK_1, AudioAssets.ATTACK_2, AudioAssets.ATTACK_3];
     this.play(attacks[Math.floor(Math.random() * attacks.length)]);
   }
 
@@ -192,11 +295,7 @@ export class SoundManager {
   }
 
   playHit() {
-    const hits = [
-      AudioAssets.HIT_1,
-      AudioAssets.HIT_2,
-      AudioAssets.HIT_3,
-    ];
+    const hits = [AudioAssets.HIT_1, AudioAssets.HIT_2, AudioAssets.HIT_3];
     this.play(hits[Math.floor(Math.random() * hits.length)]);
   }
 
@@ -220,7 +319,6 @@ export class SoundManager {
     this.play(AudioAssets.MOUNT, { volume: 0.5 });
   }
 
-  // Ambiance
   startAmbiance(key: typeof AudioAssets.AMBIANCE_WIND | typeof AudioAssets.AMBIANCE_CRICKETS) {
     if (this.currentAmbiance) {
       if (this.currentAmbiance.key === key) return;
@@ -250,20 +348,32 @@ export class SoundManager {
     this.currentAmbiance = null;
   }
 
+  // ── Item #10: Extended NPC type coverage ─────────────────────────────────────
   playNpcAttack(type: string) {
-    if (type.includes("skeleton")) {
+    if (type.includes("skeleton") || type.includes("undead") || type.includes("zombie")) {
       this.play(AudioAssets.NPC_RATTLE, { volume: 0.4 });
-    } else if (["dragon", "troll", "bear", "orc"].includes(type)) {
+    } else if (type.includes("banshee") || type.includes("wraith")) {
+      this.play(AudioAssets.NPC_SCREAM, { volume: 0.45 });
+    } else if (["dragon", "troll", "bear", "orc", "ogre", "golem"].some(t => type.includes(t))) {
       this.play(AudioAssets.NPC_ROAR, { volume: 0.5 });
+    } else if (["mage", "wizard", "witch", "necromancer"].some(t => type.includes(t))) {
+      this.play(AudioAssets.SPELL, { volume: 0.45 });
+    } else if (["archer", "ranger", "hunter"].some(t => type.includes(t))) {
+      this.play(AudioAssets.BOW, { volume: 0.4 });
+    } else if (["rogue", "bandit", "thief"].some(t => type.includes(t))) {
+      const daggers = [AudioAssets.ATTACK_1, AudioAssets.ATTACK_3];
+      this.play(daggers[Math.floor(Math.random() * daggers.length)], { volume: 0.4 });
     } else {
       this.play(AudioAssets.NPC_GRUNT, { volume: 0.4 });
     }
   }
 
   playNpcDeath(type: string) {
-    if (type.includes("skeleton")) {
+    if (type.includes("skeleton") || type.includes("zombie")) {
       this.play(AudioAssets.NPC_RATTLE, { volume: 0.6 });
-    } else if (["dragon", "troll", "bear", "orc"].includes(type)) {
+    } else if (type.includes("banshee")) {
+      this.play(AudioAssets.NPC_SCREAM, { volume: 0.7 });
+    } else if (["dragon", "troll", "bear", "orc", "ogre"].some(t => type.includes(t))) {
       this.play(AudioAssets.NPC_SCREAM, { volume: 0.6 });
     } else {
       this.play(AudioAssets.NPC_HURT, { volume: 0.5 });
@@ -274,43 +384,18 @@ export class SoundManager {
     this.play(AudioAssets.NPC_LEVEL_UP, { volume: 0.5 });
   }
 
-  playBuff() {
-    this.play(AudioAssets.BUFF);
-  }
-  playStealth() {
-    this.play(AudioAssets.STEALTH);
-  }
-  playSummon() {
-    this.play(AudioAssets.SUMMON);
-  }
-  playMagicHit() {
-    this.play(AudioAssets.MAGIC_HIT);
-  }
-  playBow() {
-    this.play(AudioAssets.BOW);
-  }
-  playCoins() {
-    this.play(AudioAssets.COINS);
-  }
-  playQuestAccept() {
-    this.play(AudioAssets.QUEST_ACCEPT);
-  }
-  playQuestComplete() {
-    this.play(AudioAssets.QUEST_COMPLETE);
-  }
-
-  playUIClick() {
-    this.play(AudioAssets.CLICK);
-  }
-  playUIHover() {
-    this.play(AudioAssets.CLICK_HOVER);
-  }
-  playUIOpen() {
-    this.play(AudioAssets.CLICK_OPEN);
-  }
-  playUIClose() {
-    this.play(AudioAssets.CLICK_CLOSE);
-  }
+  playBuff() { this.play(AudioAssets.BUFF); }
+  playStealth() { this.play(AudioAssets.STEALTH); }
+  playSummon() { this.play(AudioAssets.SUMMON); }
+  playMagicHit() { this.play(AudioAssets.MAGIC_HIT); }
+  playBow() { this.play(AudioAssets.BOW); }
+  playCoins() { this.play(AudioAssets.COINS); }
+  playQuestAccept() { this.play(AudioAssets.QUEST_ACCEPT); }
+  playQuestComplete() { this.play(AudioAssets.QUEST_COMPLETE); }
+  playUIClick() { this.play(AudioAssets.CLICK); }
+  playUIHover() { this.play(AudioAssets.CLICK_HOVER); }
+  playUIOpen() { this.play(AudioAssets.CLICK_OPEN); }
+  playUIClose() { this.play(AudioAssets.CLICK_CLOSE); }
 
   startMusic() {
     if (this.music) return;
