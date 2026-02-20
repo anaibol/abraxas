@@ -277,11 +277,6 @@ export type Ability = {
   comboPointsGain?: number;
 };
 
-/** @deprecated Use `Ability` instead. */
-export type Spell = Ability;
-/** @deprecated Use `AbilityEffect` instead. */
-export type SpellEffect = AbilityEffect;
-
 export interface InventoryEntry {
   itemId: string;
   quantity: number;
@@ -610,6 +605,7 @@ export enum ClientMessageType {
   GroupKick = "group_kick",
   FriendRequest = "friend_request",
   FriendAccept = "friend_accept",
+  FriendRemove = "friend_remove",
   Interact = "interact",
   BuyItem = "buy_item",
   SellItem = "sell_item",
@@ -668,6 +664,7 @@ export type ClientMessages = {
   [ClientMessageType.GroupKick]: { targetSessionId: string };
   [ClientMessageType.FriendRequest]: { targetName: string };
   [ClientMessageType.FriendAccept]: { requesterId: string };
+  [ClientMessageType.FriendRemove]: { friendId: string };
   [ClientMessageType.Interact]: { npcId: string };
   [ClientMessageType.BuyItem]: { itemId: string; quantity: number };
   [ClientMessageType.SellItem]: {

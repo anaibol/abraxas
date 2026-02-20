@@ -8,7 +8,7 @@ export interface ConsoleMessage {
   text: string;
   color?: string;
   timestamp: number;
-  channel?: "global" | "group" | "whisper" | "system" | "combat";
+  channel?: "global" | "group" | "guild" | "whisper" | "system" | "combat";
 }
 
 interface ConsoleProps {
@@ -30,12 +30,13 @@ const GM_COMMANDS: { usage: string; desc: string }[] = [
   { usage: "/gm announce <msg>", desc: "Broadcast a server message" },
 ];
 
-type Channel = "all" | "global" | "group" | "whisper" | "system" | "combat";
+type Channel = "all" | "global" | "group" | "guild" | "whisper" | "system" | "combat";
 
 const TABS: { id: Channel; labelKey: string; color: string }[] = [
   { id: "all", labelKey: "console.tab_all", color: "#ccc" },
   { id: "global", labelKey: "console.tab_global", color: "#fff" },
   { id: "group", labelKey: "console.tab_group", color: "#77f" },
+  { id: "guild", labelKey: "console.tab_guild", color: "#a78bfa" },
   { id: "whisper", labelKey: "console.tab_whisper", color: "#f7f" },
   { id: "system", labelKey: "console.tab_system", color: "#ff7" },
   { id: "combat", labelKey: "console.tab_combat", color: "#f84" },

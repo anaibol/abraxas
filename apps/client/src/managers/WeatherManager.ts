@@ -88,7 +88,5 @@ export class WeatherManager {
     this.snowEmitter.setDepth(1000);
   }
 
-  public update(time: number, delta: number) {
-    // Optional: add screen-space movement or gusting logic here
-  }
 }
+

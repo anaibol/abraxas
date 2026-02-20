@@ -40,8 +40,10 @@ export function NpcContextMenu({ target, onTame, onClose }: NpcContextMenuProps)
     };
   }, [onClose]);
 
+  const TAMEABLE_TYPES = ["horse", "elephant", "dragon", "bear"];
+
   const actions = [];
-  if (target.type === "horse" && onTame) {
+  if (TAMEABLE_TYPES.includes(target.type) && onTame) {
     actions.push({
       label: t("context_menu.tame", "Tame"),
       color: "#ffaa33",
@@ -52,11 +54,13 @@ export function NpcContextMenu({ target, onTame, onClose }: NpcContextMenuProps)
     });
   }
 
-  // If no actions, don't show the menu
-  if (actions.length === 0) {
-    useEffect(() => onClose(), [onClose]);
-    return null;
-  }
+  // If no actions, close immediately.
+  // This effect must be at the top level to respect React rules-of-hooks.
+  useEffect(() => {
+    if (actions.length === 0) onClose();
+  }, [actions.length, onClose]);
+
+  if (actions.length === 0) return null;
 
   const MENU_W = 160;
   const MENU_H = actions.length * 32 + 44;
