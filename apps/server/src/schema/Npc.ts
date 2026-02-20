@@ -5,8 +5,11 @@ import { Char } from "./Char";
 
 export class Npc extends Char {
   @type("string") type: NpcType = "orc";
+  @type("number") spellCastPercent = 0;
 
-  // ── Server-only AI fields (not synced to clients) ──────────────────────
+  @type("string") ownerId?: string;
+
+  // Server-only dataAI fields (not synced to clients) ──────────────────────
   /** Current AI state machine state. */
   state: NpcState = NpcState.IDLE;
   /** Session ID of the current chase/attack target. */

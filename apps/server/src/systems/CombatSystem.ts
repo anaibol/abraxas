@@ -17,10 +17,23 @@ import type { BuffSystem } from "./BuffSystem";
 
 type SendToClientFn = <T extends ServerMessageType>(type: T, message?: ServerMessages[T]) => void;
 
-export class CombatSystem {
   private activeWindups = new Map<string, WindupAction>();
   /** Tracks when each entity last started an auto-attack, for attackCooldownMs enforcement. */
   private lastMeleeMs = new Map<string, number>();
+
+  /** Helper to interrupt an entity's cast if they take damage. */
+  private interruptCast(sessionId: string, broadcast: BroadcastFn) {
+    const windup = this.activeWindups.get(sessionId);
+    if (windup && windup.type === "ability") {
+      this.activeWindups.delete(sessionId);
+      broadcast(ServerMessageType.Notification, {
+        message: "game.cast_interrupted",
+      });
+      // Assuming a hypothetical CastInterrupted message exists, or just clear it silently.
+      // We will clear it silently for now if the client doesn't explicitly support it, 
+      // but it stops the cast from resolving.
+    }
+  }
 
   constructor(
     private state: GameState,
@@ -410,6 +423,7 @@ export class CombatSystem {
           `[resolveAutoAttack] HIT! damage=${result.damage}. hpBefore=${target.hp + result.damage}`,
         );
         target.hp -= result.damage;
+        this.interruptCast(target.sessionId, broadcast);
         broadcast(ServerMessageType.AttackHit, {
           sessionId: attacker.sessionId,
           targetSessionId: target.sessionId,
@@ -659,6 +673,7 @@ export class CombatSystem {
     } else if (ability.effect === "leech") {
       const damage = this.calcAbilityDamage(attacker, target, ability, scalingStatValue, now);
       target.hp -= damage;
+      this.interruptCast(target.sessionId, broadcast);
       broadcast(ServerMessageType.Damage, {
         targetSessionId: target.sessionId,
         amount: damage,
@@ -678,6 +693,7 @@ export class CombatSystem {
     } else if (ability.effect === "damage" || ability.baseDamage > 0) {
       const damage = this.calcAbilityDamage(attacker, target, ability, scalingStatValue, now);
       target.hp -= damage;
+      this.interruptCast(target.sessionId, broadcast);
       broadcast(ServerMessageType.Damage, {
         targetSessionId: target.sessionId,
         amount: damage,

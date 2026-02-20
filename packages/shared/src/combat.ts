@@ -31,8 +31,9 @@ export function calcMeleeDamage(
   defenderArmor: number,
   defenderAgi: number,
 ): { damage: number; dodged: boolean } {
-  // Dodge: ~1% per AGI point above 10
-  const dodgeChance = Math.max(0, (defenderAgi - 10) * 0.01);
+  // Dodge: diminishing returns formula for AGI > 10
+  const bonusAgi = Math.max(0, defenderAgi - 10);
+  const dodgeChance = bonusAgi / (bonusAgi + 100); // 50 AGI = 33% dodge, 100 AGI = 50% dodge
   if (Math.random() < dodgeChance) {
     return { damage: 0, dodged: true };
   }
@@ -51,8 +52,9 @@ export function calcRangedDamage(
   defenderArmor: number,
   defenderAgi: number,
 ): { damage: number; dodged: boolean } {
-  // Reduced dodge chance vs ranged
-  const dodgeChance = Math.max(0, (defenderAgi - 10) * 0.005);
+  // Reduced dodge chance vs ranged using diminishing returns
+  const bonusAgi = Math.max(0, defenderAgi - 10);
+  const dodgeChance = (bonusAgi / (bonusAgi + 100)) * 0.6; // 60% of melee dodge chance
   if (Math.random() < dodgeChance) {
     return { damage: 0, dodged: true };
   }

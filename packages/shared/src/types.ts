@@ -31,7 +31,10 @@ export type NpcType =
   | "horse"
   | "skeleton_archer"
   | "vampire"
-  | "gargoyle";
+  | "gargoyle"
+  | "elephant"
+  | "dragon"
+  | "bear";
 
 export enum NpcState {
   IDLE = "idle",

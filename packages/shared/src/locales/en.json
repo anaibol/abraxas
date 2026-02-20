@@ -110,7 +110,14 @@
     "buff_poisoned": "POISONED",
     "buff_buffed": "BUFFED",
     "trade_cancelled_by_player": "Player cancelled the trade",
-    "pong": "Pong! {{rtt}}ms"
+    "pong": "Pong! {{rtt}}ms",
+    "tame_invalid_target": "Invalid tracking target",
+    "tame_not_tameable": "That creature cannot be tamed",
+    "tame_too_far": "You are too far away to tame that!",
+    "tame_no_lasso": "You need a Lasso to tame animals!",
+    "tame_success": "You successfully tamed the {{item}}!",
+    "tame_success_dropped": "You tamed the {{item}} but your bags are full. It dropped to the ground!",
+    "tame_failed": "The animal broke free! Your lasso was consumed."
   },
   "social": {
     "already_in_group": "Player is already in a group",

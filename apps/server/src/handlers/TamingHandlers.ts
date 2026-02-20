@@ -16,6 +16,9 @@ const TAME_SUCCESS_CHANCE = 0.5;
 /** Item awarded when a particular NPC type is successfully tamed. */
 const TAME_REWARDS: Record<string, string> = {
   horse: "brown_horse",
+  elephant: "elephant_mount",
+  dragon: "dragon_mount",
+  bear: "bear_mount",
 };
 
 export class TamingHandlers {

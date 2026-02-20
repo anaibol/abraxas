@@ -80,7 +80,7 @@ export class NpcSystem {
     }
   }
 
-  public spawnNpcAt(type: NpcType, map: TileMap, x: number, y: number): void {
+  public spawnNpcAt(type: NpcType, map: TileMap, x: number, y: number, ownerId?: string): void {
     const npc = new Npc();
     npc.sessionId = crypto.randomUUID();
     npc.type = type;
@@ -100,12 +100,13 @@ export class NpcSystem {
     npc.state = NpcState.IDLE;
     npc.targetId = "";
     npc.patrolStepsLeft = 0;
+    if (ownerId) npc.ownerId = ownerId;
 
     this.state.npcs.set(npc.sessionId, npc);
     this.spatial.addToGrid(npc);
   }
 
-  private spawnNpc(type: NpcType, map: TileMap): void {
+    npc.spawnY = y;
     // Pick a random walkable tile then spiral to avoid any occupied cell
     for (let attempt = 0; attempt < 20; attempt++) {
       const rx = Math.floor(Math.random() * map.width);
@@ -114,7 +115,7 @@ export class NpcSystem {
 
       const safe = findSafeSpawn(rx, ry, map, this.spatial);
       if (safe) {
-        this.spawnNpcAt(type, map, safe.x, safe.y);
+        this.spawnNpcAt(type, map, safe.x, safe.y, ownerId);
         return;
       }
     }
@@ -483,10 +484,10 @@ export class NpcSystem {
     const stats = NPC_STATS[summoner.type];
     if (!stats.summonType) return;
 
-    // Count how many minions of this type are already alive to enforce the cap.
+    // Count how many minions this specific summoner has alive to enforce the cap.
     let liveMinions = 0;
     this.state.npcs.forEach((n) => {
-      if (n.type === stats.summonType && n.alive) liveMinions++;
+      if (n.ownerId === summoner.sessionId && n.alive) liveMinions++;
     });
     if (liveMinions >= MAX_SUMMONS) return;
 
@@ -499,11 +500,11 @@ export class NpcSystem {
       if (tx < 0 || ty < 0 || tx >= map.width || ty >= map.height) continue;
       if (map.collision[ty]?.[tx] !== 0) continue;
       if (this.spatial.isTileOccupied(tx, ty)) continue;
-      this.spawnNpcAt(stats.summonType, map, tx, ty);
+      this.spawnNpcAt(stats.summonType, map, tx, ty, summoner.sessionId);
       return;
     }
     // No adjacent tile free — fall back to a random spawn.
-    this.spawnNpc(stats.summonType, map);
+    this.spawnNpc(stats.summonType, map, summoner.sessionId);
   }
 
   handleDeath(npc: Npc): void {
