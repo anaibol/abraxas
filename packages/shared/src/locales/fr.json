@@ -530,6 +530,10 @@
       "name": "Forme d'Arbre",
       "desc": "Prenez la forme d'un arbre ancien, boostant l'Intelligence et la régénération de Mana."
     },
+    "mimic": {
+      "name": "Mimer",
+      "desc": "Copiez l'apparence de n'importe quelle créature que vous pouvez voir."
+    },
     "summon_zombie": {
       "name": "Invoquer Zombie",
       "desc": "Consomme des âmes pour relever un serviteur zombie robuste."

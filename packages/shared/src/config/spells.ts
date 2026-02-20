@@ -62,6 +62,19 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     fxId: 16,
   },
 
+  /** Shield Wall: Massively boosts armor for 10 seconds */
+  shield_wall: {
+    id: "shield_wall",
+    key: "",
+    requiredLevel: 22,
+    fxId: 18,
+    rageCost: 40,
+    cooldownMs: 60000,
+    durationMs: 10000,
+    buffStat: StatType.ARMOR,
+    buffAmount: 40,
+    effect: "buff",
+  },
   /** T — Earthquake: Shakes the earth around the warrior, stunning nearby enemies */
   earthquake: {
     id: "earthquake",
@@ -451,6 +464,57 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     dotIntervalMs: 1000,
     dotDurationMs: 4000,
   },
+  /** Pet Bond: Increases AGI and STR by 5 for each active companion */
+  pet_bond: {
+    id: "pet_bond",
+    key: "",
+    requiredLevel: 22,
+    fxId: 15,
+    manaCost: 30,
+    cooldownMs: 60000,
+    durationMs: 30000,
+    effect: "buff",
+  },
+  /** Explosive Trap: Places a trap that explodes when an enemy steps on it (Summon logic) */
+  explosive_trap: {
+    id: "explosive_trap",
+    key: "",
+    requiredLevel: 24,
+    fxId: 3,
+    manaCost: 35,
+    cooldownMs: 20000,
+    effect: "summon",
+    summonType: "explosive_trap",
+    rangeTiles: 1,
+  },
+  /** Eagle Eye: Massively increases attack range for a duration */
+  eagle_eye: {
+    id: "eagle_eye",
+    key: "",
+    requiredLevel: 26,
+    fxId: 18,
+    focusCost: 30,
+    cooldownMs: 45000,
+    durationMs: 12000,
+    buffStat: StatType.AGI,
+    buffAmount: 10,
+    effect: "buff",
+  },
+  /** Barrage: Rapid-fire volley of arrows in a large cone/AoE */
+  barrage: {
+    id: "barrage",
+    key: "",
+    requiredLevel: 30,
+    fxId: 14,
+    focusCost: 50,
+    baseDamage: 40,
+    scalingStat: StatType.AGI,
+    scalingRatio: 1.2,
+    cooldownMs: 15000,
+    aoeRadius: 4,
+    effect: "aoe",
+    damageSchool: DamageSchool.PHYSICAL,
+  },
 
   // ── ROGUE ─────────────────────────────────────────────────────────────────
 
@@ -543,6 +607,57 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     dotDamage: 8,
     dotIntervalMs: 1500,
     dotDurationMs: 6000,
+  },
+  /** Shadowstep: Teleports the rogue behind the target */
+  shadowstep: {
+    id: "shadowstep",
+    key: "",
+    requiredLevel: 22,
+    fxId: 10,
+    energyCost: 30,
+    cooldownMs: 15000,
+    effect: "teleport",
+    rangeTiles: 6,
+  },
+  /** Pickpocket: Stein gold from an NPC target */
+  pickpocket: {
+    id: "pickpocket",
+    key: "",
+    requiredLevel: 24,
+    fxId: 2,
+    energyCost: 20,
+    cooldownMs: 10000,
+    effect: "pickpocket",
+    rangeTiles: 1,
+  },
+  /** Caltrops: Drops an area of spikes that slows and deals minor damage */
+  caltrops: {
+    id: "caltrops",
+    key: "",
+    requiredLevel: 26,
+    fxId: 14,
+    energyCost: 40,
+    baseDamage: 5,
+    cooldownMs: 20000,
+    durationMs: 8000,
+    aoeRadius: 2,
+    effect: "aoe",
+    buffStat: StatType.AGI,
+    buffAmount: -10,
+  },
+  /** Fan of Knives: AoE burst damage around the rogue */
+  fan_of_knives: {
+    id: "fan_of_knives",
+    key: "",
+    requiredLevel: 30,
+    fxId: 14,
+    energyCost: 50,
+    baseDamage: 30,
+    scalingStat: StatType.AGI,
+    scalingRatio: 1.0,
+    cooldownMs: 8000,
+    aoeRadius: 3,
+    effect: "aoe",
   },
 
   // ── CLERIC ────────────────────────────────────────────────────────────────
@@ -999,6 +1114,7 @@ export const ABILITIES: Record<string, Ability> = Object.fromEntries(
       windupMs: 200,
       effect: "damage",
       aoeRadius: 0,
+      leechRatio: 0,
       damageSchool: DamageSchool.PHYSICAL,
       ...v,
       id: k,

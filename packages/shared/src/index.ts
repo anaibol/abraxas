@@ -6,5 +6,6 @@ export * from "./items";
 export * from "./loot";
 export * from "./config/affixes";
 export * from "./types";
+export * from "./assets";
 export * from "./utils/MathUtils";
 export * from "./utils/names";

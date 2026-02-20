@@ -530,6 +530,10 @@
       "name": "Forma di Albero",
       "desc": "Prendi la forma di un albero antico, potenziando l'Intelligenza e la rigenerazione del Mana."
     },
+    "mimic": {
+      "name": "Mimetismo",
+      "desc": "Copia l'aspetto di qualsiasi creatura tu possa vedere."
+    },
     "summon_zombie": {
       "name": "Evoca Zombi",
       "desc": "Consuma anime per rianimare un robusto servitore zombi."

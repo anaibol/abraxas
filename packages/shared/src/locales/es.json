@@ -530,6 +530,10 @@
       "name": "Forma de Árbol",
       "desc": "Toma la forma de un árbol anciano, aumentando la Inteligencia y la regeneración de Maná."
     },
+    "mimic": {
+      "name": "Mimetizar",
+      "desc": "Copia la apariencia de cualquier criatura que puedas ver."
+    },
     "summon_zombie": {
       "name": "Invocar Zombi",
       "desc": "Consume almas para levantar a un resistente esbirro zombi."

@@ -79,7 +79,17 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     armor: 5,
     maxCompanions: 3,
     // Q: multi_shot (AoE) | W: poison_arrow (DoT) | E: evasion (buff) | R: aimed_shot (nuke) | T: mark_target (debuff)
-    abilities: ["multi_shot", "poison_arrow", "evasion", "aimed_shot", "mark_target"],
+    abilities: [
+      "multi_shot",
+      "poison_arrow",
+      "evasion",
+      "aimed_shot",
+      "mark_target",
+      "pet_bond",
+      "explosive_trap",
+      "eagle_eye",
+      "barrage",
+    ],
   },
   ROGUE: {
     hp: 150,
@@ -94,7 +104,17 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     armor: 4,
     maxCompanions: 1,
     // Q: backstab (nuke) | W: stealth | E: envenom (DoT) | R: smoke_bomb (AoE stun) | T: hemorrhage (leech)
-    abilities: ["backstab", "stealth", "envenom", "smoke_bomb", "hemorrhage"],
+    abilities: [
+      "backstab",
+      "stealth",
+      "envenom",
+      "smoke_bomb",
+      "hemorrhage",
+      "shadowstep",
+      "pickpocket",
+      "caltrops",
+      "fan_of_knives",
+    ],
   },
   CLERIC: {
     hp: 220,

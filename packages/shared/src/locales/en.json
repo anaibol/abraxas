@@ -502,6 +502,10 @@
       "name": "Tree Form",
       "desc": "Take the form of an ancient tree, boosting Intelligence and Mana regeneration."
     },
+    "mimic": {
+      "name": "Mimic",
+      "desc": "Copy the appearance of any creature you can see."
+    },
     "summon_zombie": {
       "name": "Summon Zombie",
       "desc": "Consume souls to raise a sturdy zombie minion."

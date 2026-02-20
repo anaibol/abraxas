@@ -41,6 +41,11 @@ export enum StatType {
   ARMOR = "armor",
   STUN = "stun",
   INVULNERABLE = "invulnerable",
+  RAGE = "rage",
+  ENERGY = "energy",
+  FOCUS = "focus",
+  HOLY_POWER = "holyPower",
+  COMBO_POINTS = "comboPoints",
 }
 
 export interface ItemAffix {
@@ -85,7 +90,11 @@ export type NpcType =
   | "gargoyle"
   | "elephant"
   | "dragon"
-  | "bear";
+  | "bear"
+  | "mana_spring"
+  | "explosive_trap"
+  | "phantom_pet"
+  | "decoy";
 
 export enum NpcState {
   IDLE = "idle",
@@ -114,7 +123,7 @@ export interface QuestRequirement {
 export interface QuestReward {
   exp: number;
   gold: number;
-  items?: { itemId: string; quantity: number }[];
+  items: { itemId: string; quantity: number }[];
 }
 
 export type Quest = {
@@ -156,7 +165,7 @@ export interface TileMap {
 }
 
 /** Stats shared by all character types (players and NPCs). */
-export interface NpcStats {
+export interface CharStats {
   hp: number;
   str: number;
   agi: number;
@@ -168,23 +177,15 @@ export interface NpcStats {
   attackWindupMs: number;
   armor: number;
   abilities: string[];
+  passive?: boolean;
+  fleesWhenLow?: boolean;
+  abilityCastChance?: number;
+  rareSpawn?: boolean;
+}
+
+export interface NpcStats extends CharStats {
   expReward?: number;
   /** NPC will not aggro players and does not move (e.g. merchants). */
-  passive?: boolean;
-  /** NPC flees when HP drops below 25%. */
-  fleesWhenLow?: boolean;
-  /**
-   * Probability (0–1) that the NPC will attempt an ability use on any given
-   * attack tick when the ability is off cooldown. Lower values produce a more
-   * natural mix of auto-attacks and abilities. Defaults to 0.4 if omitted.
-   */
-  abilityCastChance?: number;
-  /**
-   * When true the NPC is excluded from the random world-spawn pool and can
-   * only be placed via fixed map.npcs entries. Use for boss/elite enemies that
-   * should not appear alongside regular mobs.
-   */
-  rareSpawn?: boolean;
   /**
    * Which NPC type is spawned when this NPC uses a "summon" ability.
    * Required for any NPC with a summon ability in its ability list.
@@ -196,8 +197,8 @@ export interface NpcStats {
   maxLevel?: number;
 }
 
-/** Stats for player classes — extends NpcStats with a required mana pool. */
-export interface ClassStats extends NpcStats {
+/** Stats for player classes — extends CharStats with a required mana pool. */
+export interface ClassStats extends CharStats {
   mana: number;
   maxCompanions: number;
 }
@@ -245,19 +246,24 @@ export type Ability = {
    */
   damageSchool: DamageSchool;
   fxId: number;
-  rangeTiles?: number;
+  rangeTiles: number;
   durationMs?: number;
-  aoeRadius?: number;
+  aoeRadius: number;
   buffStat?: StatType;
   buffAmount?: number;
   summonType?: string;
-  soulCost?: number;
+  leechRatio?: number;
   dotDamage?: number;
   dotIntervalMs?: number;
   dotDurationMs?: number;
-  /** Fraction of damage returned as healing to the caster (used by "leech" effect). */
-  leechRatio?: number;
   appearanceOverride?: { bodyId: number; headId: number };
+  soulCost?: number;
+  rageCost?: number;
+  energyCost?: number;
+  focusCost?: number;
+  holyPowerCost?: number;
+  comboPointsCost?: number;
+  comboPointsGain?: number;
 };
 
 /** @deprecated Use `Ability` instead. */
@@ -269,9 +275,9 @@ export interface InventoryEntry {
   itemId: string;
   quantity: number;
   slotIndex: number;
-  rarity?: ItemRarity;
+  rarity: ItemRarity;
   nameOverride?: string;
-  affixes?: ItemAffix[];
+  affixes: ItemAffix[];
 }
 
 export interface EquipmentData {
@@ -285,7 +291,14 @@ export interface EquipmentData {
 
 export interface TradeOffer {
   gold: number;
-  items: { itemId: string; quantity: number }[];
+  items: {
+    itemId: string;
+    quantity: number;
+    slotIndex: number;
+    rarity: ItemRarity;
+    nameOverride?: string;
+    affixes: ItemAffix[];
+  }[];
   confirmed: boolean;
 }
 
@@ -326,6 +339,8 @@ export interface PlayerEntityState extends BaseEntityState {
   equipWeapon: string;
   equipShield: string;
   equipHelmet: string;
+  equipArmor: string;
+  equipRing: string;
   equipMount: string;
   meditating: boolean;
   guildId?: string;
@@ -630,10 +645,10 @@ export type ClientMessages = {
     targetTileY: number;
   };
   [ClientMessageType.Pickup]: { dropId: string };
-  [ClientMessageType.Equip]: { slotIndex: number };
+  [ClientMessageType.Equip]: { itemId: string };
   [ClientMessageType.Unequip]: { slot: EquipmentSlot };
-  [ClientMessageType.UseItem]: { slotIndex: number };
-  [ClientMessageType.DropItem]: { slotIndex: number; quantity?: number };
+  [ClientMessageType.UseItem]: { itemId: string };
+  [ClientMessageType.DropItem]: { itemId: string; quantity?: number };
   [ClientMessageType.Chat]: { message: string };
   [ClientMessageType.Audio]: ArrayBuffer;
   [ClientMessageType.GroupInvite]: { targetSessionId: string };
@@ -657,7 +672,7 @@ export type ClientMessages = {
   [ClientMessageType.TradeAccept]: { requesterSessionId: string };
   [ClientMessageType.TradeOfferUpdate]: {
     gold: number;
-    items: { itemId: string; quantity: number }[];
+    items: { itemId: string; quantity: number; slotIndex: number }[];
   };
   [ClientMessageType.TradeConfirm]: {};
   [ClientMessageType.TradeCancel]: {};

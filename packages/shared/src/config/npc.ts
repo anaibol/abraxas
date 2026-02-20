@@ -21,9 +21,13 @@ export const NPC_APPEARANCE: Record<string, { bodyId: number; headId: number }> 
   elephant: { bodyId: 80, headId: 0 },
   dragon: { bodyId: 85, headId: 0 },
   bear: { bodyId: 75, headId: 0 },
+  mana_spring: { bodyId: 1, headId: 0 },
+  explosive_trap: { bodyId: 3, headId: 0 },
+  phantom_pet: { bodyId: 65, headId: 0 },
+  decoy: { bodyId: 45, headId: 0 },
 };
 
-const _NPC_STATS: Record<NpcType, Partial<NpcStats>> = {
+const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
   orc: {
     hp: 120,
     str: 12,
@@ -364,6 +368,39 @@ const _NPC_STATS: Record<NpcType, Partial<NpcStats>> = {
     minLevel: 8,
     maxLevel: 15,
   },
+  mana_spring: {
+    hp: 100,
+    speedTilesPerSecond: 0,
+    passive: true,
+    armor: 5,
+    abilities: [],
+    expReward: 0,
+  },
+  explosive_trap: {
+    hp: 10,
+    speedTilesPerSecond: 0,
+    passive: true,
+    armor: 0,
+    abilities: [],
+    expReward: 0,
+  },
+  phantom_pet: {
+    hp: 100,
+    speedTilesPerSecond: 6,
+    attackRange: 1,
+    attackCooldownMs: 800,
+    armor: 10,
+    abilities: [],
+    expReward: 0,
+  },
+  decoy: {
+    hp: 200,
+    speedTilesPerSecond: 0,
+    passive: true,
+    armor: 20,
+    abilities: [],
+    expReward: 0,
+  },
 };
 
 export const NPC_STATS: Record<NpcType, NpcStats> = Object.fromEntries(
@@ -373,14 +410,13 @@ export const NPC_STATS: Record<NpcType, NpcStats> = Object.fromEntries(
       fleesWhenLow: false,
       abilityCastChance: 0.4,
       rareSpawn: false,
-      ...(v as any),
-    };
+      ...v,
+    } as NpcStats;
     return [k, stats];
   }),
 ) as Record<NpcType, NpcStats>;
 
-const npcStatsKeysAny: any = Object.keys(NPC_STATS);
-export const NPC_TYPES: NpcType[] = npcStatsKeysAny;
+export const NPC_TYPES: NpcType[] = Object.keys(_NPC_STATS) as NpcType[];
 
 export interface DropTableEntry {
   itemId: string;
