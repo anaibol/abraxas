@@ -16,7 +16,8 @@ type EquipSlotKey =
   | "equipArmor"
   | "equipShield"
   | "equipHelmet"
-  | "equipRing";
+  | "equipRing"
+  | "equipMount";
 
 const EQUIP_SLOT_MAP: Record<EquipmentSlot, EquipSlotKey> = {
   weapon: "equipWeapon",
@@ -24,6 +25,7 @@ const EQUIP_SLOT_MAP: Record<EquipmentSlot, EquipSlotKey> = {
   shield: "equipShield",
   helmet: "equipHelmet",
   ring: "equipRing",
+  mount: "equipMount",
 };
 
 export class InventorySystem {

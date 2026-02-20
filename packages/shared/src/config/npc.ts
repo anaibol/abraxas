@@ -21,19 +21,6 @@ export const NPC_APPEARANCE: Record<
 };
 
 export const NPC_STATS: Record<NpcType, NpcStats> = {
-	horse: {
-		hp: 200,
-		str: 5,
-		agi: 20,
-		int: 5,
-		speedTilesPerSecond: 10,
-		attackRange: 1,
-		attackCooldownMs: 1500,
-		attackWindupMs: 500,
-		armor: 5,
-		abilities: [],
-		passive: true,
-	},
 	orc: {
 		hp: 120,
 		str: 12,
@@ -49,6 +36,8 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		expReward: 80,
 		// Uses enrage tactically rather than on every opportunity
 		abilityCastChance: 0.6,
+		minLevel: 10,
+		maxLevel: 25,
 	},
 	skeleton: {
 		hp: 60,
@@ -65,6 +54,8 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		abilities: ["shadow_bolt"],
 		expReward: 45,
 		abilityCastChance: 0.55,
+		minLevel: 5,
+		maxLevel: 15,
 	},
 	goblin: {
 		hp: 40,
@@ -82,6 +73,8 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		fleesWhenLow: true,
 		// Fire breath is a situational trick — rely mostly on quick melee
 		abilityCastChance: 0.3,
+		minLevel: 1,
+		maxLevel: 10,
 	},
 	wolf: {
 		hp: 80,
@@ -96,6 +89,8 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		abilities: [],
 		expReward: 55,
 		fleesWhenLow: true,
+		minLevel: 1,
+		maxLevel: 10,
 	},
 	merchant: {
 		hp: 1000,
@@ -126,6 +121,8 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		fleesWhenLow: true,
 		// Abilities are occasional — relies mostly on quick auto-attacks
 		abilityCastChance: 0.4,
+		minLevel: 5,
+		maxLevel: 15,
 	},
 	ghost: {
 		hp: 70,
@@ -142,6 +139,8 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		expReward: 70,
 		// Heavily ability-focused fighter
 		abilityCastChance: 0.55,
+		minLevel: 10,
+		maxLevel: 25,
 	},
 	lich: {
 		hp: 500,
@@ -162,6 +161,9 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		abilityCastChance: 0.7,
 		// Bosses should not appear in random spawns — place via map.npcs only
 		rareSpawn: true,
+		// Summon ability creates skeleton minions
+		summonType: "skeleton",
+		minLevel: 30,
 	},
 	zombie: {
 		hp: 90,
@@ -177,6 +179,8 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		abilities: ["disease_bite"],
 		expReward: 60,
 		abilityCastChance: 0.5,
+		minLevel: 5,
+		maxLevel: 15,
 	},
 	troll: {
 		hp: 250,
@@ -193,6 +197,8 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		expReward: 150,
 		// High chance so it reliably heals itself when desperate
 		abilityCastChance: 0.7,
+		minLevel: 20,
+		maxLevel: 40,
 	},
 	bat: {
 		hp: 30,
@@ -209,6 +215,8 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		expReward: 25,
 		fleesWhenLow: true,
 		abilityCastChance: 0.4,
+		minLevel: 1,
+		maxLevel: 10,
 	},
 	dark_knight: {
 		hp: 350,
@@ -227,6 +235,8 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		abilityCastChance: 0.65,
 		// Elite — place via map.npcs; should not appear in random spawns
 		rareSpawn: true,
+		minLevel: 20,
+		maxLevel: 40,
 	},
 	banker: {
 		hp: 100,
@@ -340,4 +350,17 @@ export const NPC_DROPS: Record<string, DropTableEntry[]> = {
 		{ itemId: "ring_of_strength", chance: 0.06, min: 1, max: 1 },
 		{ itemId: "gold", chance: 0.8, min: 80, max: 200 },
 	],
+	// Passive NPCs — no drops, but entry prevents undefined lookups
+	merchant: [],
+	banker: [],
+	// Horse is a mount — no combat drops
+	horse: [],
 };
+
+/**
+ * Returns the drop table for an NPC type.
+ * Always returns an array (empty for passive/mount NPCs).
+ */
+export function buildDropRolls(type: NpcType): DropTableEntry[] {
+	return NPC_DROPS[type] ?? [];
+}
