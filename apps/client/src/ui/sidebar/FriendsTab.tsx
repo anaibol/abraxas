@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Flex, Text, VStack, HStack, Input, Button } from "@chakra-ui/react";
+import { Button } from "../components/Button";
 import { useTranslation } from "react-i18next";
 import { T } from "../tokens";
 import { type Friend } from "./types";
@@ -13,7 +13,7 @@ interface FriendsTabProps {
 	onFriendAccept?: (id: string) => void;
 	onWhisper?: (name: string) => void;
 	onTradeRequest?: (id: string) => void;
-	onPartyInvite?: (id: string) => void;
+	onGroupInvite?: (id: string) => void;
 }
 
 export function FriendsTab({
@@ -25,7 +25,7 @@ export function FriendsTab({
 	onFriendAccept,
 	onWhisper,
 	onTradeRequest,
-	onPartyInvite,
+	onGroupInvite,
 }: FriendsTabProps) {
 	const { t } = useTranslation();
 	return (
@@ -115,9 +115,9 @@ export function FriendsTab({
 										minW="auto"
 										color="blue.400"
 										fontSize="12px"
-										onClick={() => onPartyInvite?.(friend.id)}
+										onClick={() => onGroupInvite?.(friend.id)}
 									>
-										{t("sidebar.social.party_invite")}
+										{t("sidebar.social.group_invite")}
 									</Button>
 								)}
 								{friend.online && (
