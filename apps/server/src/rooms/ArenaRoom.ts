@@ -227,7 +227,11 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 			player.role = auth.role;
 			// Assign spawn point — spiral outward if the candidate tile is blocked
 			const spawnIndex = this.state.players.size;
-			const candidate = this.map.spawns[spawnIndex % this.map.spawns.length];
+			let spawnsArray = this.map.spawns;
+			if (this.playerService.isPlayerTotallyNew(player) && this.map.newbieSpawns && this.map.newbieSpawns.length > 0) {
+				spawnsArray = this.map.newbieSpawns;
+			}
+			const candidate = spawnsArray[spawnIndex % spawnsArray.length];
 			if (candidate) {
 				const safe = findSafeSpawn(
 					candidate.x,

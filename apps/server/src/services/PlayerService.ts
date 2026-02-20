@@ -96,7 +96,7 @@ export class PlayerService {
     return player;
   }
 
-  private isPlayerTotallyNew(player: Player): boolean {
+  public isPlayerTotallyNew(player: Player): boolean {
     return (
       player.inventory.length === 0 &&
       !player.equipWeapon &&

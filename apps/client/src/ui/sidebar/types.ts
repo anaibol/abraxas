@@ -12,6 +12,7 @@ export interface EquipmentState {
 	shield: string;
 	helmet: string;
 	ring: string;
+	mount?: string;
 }
 
 export type PlayerState = {

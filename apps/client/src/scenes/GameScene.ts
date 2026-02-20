@@ -12,6 +12,8 @@ import { SpriteManager } from "../managers/SpriteManager";
 import { EffectManager } from "../managers/EffectManager";
 import { GameEventHandler } from "../handlers/GameEventHandler";
 import { AudioManager } from "../managers/AudioManager";
+import { MapBaker } from "../systems/MapBaker";
+import { DropManager } from "../systems/DropManager";
 
 import type { GameState } from "../../../server/src/schema/GameState";
 import type { Player } from "../../../server/src/schema/Player";
@@ -41,6 +43,8 @@ export class GameScene extends Phaser.Scene {
 	private soundManager!: SoundManager;
 	private audioManager: AudioManager;
 	private gameEventHandler!: GameEventHandler;
+	private mapBaker!: MapBaker;
+	private dropManager!: DropManager;
 
 	private collisionGrid: number[][] = [];
 	private stateUnsubscribers: (() => void)[] = [];
@@ -143,8 +147,6 @@ export class GameScene extends Phaser.Scene {
 			() => this.room.sessionId,
 		);
 		this.effectManager = new EffectManager(this, this.spriteManager);
-		this.mapBaker = new MapBaker(this, this.welcome);
-		this.dropManager = new DropManager(this, this.effectManager);
 
 		// Spawn visual indicators for all map teleporters
 		if (this.welcome.warps) {
@@ -260,12 +262,6 @@ export class GameScene extends Phaser.Scene {
 				playerOnChangeUnsubs.delete(sessionId);
 				this.spriteManager.removePlayer(sessionId);
 			}),
-			$state.onAdd("drops", (drop, id) =>
-				this.dropManager.addDrop(drop, id),
-			),
-			$state.onRemove("drops", (_drop, id) =>
-				this.dropManager.removeDrop(id),
-			),
 			$state.onAdd("npcs", (npc, id) => {
 				this.spriteManager.addNpc(npc, id);
 				this.spriteManager.syncNpc(npc, id);
@@ -311,8 +307,6 @@ export class GameScene extends Phaser.Scene {
 	}
 
 	update(time: number, delta: number) {
-		this.mapBaker.update();
-
 		this.inputHandler.update(time, () => this.getMouseTile());
 		this.spriteManager.update(delta);
 
@@ -320,12 +314,6 @@ export class GameScene extends Phaser.Scene {
 			const lp = this.room.state.players.get(this.room.sessionId);
 			if (lp && (!lp.alive || lp.stunned)) this.inputHandler.cancelTargeting();
 			this.updateTargetingOverlay();
-		}
-
-		// Show drop labels only within 5 tiles of the local player (Diablo 2-style)
-		const lp = this.room.state.players.get(this.room.sessionId);
-		if (lp) {
-			this.dropManager.updateLabels(lp.tileX, lp.tileY);
 		}
 
 		const localSprite = this.spriteManager.getSprite(this.room.sessionId);
@@ -465,6 +453,8 @@ export class GameScene extends Phaser.Scene {
 			level: player.level,
 			xp: player.xp,
 			maxXp: player.maxXp,
+			pvpEnabled: player.pvpEnabled,
+			guildId: player.groupId, // TODO: Update to player.guildId when it's populated
 			inventory: this.buildInventory(player),
 			equipment: {
 				weapon: player.equipWeapon,
