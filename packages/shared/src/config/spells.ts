@@ -332,6 +332,33 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     durationMs: 8000,
     effect: "buff",
   },
+  /** Mana Spring: Summons a stationary crystal that restores mana to nearby allies */
+  mana_spring: {
+    id: "mana_spring",
+    key: "",
+    requiredLevel: 14,
+    fxId: 1,
+    manaCost: 40,
+    cooldownMs: 90000,
+    durationMs: 20000,
+    effect: "summon",
+    summonType: "mana_spring",
+    rangeTiles: 2,
+  },
+  /** Polymorph: Transforms the target into a sheep, stunning them and slowly healing them */
+  polymorph: {
+    id: "polymorph",
+    key: "",
+    requiredLevel: 24,
+    fxId: 10,
+    manaCost: 45,
+    cooldownMs: 30000,
+    durationMs: 6000,
+    effect: "debuff",
+    buffStat: StatType.STUN,
+    appearanceOverride: { bodyId: 82, headId: 0 },
+    rangeTiles: 5,
+  },
 
   // ── RANGER ───────────────────────────────────────────────────────────────
 

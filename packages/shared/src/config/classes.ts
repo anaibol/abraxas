@@ -34,6 +34,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
       "execute",
       "cleave",
       "berserker_rage",
+      "shield_wall",
     ],
   },
   MAGE: {
@@ -61,6 +62,8 @@ export const CLASS_STATS: Record<string, ClassStats> = {
       "spell_echo",
       "meteor_strike",
       "chain_lightning",
+      "mana_spring",
+      "polymorph",
     ],
   },
   RANGER: {
