@@ -142,7 +142,7 @@ export class TickSystem {
             const dx = npc.tileX - player.tileX;
             const dy = npc.tileY - player.tileY;
             if (dx * dx + dy * dy <= 4 * 4) { // 4 tile radius
-              player.mana = Math.min(player.maxMana ?? 100, (player.mana ?? 0) + 5);
+              player.mana = Math.min(player.maxMana, player.mana + 5);
               // Notification/Broadcast could be added here but might be too noisy
             }
           }

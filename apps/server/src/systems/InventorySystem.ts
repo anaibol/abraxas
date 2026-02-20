@@ -150,19 +150,19 @@ export class InventorySystem {
       player.inventory.splice(idx, 1);
 
       // 2. Clear equip slot
-      (player as Record<string, any>)[slotKey] = undefined;
+      (player as Pick<Player, EquipSlotKey>)[slotKey] = undefined;
 
       // 3. Put unequipped item into inventory at the same slotIndex
       unequipped.slotIndex = itemToEquip.slotIndex;
       player.inventory.push(unequipped);
 
       // 4. Set new item as equipment
-      (player as Record<string, any>)[slotKey] = itemToEquip;
+      (player as Pick<Player, EquipSlotKey>)[slotKey] = itemToEquip;
     } else {
       // Simple equip: Remove from inventory, set as equipment.
       const idx = player.inventory.indexOf(item);
       player.inventory.splice(idx, 1);
-      (player as Record<string, any>)[slotKey] = item;
+      (player as Pick<Player, EquipSlotKey>)[slotKey] = item;
     }
 
     this.recalcStats(player);
@@ -194,7 +194,7 @@ export class InventorySystem {
     item.slotIndex = freeIdx;
     player.inventory.push(item);
 
-    (player as Record<string, any>)[slotKey] = undefined;
+    (player as Pick<Player, EquipSlotKey>)[slotKey] = undefined;
     this.recalcStats(player);
     return true;
   }

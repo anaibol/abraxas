@@ -429,9 +429,9 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         const HARVEST_RANGE = 5;
         if (distSq <= HARVEST_RANGE * HARVEST_RANGE) {
           const hpGain = Math.floor(player.maxHp * 0.05);
-          const manaGain = Math.floor((player.maxMana ?? 100) * 0.05);
+          const manaGain = Math.floor(player.maxMana * 0.05);
           player.hp = Math.min(player.maxHp, player.hp + hpGain);
-          player.mana = Math.min(player.maxMana ?? 100, (player.mana ?? 0) + manaGain);
+          player.mana = Math.min(player.maxMana, player.mana + manaGain);
 
           // Add a soul
           if (player.souls < player.maxSouls) {
