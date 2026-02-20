@@ -137,12 +137,15 @@ export class FriendsSystem {
     const client = this.findClient(sessionId);
     if (!client) return;
 
-    const [outgoing, incoming, pendingIncoming] = await Promise.all([
+    const [allAccepted, pendingIncoming] = await Promise.all([
+      // B083: Single OR query handles both directions — avoids dual-table inconsistency
       prisma.requesterFriend.findMany({
-        where: { requesterId: userId, status: "ACCEPTED" },
-      }),
-      prisma.recipientFriend.findMany({
-        where: { recipientId: userId, status: "ACCEPTED" },
+        where: {
+          OR: [
+            { requesterId: userId, status: "ACCEPTED" },
+            { recipientId: userId, status: "ACCEPTED" },
+          ],
+        },
       }),
       // Requests sent TO this user that are still pending
       prisma.requesterFriend.findMany({
@@ -151,10 +154,9 @@ export class FriendsSystem {
       }),
     ]);
 
-    const friendIds = [
-      ...outgoing.map((f) => f.recipientId),
-      ...incoming.map((f) => f.requesterId),
-    ];
+    const friendIds = allAccepted.map((f) =>
+      f.requesterId === userId ? f.recipientId : f.requesterId,
+    );
 
     const [friendUsers] = await Promise.all([
       friendIds.length > 0
