@@ -154,7 +154,7 @@ export class EffectManager {
 
 		// fx-cross — plus/cross with a soft circular glow behind it (holy, heal, divine)
 		if (!this.scene.textures.exists(TEX.CROSS)) {
-			const g = this.scene.make.graphics({ add: false });
+			const g = this.scene.add.graphics();
 			// Soft glow disc behind the cross
 			for (let r = 5; r >= 1; r--) {
 				const a = Math.pow(1 - r / 5, 1.5) * 0.45;
