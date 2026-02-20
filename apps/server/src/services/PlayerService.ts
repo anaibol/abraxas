@@ -78,7 +78,6 @@ export class PlayerService {
           : facingStr === "RIGHT"
             ? Direction.RIGHT
             : Direction.DOWN;
-    player.alive = player.hp > 0;
 
     // Starting gear logic
     if (this.isPlayerTotallyNew(player)) {
@@ -117,6 +116,10 @@ export class PlayerService {
       player.hp = Math.min(player.hp, player.maxHp);
       player.mana = Math.min(player.mana, player.maxMana);
     }
+
+    // Set alive AFTER stats/equipment are fully resolved so hp reflects
+    // the real post-recalc value (fixes spawn-dead bug).
+    player.alive = player.hp > 0;
 
     // Attach saved companions to player for the Room to spawn, or spawn them here if we have NpcSystem...
     // Actually, we don't have NpcSystem in PlayerService constructor. Let's just store them on the Player object temporarily

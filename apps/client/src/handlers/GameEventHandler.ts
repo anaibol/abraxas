@@ -132,7 +132,7 @@ export class GameEventHandler {
       } else {
         // Item #6: Pass weapon id for weapon-type SFX routing
         const player = this.room.state.players.get(data.sessionId);
-        this.soundManager.playAttack(player?.equipWeapon ?? undefined);
+        this.soundManager.playAttack(player?.equipWeaponId ?? undefined);
       }
     }
   }

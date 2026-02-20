@@ -273,18 +273,18 @@ export class GameScene extends Phaser.Scene {
             "level",
             "xp",
             "maxXp",
-            "equipWeapon",
-            "equipArmor",
-            "equipShield",
-            "equipHelmet",
-            "equipRing",
-            "equipMount",
+            "equipWeaponId",
+            "equipArmorId",
+            "equipShieldId",
+            "equipHelmetId",
+            "equipRingId",
+            "equipMountId",
           ] as const) {
             unsub($state.listen(player, field, () => this.pushSidebarUpdate(player)));
           }
 
           unsub(
-            $state.listen(player, "equipMount", (newMount, oldMount) => {
+            $state.listen(player, "equipMountId", (newMount, oldMount) => {
               if (newMount && newMount !== oldMount) {
                 this.soundManager.playMount();
               }
@@ -600,12 +600,12 @@ export class GameScene extends Phaser.Scene {
       guildId: player.guildId,
       inventory: this.buildInventory(player),
       equipment: {
-        weapon: player.equipWeapon?.itemId,
-        armor: player.equipArmor?.itemId,
-        shield: player.equipShield?.itemId,
-        helmet: player.equipHelmet?.itemId,
-        ring: player.equipRing?.itemId,
-        mount: player.equipMount?.itemId,
+        weapon: player.equipWeaponId,
+        armor: player.equipArmorId,
+        shield: player.equipShieldId,
+        helmet: player.equipHelmetId,
+        ring: player.equipRingId,
+        mount: player.equipMountId,
       },
     });
   }
