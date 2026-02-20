@@ -608,7 +608,7 @@ export class CombatSystem {
 
   private isValidTarget(attacker: Entity, target: Entity, ability: Ability): boolean {
     const harmful =
-      ["damage", "dot", "stun", "debuff", "leech"].includes(ability.effect) ||
+      ["damage", "dot", "stun", "debuff", "leech", "reveal"].includes(ability.effect) ||
       ability.baseDamage > 0 ||
       ability.buffStat === "stun";
 
@@ -654,6 +654,11 @@ export class CombatSystem {
         sessionId: target.sessionId,
         durationMs: ability.durationMs ?? 5000,
       });
+    } else if (ability.effect === "cleanse") {
+      this.buffSystem.clearStun(target.sessionId);
+      // We can reuse BuffApplied for a positive visual or just rely on CastHit fxId
+    } else if (ability.effect === "reveal") {
+      this.buffSystem.breakStealth(target.sessionId);
     } else if (ability.effect === "dot") {
       const dotDuration = ability.dotDurationMs ?? ability.durationMs ?? 5000;
       this.buffSystem.addDoT(

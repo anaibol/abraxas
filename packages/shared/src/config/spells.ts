@@ -133,6 +133,19 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     fxId: 14,
   },
 
+  /** F - Utility: Breaks stealth on all enemies in an area around the caster */
+  detect_invisibility: {
+    id: "detect_invisibility",
+    key: "",
+    requiredLevel: 8,
+    manaCost: 20,
+    cooldownMs: 15000,
+    aoeRadius: 4,
+    effect: "reveal",
+    damageSchool: "magical",
+    fxId: 18,
+  },
+
   /** R — Self-buff: temporary magic-armor shell */
   mana_shield: {
     id: "mana_shield",
@@ -159,6 +172,20 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     durationMs: 2000,
     aoeRadius: 3,
     fxId: 22,
+  },
+
+  /** P — Necromancy: Summons hostile skeletons at the target area */
+  summon_skeleton: {
+    id: "summon_skeleton",
+    key: "",
+    requiredLevel: 18,
+    manaCost: 50,
+    cooldownMs: 60000,
+    windupMs: 800,
+    rangeTiles: FULL_VIEWPORT_RANGE,
+    effect: "summon",
+    damageSchool: "magical",
+    fxId: 10,
   },
 
   /** Y — Heavy single-target nuke: long cast, huge damage */
@@ -445,6 +472,19 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     scalingRatio: 0.8,
     cooldownMs: 8000,
     aoeRadius: 3,
+    fxId: 1,
+  },
+
+  /** F — Utility: Instantly removes Paralysis/Stun from an ally */
+  cleanse_paralysis: {
+    id: "cleanse_paralysis",
+    key: "",
+    requiredLevel: 12,
+    manaCost: 25,
+    cooldownMs: 8000,
+    rangeTiles: FULL_VIEWPORT_RANGE,
+    effect: "cleanse",
+    damageSchool: "magical",
     fxId: 1,
   },
 
@@ -746,23 +786,7 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     effect: "heal",
     damageSchool: "magical",
     key: "",
-    fxId: 1,
-  },
-
-  /** Lich: summons skeleton minions */
-  summon_skeleton: {
-    id: "summon_skeleton",
-    rangeTiles: 0,
-    manaCost: 0,
-    baseDamage: 0,
-    scalingStat: "int",
-    scalingRatio: 0,
-    cooldownMs: 10000,
-    windupMs: 500,
-    effect: "summon",
-    damageSchool: "magical",
-    key: "",
-    fxId: 16,
+    fxId: 1
   },
 };
 

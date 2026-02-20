@@ -10,8 +10,6 @@ import type { RoomContext } from "./RoomContext";
 
 /** Tile distance within which a player must be to attempt taming. */
 const TAME_RANGE = 2;
-/** Base success probability for a taming attempt. */
-const TAME_SUCCESS_CHANCE = 0.5;
 
 /** Item awarded when a particular NPC type is successfully tamed. */
 const TAME_REWARDS: Record<string, string> = {
@@ -62,8 +60,15 @@ export class TamingHandlers {
     // Consume one lasso regardless of success
     ctx.systems.inventory.removeItem(player, "lasso", 1);
 
-    // 50% chance of success
-    if (Math.random() < TAME_SUCCESS_CHANCE) {
+    // Taming chance by class
+    let successChance = 0.35; // Base chance for most classes
+    if (player.classType === "RANGER") {
+      successChance = 0.75; // Rangers are much better at taming
+    } else if (player.classType === "PALADIN") {
+      successChance = 0.50; // Paladins are okay with mounts
+    }
+
+    if (Math.random() < successChance) {
       // Remove the NPC from the world
       ctx.state.npcs.delete(data.targetSessionId);
 

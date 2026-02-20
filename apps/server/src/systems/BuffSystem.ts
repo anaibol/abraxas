@@ -74,6 +74,11 @@ export class BuffSystem {
     s.stunnedUntil = Math.max(s.stunnedUntil, now + durationMs);
   }
 
+  clearStun(sessionId: string): void {
+    const s = this.state.get(sessionId);
+    if (s) s.stunnedUntil = 0;
+  }
+
   applyStealth(sessionId: string, durationMs: number, now: number): void {
     const s = this.getState(sessionId);
     s.stealthedUntil = now + durationMs;
