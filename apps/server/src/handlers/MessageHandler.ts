@@ -8,6 +8,7 @@ import { ItemHandlers } from "./ItemHandlers";
 import { SocialHandlers } from "./SocialHandlers";
 import { InteractionHandlers } from "./InteractionHandlers";
 import { EconomyHandlers } from "./EconomyHandlers";
+import { TamingHandlers } from "./TamingHandlers";
 
 export type { RoomContext } from "./RoomContext";
 
@@ -37,6 +38,7 @@ export class MessageHandler {
 		register(ClientMessageType.Equip, (c, m) => ItemHandlers.handleEquip(this.ctx, c, m));
 		register(ClientMessageType.Unequip, (c, m) => ItemHandlers.handleUnequip(this.ctx, c, m));
 		register(ClientMessageType.UseItem, (c, m) => ItemHandlers.handleUseItem(this.ctx, c, m));
+		register(ClientMessageType.Tame, (c, m) => TamingHandlers.handleTame(this.ctx, c, m));
 
 		register(ClientMessageType.Interact, (c, m) => InteractionHandlers.handleInteract(this.ctx, c, m));
 		register(ClientMessageType.QuestAccept, (c, m) => InteractionHandlers.handleQuestAccept(this.ctx, c, m));

@@ -232,15 +232,23 @@ export class CombatSystem {
 		now: number,
 		sendToClient?: SendToClientFn,
 	): boolean {
-		if (this.buffSystem.isStunned(caster.sessionId, now)) return false;
+		console.log(`[tryCast] START caster=${caster.sessionId} ability=${abilityId} target=${targetTileX},${targetTileY}`);
+		if (this.buffSystem.isStunned(caster.sessionId, now)) {
+			console.log("[tryCast] FAIL stunned");
+			return false;
+		}
 
 		const ability = ABILITIES[abilityId];
-		if (!ability) return false;
+		if (!ability) {
+			console.log("[tryCast] FAIL no ability", abilityId);
+			return false;
+		}
 
 		// Class restriction: players may only use abilities assigned to their class
 		if (caster instanceof Player) {
 			const classStats = caster.getStats();
 			if (classStats && !classStats.abilities.includes(abilityId)) {
+				console.log("[tryCast] FAIL class restriction. abilities:", classStats.abilities);
 				sendToClient?.(ServerMessageType.Notification, {
 					message: "game.class_restricted",
 				});
@@ -249,6 +257,7 @@ export class CombatSystem {
 		}
 
 		if (now < caster.lastGcdMs + GCD_MS || this.activeWindups.has(caster.sessionId)) {
+			console.log(`[tryCast] BUFFERING. now=${now} gcd=${caster.lastGcdMs + GCD_MS} windup=${this.activeWindups.has(caster.sessionId)}`);
 			return this.bufferAction(caster, {
 				type: "cast",
 				spellId: abilityId,
@@ -259,11 +268,15 @@ export class CombatSystem {
 		}
 
 		const cd = caster.spellCooldowns.get(abilityId) || 0;
-		if (now < cd) return false;
+		if (now < cd) {
+			console.log(`[tryCast] FAIL cooldown. now=${now} cd=${cd}`);
+			return false;
+		}
 
 		if (ability.rangeTiles > 0) this.faceToward(caster, targetTileX, targetTileY);
 
 		if (caster instanceof Player && caster.mana < ability.manaCost) {
+			console.log(`[tryCast] FAIL mana. has=${caster.mana} needs=${ability.manaCost}`);
 			sendToClient?.(ServerMessageType.Notification, {
 				message: "game.not_enough_mana",
 			});
@@ -276,6 +289,7 @@ export class CombatSystem {
 				y: targetTileY,
 			});
 			if (dist > ability.rangeTiles) {
+				console.log(`[tryCast] FAIL range. dist=${dist} max=${ability.rangeTiles}`);
 				sendToClient?.(ServerMessageType.InvalidTarget);
 				return false;
 			}
@@ -285,6 +299,7 @@ export class CombatSystem {
 					y: targetTileY,
 				})
 			) {
+				console.log("[tryCast] FAIL LOS");
 				sendToClient?.(ServerMessageType.InvalidTarget);
 				return false;
 			}
@@ -309,6 +324,7 @@ export class CombatSystem {
 		};
 
 		this.activeWindups.set(caster.sessionId, windup);
+		console.log("[tryCast] SUCCESS - broadcasting CastStart");
 		broadcast(ServerMessageType.CastStart, {
 			sessionId: caster.sessionId,
 			abilityId,

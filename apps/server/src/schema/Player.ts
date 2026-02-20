@@ -41,7 +41,6 @@ export class Player extends Char {
 	@view() @type("string") equipHelmet: string = "";
 	@view() @type("string") equipRing: string = "";
 	@view() @type("string") equipMount: string = "";
-	@view() @type("string") equipMount: string = "";
 
 	getStats(): ClassStats {
 		return CLASS_STATS[this.classType];
