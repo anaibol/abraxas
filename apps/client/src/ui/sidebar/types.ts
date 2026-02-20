@@ -54,6 +54,7 @@ export interface SidebarProps {
   pendingFriendRequests?: { id: string; name: string }[];
   onFriendRequest?: (name: string) => void;
   onFriendAccept?: (id: string) => void;
+  onFriendRemove?: (id: string) => void;
   onWhisper?: (targetName: string) => void;
   onTradeRequest?: (targetSessionId: string) => void;
   guildMembers?: {

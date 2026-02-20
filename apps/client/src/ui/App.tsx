@@ -584,6 +584,7 @@ export function App() {
                 pendingFriendRequests={pendingFriendRequests}
                 onFriendRequest={(name: string) => networkRef.current?.sendFriendRequest(name)}
                 onFriendAccept={(rid: string) => networkRef.current?.sendFriendAccept(rid)}
+                onFriendRemove={(fid: string) => networkRef.current?.sendFriendRemove(fid)}
                 onWhisper={(name: string) => {
                   setChatPrefill(`/w ${name} `);
                   setIsChatOpen(true);

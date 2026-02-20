@@ -201,7 +201,8 @@
       "group_invite_tag": "[P]",
       "trade_tag": "[Trade]",
       "pending_requests": "Pending Requests",
-      "accept": "[Accept]"
+      "accept": "[Accept]",
+      "remove": "[Remove]"
     },
     "social": {
       "trade": "[Trade]",
@@ -716,6 +717,7 @@
     "tab_all": "ALL",
     "tab_global": "GLOBAL",
     "tab_group": "GROUP",
+    "tab_guild": "GUILD",
     "tab_whisper": "WHISPER",
     "tab_system": "SYSTEM",
     "tab_combat": "COMBAT",

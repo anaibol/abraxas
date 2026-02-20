@@ -46,6 +46,7 @@ export function Sidebar({
   pendingFriendRequests = [],
   onFriendRequest,
   onFriendAccept,
+  onFriendRemove,
   onWhisper,
   onTradeRequest,
   guildMembers = [],
@@ -236,6 +237,7 @@ export function Sidebar({
             setFriendName={setFriendName}
             onFriendRequest={onFriendRequest}
             onFriendAccept={onFriendAccept}
+            onFriendRemove={onFriendRemove}
             onWhisper={onWhisper}
             onTradeRequest={onTradeRequest}
             onGroupInvite={onGroupInvite}
