@@ -130,12 +130,28 @@ export class GameScene extends Phaser.Scene {
 		this.cameraController.applyFixedZoom();
 		this.scale.on("resize", () => this.cameraController.applyFixedZoom());
 
+		// Hook into inner-map warp command to flash the screen
+		this.network.onWarp = (data) => {
+			if (data.targetMap === this.room.roomId) {
+				this.cameras.main.flash(400, 200, 255, 255);
+			}
+		};
+
 		this.spriteManager = new SpriteManager(
 			this,
 			this.cameraController,
 			() => this.room.sessionId,
 		);
 		this.effectManager = new EffectManager(this, this.spriteManager);
+
+		// Spawn visual indicators for all map teleporters
+		if (this.welcome.warps) {
+			for (const warp of this.welcome.warps) {
+				const px = warp.x * TILE_SIZE + TILE_SIZE / 2;
+				const py = warp.y * TILE_SIZE + TILE_SIZE / 2;
+				this.effectManager.createTeleportEffect(px, py);
+			}
+		}
 
 		const localPlayer = this.room.state.players.get(this.room.sessionId);
 		const classType = localPlayer?.classType ?? "WARRIOR";

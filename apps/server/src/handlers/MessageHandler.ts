@@ -12,6 +12,7 @@ import {
 	type TileMap,
 	type TradeState,
 	VOICE_RANGE,
+	type BroadcastFn,
 } from "@abraxas/shared";
 import { spiralSearch } from "../utils/spawnUtils";
 import type { Client } from "@colyseus/core";
@@ -30,12 +31,8 @@ import type { QuestSystem } from "../systems/QuestSystem";
 import type { SocialSystem } from "../systems/SocialSystem";
 import type { TradeSystem } from "../systems/TradeSystem";
 import type { BankSystem } from "../systems/BankSystem";
+import type { NpcSystem } from "../systems/NpcSystem";
 
-type BroadcastCallback = <T extends ServerMessageType>(
-	type: T,
-	message?: ServerMessages[T],
-	options?: { except?: Client },
-) => void;
 
 /** Dependency container for MessageHandler to reduce constructor bloat. */
 export interface RoomContext {
@@ -52,12 +49,13 @@ export interface RoomContext {
 		quests: QuestSystem;
 		trade: TradeSystem;
 		bank: BankSystem;
+		npc: NpcSystem;
 	};
 	services: {
 		chat: ChatService;
 		level: LevelService;
 	};
-	broadcast: BroadcastCallback;
+	broadcast: BroadcastFn;
 	isTileOccupied: (x: number, y: number, excludeId: string) => boolean;
 	findClientByName: (name: string) => Client | undefined;
 	findClientBySessionId: (sessionId: string) => Client | undefined;
@@ -206,11 +204,20 @@ export class MessageHandler {
 				player.meditating = false;
 			}
 			if (result.warp) {
-				client.send(ServerMessageType.Warp, {
-					targetMap: result.warp.targetMap,
-					targetX: result.warp.targetX,
-					targetY: result.warp.targetY,
-				});
+				// If target map is the same, simply teleport locally to avoid a full reconnect
+				if (result.warp.targetMap === this.ctx.roomId) {
+					this.ctx.systems.movement.teleport(
+						player,
+						result.warp.targetX,
+						result.warp.targetY
+					);
+				} else {
+					client.send(ServerMessageType.Warp, {
+						targetMap: result.warp.targetMap,
+						targetX: result.warp.targetX,
+						targetY: result.warp.targetY,
+					});
+				}
 			}
 		}
 	}
@@ -599,7 +606,116 @@ export class MessageHandler {
 		const player = this.getActivePlayer(client);
 		if (!player) return;
 
+		if (data.message === "/gm" || data.message.startsWith("/gm ")) {
+			this.handleGMCommand(client, player, data.message.slice(3).trim());
+			return;
+		}
+
 		this.ctx.services.chat.handleChat(player, data.message);
+	}
+
+	private handleGMCommand(client: Client, player: Player, commandLine: string) {
+		if (player.role !== "GM" && player.role !== "ADMIN") {
+			this.sendError(client, "gm.unauthorized");
+			return;
+		}
+
+		const args = commandLine.trim().split(" ");
+		const command = args[0]?.toLowerCase();
+
+		switch (command) {
+			case "item": {
+				const itemId = args[1];
+				const qty = parseInt(args[2]) || 1;
+				if (!itemId) {
+					this.sendError(client, "Usage: /gm item <itemId> [qty]");
+					return;
+				}
+				if (this.ctx.systems.inventory.addItem(player, itemId, qty, (msg) => this.sendError(client, msg))) {
+					client.send(ServerMessageType.Notification, {
+						message: `[GM] Spawned ${qty}x ${itemId}`,
+					});
+					logger.info({ room: this.ctx.roomId, sessionId: client.sessionId, message: `[GM] ${player.name} spawned ${qty}x ${itemId}` });
+				}
+				break;
+			}
+			case "gold": {
+				const amount = parseInt(args[1]);
+				if (isNaN(amount)) {
+					this.sendError(client, "Usage: /gm gold <amount>");
+					return;
+				}
+				player.gold += amount;
+				client.send(ServerMessageType.Notification, {
+					message: `[GM] Added ${amount} gold`,
+				});
+				logger.info({ room: this.ctx.roomId, sessionId: client.sessionId, message: `[GM] ${player.name} gave themselves ${amount} gold` });
+				break;
+			}
+			case "xp": {
+				const amount = parseInt(args[1]);
+				if (isNaN(amount)) {
+					this.sendError(client, "Usage: /gm xp <amount>");
+					return;
+				}
+				this.ctx.services.level.gainXp(player, amount);
+				client.send(ServerMessageType.Notification, {
+					message: `[GM] Added ${amount} XP`,
+				});
+				logger.info({ room: this.ctx.roomId, sessionId: client.sessionId, message: `[GM] ${player.name} gave themselves ${amount} XP` });
+				break;
+			}
+			case "heal": {
+				player.hp = player.maxHp;
+				player.mana = player.maxMana;
+				client.send(ServerMessageType.Notification, {
+					message: `[GM] Healed to full`,
+				});
+				logger.info({ room: this.ctx.roomId, sessionId: client.sessionId, message: `[GM] ${player.name} fully healed` });
+				break;
+			}
+			case "spawn": {
+				const npcType = args[1] as any;
+				if (!npcType) {
+					this.sendError(client, "Usage: /gm spawn <npcType>");
+					return;
+				}
+				const delta = DIRECTION_DELTA[player.facing];
+				const spawnX = player.tileX + delta.dx;
+				const spawnY = player.tileY + delta.dy;
+				
+				// Ensure we respect map bounds
+				if (spawnX >= 0 && spawnX < this.ctx.map.width && spawnY >= 0 && spawnY < this.ctx.map.height) {
+					this.ctx.systems.npc.spawnNpcAt(npcType, this.ctx.map, spawnX, spawnY);
+					client.send(ServerMessageType.Notification, {
+						message: `[GM] Spawned ${npcType} at ${spawnX},${spawnY}`,
+					});
+					logger.info({ room: this.ctx.roomId, sessionId: client.sessionId, message: `[GM] ${player.name} spawned ${npcType}` });
+				} else {
+					this.sendError(client, "Invalid spawn location");
+				}
+				break;
+			}
+			case "announce": {
+				const msg = args.slice(1).join(" ");
+				if (!msg) {
+					this.sendError(client, "Usage: /gm announce <message>");
+					return;
+				}
+				this.ctx.broadcast(ServerMessageType.Notification, {
+					message: `[Server] ${msg}`
+				});
+				logger.info({ room: this.ctx.roomId, sessionId: client.sessionId, message: `[GM] ${player.name} announced: ${msg}` });
+				break;
+			}
+			default:
+				if (command) {
+					this.sendError(client, `Unknown GM command: ${command}`);
+				} else {
+					this.sendError(client, "Commands: item, gold, xp, heal, spawn, announce");
+				}
+				break;
+		}
 	}
 
 	handleFriendRequest(

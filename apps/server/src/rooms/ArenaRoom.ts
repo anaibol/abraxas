@@ -5,6 +5,7 @@ import {
 	ServerMessageType,
 	TICK_MS,
 	type TileMap,
+	type BroadcastFn,
 } from "@abraxas/shared";
 import { type AuthContext, type Client, Room } from "@colyseus/core";
 import { StateView } from "@colyseus/schema";
@@ -63,6 +64,10 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 	private trade!: TradeSystem;
 	private bankSystem!: BankSystem;
 
+	private broadcastMessage: BroadcastFn = (type, data, options) => {
+		this.broadcast(type as any, data as any, options as any);
+	};
+
 	async onCreate(options: JoinOptions & { mapName?: string }) {
 		try {
 			this.roomMapName = options.mapName || "arena.test";
@@ -96,7 +101,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 				this.quests,
 				this.friends,
 			);
-			this.levelService = new LevelService(this.broadcast.bind(this), (p) =>
+			this.levelService = new LevelService(this.broadcastMessage, (p) =>
 				this.inventorySystem.recalcStats(p),
 			);
 
@@ -108,7 +113,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 			};
 
 			const chatService = new ChatService(
-				this.broadcast.bind(this),
+				this.broadcastMessage,
 				findClientByName,
 				(sid) => this.findClient(sid),
 				this.social.broadcastToParty.bind(this.social),
@@ -128,12 +133,13 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 					quests: this.quests,
 					trade: this.trade,
 					bank: this.bankSystem,
+					npc: this.npcSystem,
 				},
 				services: {
 					chat: chatService,
 					level: this.levelService,
 				},
-				broadcast: this.broadcast.bind(this),
+				broadcast: this.broadcastMessage,
 				isTileOccupied: this.spatial.isTileOccupied.bind(this.spatial),
 				findClientByName,
 				findClientBySessionId: (sid) => this.findClient(sid),
@@ -154,7 +160,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 					quests: this.quests,
 					spatial: this.spatial,
 				},
-				broadcast: this.broadcast.bind(this),
+				broadcast: this.broadcastMessage,
 				onEntityDeath: (e, k) => this.onEntityDeath(e, k),
 				onSummon: (caster, spellId, x, y) =>
 					this.onSummon(caster, spellId, x, y),
@@ -286,6 +292,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 			tileSize: this.map.tileSize,
 			collision: this.map.collision,
 			tileTypes: this.map.tileTypes,
+			warps: this.map.warps,
 			role: player.role,
 		});
 	}

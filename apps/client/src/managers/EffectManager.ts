@@ -168,6 +168,39 @@ export class EffectManager {
 		);
 	}
 
+	/** 
+	 * Creates a persistent, looping particle effect for a teleport pad.
+	 */
+	public createTeleportEffect(px: number, py: number) {
+		this.ensureTextures();
+		
+		// Base glowing aura on the ground
+		this.scene.add.particles(px, py + 8, TEX.CIRCLE, {
+			tint: [0xaaffff, 0xffffff, 0x4488ff],
+			scale: { start: 1.2, end: 0.8 },
+			alpha: { start: 0.8, end: 0 },
+			lifespan: 2000,
+			frequency: 400,
+			blendMode: Phaser.BlendModes.ADD,
+		}).setDepth(1);
+
+		// Magical stars floating upwards continuously
+		this.scene.add.particles(px, py, TEX.STAR, {
+			tint: [0xffffff, 0xaaffff],
+			scale: { start: 0.4, end: 0 },
+			alpha: { start: 1, end: 0 },
+			speed: { min: 10, max: 30 },
+			angle: { min: 250, max: 290 }, // Flowing upwards
+			gravityY: -10,
+			lifespan: { min: 1500, max: 2500 },
+			frequency: 150,
+			rotate: { start: 0, end: 360 },
+			x: { min: -12, max: 12 },
+			y: { min: 0, max: 8 },
+			blendMode: Phaser.BlendModes.ADD,
+		}).setDepth(2);
+	}
+
 	/**
 	 * Animated expanding ring drawn with Graphics.
 	 * Starts at startRadius and expands to endRadius over durationMs, fading out.

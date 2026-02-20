@@ -323,6 +323,7 @@ export type ServerMessages = {
 		tileSize: number;
 		collision: number[][];
 		tileTypes?: number[][];
+		warps?: Warp[];
 		role?: string;
 	};
 	[ServerMessageType.AttackStart]: { sessionId: string; facing: Direction };
