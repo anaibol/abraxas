@@ -1,7 +1,8 @@
 import { Box, Flex, Text } from "@chakra-ui/react";
-import { Languages, Map as MapIcon, Music, Volume2, X } from "lucide-react";
+import { Camera, Languages, Map as MapIcon, Music, Sparkles, Volume2, Waves, Wind, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useGameSettings } from "../hooks/useGameSettings";
+import type { ParticleQuality } from "../settings/gameSettings";
 import { HEX, T } from "./tokens";
 
 const LANGUAGES: { code: string; label: string; flag: string }[] = [
@@ -130,6 +131,22 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
                   value={settings.sfxVolume}
                   onChange={(v) => updateSettings({ sfxVolume: v })}
                 />
+
+                {/* Ambiance volume (item 79) */}
+                <VolumeSetting
+                  icon={<Wind size={15} />}
+                  label={t("settings.ambiance_volume", "Ambiance Volume")}
+                  value={settings.ambianceVolume}
+                  onChange={(v) => updateSettings({ ambianceVolume: v })}
+                />
+
+                {/* UI volume (item 79) */}
+                <VolumeSetting
+                  icon={<Waves size={15} />}
+                  label={t("settings.ui_volume", "UI Volume")}
+                  value={settings.uiVolume}
+                  onChange={(v) => updateSettings({ uiVolume: v })}
+                />
               </Flex>
             </Box>
 
@@ -183,6 +200,57 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
                     </Box>
                   );
                 })}
+              </Flex>
+            </Box>
+
+            {/* Divider */}
+            <Box h="1px" bg={T.border} />
+
+            {/* Section: Visual (items 81‑83) */}
+            <Box>
+              <Text
+                textStyle={T.sectionLabel}
+                color={T.goldDark}
+                letterSpacing="2px"
+                mb="4"
+                fontSize="10px"
+                textTransform="uppercase"
+              >
+                {t("settings.section.visual", "Visual")}
+              </Text>
+
+              <Flex direction="column" gap="4">
+                {/* Screen Shake toggle (item 82) */}
+                <ToggleSetting
+                  icon={<Camera size={15} />}
+                  label={t("settings.screen_shake", "Screen Shake")}
+                  value={settings.screenShakeEnabled}
+                  onChange={(v) => updateSettings({ screenShakeEnabled: v })}
+                />
+
+                {/* Screen Shake intensity slider, only visible when enabled */}
+                {settings.screenShakeEnabled && (
+                  <VolumeSetting
+                    icon={<Camera size={15} />}
+                    label={t("settings.shake_intensity", "Shake Intensity")}
+                    value={settings.screenShakeIntensity}
+                    onChange={(v) => updateSettings({ screenShakeIntensity: v })}
+                  />
+                )}
+
+                {/* Bloom / glow toggle (item 83) */}
+                <ToggleSetting
+                  icon={<Sparkles size={15} />}
+                  label={t("settings.bloom", "Bloom / Glow")}
+                  value={settings.bloomEnabled}
+                  onChange={(v) => updateSettings({ bloomEnabled: v })}
+                />
+
+                {/* Particle quality (item 81) */}
+                <ParticleQualitySelector
+                  value={settings.particleQuality}
+                  onChange={(v) => updateSettings({ particleQuality: v })}
+                />
               </Flex>
             </Box>
 

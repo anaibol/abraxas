@@ -2,6 +2,7 @@ import { ABILITIES, TILE_SIZE } from "@abraxas/shared";
 import Phaser from "phaser";
 import { FONTS } from "../ui/tokens";
 import type { SpriteManager } from "./SpriteManager";
+import { gameSettings } from "../settings/gameSettings";
 
 // ── Particle burst configuration ─────────────────────────────────────────────
 
@@ -201,8 +202,17 @@ export class EffectManager {
 
   // ── Core drawing primitives ───────────────────────────────────────────────
 
+  /** Item 81: Returns a count multiplier based on particle quality setting. */
+  private particleMultiplier(): number {
+    const q = gameSettings.get().particleQuality;
+    if (q === "low") return 0.35;
+    if (q === "medium") return 0.65;
+    return 1.0;
+  }
+
   /** One-shot particle burst at world pixel position. */
   private burst(px: number, py: number, textureKey: string, cfg: BurstConfig) {
+    const scaledCount = Math.max(1, Math.round(cfg.count * this.particleMultiplier()));
     const emitter = this.scene.add.particles(px, py, textureKey, {
       speed: cfg.speed,
       scale: cfg.scale,
@@ -217,7 +227,7 @@ export class EffectManager {
       rotate: cfg.rotate,
     });
     emitter.setDepth(15);
-    emitter.explode(cfg.count);
+    emitter.explode(scaledCount);
     this.scene.time.delayedCall(cfg.lifespan.max + 120, () => emitter.destroy());
   }
 

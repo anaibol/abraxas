@@ -14,6 +14,7 @@ import type { EffectManager } from "../managers/EffectManager";
 import type { SpriteManager } from "../managers/SpriteManager";
 import type { ConsoleCallback } from "../scenes/GameScene";
 import type { InputHandler } from "../systems/InputHandler";
+import { gameSettings } from "../settings/gameSettings";
 
 const t = (key: string, opts?: Record<string, unknown>) => i18n.t(key, opts);
 
@@ -40,6 +41,13 @@ export class GameEventHandler {
     private onCameraZoom?: (zoom: number, durationMs: number) => void,
     private lightManager?: LightManager,
   ) {}
+
+  /** Item 82: Gate shake calls through settings. */
+  private maybeShake(intensity: number, durationMs: number) {
+    const s = gameSettings.get();
+    if (!s.screenShakeEnabled) return;
+    this.onCameraShake?.(intensity * s.screenShakeIntensity, durationMs);
+  }
 
   private isSelf(sessionId: string): boolean {
     return sessionId === this.room.sessionId;
@@ -181,7 +189,7 @@ export class GameEventHandler {
 
     if (isHeavy && now - this.lastShakeTime > this.SHAKE_COOLDOWN_MS) {
       this.lastShakeTime = now;
-      this.onCameraShake?.(0.009, 220);
+      this.maybeShake(0.009, 220); // item 82
     }
 
     // ── Item #35: Fire spells → lingering ember light ─────────────────────────
@@ -210,7 +218,7 @@ export class GameEventHandler {
       if (now - this.lastShakeTime > this.SHAKE_COOLDOWN_MS) {
         this.lastShakeTime = now;
         const intensity = Math.min(0.015, data.amount * 0.00005);
-        if (intensity > 0.002) this.onCameraShake?.(intensity, 150);
+        if (intensity > 0.002) this.maybeShake(intensity, 150); // item 82
       }
 
       // ── Item #13: Red flash screen on taking damage ────────────────────────
@@ -240,7 +248,7 @@ export class GameEventHandler {
       this.inputHandler.cancelTargeting();
       this.onConsoleMessage?.(t("game.you_died"), "#ff0000", "combat");
       // ── Item #14: Big shake + blackout on self-death ───────────────────────
-      this.onCameraShake?.(0.018, 800);
+      this.maybeShake(0.018, 800); // item 82
       this.onCameraFlash?.(0, 0, 0, 1500);
     }
     const opts = sprite ? { sourceX: sprite.renderX, sourceY: sprite.renderY } : undefined;
