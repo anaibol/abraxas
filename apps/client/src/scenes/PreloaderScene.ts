@@ -40,14 +40,30 @@ export class PreloaderScene extends Phaser.Scene {
     this.load.json("idx-cascos", "indices/cascos.json");
     this.load.json("idx-fxs", "indices/fxs.json");
 
-    this.load.audio("sfx-step1", "audio/sonidos/23.webm");
-    this.load.audio("sfx-step2", "audio/sonidos/24.webm");
-    this.load.audio("sfx-attack", "audio/sonidos/2.webm");
-    this.load.audio("sfx-spell", "audio/sonidos/3.webm");
-    this.load.audio("sfx-hit", "audio/sonidos/10.webm");
+    // Map existing placeholder sounds to new high-quality assets
+    this.load.audio("sfx-step1", "audio/kenney_rpg/Audio/footstep00.ogg");
+    this.load.audio("sfx-step2", "audio/kenney_rpg/Audio/footstep01.ogg");
+    this.load.audio("sfx-step3", "audio/kenney_rpg/Audio/footstep02.ogg");
+    this.load.audio("sfx-step4", "audio/kenney_rpg/Audio/footstep03.ogg");
+    this.load.audio("sfx-step5", "audio/kenney_rpg/Audio/footstep04.ogg");
+
+    this.load.audio("sfx-attack1", "audio/kenney_rpg/Audio/drawKnife1.ogg");
+    this.load.audio("sfx-attack2", "audio/kenney_rpg/Audio/drawKnife2.ogg");
+    this.load.audio("sfx-attack3", "audio/kenney_rpg/Audio/drawKnife3.ogg");
+
+    this.load.audio("sfx-hit1", "audio/kenney_rpg/Audio/chop.ogg");
+    this.load.audio("sfx-hit2", "audio/kenney_rpg/Audio/knifeSlice.ogg");
+    this.load.audio("sfx-hit3", "audio/kenney_rpg/Audio/knifeSlice2.ogg");
+
+    this.load.audio("sfx-spell", "audio/sonidos/3.webm"); // Use old magic placeholder until AI gen
     this.load.audio("sfx-death", "audio/sonidos/14.webm");
     this.load.audio("sfx-heal", "audio/sonidos/42.webm");
-    this.load.audio("sfx-click", "audio/sonidos/5.webm");
+
+    // UI Sounds
+    this.load.audio("sfx-click", "audio/kenney_ui/Audio/click_002.ogg");
+    this.load.audio("sfx-click-hover", "audio/kenney_ui/Audio/tick_001.ogg");
+    this.load.audio("sfx-click-open", "audio/kenney_ui/Audio/open_001.ogg");
+    this.load.audio("sfx-click-close", "audio/kenney_ui/Audio/close_001.ogg");
     this.load.audio("music-arena", "audio/musica/101.webm");
   }
 

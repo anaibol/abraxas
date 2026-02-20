@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { ITEMS, EQUIPMENT_SLOTS, type EquipmentSlot } from "@abraxas/shared";
 import { T, HEX } from "../tokens";
 import { type PlayerState } from "./types";
+import { useAudio } from "../../contexts/AudioContext";
 
 export const RARITY_COLORS: Record<string, string> = {
 	common: HEX.goldMuted,
@@ -38,6 +39,7 @@ export function InventoryTab({
 	onUseItem,
 }: InventoryTabProps) {
 	const { t } = useTranslation();
+	const { playUIClick, playUIHover } = useAudio();
 	return (
 		<Box p="2.5">
 			{/* Equipment slots */}
@@ -128,12 +130,17 @@ export function InventoryTab({
 							alignItems="center"
 							justifyContent="center"
 							position="relative"
+							onMouseEnter={() => {
+								if (def) playUIHover?.();
+							}}
 							onClick={() => {
 								if (!def || !invItem) return;
+								playUIClick?.();
 								onSelectItem?.(isSelected ? null : invItem.itemId);
 							}}
 							onDoubleClick={() => {
 								if (!def || !invItem) return;
+								playUIClick?.();
 								if (def.consumeEffect) {
 									onUseItem?.(invItem.itemId);
 								} else if (def.slot !== "consumable") {

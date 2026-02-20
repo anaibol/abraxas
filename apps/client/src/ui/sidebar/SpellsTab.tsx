@@ -3,6 +3,7 @@ import { Box, Flex, Text } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 import { type Spell } from "@abraxas/shared";
 import { T } from "../tokens";
+import { useAudio } from "../../contexts/AudioContext";
 
 const SPELL_ICONS: Record<string, string> = {
 	// Warrior
@@ -72,6 +73,7 @@ export function SpellsTab({
 	onSpellClick,
 }: SpellsTabProps) {
 	const { t } = useTranslation();
+	const { playUIClick, playUIHover } = useAudio();
 	return (
 		<Box p="2.5">
 			{classSpells.length === 0 ? (
@@ -114,8 +116,14 @@ export function SpellsTab({
 								_hover={
 									isDisabled ? {} : { bg: T.surface, borderColor: T.gold }
 								}
+								onMouseEnter={() => {
+									if (!isDisabled) playUIHover?.();
+								}}
 								onClick={() => {
-									if (!isDisabled) onSpellClick?.(spell.id, spell.rangeTiles);
+									if (!isDisabled) {
+										playUIClick?.();
+										onSpellClick?.(spell.id, spell.rangeTiles);
+									}
 								}}
 								title={
 									isDisabled
