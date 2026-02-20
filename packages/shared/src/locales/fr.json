@@ -59,6 +59,16 @@
       "name": "Paladin",
       "desc": "PV:230 Armure:12",
       "longDesc": "Un guerrier sacré en armure qui combine un combat au corps à corps dévastateur avec des soins et une protection divine."
+    },
+    "NECROMANCER": {
+      "name": "Nécromancien",
+      "desc": "INT:32 Mana:200",
+      "longDesc": "Un sorcier sombre qui commande les morts et draine la force vitale de ses ennemis."
+    },
+    "DRUID": {
+      "name": "Druide",
+      "desc": "AGI:20 INT:20",
+      "longDesc": "Un gardien de la nature polyvalent capable de se métamorphoser et de soigner."
     }
   },
   "game": {
@@ -71,7 +81,9 @@
     "gold_picked_up": "{{name}} a ramassé {{amount}} pièces d'or",
     "gold_picked": "{{name}} a ramassé {{amount}} pièces d'or",
     "class_restricted": "Classe restreinte",
-    "not_enough_mana": "Pas assez de mana",
+    "not_enough_mana": "Pas assez de mana !",
+    "not_enough_souls": "Pas assez d'âmes !",
+    "target_out_of_range": "Cible hors de portée !",
     "not_enough_mana_cost": "Mana insuffisant ({{cost}} requis)",
     "inventory_full": "Inventaire plein",
     "item_picked_up": "{{name}} a ramassé {{item}}",
@@ -117,7 +129,8 @@
     "tame_no_lasso": "Vous avez besoin d'un Lasso pour dompter des animaux !",
     "tame_success": "Vous avez dompté avec succès le {{item}} !",
     "tame_success_dropped": "Vous avez dompté le {{item}} mais vos sacs sont pleins. Il est tombé au sol !",
-    "tame_failed": "L'animal s'est échappé ! Votre lasso a été consommé."
+    "tame_failed": "L'animal s'est échappé ! Votre lasso a été consommé.",
+    "safe_zone": "Zone de Sécurité"
   },
   "social": {
     "already_in_group": "Le joueur est déjà dans un groupe",
@@ -131,7 +144,8 @@
     "kicked_from_group": "Vous avez été exclu du groupe",
     "new_leader": "{{name}} est maintenant le chef de groupe",
     "friend_request": "{{targetName}} veut être votre ami",
-    "trade_requested": "{{name}} veut commercer avec vous"
+    "trade_requested": "{{name}} veut commercer avec vous",
+    "invited_to_guild": "{{name}} invité à la guilde"
   },
   "settings": {
     "title": "Paramètres",
@@ -152,7 +166,8 @@
       "spells": "Sorts",
       "quests": "Quêtes",
       "group": "Groupe",
-      "friends": "Amis"
+      "friends": "Amis",
+      "guild": "Guilde"
     },
     "inventory": {
       "unequip_hint": "{{name}} (clic droit déséquiper)",
@@ -198,6 +213,18 @@
       "str": "FOR",
       "agi": "AGI",
       "int": "INT"
+    },
+    "pvp": "Mode PvP",
+    "pvp_on": "ON",
+    "pvp_off": "OFF",
+    "guild": {
+      "not_in_guild": "Pas dans une guilde. Rejoignez ou créez-en une.",
+      "guild_name": "Nom de la guilde",
+      "create": "Créer",
+      "guild_members": "Membres de la Guilde",
+      "leave": "Quitter la Guilde",
+      "player_name": "Nom du joueur",
+      "invite": "Inviter"
     }
   },
   "status": {
@@ -494,6 +521,46 @@
     "bear_form": {
       "name": "Forme d'Ours",
       "desc": "Canalisez l'esprit de la nature pour vous transformer en ours, augmentant massivement vos PV."
+    },
+    "cat_form": {
+      "name": "Forme de Chat",
+      "desc": "Transformez-vous en un chat agile, augmentant l'Agilité et la Vitesse de Déplacement."
+    },
+    "tree_form": {
+      "name": "Forme d'Arbre",
+      "desc": "Prenez la forme d'un arbre ancien, boostant l'Intelligence et la régénération de Mana."
+    },
+    "summon_zombie": {
+      "name": "Invoquer Zombie",
+      "desc": "Consomme des âmes pour relever un serviteur zombie robuste."
+    },
+    "soul_blast": {
+      "name": "Explosion d'Âme",
+      "desc": "Libérez les âmes collectées dans une explosion dévastatrice d'énergie nécrotique."
+    },
+    "summon_skeleton": {
+      "name": "Invoquer Squelette",
+      "desc": "Relevez un loyal guerrier squelettique pour combattre à vos côtés."
+    },
+    "shadow_bolt": {
+      "name": "Trait d'Ombre",
+      "desc": "Un trait d'énergie sombre qui frappe avec une force nécrotique."
+    },
+    "soul_drain": {
+      "name": "Drain d'Âme",
+      "desc": "Draine la force de vie d'une cible, vous soignant."
+    },
+    "banshee_wail": {
+      "name": "Cri de Banshee",
+      "desc": "Un cri terrifiant qui affaiblit l'armure de tous les ennemis proches."
+    },
+    "cleanse_paralysis": {
+      "name": "Purifier Étourdissement",
+      "desc": "Retire tous les effets d'étourdissement et de paralysie d'un allié."
+    },
+    "detect_invisibility": {
+      "name": "Vision Véritable",
+      "desc": "Révèle brièvement toutes les unités camouflées dans une zone large."
     }
   },
   "item_slot": {
@@ -600,7 +667,9 @@
     "whisper": "💬 Chuchoter",
     "add_friend": "➕ Ajouter ami",
     "group_invite": "⚔️ Inviter au groupe",
-    "trade": "🤝 Échanger"
+    "guild_invite": "🏰 Inviter à la guilde",
+    "trade": "🤝 Échanger",
+    "tame": "🐾 Dompter"
   },
   "kill_feed": {
     "killed": "a tué"

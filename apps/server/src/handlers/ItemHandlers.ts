@@ -126,7 +126,7 @@ export class ItemHandlers {
         return true;
       }) ?? { x: player.tileX, y: player.tileY };
 
-      ctx.systems.drops.spawnItemDrop(ctx.state.drops, tile.x, tile.y, itemId, qty, instanceData);
+      ctx.systems.drops.spawnItemDrop(ctx.state.drops, tile.x, tile.y, itemId, qty, instanceData as any);
     }
   }
 }

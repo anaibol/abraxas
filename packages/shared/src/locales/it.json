@@ -59,6 +59,16 @@
       "name": "Paladino",
       "desc": "HP:230 Armatura:12",
       "longDesc": "Un guerriero sacro corazzato che combina un devastante combattimento corpo a corpo con guarigione e protezione divina."
+    },
+    "NECROMANCER": {
+      "name": "Negromante",
+      "desc": "INT:32 Mana:200",
+      "longDesc": "Un oscuro stregone che comanda i morti e drena la forza vitale dei propri nemici."
+    },
+    "DRUID": {
+      "name": "Druido",
+      "desc": "AGI:20 INT:20",
+      "longDesc": "Un versatile guardiano della natura capace di mutare forma e curare."
     }
   },
   "game": {
@@ -71,7 +81,9 @@
     "gold_picked_up": "{{name}} ha raccolto {{amount}} oro",
     "gold_picked": "{{name}} ha raccolto {{amount}} oro",
     "class_restricted": "Classe limitata",
-    "not_enough_mana": "Mana insufficiente",
+    "not_enough_mana": "Mana insufficiente!",
+    "not_enough_souls": "Anime insufficienti!",
+    "target_out_of_range": "Bersaglio fuori portata!",
     "not_enough_mana_cost": "Mana insufficiente ({{cost}} richiesti)",
     "inventory_full": "Inventario pieno",
     "item_picked_up": "{{name}} ha raccolto {{item}}",
@@ -117,7 +129,8 @@
     "tame_no_lasso": "Hai bisogno di un Laccio per addomesticare gli animali!",
     "tame_success": "Hai addomesticato con successo il {{item}}!",
     "tame_success_dropped": "Hai addomesticato il {{item}} ma le tue borse sono piene. È caduto a terra!",
-    "tame_failed": "L'animale è scappato! Il tuo laccio è stato consumato."
+    "tame_failed": "L'animale è scappato! Il tuo laccio è stato consumato.",
+    "safe_zone": "Zona Sicura"
   },
   "social": {
     "already_in_group": "Il giocatore è già in un gruppo",
@@ -131,7 +144,8 @@
     "kicked_from_group": "Sei stato cacciato dal gruppo",
     "new_leader": "{{name}} è ora il leader del gruppo",
     "friend_request": "{{targetName}} vuole essere tuo amico",
-    "trade_requested": "{{name}} vuole commerciare con te"
+    "trade_requested": "{{name}} vuole commerciare con te",
+    "invited_to_guild": "{{name}} invitato alla gilda"
   },
   "settings": {
     "title": "Impostazioni",
@@ -152,7 +166,8 @@
       "spells": "Incantesimi",
       "quests": "Missioni",
       "group": "Gruppo",
-      "friends": "Amici"
+      "friends": "Amici",
+      "guild": "Gilda"
     },
     "inventory": {
       "unequip_hint": "{{name}} (tasto destro rimuovi)",
@@ -198,6 +213,18 @@
       "str": "FOR",
       "agi": "AGI",
       "int": "INT"
+    },
+    "pvp": "Modalità PvP",
+    "pvp_on": "ON",
+    "pvp_off": "OFF",
+    "guild": {
+      "not_in_guild": "Non sei in una gilda. Unisciti o creane una.",
+      "guild_name": "Nome gilda",
+      "create": "Crea",
+      "guild_members": "Membri della Gilda",
+      "leave": "Lascia Gilda",
+      "player_name": "Nome giocatore",
+      "invite": "Invita"
     }
   },
   "status": {
@@ -493,7 +520,47 @@
     },
     "bear_form": {
       "name": "Forma d'Orso",
-      "desc": "Incanala lo spirito della natura per trasformarti in un orso, aumentando massicciamente i tuoi HP."
+      "desc": "Incanala lo spirito della nature per trasformarti in un orso, aumentando massicciamente i tuoi HP."
+    },
+    "cat_form": {
+      "name": "Forma di Gatto",
+      "desc": "Trasformati in un gatto scattante, aumentando l'Agilità e la Velocità di Movimento."
+    },
+    "tree_form": {
+      "name": "Forma di Albero",
+      "desc": "Prendi la forma di un albero antico, potenziando l'Intelligenza e la rigenerazione del Mana."
+    },
+    "summon_zombie": {
+      "name": "Evoca Zombi",
+      "desc": "Consuma anime per rianimare un robusto servitore zombi."
+    },
+    "soul_blast": {
+      "name": "Esplosione d'Anima",
+      "desc": "Scatena le anime raccolte in una devastante esplosione di energia necrotica."
+    },
+    "summon_skeleton": {
+      "name": "Evoca Scheletro",
+      "desc": "Rianima un fedele guerriero scheletrico affinché combatta al tuo fianco."
+    },
+    "shadow_bolt": {
+      "name": "Dardo d'Ombra",
+      "desc": "Un dardo di energia oscura che colpisce con forza necrotica."
+    },
+    "soul_drain": {
+      "name": "Sanguisuga d'Anima",
+      "desc": "Drena la forza vitale di un bersaglio, curandoti."
+    },
+    "banshee_wail": {
+      "name": "Lamento della Banshee",
+      "desc": "Un agghiacciante urlo che indebolisce l'armatura di tutti i nemici vicini."
+    },
+    "cleanse_paralysis": {
+      "name": "Purifica Stordimento",
+      "desc": "Rimuove tutti gli effetti di stordimento e paralisi da un alleato."
+    },
+    "detect_invisibility": {
+      "name": "Vera Visione",
+      "desc": "Rivela brevemente tutte le unità nascoste in un'ampia area."
     }
   },
   "item_slot": {
@@ -600,7 +667,9 @@
     "whisper": "💬 Sussurrare",
     "add_friend": "➕ Aggiungi amico",
     "group_invite": "⚔️ Invita nel gruppo",
-    "trade": "🤝 Scambiare"
+    "guild_invite": "🏰 Invita nella gilda",
+    "trade": "🤝 Scambiare",
+    "tame": "🐾 Addomesticare"
   },
   "kill_feed": {
     "killed": "ha ucciso"

@@ -142,7 +142,10 @@
     "leader_only_kick": "Solo el líder puede expulsar jugadores",
     "kicked_from_group": "Has sido expulsado del grupo",
     "new_leader": "{{name}} es ahora el líder del grupo",
-    "friend_request": "{{targetName}} quiere ser tu amigo",
+    "trade_requested": "{{name}} quiere comerciar contigo",
+    "friend_request": "{{targetName}} quiere ser tu amigo"
+  },
+  "settings": {
     "title": "Ajustes",
     "section": {
       "audio": "Audio",

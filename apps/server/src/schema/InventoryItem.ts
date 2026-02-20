@@ -1,4 +1,5 @@
 import { ArraySchema, Schema, type } from "@colyseus/schema";
+import { ItemRarity } from "@abraxas/shared";
 
 export class ItemAffixSchema extends Schema {
   @type("string") type: string = "";

@@ -102,7 +102,7 @@ export class BankSystem {
     }
 
     // Try add to inventory
-    if (this.inventory.addItem(player, itemId, quantity, onError)) {
+    if (this.inventory.addItem(player, itemId, quantity, undefined, onError)) {
       // Remove from bank
       if (bankItem.quantity > quantity) {
         bankItem.quantity -= quantity;

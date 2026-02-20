@@ -129,7 +129,8 @@
     "tame_no_lasso": "You need a Lasso to tame animals!",
     "tame_success": "You successfully tamed the {{item}}!",
     "tame_success_dropped": "You tamed the {{item}} but your bags are full. It dropped to the ground!",
-    "tame_failed": "The animal broke free! Your lasso was consumed."
+    "tame_failed": "The animal broke free! Your lasso was consumed.",
+    "safe_zone": "Safe Zone"
   },
   "social": {
     "already_in_group": "Player is already in a group",
@@ -143,7 +144,8 @@
     "kicked_from_group": "You were kicked from the group",
     "new_leader": "{{name}} is now the group leader",
     "friend_request": "{{targetName}} wants to be your friend",
-    "trade_requested": "{{name}} wants to trade with you"
+    "trade_requested": "{{name}} wants to trade with you",
+    "invited_to_guild": "{{name}} invited to guild"
   },
   "settings": {
     "title": "Settings",
@@ -164,7 +166,8 @@
       "spells": "Spells",
       "quests": "Quests",
       "group": "Group",
-      "friends": "Friends"
+      "friends": "Friends",
+      "guild": "Guild"
     },
     "inventory": {
       "unequip_hint": "{{name}} (right-click unequip)",
@@ -210,6 +213,18 @@
       "str": "STR",
       "agi": "AGI",
       "int": "INT"
+    },
+    "pvp": "PvP Mode",
+    "pvp_on": "ON",
+    "pvp_off": "OFF",
+    "guild": {
+      "not_in_guild": "Not in a guild. Join or create one.",
+      "guild_name": "Guild name",
+      "create": "Create",
+      "guild_members": "Guild Members",
+      "leave": "Leave Guild",
+      "player_name": "Player name",
+      "invite": "Invite"
     }
   },
   "status": {
@@ -652,7 +667,9 @@
     "whisper": "💬 Whisper",
     "add_friend": "➕ Add Friend",
     "group_invite": "⚔️ Invite to Group",
-    "trade": "🤝 Trade"
+    "guild_invite": "🏰 Invite to Guild",
+    "trade": "🤝 Trade",
+    "tame": "🐾 Tame"
   },
   "kill_feed": {
     "killed": "killed"
