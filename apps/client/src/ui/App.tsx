@@ -77,6 +77,13 @@ export function App() {
     mana: 30,
     maxMana: 30,
     alive: true,
+    str: 0,
+    agi: 0,
+    intStat: 0,
+    gold: 0,
+    level: 1,
+    xp: 0,
+    maxXp: 100,
   });
   const [deathTime, setDeathTime] = useState(0);
   const [showDeath, setShowDeath] = useState(false);
@@ -595,7 +602,7 @@ export function App() {
               <MerchantShop
                 npcId={shopData.npcId}
                 merchantInventory={shopData.inventory}
-                playerGold={playerState.gold ?? 0}
+                playerGold={playerState.gold}
                 playerInventory={playerState.inventory ?? []}
                 onBuy={(itemId, qty) => networkRef.current?.sendBuyItem(itemId, qty)}
                 onSell={(itemId, qty) => networkRef.current?.sendSellItem(itemId, qty)}
@@ -644,7 +651,7 @@ export function App() {
                 }),
               )}
               myName={playerState.name}
-              myLevel={playerState.level ?? 1}
+              myLevel={playerState.level}
             />
           )}
           <KillFeed entries={killFeed} />
@@ -697,7 +704,7 @@ export function App() {
               trade={tradeData}
               mySessionId={roomRef.current.sessionId}
               playerInventory={playerState.inventory ?? []}
-              playerGold={playerState.gold ?? 0}
+              playerGold={playerState.gold}
               onUpdateOffer={(gold, items) => {
                 const mappedItems = items.map(item => ({
                   itemId: item.itemId,

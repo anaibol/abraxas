@@ -66,10 +66,10 @@ export function CharacterHeader({ state, isRecording }: CharacterHeaderProps) {
       {/* Level + XP bar */}
       <Flex align="center" justify="space-between" mt="2" px="0.5">
         <Text textStyle={T.statLabel} color={T.goldDark} letterSpacing="2px">
-          {t("sidebar.inventory.level")} {state.level ?? 1}
+          {t("sidebar.inventory.level")} {state.level}
         </Text>
         <Text textStyle={T.codeText} color={T.goldDark}>
-          {state.xp ?? 0} / {state.maxXp ?? 100} {t("sidebar.inventory.xp")}
+          {state.xp} / {state.maxXp} {t("sidebar.inventory.xp")}
         </Text>
       </Flex>
       <Box
@@ -84,7 +84,7 @@ export function CharacterHeader({ state, isRecording }: CharacterHeaderProps) {
       >
         <Box
           h="100%"
-          w={`${state.maxXp ? Math.min(100, ((state.xp ?? 0) / state.maxXp) * 100) : 0}%`}
+          w={`${state.maxXp > 0 ? Math.min(100, (state.xp / state.maxXp) * 100) : 0}%`}
           bg={`linear-gradient(90deg, ${HEX.goldDark}, ${HEX.gold})`}
           transition="width 0.3s"
         />

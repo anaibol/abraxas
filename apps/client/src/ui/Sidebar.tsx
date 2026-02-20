@@ -128,7 +128,7 @@ export function Sidebar({
         borderBottomColor={T.border}
       >
         <Text textStyle={T.codeText} color={T.gold} fontWeight="700">
-          {state.gold ?? 0}
+          {state.gold}
           {t("sidebar.inventory.gold_abbr")}
         </Text>
       </Flex>
@@ -197,7 +197,7 @@ export function Sidebar({
           <SpellsTab
             classSpells={classSpells}
             currentMana={state.mana}
-            playerLevel={state.level ?? 1}
+            playerLevel={state.level}
             pendingSpellId={pendingSpellId}
             onSpellClick={onSpellClick}
           />

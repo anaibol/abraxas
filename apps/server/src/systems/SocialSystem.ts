@@ -6,7 +6,7 @@ import { Player } from "../schema/Player";
 import { HandlerUtils } from "../handlers/HandlerUtils";
 
 export class SocialSystem {
-  private invitations = new Map<string, { groupId: string; inviterSessionId: string; expiresAt: number }>();
+  private invitations = new Map<string, { groupId: string; inviterSessionId: string; timer: ReturnType<typeof setTimeout> }>();
 
   constructor(
     private state: GameState,
@@ -44,42 +44,35 @@ export class SocialSystem {
       }
     }
 
-    // Send invitation to target (expires in 60s)
-    const expiresAt = Date.now() + 60000;
-    this.invitations.set(targetSessionId, {
-      groupId,
-      inviterSessionId: inviter.sessionId,
-      expiresAt,
-    });
+    // Clear any existing invite before replacing it (handles re-invites)
+    this.clearInvitation(targetSessionId);
+
+    // Send invitation to target — auto-expires after 60s
+    const timer = setTimeout(() => this.invitations.delete(targetSessionId), 60_000);
+    this.invitations.set(targetSessionId, { groupId, inviterSessionId: inviter.sessionId, timer });
+
     const targetClient = this.findClient(targetSessionId);
     if (targetClient) {
-      targetClient.send(ServerMessageType.GroupInvited, {
-        groupId,
-        inviterName: inviter.name,
-      });
+      targetClient.send(ServerMessageType.GroupInvited, { groupId, inviterName: inviter.name });
       client.send(ServerMessageType.Notification, {
         message: "social.invited_to_group",
         templateData: { name: target.name },
       });
     }
-
-    // Periodic cleanup of stale invitations
-    this.cleanupStaleInvitations();
   }
 
-  private cleanupStaleInvitations(): void {
-    const now = Date.now();
-    for (const [targetId, invite] of this.invitations.entries()) {
-      if (now > invite.expiresAt) {
-        this.invitations.delete(targetId);
-      }
+  private clearInvitation(sessionId: string): void {
+    const existing = this.invitations.get(sessionId);
+    if (existing) {
+      clearTimeout(existing.timer);
+      this.invitations.delete(sessionId);
     }
   }
 
   handleAcceptInvite(client: Client, groupId: string): void {
     const invite = this.invitations.get(client.sessionId);
-    if (!invite || invite.groupId !== groupId || Date.now() > invite.expiresAt) {
-      this.invitations.delete(client.sessionId);
+    if (!invite || invite.groupId !== groupId) {
+      this.clearInvitation(client.sessionId);
       HandlerUtils.sendError(client, "social.no_invite");
       return;
     }
@@ -88,20 +81,20 @@ export class SocialSystem {
     const player = this.state.players.get(client.sessionId);
 
     if (!group || !player) {
-      this.invitations.delete(client.sessionId);
+      this.clearInvitation(client.sessionId);
       return;
     }
 
     if (group.memberIds.length >= 5) {
       HandlerUtils.sendError(client, "social.group_full");
-      this.invitations.delete(client.sessionId);
+      this.clearInvitation(client.sessionId);
       return;
     }
 
     // Join group
     player.groupId = groupId;
     group.memberIds.push(client.sessionId);
-    this.invitations.delete(client.sessionId);
+    this.clearInvitation(client.sessionId);
 
     this.broadcastGroupUpdate(groupId);
     this.broadcastToGroup(groupId, ServerMessageType.Notification, {

@@ -448,6 +448,7 @@ export class GameScene extends Phaser.Scene {
   shutdown() {
     document.removeEventListener("visibilitychange", this.handleVisibilityChange);
     this.gameEventHandler.destroy();
+    this.lightManager?.destroy();
     for (const unsub of this.stateUnsubscribers) unsub();
     this.stateUnsubscribers = [];
     this.inputHandler.destroy();

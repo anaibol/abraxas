@@ -1,4 +1,3 @@
-import { CLASS_STATS } from "@abraxas/shared";
 import { Box, Flex, Text } from "@chakra-ui/react";
 import { LogOut, Settings } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -17,7 +16,6 @@ export function SidebarFooter({ state, onSettings, onLogout, onTogglePvP }: Side
   const hpPct = state.maxHp > 0 ? Math.max(0, (state.hp / state.maxHp) * 100) : 0;
   const manaPct = state.maxMana > 0 ? Math.max(0, (state.mana / state.maxMana) * 100) : 0;
   const hpColor = hpPct > 50 ? T.blood : hpPct > 25 ? "#8b5a1a" : "#5a0e0e";
-  const stats = CLASS_STATS[state.classType];
 
   return (
     <Box mt="auto" flexShrink={0} borderTop="2px solid" borderTopColor={T.border} bg={T.darkest}>
@@ -29,9 +27,9 @@ export function SidebarFooter({ state, onSettings, onLogout, onTogglePvP }: Side
         borderBottom="1px solid"
         borderBottomColor={T.raised}
       >
-        <StatChip label={t("sidebar.stats.str")} value={state.str ?? stats?.str ?? 0} />
-        <StatChip label={t("sidebar.stats.agi")} value={state.agi ?? stats?.agi ?? 0} />
-        <StatChip label={t("sidebar.stats.int")} value={state.intStat ?? stats?.int ?? 0} />
+        <StatChip label={t("sidebar.stats.str")} value={state.str} />
+        <StatChip label={t("sidebar.stats.agi")} value={state.agi} />
+        <StatChip label={t("sidebar.stats.int")} value={state.intStat} />
       </Flex>
 
       {/* HP bar */}
