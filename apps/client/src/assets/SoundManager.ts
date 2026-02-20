@@ -5,36 +5,124 @@ import { gameSettings } from "../settings/gameSettings";
 // Base volumes baked into each sound; settings scale these.
 const BASE_MUSIC_VOL = 0.15;
 const BASE_SFX: Partial<Record<string, number>> = {
-  [AudioAssets.KENNEY_RPG_AUDIO_FOOTSTEP00]: 0.4,
-  [AudioAssets.KENNEY_RPG_AUDIO_FOOTSTEP01]: 0.4,
-  [AudioAssets.KENNEY_RPG_AUDIO_FOOTSTEP02]: 0.4,
-  [AudioAssets.KENNEY_RPG_AUDIO_FOOTSTEP03]: 0.4,
-  [AudioAssets.KENNEY_RPG_AUDIO_FOOTSTEP04]: 0.4,
-  [AudioAssets.KENNEY_RPG_AUDIO_DRAWKNIFE1]: 0.5,
-  [AudioAssets.KENNEY_RPG_AUDIO_DRAWKNIFE2]: 0.5,
-  [AudioAssets.KENNEY_RPG_AUDIO_DRAWKNIFE3]: 0.5,
-  [AudioAssets.MAGIC_FX411]: 0.5,
-  [AudioAssets.KENNEY_IMPACT_AUDIO_IMPACTMETAL_HEAVY_000]: 0.5,
-  [AudioAssets.KENNEY_IMPACT_AUDIO_IMPACTMETAL_HEAVY_001]: 0.5,
-  [AudioAssets.KENNEY_IMPACT_AUDIO_IMPACTMETAL_HEAVY_002]: 0.5,
-  [AudioAssets.SONIDOS_14]: 0.6,
-  [AudioAssets.MAGIC_REPLENISH]: 0.5,
-  [AudioAssets.KENNEY_UI_AUDIO_CLICK_002]: 0.4,
-  [AudioAssets.KENNEY_UI_AUDIO_TICK_001]: 0.2,
-  [AudioAssets.KENNEY_UI_AUDIO_OPEN_001]: 0.4,
-  [AudioAssets.KENNEY_UI_AUDIO_CLOSE_001]: 0.4,
-  [AudioAssets.KENNEY_UI_AUDIO_MAXIMIZE_006]: 0.6,
-  [AudioAssets.KENNEY_UI_AUDIO_BONG_001]: 0.7,
-  [AudioAssets.KENNEY_RPG_AUDIO_CLOTHBELT]: 0.5,
-  [AudioAssets.MAGIC_MONTAGE_SFX_20130926_031949]: 0.6,
-  [AudioAssets.MAGIC_SHIMMER_1]: 0.6,
-  [AudioAssets.MAGIC_GHOST_1]: 0.6,
-  [AudioAssets.MAGIC_FX261]: 0.5,
-  [AudioAssets.MISC_ARCHERS_SHOOTING]: 0.5,
-  [AudioAssets.KENNEY_RPG_AUDIO_HANDLECOINS]: 0.7,
-  [AudioAssets.KENNEY_UI_AUDIO_CONFIRMATION_001]: 0.6,
-  [AudioAssets.KENNEY_UI_AUDIO_CONFIRMATION_002]: 0.6,
+  [AudioAssets.STEP_1]: 0.4,
+  [AudioAssets.STEP_2]: 0.4,
+  [AudioAssets.STEP_3]: 0.4,
+  [AudioAssets.STEP_4]: 0.4,
+  [AudioAssets.STEP_5]: 0.4,
+  [AudioAssets.ATTACK_1]: 0.5,
+  [AudioAssets.ATTACK_2]: 0.5,
+  [AudioAssets.ATTACK_3]: 0.5,
+  [AudioAssets.SPELL]: 0.5,
+  [AudioAssets.HIT_1]: 0.5,
+  [AudioAssets.HIT_2]: 0.5,
+  [AudioAssets.HIT_3]: 0.5,
+  [AudioAssets.DEATH]: 0.6,
+  [AudioAssets.HEAL]: 0.5,
+  [AudioAssets.CLICK]: 0.4,
+  [AudioAssets.CLICK_HOVER]: 0.2,
+  [AudioAssets.CLICK_OPEN]: 0.4,
+  [AudioAssets.CLICK_CLOSE]: 0.4,
+  [AudioAssets.LEVEL_UP]: 0.6,
+  [AudioAssets.NOTIFICATION]: 0.7,
+  [AudioAssets.MOUNT]: 0.5,
+  [AudioAssets.BUFF]: 0.6,
+  [AudioAssets.STEALTH]: 0.6,
+  [AudioAssets.SUMMON]: 0.6,
+  [AudioAssets.MAGIC_HIT]: 0.5,
+  [AudioAssets.BOW]: 0.5,
+  [AudioAssets.COINS]: 0.7,
+  [AudioAssets.QUEST_ACCEPT]: 0.6,
+  [AudioAssets.QUEST_COMPLETE]: 0.6,
 };
+
+// ── Spell-specific SFX routing ────────────────────────────────────────────────
+// Maps ability IDs to the audio asset path they should play.
+// Unmapped abilities fall back to their general category in GameEventHandler.
+const SPELL_SFX: Partial<Record<string, string>> = {
+  // Mage
+  fireball:           AudioAssets.SPELL,
+  fire_breath:        AudioAssets.SPELL,
+  meteor_strike:      AudioAssets.SPELL,
+  ice_bolt:           AudioAssets.MAGIC_HIT,
+  frost_nova:         AudioAssets.MAGIC_HIT,
+  frost_breath:       AudioAssets.MAGIC_HIT,
+  thunderstorm:       AudioAssets.BUFF,
+  chain_lightning:    AudioAssets.BUFF,
+  arcane_surge:       AudioAssets.STEALTH,
+  spell_echo:         AudioAssets.STEALTH,
+  blink:              AudioAssets.STEALTH,
+  elemental_infusion: AudioAssets.STEALTH,
+  mana_spring:        AudioAssets.HEAL,
+  mana_shield:        AudioAssets.SUMMON,
+  polymorph:          AudioAssets.MAGIC_HIT,
+  // Warrior
+  war_cry:            AudioAssets.NPC_ROAR,
+  battle_shout:       AudioAssets.NPC_ROAR,
+  whirlwind:          AudioAssets.ATTACK_1,
+  shield_bash:        AudioAssets.HIT_1,
+  cleave:             AudioAssets.ATTACK_2,
+  execute:            AudioAssets.HIT_3,
+  leap:               AudioAssets.NPC_ROAR,
+  berserker_rage:     AudioAssets.NPC_ROAR,
+  shield_wall:        AudioAssets.HIT_2,
+  // Paladin
+  judgment:           AudioAssets.BUFF,
+  consecration:       AudioAssets.BUFF,
+  holy_bolt:          AudioAssets.SPELL,
+  lay_on_hands:       AudioAssets.HEAL,
+  aura_of_protection: AudioAssets.SUMMON,
+  // Cleric
+  holy_strike:        AudioAssets.HIT_1,
+  holy_nova:          AudioAssets.BUFF,
+  smite:              AudioAssets.SPELL,
+  divine_shield:      AudioAssets.SUMMON,
+  heal:               AudioAssets.HEAL,
+  // Ranger
+  multi_shot:         AudioAssets.BOW,
+  poison_arrow:       AudioAssets.BOW,
+  aimed_shot:         AudioAssets.BOW,
+  eagle_eye:          AudioAssets.STEALTH,
+  barrage:            AudioAssets.BOW,
+  // Rogue
+  backstab:           AudioAssets.ATTACK_3,
+  envenom:            AudioAssets.ATTACK_1,
+  smoke_bomb:         AudioAssets.MAGIC_HIT,
+  hemorrhage:         AudioAssets.ATTACK_2,
+  shadowstep:         AudioAssets.STEALTH,
+  pickpocket:         AudioAssets.COINS,
+  fan_of_knives:      AudioAssets.ATTACK_3,
+  // Necromancer
+  shadow_bolt:        AudioAssets.SUMMON,
+  soul_drain:         AudioAssets.SUMMON,
+  banshee_wail:       AudioAssets.NPC_SCREAM,
+  summon_skeleton:    AudioAssets.NPC_RATTLE,
+  summon_zombie:      AudioAssets.NPC_GRUNT,
+  // Druid
+  cleansing_rain:     AudioAssets.HEAL,
+  entangling_roots:   AudioAssets.MAGIC_HIT,
+  acid_splash:        AudioAssets.SPELL,
+};
+
+/**
+ * Ability IDs that should also trigger a camera shake on cast/hit.
+ * Exposed so GameEventHandler can import and check this.
+ */
+export const HEAVY_HIT_ABILITIES = new Set([
+  "meteor_strike",
+  "earthquake",
+  "leap",
+  "whirlwind",
+  "execute",
+  "barrage",
+  "chain_lightning",
+  "banshee_wail",
+  "holy_nova",
+  "thunderstorm",
+  "consecration",
+  "war_cry",
+  "berserker_rage",
+]);
 
 export class SoundManager {
   private music: Phaser.Sound.BaseSound | null = null;
@@ -69,57 +157,67 @@ export class SoundManager {
     }
   }
 
+  /** Play the most appropriate SFX for a given ability ID. */
+  playSpellSfx(abilityId: string) {
+    const sfxKey = SPELL_SFX[abilityId];
+    if (sfxKey) {
+      this.play(sfxKey);
+    } else {
+      this.playSpell(); // Generic fallback
+    }
+  }
+
   playStep() {
     const steps = [
-      AudioAssets.KENNEY_RPG_AUDIO_FOOTSTEP00,
-      AudioAssets.KENNEY_RPG_AUDIO_FOOTSTEP01,
-      AudioAssets.KENNEY_RPG_AUDIO_FOOTSTEP02,
-      AudioAssets.KENNEY_RPG_AUDIO_FOOTSTEP03,
-      AudioAssets.KENNEY_RPG_AUDIO_FOOTSTEP04,
+      AudioAssets.STEP_1,
+      AudioAssets.STEP_2,
+      AudioAssets.STEP_3,
+      AudioAssets.STEP_4,
+      AudioAssets.STEP_5,
     ];
     this.play(steps[Math.floor(Math.random() * steps.length)]);
   }
 
   playAttack() {
     const attacks = [
-      AudioAssets.KENNEY_RPG_AUDIO_DRAWKNIFE1,
-      AudioAssets.KENNEY_RPG_AUDIO_DRAWKNIFE2,
-      AudioAssets.KENNEY_RPG_AUDIO_DRAWKNIFE3,
+      AudioAssets.ATTACK_1,
+      AudioAssets.ATTACK_2,
+      AudioAssets.ATTACK_3,
     ];
     this.play(attacks[Math.floor(Math.random() * attacks.length)]);
   }
 
   playSpell() {
-    this.play(AudioAssets.MAGIC_FX411);
+    this.play(AudioAssets.SPELL);
   }
 
   playHit() {
     const hits = [
-      AudioAssets.KENNEY_IMPACT_AUDIO_IMPACTMETAL_HEAVY_000,
-      AudioAssets.KENNEY_IMPACT_AUDIO_IMPACTMETAL_HEAVY_001,
-      AudioAssets.KENNEY_IMPACT_AUDIO_IMPACTMETAL_HEAVY_002,
+      AudioAssets.HIT_1,
+      AudioAssets.HIT_2,
+      AudioAssets.HIT_3,
     ];
     this.play(hits[Math.floor(Math.random() * hits.length)]);
   }
 
   playDeath() {
-    this.play(AudioAssets.SONIDOS_14);
+    this.play(AudioAssets.DEATH);
   }
 
   playHeal() {
-    this.play(AudioAssets.MAGIC_REPLENISH);
+    this.play(AudioAssets.HEAL);
   }
 
   playLevelUp() {
-    this.play(AudioAssets.KENNEY_UI_AUDIO_MAXIMIZE_006);
+    this.play(AudioAssets.LEVEL_UP);
   }
 
   playNotification() {
-    this.play(AudioAssets.KENNEY_UI_AUDIO_BONG_001);
+    this.play(AudioAssets.NOTIFICATION);
   }
 
   playMount() {
-    this.play(AudioAssets.KENNEY_RPG_AUDIO_CLOTHBELT, { volume: 0.5 });
+    this.play(AudioAssets.MOUNT, { volume: 0.5 });
   }
 
   // Ambiance
@@ -154,70 +252,70 @@ export class SoundManager {
 
   playNpcAttack(type: string) {
     if (type.includes("skeleton")) {
-      this.play(AudioAssets.NPC_SKELETON_RATTLE, { volume: 0.4 });
+      this.play(AudioAssets.NPC_RATTLE, { volume: 0.4 });
     } else if (["dragon", "troll", "bear", "orc"].includes(type)) {
-      this.play(AudioAssets.NPC_CREATURES_ROAR_01, { volume: 0.5 });
+      this.play(AudioAssets.NPC_ROAR, { volume: 0.5 });
     } else {
-      this.play(AudioAssets.NPC_CREATURES_GRUNT_01, { volume: 0.4 });
+      this.play(AudioAssets.NPC_GRUNT, { volume: 0.4 });
     }
   }
 
   playNpcDeath(type: string) {
     if (type.includes("skeleton")) {
-      this.play(AudioAssets.NPC_SKELETON_RATTLE, { volume: 0.6 });
+      this.play(AudioAssets.NPC_RATTLE, { volume: 0.6 });
     } else if (["dragon", "troll", "bear", "orc"].includes(type)) {
-      this.play(AudioAssets.NPC_CREATURES_SCREAM_01, { volume: 0.6 });
+      this.play(AudioAssets.NPC_SCREAM, { volume: 0.6 });
     } else {
-      this.play(AudioAssets.NPC_CREATURES_HURT_01, { volume: 0.5 });
+      this.play(AudioAssets.NPC_HURT, { volume: 0.5 });
     }
   }
 
   playNpcLevelUp() {
-    this.play(AudioAssets.KENNEY_UI_AUDIO_MAXIMIZE_008, { volume: 0.5 });
+    this.play(AudioAssets.NPC_LEVEL_UP, { volume: 0.5 });
   }
 
   playBuff() {
-    this.play(AudioAssets.MAGIC_MONTAGE_SFX_20130926_031949);
+    this.play(AudioAssets.BUFF);
   }
   playStealth() {
-    this.play(AudioAssets.MAGIC_SHIMMER_1);
+    this.play(AudioAssets.STEALTH);
   }
   playSummon() {
-    this.play(AudioAssets.MAGIC_GHOST_1);
+    this.play(AudioAssets.SUMMON);
   }
   playMagicHit() {
-    this.play(AudioAssets.MAGIC_FX261);
+    this.play(AudioAssets.MAGIC_HIT);
   }
   playBow() {
-    this.play(AudioAssets.MISC_ARCHERS_SHOOTING);
+    this.play(AudioAssets.BOW);
   }
   playCoins() {
-    this.play(AudioAssets.KENNEY_RPG_AUDIO_HANDLECOINS);
+    this.play(AudioAssets.COINS);
   }
   playQuestAccept() {
-    this.play(AudioAssets.KENNEY_UI_AUDIO_CONFIRMATION_001);
+    this.play(AudioAssets.QUEST_ACCEPT);
   }
   playQuestComplete() {
-    this.play(AudioAssets.KENNEY_UI_AUDIO_CONFIRMATION_002);
+    this.play(AudioAssets.QUEST_COMPLETE);
   }
 
   playUIClick() {
-    this.play(AudioAssets.KENNEY_UI_AUDIO_CLICK_002);
+    this.play(AudioAssets.CLICK);
   }
   playUIHover() {
-    this.play(AudioAssets.KENNEY_UI_AUDIO_TICK_001);
+    this.play(AudioAssets.CLICK_HOVER);
   }
   playUIOpen() {
-    this.play(AudioAssets.KENNEY_UI_AUDIO_OPEN_001);
+    this.play(AudioAssets.CLICK_OPEN);
   }
   playUIClose() {
-    this.play(AudioAssets.KENNEY_UI_AUDIO_CLOSE_001);
+    this.play(AudioAssets.CLICK_CLOSE);
   }
 
   startMusic() {
     if (this.music) return;
     const vol = gameSettings.get().musicVolume;
-    this.music = this.scene.sound.add(AudioAssets.MUSICA_101, {
+    this.music = this.scene.sound.add(AudioAssets.MUSIC_ARENA, {
       loop: true,
       volume: BASE_MUSIC_VOL * vol,
     });

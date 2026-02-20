@@ -6,6 +6,7 @@ import {
   ServerMessageType,
   SPAWN_PROTECTION_MS,
   type TileMap,
+  type NpcType,
 } from "@abraxas/shared";
 import type { Client } from "@colyseus/core";
 import type { GameState } from "../schema/GameState";
@@ -64,19 +65,19 @@ export class TickSystem {
     // Increment game tick
     state.tick++;
     
-    // 0. Update time of day (0.005 per tick = 200 ticks per hour = 20 seconds. 24*20 = 480s = 8 min day cycle)
-    // Using 0.0025 for a 16 min day cycle or 0.00166 for 24 min cycle.
-    // Let's go with 0.00166 for ~24 min per full cycle.
-    state.timeOfDay += 0.1; // Fast cycle for demo
+    // 0. Update time of day (1 minute real = 1 hour game)
+
+    // 0. Update time of day (1 minute real = 1 hour game)
+    state.timeOfDay += (deltaTime / 1000) * (1 / 60);
     if (state.timeOfDay >= 24) {
-      state.timeOfDay = 0;
+      state.timeOfDay -= 24;
     }
 
-    // Fast weather randomization for demo (every 100 ticks)
-    if (state.tick % 100 === 0) {
+    // Basic weather randomization every 1000 ticks (~40 seconds)
+    if (state.tick % 1000 === 0) {
       const rnd = Math.random();
-      if (rnd < 0.3) state.weather = "clear";
-      else if (rnd < 0.6) state.weather = "rain";
+      if (rnd < 0.7) state.weather = "clear";
+      else if (rnd < 0.85) state.weather = "rain";
       else state.weather = "snow";
     }
 
@@ -85,7 +86,7 @@ export class TickSystem {
       now,
       (sid) => systems.spatial.findEntityBySessionId(sid),
       broadcast,
-      (entity) => this.opts.onEntityDeath(entity),
+      (entity, killerId) => this.opts.onEntityDeath(entity, killerId),
     );
 
     // 2. NPCs
@@ -110,12 +111,45 @@ export class TickSystem {
     // 4. Drops
     systems.drops.expireDrops(state.drops, now);
 
-    // 5. Natural Regeneration
+    // 5. Natural Regeneration & Class Resources
     for (const player of state.players.values()) {
       if (!player.alive) continue;
+
+      // Mana (Standard)
       if (player.meditating && state.tick % 5 === 0) restoreStat(player, "mana", 0.02);
       else if (!player.meditating && state.tick % 20 === 0) restoreStat(player, "mana", 0.01);
+
+      // HP (Standard)
       if (state.tick % 30 === 0) restoreStat(player, "hp", 0.005);
+
+      // Energy (Rogue) - Rapidly regenerate 10% Every 20 ticks (~0.8s)
+      if (player.classType === "ROGUE" && state.tick % 20 === 0) {
+        player.energy = Math.min(player.maxEnergy, player.energy + Math.floor(player.maxEnergy * 0.1));
+      }
+
+      // Focus (Ranger) - Rapidly regenerate 5% Every 20 ticks (~0.8s)
+      if (player.classType === "RANGER" && state.tick % 20 === 0) {
+        player.focus = Math.min(player.maxFocus, player.focus + Math.floor(player.maxFocus * 0.05));
+      }
+
+      // Rage (Warrior) - Decay -2 per 50 ticks (~2s) if not at 0
+      if (player.classType === "WARRIOR" && state.tick % 50 === 0 && player.rage > 0) {
+        player.rage = Math.max(0, player.rage - 2);
+      }
+
+      // Mana Spring (Friendly Summon) nearby
+      if (state.tick % 20 === 0) {
+        for (const npc of state.npcs.values()) {
+          if (npc.npcType === ("mana_spring" as NpcType) && npc.alive && npc.ownerId) {
+            const dx = npc.tileX - player.tileX;
+            const dy = npc.tileY - player.tileY;
+            if (dx * dx + dy * dy <= 4 * 4) { // 4 tile radius
+              player.mana = Math.min(player.maxMana ?? 100, (player.mana ?? 0) + 5);
+              // Notification/Broadcast could be added here but might be too noisy
+            }
+          }
+        }
+      }
     }
 
     // 6. Respawns
@@ -193,14 +227,26 @@ export class TickSystem {
     });
 
     const dropTable = NPC_DROPS[killedNpc.npcType];
+
+    // Necromancer soul gain on kill
+    if (player.classType === "NECROMANCER" && player.souls < player.maxSouls) {
+      player.souls++;
+    }
+
     if (dropTable) {
       for (const entry of dropTable) {
         if (Math.random() < entry.chance) {
           const qty = Math.floor(Math.random() * (entry.max - entry.min + 1)) + entry.min;
           const ox = Math.floor(Math.random() * 3) - 1;
           const oy = Math.floor(Math.random() * 3) - 1;
-          const tx = Math.max(0, Math.min(this.opts.map.width - 1, killedNpc.tileX + ox));
-          const ty = Math.max(0, Math.min(this.opts.map.height - 1, killedNpc.tileY + oy));
+          let tx = Math.max(0, Math.min(this.opts.map.width - 1, killedNpc.tileX + ox));
+          let ty = Math.max(0, Math.min(this.opts.map.height - 1, killedNpc.tileY + oy));
+
+          // Collision check for loot: if blocked, drop at NPC's feet
+          if (this.opts.map.collision[ty]?.[tx] === 1) {
+            tx = killedNpc.tileX;
+            ty = killedNpc.tileY;
+          }
 
           if (entry.itemId === "gold") {
             systems.drops.spawnGoldDrop(this.opts.state.drops, tx, ty, qty);
