@@ -115,7 +115,7 @@ export async function createGameServer(options: {
   const server = defineServer({
     transport: new GameTransport(options.staticDir),
     devMode: process.env.NODE_ENV !== "production" && process.env.NODE_ENV !== "test",
-    rooms: { arena: defineRoom(ArenaRoom) },
+    rooms: { arena: defineRoom(ArenaRoom), catacombs: defineRoom(ArenaRoom) },
     routes: createRouter({
       healthEndpoint,
       registerEndpoint,

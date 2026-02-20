@@ -360,6 +360,8 @@ export class EffectManager {
     this.ring(px, py, 0xff4400, 5, 58, 400, 0.9, 4);
     // Delayed shockwave ring at larger radius
     this.scene.time.delayedCall(50, () => this.ring(px, py, 0xff8800, 10, 85, 580, 0.5, 3));
+    
+    // Massive fireball burst
     this.burst(px, py, TEX.CIRCLE, {
       colors: [0xff2200, 0xff7700, 0xffcc00, 0xffee88],
       count: 50,
@@ -369,27 +371,20 @@ export class EffectManager {
       gravityY: -40,
       radius: 10,
     });
-    // Dark smoke billowing outward
-    this.burst(px, py, TEX.SMOKE, {
-      colors: [0x661100, 0x441100, 0x220800],
-      count: 14,
-      speed: { min: 20, max: 65 },
-      scale: { start: 1.1, end: 0.2 },
-      lifespan: { min: 700, max: 1400 },
-      gravityY: -28,
-      radius: 22,
-      blendMode: Phaser.BlendModes.NORMAL,
-      alpha: { start: 0.55, end: 0 },
-    });
+    
+    // Add realistic thick smoke for the subsequent explosion
+    this.createThickSmoke(px, py);
+    
     this.scene.time.delayedCall(80, () => {
+      // Hot embers scattered outward
       this.burst(px, py, TEX.SPARK, {
         colors: [0xff6600, 0xffaa00, 0xffff44],
-        count: 28,
-        speed: { min: 30, max: 90 },
-        scale: { start: 0.55, end: 0 },
-        lifespan: { min: 700, max: 1300 },
-        gravityY: -72,
-        radius: 24,
+        count: 35,
+        speed: { min: 50, max: 150 },
+        scale: { start: 0.6, end: 0 },
+        lifespan: { min: 600, max: 1200 },
+        gravityY: -60,
+        radius: 20,
       });
     });
   }
@@ -416,7 +411,10 @@ export class EffectManager {
   }
 
   private fx_thunderstorm(px: number, py: number) {
-    this.lightning(px, py, 0xffffff, 145, 12, true);
+    // Use the new hyper-realistic lightning effect for the main strike
+    this.createLightningStrike(px, py);
+
+    // Follow up with smaller, secondary strikes
     this.scene.time.delayedCall(45, () => {
       this.lightning(px - 38, py, 0xddddff, 108, 7);
       this.lightning(px + 32, py, 0xddddff, 118, 8);
@@ -425,64 +423,36 @@ export class EffectManager {
       this.lightning(px - 18, py, 0xaaaaff, 84, 6);
       this.lightning(px + 50, py, 0xaaaaff, 94, 6);
     });
-    this.ring(px, py, 0xffff44, 5, 78, 500, 0.88, 5);
-    this.flash(px, py, 0xffffff, 62, 110);
-    // Downward rain of electric sparks
-    this.burst(px, py, TEX.SPARK, {
-      colors: [0xffffff, 0xffffaa, 0xaaaaff],
-      count: 55,
-      speed: { min: 80, max: 230 },
-      scale: { start: 0.5, end: 0 },
-      lifespan: { min: 150, max: 460 },
-      angle: { min: 50, max: 130 },
-      gravityY: 260,
-      radius: 52,
-    });
-    // Horizontal arc sparks spreading outward
+    
+    // An additional wave of horizontal electric sparks
     this.burst(px, py, TEX.SPARK, {
       colors: [0xffffff, 0xffffaa],
-      count: 22,
-      speed: { min: 60, max: 165 },
-      scale: { start: 0.4, end: 0 },
-      lifespan: { min: 100, max: 280 },
-      angle: { min: 155, max: 205 },
-      radius: 24,
+      count: 30,
+      speed: { min: 80, max: 220 },
+      scale: { start: 0.5, end: 0 },
+      lifespan: { min: 100, max: 300 },
+      angle: { min: 160, max: 200 }, // Sweeping horizontally
+      radius: 30,
     });
   }
 
   private fx_frost_nova(px: number, py: number) {
+    // Utilize the realistic frost explosion
+    this.createFrostExplosion(px, py);
+
+    // Initial shockwave
     this.ring(px, py, 0x44ccff, 5, 90, 600, 0.9, 5);
     this.scene.time.delayedCall(90, () => this.ring(px, py, 0xffffff, 5, 72, 500, 0.6, 2));
-    this.scene.time.delayedCall(180, () => this.ring(px, py, 0x88ddff, 5, 54, 380, 0.4, 2));
-    // Primary ice shards bursting outward
-    this.burst(px, py, TEX.SHARD, {
-      colors: [0x44ccff, 0x88eeff, 0xffffff, 0xaaddff],
-      count: 42,
-      speed: { min: 90, max: 230 },
-      scale: { start: 0.75, end: 0 },
-      lifespan: { min: 400, max: 800 },
-      rotate: { start: 0, end: 360 },
-      radius: 10,
-    });
-    // Slow-drifting ice crystal fragments (longer lifespan)
-    this.burst(px, py, TEX.SHARD, {
-      colors: [0xffffff, 0xaaeeff, 0x88ccff],
-      count: 20,
-      speed: { min: 8, max: 36 },
-      scale: { start: 0.4, end: 0 },
-      lifespan: { min: 900, max: 1700 },
-      gravityY: -18,
-      radius: 62,
-      rotate: { start: 0, end: 180 },
-    });
+    
+    // Lingering deep cold particles
     this.burst(px, py, TEX.CIRCLE, {
       colors: [0x88ddff, 0xffffff],
-      count: 22,
-      speed: { min: 15, max: 52 },
-      scale: { start: 0.38, end: 0 },
-      lifespan: { min: 650, max: 1200 },
-      gravityY: -28,
-      radius: 48,
+      count: 25,
+      speed: { min: 10, max: 40 },
+      scale: { start: 0.5, end: 0 },
+      lifespan: { min: 800, max: 1500 },
+      gravityY: 15, // Falling snow
+      radius: 55,
     });
   }
 
@@ -547,12 +517,16 @@ export class EffectManager {
 
   private fx_shield_bash(px: number, py: number) {
     this.flash(px, py, 0xaaccff, 24, 80);
+    
+    // Add realistic earth shatter from the heavy impact
+    this.createEarthShatter(px, py);
+
     this.burst(px, py, TEX.SPARK, {
       colors: [0xffffff, 0xaaccff, 0x6688cc],
-      count: 22,
-      speed: { min: 70, max: 170 },
-      scale: { start: 0.5, end: 0 },
-      lifespan: { min: 180, max: 420 },
+      count: 30,
+      speed: { min: 100, max: 220 },
+      scale: { start: 0.6, end: 0 },
+      lifespan: { min: 200, max: 500 },
       angle: { min: -55, max: 55 },
     });
     // Stun stars pop up above the impact
@@ -770,14 +744,18 @@ export class EffectManager {
 
   private fx_poison(px: number, py: number) {
     this.ring(px, py, 0x44cc00, 4, 32, 370, 0.8, 3);
+    
+    // Utilize the realistic poison cloud
+    this.createPoisonCloud(px, py);
+    
+    // An extra squirt of venom
     this.burst(px, py, TEX.CIRCLE, {
-      colors: [0x44ff44, 0x007700, 0x88ff00, 0x33cc00],
-      count: 24,
-      speed: { min: 20, max: 68 },
-      scale: { start: 0.55, end: 0 },
-      lifespan: { min: 450, max: 970 },
-      gravityY: 78,
-      radius: 8,
+      colors: [0x44ff44, 0x00aa00, 0x88ff00],
+      count: 15,
+      speed: { min: 50, max: 120 },
+      scale: { start: 0.6, end: 0 },
+      lifespan: { min: 300, max: 700 },
+      gravityY: 120,
     });
   }
 
@@ -1758,6 +1736,137 @@ export class EffectManager {
       lifespan: { min: 300, max: 700 },
       gravityY: 300,
       angle: { min: 220, max: 320 },
+    });
+  }
+
+  /**
+   * Realistic Lightning Strike
+   * Creates a blinding flash, sharp branching electrical arcs, and lingering ozone smoke.
+   */
+  public createLightningStrike(px: number, py: number) {
+    this.ensureTextures();
+    // Flash and Rings
+    this.flash(px, py, 0xffffff, 80, 150);
+    this.ring(px, py, 0xaaffff, 5, 120, 500, 0.9, 6);
+    this.lightning(px, py, 0xffffff, 160, 12, true);
+
+    // Ozone smoke (ionized air)
+    this.burst(px, py, TEX.SMOKE, {
+      colors: [0xccccff, 0x8888aa],
+      count: 15,
+      speed: { min: 20, max: 60 },
+      scale: { start: 1.5, end: 0.2 },
+      lifespan: { min: 800, max: 1500 },
+      gravityY: -10,
+      blendMode: Phaser.BlendModes.NORMAL,
+      alpha: { start: 0.6, end: 0 },
+    });
+
+    // Crackling electrical sparks shooting everywhere
+    this.burst(px, py, TEX.SPARK, {
+      colors: [0xffffff, 0xaaffff, 0xffff44],
+      count: 40,
+      speed: { min: 100, max: 350 },
+      scale: { start: 0.7, end: 0 },
+      lifespan: { min: 200, max: 600 },
+      gravityY: 150,
+      angle: { min: 0, max: 360 },
+    });
+  }
+
+  /**
+   * Realistic Poison Cloud
+   * Thick, billowing, slow-moving green toxic fog.
+   */
+  public createPoisonCloud(px: number, py: number) {
+    this.ensureTextures();
+    
+    // Thick green toxic smoke
+    this.burst(px, py, TEX.SMOKE, {
+      colors: [0x44ff44, 0x22aa22, 0x116611],
+      count: 35,
+      speed: { min: 15, max: 40 },
+      scale: { start: 0.8, end: 3.5 }, // Expands massively
+      lifespan: { min: 1500, max: 3500 },
+      gravityY: -5,
+      blendMode: Phaser.BlendModes.NORMAL,
+      alpha: { start: 0.85, end: 0 },
+    });
+
+    // Bubbling toxic droplets dripping down
+    this.burst(px, py, TEX.CIRCLE, {
+      colors: [0x88ff88, 0x44ff44],
+      count: 20,
+      speed: { min: 30, max: 80 },
+      scale: { start: 0.5, end: 0 },
+      lifespan: { min: 500, max: 1000 },
+      gravityY: 150,
+      radius: 20,
+    });
+  }
+
+  /**
+   * Realistic Frost Explosion
+   * Sharp, crystalline shards rapidly flying out, leaving behind a heavy freezing mist.
+   */
+  public createFrostExplosion(px: number, py: number) {
+    this.ensureTextures();
+
+    this.ring(px, py, 0x88ddff, 6, 120, 500, 0.8, 4);
+
+    // Sharp ice shards exploding outward
+    this.burst(px, py, TEX.SHARD, {
+      colors: [0xffffff, 0xccffff, 0x88ddff],
+      count: 60,
+      speed: { min: 150, max: 450 },
+      scale: { start: 0.9, end: 0 },
+      lifespan: { min: 300, max: 700 },
+      rotate: { start: 0, end: 720 },
+      blendMode: Phaser.BlendModes.ADD,
+    });
+
+    // Freezing mist left behind (Cold air sinks)
+    this.burst(px, py, TEX.SMOKE, {
+      colors: [0xddffff, 0xaaddff],
+      count: 30,
+      speed: { min: 10, max: 50 },
+      scale: { start: 0.5, end: 2.5 },
+      lifespan: { min: 1200, max: 2400 },
+      gravityY: 25, // Cold air sinks
+      blendMode: Phaser.BlendModes.NORMAL,
+      alpha: { start: 0.7, end: 0 },
+    });
+  }
+
+  /**
+   * Realistic Earth Shatter / Dirt
+   * Thick brown dust and heavy rock debris thrown up.
+   */
+  public createEarthShatter(px: number, py: number) {
+    this.ensureTextures();
+    
+    // Dust cloud billowing upwards
+    this.burst(px, py, TEX.SMOKE, {
+      colors: [0x664422, 0x442211, 0x221100],
+      count: 35,
+      speed: { min: 20, max: 70 },
+      scale: { start: 0.6, end: 2.8 },
+      lifespan: { min: 800, max: 1800 },
+      gravityY: -10,
+      blendMode: Phaser.BlendModes.NORMAL,
+      alpha: { start: 0.8, end: 0 },
+    });
+
+    // Rock debris falling back down heavily
+    this.burst(px, py, TEX.SPARK, {
+      colors: [0x554433, 0x332211],
+      count: 30,
+      speed: { min: 100, max: 200 },
+      scale: { start: 0.7, end: 0.2 },
+      lifespan: { min: 400, max: 900 },
+      gravityY: 500, // Very heavy rocks
+      angle: { min: 200, max: 340 }, // Arcing upwards first
+      blendMode: Phaser.BlendModes.NORMAL,
     });
   }
 }

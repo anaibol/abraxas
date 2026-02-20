@@ -120,17 +120,12 @@ export function BankWindow({
       pos="fixed"
       top="50%"
       left="50%"
-      transform="translate(-50%, -50%)"
-      bg={T.bg}
-      backdropFilter="blur(20px)"
-      border="1px solid"
-      borderColor={T.gold}
-      borderRadius="12px"
+      layerStyle={T.panelGlass}
+      animation="popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards"
       p={{ base: "4", md: "8" }}
       w={{ base: "calc(100vw - 24px)", md: "700px" }}
       maxH="90dvh"
       overflowY="auto"
-      boxShadow="0 20px 80px rgba(0,0,0,0.9), inset 0 0 40px rgba(212, 168, 67, 0.05)"
       fontFamily={T.display}
       zIndex="200"
     >

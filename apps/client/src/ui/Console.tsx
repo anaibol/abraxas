@@ -142,9 +142,7 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
       w={{ base: "55vw", md: "420px" }}
       maxW={{ base: "240px", md: "420px" }}
       h={{ base: "130px", md: "240px" }}
-      bg="rgba(0, 0, 0, 0.45)"
-      border="1px solid rgba(255,255,255,0.1)"
-      borderRadius="4px"
+      layerStyle={T.panelGlass}
       color="white"
       fontFamily={T.display}
       fontSize="14px"

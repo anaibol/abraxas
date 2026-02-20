@@ -38,11 +38,24 @@ const customConfig = defineConfig({
         display: { value: "'Friz Quadrata', Georgia, serif" },
         mono: { value: "'Consolas', monospace" },
       },
+      shadows: {
+        deepBox: { value: "0 20px 60px rgba(0, 0, 0, 0.95), inset 0 0 40px rgba(212, 168, 67, 0.05)" },
+        goldGlow: { value: "0 0 15px var(--chakra-colors-game-goldDark)" },
+        subtleInset: { value: "inset 0 2px 10px rgba(0, 0, 0, 0.5)" },
+      },
     },
     keyframes: {
       pulse: {
         "0%, 100%": { opacity: "1", transform: "scale(1)" },
         "50%": { opacity: "0.5", transform: "scale(1.2)" },
+      },
+      popIn: {
+        "0%": { opacity: "0", transform: "translate(-50%, -48%) scale(0.96)" },
+        "100%": { opacity: "1", transform: "translate(-50%, -50%) scale(1)" },
+      },
+      fadeIn: {
+        "0%": { opacity: "0" },
+        "100%": { opacity: "1" },
       },
     },
     textStyles: {
@@ -167,6 +180,18 @@ const customConfig = defineConfig({
           borderStyle: "solid",
           borderColor: "var(--chakra-colors-game-border)",
           borderRadius: "2px",
+        },
+      },
+      // Raw glass panel for Modals and Windows
+      panelGlass: {
+        value: {
+          background: "rgba(12, 10, 18, 0.75)",
+          backdropFilter: "blur(16px)",
+          borderWidth: "1px",
+          borderStyle: "solid",
+          borderColor: "var(--chakra-colors-game-borderLight)",
+          borderRadius: "12px",
+          boxShadow: "var(--chakra-shadows-deepBox)",
         },
       },
     },

@@ -54,10 +54,8 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
         onClick={onClose}
       >
         <Box
-          bg={T.bg}
-          border="1px solid"
-          borderColor={T.gold}
-          borderRadius="12px"
+          layerStyle={T.panelGlass}
+          animation="popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards"
           w={{ base: "calc(100vw - 32px)", md: "420px" }}
           overflow="hidden"
           onClick={(e) => e.stopPropagation()}

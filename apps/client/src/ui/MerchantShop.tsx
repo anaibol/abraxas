@@ -45,20 +45,14 @@ export function MerchantShop({
       pos="fixed"
       top="50%"
       left="50%"
-      transform="translate(-50%, -50%)"
-      bg={T.bg}
-      backdropFilter="blur(10px)"
-      border="1px solid"
-      borderColor={T.gold}
-      borderRadius="8px"
+      layerStyle={T.panelGlass}
+      animation="popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards"
       p={{ base: "4", md: "6" }}
       w={{ base: "calc(100vw - 32px)", md: "550px" }}
       maxH="85dvh"
       overflowY="auto"
-      boxShadow="0 0 60px rgba(0,0,0,0.9), inset 0 0 20px rgba(212, 168, 67, 0.1)"
       fontFamily={T.display}
       zIndex="200"
-      animation="fadeIn 0.3s ease-out"
     >
       <style>{`
         @keyframes fadeIn {

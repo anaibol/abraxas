@@ -173,15 +173,12 @@ export function TradeWindow({
       bg="rgba(0,0,0,0.7)"
     >
       <Box
+        layerStyle={T.panelGlass}
+        animation="popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards"
         w={{ base: "calc(100vw - 32px)", md: "560px" }}
         maxH="90dvh"
         overflowY="auto"
-        bg={T.bg}
-        border="2px solid"
-        borderColor={T.border}
-        borderRadius="4px"
         fontFamily={T.display}
-        boxShadow="0 8px 40px rgba(0,0,0,0.8)"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Title */}

@@ -44,6 +44,7 @@ export const T = {
   panel: "panel",
   panelSurface: "panelSurface",
   panelRaised: "panelRaised",
+  panelGlass: "panelGlass",
   rowItem: "rowItem",
   goldBadge: "goldBadge",
 } as const;

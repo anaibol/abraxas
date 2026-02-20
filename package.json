@@ -10,7 +10,8 @@
     "dev:client": "bun run --cwd apps/client dev",
     "build": "bun run --cwd apps/client build",
     "test": "bun test --cwd apps/server",
-    "lint": "bun x eslint ."
+    "lint": "bun x eslint .",
+    "generate:world": "bun run packages/shared/scripts/generate-world.ts"
   },
   "devDependencies": {
     "@types/express": "^5.0.6"
