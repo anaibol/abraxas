@@ -14,11 +14,12 @@ import {
   type NpcType,
   ServerMessageType,
   type TileMap,
+  type ClassStats,
 } from "@abraxas/shared";
 import { logger } from "../logger";
 import type { GameState } from "../schema/GameState";
 import { Npc } from "../schema/Npc";
-import type { Player } from "../schema/Player";
+import { Player } from "../schema/Player";
 import type { Entity, SpatialLookup } from "../utils/SpatialLookup";
 import { findSafeSpawn } from "../utils/spawnUtils";
 import { Pathfinder } from "../utils/Pathfinder";
@@ -176,7 +177,10 @@ export class NpcSystem {
 
     // Check caps
     const ownerStats = caster.getStats();
-    const cap = (ownerStats as any)?.maxCompanions ?? 1;
+    let cap = 1;
+    if (ownerStats && "maxCompanions" in ownerStats) {
+      cap = (ownerStats as ClassStats).maxCompanions;
+    }
 
     let liveMinions = 0;
     this.state.npcs.forEach((n) => {
@@ -191,7 +195,7 @@ export class NpcSystem {
 
     // Attempt to spawn at target tile
     const safe = findSafeSpawn(x, y, this.currentMap, this.spatial);
-    const casterLevel = (caster as any).level ?? 1;
+    const casterLevel = caster instanceof Npc || caster instanceof Player ? caster.level : 1;
 
     if (safe) {
       this.spawnNpcAt(typeToSummon, this.currentMap, safe.x, safe.y, caster.sessionId, casterLevel);
@@ -301,6 +305,13 @@ export class NpcSystem {
         npc.state = NpcState.CHASE;
         return;
       }
+    }
+
+    // Tether sanity check (B018): If already outside radius, head home.
+    const distToSpawn = MathUtils.manhattanDist(npc.getPosition(), { x: npc.spawnX, y: npc.spawnY });
+    if (distToSpawn > PATROL_TETHER_RADIUS + 1) {
+      npc.state = NpcState.RETURN;
+      return;
     }
 
     if (npc.patrolStepsLeft <= 0) {
@@ -439,7 +450,7 @@ export class NpcSystem {
       npc.state = NpcState.IDLE;
       return;
     }
-    npc.hp = Math.min(npc.maxHp, npc.hp + Math.ceil(npc.maxHp * 0.02));
+    npc.hp = Math.min(npc.maxHp, npc.hp + Math.ceil(npc.maxHp * 0.005));
     this.moveTowards(npc, npc.spawnX, npc.spawnY, map, now, tickCount, roomId);
   }
 
@@ -465,8 +476,17 @@ export class NpcSystem {
     const distToOwner = MathUtils.manhattanDist(npc.getPosition(), owner.getPosition());
     if (distToOwner > 15) {
       // Teleport companion to owner if extremely far away (e.g. owner respawned/warped)
-      npc.tileX = owner.tileX;
-      npc.tileY = owner.tileY;
+      // Offset by 1 tile if owner tile is blocked/occupied
+      let tx = owner.tileX;
+      let ty = owner.tileY;
+      const safe = findSafeSpawn(tx, ty, map, this.spatial);
+      if (safe) {
+        tx = safe.x;
+        ty = safe.y;
+      }
+
+      npc.tileX = tx;
+      npc.tileY = ty;
       npc.path = [];
       return;
     }
@@ -622,18 +642,40 @@ export class NpcSystem {
   private getAwayDirection(npc: Npc, target: Entity): Direction {
     const dx = npc.tileX - target.tileX;
     const dy = npc.tileY - target.tileY;
-    return Math.abs(dx) >= Math.abs(dy)
-      ? dx >= 0
-        ? Direction.RIGHT
-        : Direction.LEFT
-      : dy > 0
-        ? Direction.DOWN
-        : Direction.UP;
+
+    // Primary candidates for "away"
+    const candidates: Direction[] = [];
+    if (Math.abs(dx) >= Math.abs(dy)) {
+      candidates.push(dx >= 0 ? Direction.RIGHT : Direction.LEFT);
+      candidates.push(dy >= 0 ? Direction.DOWN : Direction.UP);
+    } else {
+      candidates.push(dy >= 0 ? Direction.DOWN : Direction.UP);
+      candidates.push(dx >= 0 ? Direction.RIGHT : Direction.LEFT);
+    }
+
+    // Pick the first candidate that is actually walkable (B011)
+    for (const dir of candidates) {
+      const delta = DIRECTION_DELTA[dir];
+      const nx = npc.tileX + delta.dx;
+      const ny = npc.tileY + delta.dy;
+
+      // Basic collision check (ignoring occupancy for flee flexibility)
+      if (
+        nx >= 0 && nx < this.currentMap.width &&
+        ny >= 0 && ny < this.currentMap.height &&
+        this.currentMap.collision[ny]?.[nx] === 0
+      ) {
+        return dir;
+      }
+    }
+
+    // If all else fails, just return the first one
+    return candidates[0];
   }
 
   private tryUseAbility(npc: Npc, now: number, broadcast: BroadcastFn): boolean {
     const stats = NPC_STATS[npc.npcType];
-    if (!stats?.abilities.length) return false;
+    if (!stats || !stats.abilities.length) return false;
     const target = this.spatial.findEntityBySessionId(npc.targetId);
     if (!target || !target.alive) return false;
 
@@ -646,8 +688,7 @@ export class NpcSystem {
 
     // Probability gate: only attempt an ability a fraction of eligible ticks so
     // NPCs mix in auto-attacks rather than spamming abilities at maximum cooldown rate.
-    const abilityCastChance = stats.abilityCastChance ?? 0.4;
-    if (Math.random() > abilityCastChance) return false;
+    if (Math.random() > (stats.abilityCastChance ?? 0.5)) return false;
 
     // Only pick from abilities that are currently off cooldown; ignore ones still
     // on cooldown rather than wasting the roll and falling through to auto-attack.
@@ -717,6 +758,7 @@ export class NpcSystem {
 
   handleDeath(npc: Npc): void {
     this.buffSystem.removePlayer(npc.sessionId);
+    this.combatSystem.removeEntity(npc.sessionId);
     this.respawns.push({
       npcType: npc.npcType,
       deadAt: Date.now(),

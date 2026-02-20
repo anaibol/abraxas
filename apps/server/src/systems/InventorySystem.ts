@@ -98,8 +98,8 @@ export class InventorySystem {
     return false;
   }
 
-  removeItem(player: Player, slotIndex: number, quantity: number = 1): boolean {
-    const item = player.inventory.find(i => i.slotIndex === slotIndex);
+  removeItem(player: Player, itemId: string, quantity: number = 1): boolean {
+    const item = player.inventory.find(i => i.itemId === itemId);
     if (!item) return false;
     if (item.quantity > quantity) {
       item.quantity -= quantity;
@@ -110,8 +110,8 @@ export class InventorySystem {
     return true;
   }
 
-  equipItem(player: Player, slotIndex: number, onError?: (msg: string) => void): boolean {
-    const item = player.inventory.find(i => i.slotIndex === slotIndex);
+  equipItem(player: Player, itemId: string, onError?: (msg: string) => void): boolean {
+    const item = player.inventory.find(i => i.itemId === itemId);
     if (!item) {
       onError?.("game.item_not_found");
       return false;
@@ -141,20 +141,30 @@ export class InventorySystem {
 
     const currentEquip = player[slotKey];
     if (currentEquip) {
-      // Inventory is full check (minus the one we are equipping)
-      if (player.inventory.length > MAX_INVENTORY_SLOTS) {
-        onError?.("game.inventory_full");
-        return false;
-      }
-      this.unequipItem(player, def.slot);
+      // Swapping: Remove item to equip, then unequip current into the vacated slot.
+      const itemToEquip = item;
+      const unequipped = currentEquip;
+
+      // 1. Remove item to equip from inventory
+      const idx = player.inventory.indexOf(itemToEquip);
+      player.inventory.splice(idx, 1);
+
+      // 2. Clear equip slot
+      (player as Record<string, any>)[slotKey] = undefined;
+
+      // 3. Put unequipped item into inventory at the same slotIndex
+      unequipped.slotIndex = itemToEquip.slotIndex;
+      player.inventory.push(unequipped);
+
+      // 4. Set new item as equipment
+      (player as Record<string, any>)[slotKey] = itemToEquip;
+    } else {
+      // Simple equip: Remove from inventory, set as equipment.
+      const idx = player.inventory.indexOf(item);
+      player.inventory.splice(idx, 1);
+      (player as Record<string, any>)[slotKey] = item;
     }
 
-    // Remove from inventory
-    const idx = player.inventory.indexOf(item);
-    player.inventory.splice(idx, 1);
-
-    // Set as equipment
-    (player[slotKey] as any) = item;
     this.recalcStats(player);
     return true;
   }
@@ -184,13 +194,13 @@ export class InventorySystem {
     item.slotIndex = freeIdx;
     player.inventory.push(item);
 
-    (player[slotKey] as any) = undefined;
+    (player as Record<string, any>)[slotKey] = undefined;
     this.recalcStats(player);
     return true;
   }
 
-  useItem(player: Player, slotIndex: number, onError?: (msg: string) => void): boolean {
-    const item = player.inventory.find(i => i.slotIndex === slotIndex);
+  useItem(player: Player, itemId: string, onError?: (msg: string) => void): boolean {
+    const item = player.inventory.find(i => i.itemId === itemId);
     if (!item) {
         onError?.("game.item_not_found");
         return false;
@@ -229,17 +239,17 @@ export class InventorySystem {
     };
 
     for (const slotKey of Object.values(EQUIP_SLOT_MAP)) {
-      const item = (player as any)[slotKey] as InventoryItem | undefined;
+      const item = (player as Record<string, any>)[slotKey] as InventoryItem | undefined;
       if (!item) continue;
       const def = ITEMS[item.itemId];
       if (!def) continue;
 
-      bonuses.str += def.stats.str ?? 0;
-      bonuses.agi += def.stats.agi ?? 0;
-      bonuses.int += def.stats.int ?? 0;
-      bonuses.hp += def.stats.hp ?? 0;
-      bonuses.mana += def.stats.mana ?? 0;
-      bonuses.armor += def.stats.armor ?? 0;
+      bonuses.str += def.stats.str;
+      bonuses.agi += def.stats.agi;
+      bonuses.int += def.stats.int;
+      bonuses.hp += def.stats.hp;
+      bonuses.mana += def.stats.mana;
+      bonuses.armor += def.stats.armor;
 
       // Affix bonuses
       for (const affix of item.affixes) {
@@ -288,8 +298,8 @@ export class InventorySystem {
     player.speedOverride = mountDef?.stats.speedBonus ?? 0;
   }
 
-  dropAllItems(player: Player): { itemId: string; quantity: number }[] {
-    const dropped: { itemId: string; quantity: number }[] = [];
+  dropAllItems(player: Player): InventoryItem[] {
+    const dropped: InventoryItem[] = [];
     const basicItems = BASIC_ITEMS_BY_CLASS[player.classType];
 
     // Equipment is prioritised — an equipped basic item counts as the "kept"
@@ -302,8 +312,8 @@ export class InventorySystem {
       if (basicItems.has(item.itemId)) {
         basicKept.add(item.itemId);
       } else {
-        dropped.push({ itemId: item.itemId, quantity: 1 });
-        (player as any)[slotKey] = undefined;
+        dropped.push(item);
+        (player as Record<string, any>)[slotKey] = undefined;
       }
     }
 
@@ -318,13 +328,14 @@ export class InventorySystem {
         // Basic items are usually not randomized/affixed, but we keep the object anyway
         toRestore.push(item);
       } else {
-        dropped.push({ itemId: item.itemId, quantity: item.quantity });
+        dropped.push(item);
       }
     });
 
     player.inventory.clear();
-    toRestore.forEach(item => {
-        player.inventory.push(item);
+    toRestore.forEach((item, idx) => {
+      item.slotIndex = idx;
+      player.inventory.push(item);
     });
 
     this.recalcStats(player);

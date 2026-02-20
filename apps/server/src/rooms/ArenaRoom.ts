@@ -200,7 +200,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       // Load persistent state
       PersistenceService.loadWorldDrops(this.roomMapName).then((drops) => {
         for (const d of drops) {
-          const drop = this.drops.createDrop(this.state.drops, d.tileX, d.tileY, d.itemType as any, d.id);
+          const drop = this.drops.createDrop(this.state.drops, d.tileX, d.tileY, d.itemType.toLowerCase() as "item" | "gold", d.id);
           drop.itemId = d.itemId || "";
           drop.quantity = d.quantity;
           drop.goldAmount = d.goldAmount;
@@ -209,8 +209,8 @@ export class ArenaRoom extends Room<{ state: GameState }> {
           if (d.item) {
               drop.rarity = d.item.rarity || "common";
               drop.nameOverride = d.item.nameOverride || "";
-              const affixes = (d.item.affixesJson as any) || [];
-              affixes.forEach((a: any) => {
+              const affixes = (d.item.affixesJson as unknown as ItemAffix[]) || [];
+              affixes.forEach((a) => {
                   const s = new ItemAffixSchema();
                   s.type = a.type;
                   s.stat = a.stat;
