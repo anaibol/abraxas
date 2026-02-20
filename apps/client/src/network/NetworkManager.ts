@@ -48,12 +48,12 @@ export class NetworkManager {
   }
 
   /** Type-safe send — payload type is inferred from ClientMessages[T]. */
-  private _send<T extends ClientMessageType>(
+  private _send<T extends keyof ClientMessages>(
     type: T,
     payload: ClientMessages[T],
   ): void {
     try {
-      this.room?.send(type, payload);
+      this.room?.send(type, payload as unknown as any);
     } catch {
       // ignore if not connected
     }

@@ -37,7 +37,6 @@ export type PlayerState = {
 	maxXp?: number;
 	inventory?: InventorySlot[];
 	equipment?: EquipmentState;
-	pvpEnabled?: boolean;
 };
 
 export type GroupMember = { sessionId: string; name: string };

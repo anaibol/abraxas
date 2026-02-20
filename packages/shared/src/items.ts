@@ -6,6 +6,7 @@ export type ItemSlot =
   | "shield"
   | "helmet"
   | "ring"
+  | "mount"
   | "consumable";
 export type ItemRarity = "common" | "uncommon" | "rare";
 
@@ -21,6 +22,8 @@ export type Item = {
     hp?: number;
     mana?: number;
     armor?: number;
+    /** Extra movement speed in tiles/s when this mount is equipped. */
+    speedBonus?: number;
   };
   goldValue: number;
   requiredClass?: ClassType[];
@@ -32,6 +35,8 @@ export type Item = {
   aoWeaponId?: number;
   aoShieldId?: number;
   aoHelmetId?: number;
+  /** NPC type string this item represents when used as a mount. */
+  mountNpcType?: string;
 };
 
 export const ITEMS: Record<string, Item> = {
@@ -421,5 +426,25 @@ export const ITEMS: Record<string, Item> = {
     goldValue: 25,
     consumeEffect: { healMana: 120 },
     stackable: true,
+  },
+
+  // --- TAMING / MOUNTS ---
+  lasso: {
+    id: "lasso",
+    name: "items.lasso.name",
+    slot: "consumable",
+    rarity: "common",
+    stats: {},
+    goldValue: 15,
+    stackable: true,
+  },
+  brown_horse: {
+    id: "brown_horse",
+    name: "items.brown_horse.name",
+    slot: "mount",
+    rarity: "uncommon",
+    stats: { speedBonus: 4 },
+    goldValue: 250,
+    mountNpcType: "horse",
   },
 };

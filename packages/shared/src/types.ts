@@ -144,6 +144,15 @@ export interface NpcStats {
 	 * should not appear alongside regular mobs.
 	 */
 	rareSpawn?: boolean;
+	/**
+	 * Which NPC type is spawned when this NPC uses a "summon" ability.
+	 * Required for any NPC with a summon ability in its ability list.
+	 */
+	summonType?: NpcType;
+	/** Minimum recommended player level for this NPC's difficulty bracket. */
+	minLevel?: number;
+	/** Maximum recommended player level for this NPC's difficulty bracket. */
+	maxLevel?: number;
 }
 
 /** Stats for player classes — extends NpcStats with a required mana pool. */
@@ -169,6 +178,7 @@ export type AbilityEffect =
 
 export type Ability = {
 	id: string;
+	requiredLevel?: number;
 	rangeTiles: number;
 	manaCost: number;
 	baseDamage: number;
