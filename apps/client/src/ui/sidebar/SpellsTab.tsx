@@ -96,9 +96,10 @@ export function SpellsTab({
             const noMana = currentMana < spell.manaCost;
             const isDisabled = isLocked || noMana;
             const effectMeta = EFFECT_LABELS[spell.effect];
+            const rangeTiles = spell.rangeTiles ?? 0;
             const rangeLabel =
-              spell.rangeTiles > 0
-                ? `${t("sidebar.inventory.range")}: ${spell.rangeTiles}`
+              rangeTiles > 0
+                ? `${t("sidebar.inventory.range")}: ${rangeTiles}`
                 : t("sidebar.inventory.self");
 
             return (
@@ -122,7 +123,7 @@ export function SpellsTab({
                 onClick={() => {
                   if (!isDisabled) {
                     playUIClick?.();
-                    onSpellClick?.(spell.id, spell.rangeTiles);
+                    onSpellClick?.(spell.id, rangeTiles);
                   }
                 }}
                 title={
@@ -130,7 +131,7 @@ export function SpellsTab({
                     ? `Unlocks at level ${spell.requiredLevel}`
                     : isDisabled
                       ? t("game.not_enough_mana_cost", { cost: spell.manaCost })
-                      : spell.rangeTiles > 0
+                      : rangeTiles > 0
                         ? t("sidebar.inventory.spell_click_hint")
                         : undefined
                 }

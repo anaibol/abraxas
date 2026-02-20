@@ -23,7 +23,7 @@ export const NPC_APPEARANCE: Record<string, { bodyId: number; headId: number }> 
   bear: { bodyId: 75, headId: 0 },
 };
 
-export const NPC_STATS: Record<NpcType, NpcStats> = {
+const _NPC_STATS: Record<NpcType, Partial<NpcStats>> = {
   orc: {
     hp: 120,
     str: 12,
@@ -365,6 +365,19 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
     maxLevel: 15,
   },
 };
+
+export const NPC_STATS: Record<NpcType, NpcStats> = Object.fromEntries(
+  Object.entries(_NPC_STATS).map(([k, v]) => {
+    const stats: NpcStats = {
+      passive: false,
+      fleesWhenLow: false,
+      abilityCastChance: 0.4,
+      rareSpawn: false,
+      ...(v as any),
+    };
+    return [k, stats];
+  }),
+) as Record<NpcType, NpcStats>;
 
 const npcStatsKeysAny: any = Object.keys(NPC_STATS);
 export const NPC_TYPES: NpcType[] = npcStatsKeysAny;

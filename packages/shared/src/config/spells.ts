@@ -863,6 +863,7 @@ export const ABILITIES: Record<string, Ability> = Object.fromEntries(
       cooldownMs: 1000,
       windupMs: 200,
       effect: "damage",
+      aoeRadius: 0,
       damageSchool: DamageSchool.PHYSICAL,
       ...v,
       id: k,

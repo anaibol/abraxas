@@ -266,6 +266,10 @@ export function App() {
           collision: welcome.collision,
           tileTypes: welcome.tileTypes,
           spawns: [],
+          newbieSpawns: [],
+          safeZones: [],
+          npcs: [],
+          warps: [],
         });
 
         setPlayerState((prev) => ({ ...prev, classType }));
@@ -402,32 +406,7 @@ export function App() {
     }
   }, []);
 
-  const mobileSpells = useMemo(() => {
-    const classStats = CLASS_STATS[playerState.classType?.toUpperCase() ?? "WARRIOR"];
-    if (!classStats) return [];
-    return classStats.abilities.flatMap((abilityId) => {
-      const ability = ABILITIES[abilityId];
-      return ability
-        ? [{ key: ability.key, spellId: ability.id, rangeTiles: ability.rangeTiles }]
-        : [];
-    });
-  }, [playerState.classType]);
 
-  const handleMobileMove = useCallback((direction: Direction) => {
-    const game = phaserGameRef.current;
-    if (!game) return;
-    const scene = game.scene.getScene("GameScene");
-    if (!(scene instanceof GameScene)) return;
-    scene?.triggerMove(direction);
-  }, []);
-
-  const handleMobileAttack = useCallback(() => {
-    const game = phaserGameRef.current;
-    if (!game) return;
-    const scene = game.scene.getScene("GameScene");
-    if (!(scene instanceof GameScene)) return;
-    scene?.triggerAttack();
-  }, []);
 
   const handleSendChat = (msg: string) => {
     setIsChatOpen(false);

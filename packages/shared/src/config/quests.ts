@@ -22,6 +22,7 @@ export const QUESTS: Record<string, Quest> = {
     rewards: {
       exp: 100,
       gold: 10,
+      items: [],
     },
   },
 };
