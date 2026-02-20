@@ -215,6 +215,11 @@ export class InventorySystem {
     player.maxMana = base.mana + equip.mana + lvl * levelBonus.mana;
     player.hp = Math.min(player.hp, player.maxHp);
     player.mana = Math.min(player.mana, player.maxMana);
+
+    // Apply speed bonus from equipped mount
+    const mountItemId = player.equipMount;
+    const mountDef = mountItemId ? ITEMS[mountItemId] : undefined;
+    player.speedOverride = mountDef?.stats.speedBonus ?? 0;
   }
 
   dropAllItems(player: Player): { itemId: string; quantity: number }[] {

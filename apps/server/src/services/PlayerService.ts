@@ -103,6 +103,9 @@ export class PlayerService {
             case "RING1":
               player.equipRing = code;
               break;
+            case "MOUNT":
+              player.equipMount = code;
+              break;
           }
         }
       }
