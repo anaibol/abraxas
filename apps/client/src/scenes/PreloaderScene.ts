@@ -55,9 +55,13 @@ export class PreloaderScene extends Phaser.Scene {
     this.load.audio("sfx-hit2", "audio/kenney_rpg/Audio/knifeSlice.ogg");
     this.load.audio("sfx-hit3", "audio/kenney_rpg/Audio/knifeSlice2.ogg");
 
-    this.load.audio("sfx-spell", "audio/sonidos/3.webm"); // Use old magic placeholder until AI gen
+    this.load.audio("sfx-spell", "audio/magic/FX411.mp3");
     this.load.audio("sfx-death", "audio/sonidos/14.webm");
-    this.load.audio("sfx-heal", "audio/sonidos/42.webm");
+    this.load.audio("sfx-heal", "audio/magic/Replenish.ogg");
+    this.load.audio("sfx-buff", "audio/magic/montage-sfx-20130926@031949.ogg");
+    this.load.audio("sfx-stealth", "audio/magic/shimmer_1.flac_.mp3");
+    this.load.audio("sfx-summon", "audio/magic/ghost_1.flac_.mp3");
+    this.load.audio("sfx-magic-hit", "audio/magic/FX261.mp3");
     
     // New SFX
     this.load.audio("sfx-levelup", "audio/kenney_ui/Audio/maximize_006.ogg");

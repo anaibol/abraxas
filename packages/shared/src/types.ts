@@ -13,7 +13,15 @@ export const DIRECTION_DELTA: Record<Direction, { dx: number; dy: number }> = {
 };
 export const EQUIPMENT_SLOTS = ["weapon", "armor", "shield", "helmet", "ring", "mount"] as const;
 export type EquipmentSlot = (typeof EQUIPMENT_SLOTS)[number];
-export type ClassType = "WARRIOR" | "MAGE" | "ROGUE" | "CLERIC" | "RANGER" | "PALADIN";
+export type ClassType =
+  | "WARRIOR"
+  | "MAGE"
+  | "ROGUE"
+  | "CLERIC"
+  | "RANGER"
+  | "PALADIN"
+  | "NECROMANCER"
+  | "DRUID";
 export type NpcType =
   | "orc"
   | "skeleton"
@@ -147,6 +155,7 @@ export interface NpcStats {
 /** Stats for player classes — extends NpcStats with a required mana pool. */
 export interface ClassStats extends NpcStats {
   mana: number;
+  maxCompanions: number;
 }
 
 export type AbilityEffect =

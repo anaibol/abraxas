@@ -7,6 +7,8 @@ export const CLASS_APPEARANCE: Record<string, { bodyId: number; headId: number }
   ROGUE: { bodyId: 45, headId: 4 },
   CLERIC: { bodyId: 50, headId: 5 },
   PALADIN: { bodyId: 38, headId: 6 },
+  NECROMANCER: { bodyId: 35, headId: 7 },
+  DRUID: { bodyId: 70, headId: 8 },
 };
 
 export const CLASS_STATS: Record<string, ClassStats> = {
@@ -21,6 +23,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     attackCooldownMs: 450,
     attackWindupMs: 120,
     armor: 10,
+    maxCompanions: 1,
     // Q: war_cry (self STR buff) | W: shield_bash (stun) | E: whirlwind (AoE dmg) | R: battle_shout (AoE debuff)
     abilities: ["war_cry", "shield_bash", "whirlwind", "battle_shout"],
   },
@@ -35,6 +38,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     attackCooldownMs: 650,
     attackWindupMs: 120,
     armor: 2,
+    maxCompanions: 1,
     // Q: fireball | W: ice_bolt | E: thunderstorm (AoE) | R: mana_shield | T: frost_nova (AoE stun) | Y: arcane_surge (nuke)
     abilities: [
       "fireball",
@@ -56,6 +60,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     attackCooldownMs: 500,
     attackWindupMs: 100,
     armor: 5,
+    maxCompanions: 3,
     // Q: multi_shot (AoE) | W: poison_arrow (DoT) | E: evasion (buff) | R: aimed_shot (nuke) | T: mark_target (debuff)
     abilities: ["multi_shot", "poison_arrow", "evasion", "aimed_shot", "mark_target"],
   },
@@ -70,6 +75,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     attackCooldownMs: 350,
     attackWindupMs: 80,
     armor: 4,
+    maxCompanions: 1,
     // Q: backstab (nuke) | W: stealth | E: envenom (DoT) | R: smoke_bomb (AoE stun) | T: hemorrhage (leech)
     abilities: ["backstab", "stealth", "envenom", "smoke_bomb", "hemorrhage"],
   },
@@ -84,6 +90,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     attackCooldownMs: 500,
     attackWindupMs: 140,
     armor: 8,
+    maxCompanions: 1,
     // Q: holy_strike (dmg) | W: heal (self heal) | E: divine_shield (invuln) | R: holy_nova (AoE heal) | T: curse (debuff) | Y: smite (ranged dmg)
     abilities: ["holy_strike", "heal", "divine_shield", "holy_nova", "curse", "smite"],
   },
@@ -98,8 +105,53 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     attackCooldownMs: 480,
     attackWindupMs: 130,
     armor: 12,
+    maxCompanions: 2,
     // Q: judgment (holy melee) | W: lay_on_hands (self heal) | E: consecration (AoE holy) | R: aura_of_protection (armor buff) | T: holy_bolt (ranged dmg)
     abilities: ["judgment", "lay_on_hands", "consecration", "aura_of_protection", "holy_bolt"],
+  },
+  NECROMANCER: {
+    hp: 120,
+    mana: 200,
+    str: 4,
+    agi: 8,
+    int: 32,
+    speedTilesPerSecond: 7,
+    attackRange: 5,
+    attackCooldownMs: 700,
+    attackWindupMs: 150,
+    armor: 1,
+    maxCompanions: 3,
+    // Q: shadow_bolt (dmg) | W: soul_drain (leech) | E: curse (debuff) | R: banshee_wail (AoE debuff) | T: hemorrhage (leech) | Y: summon_skeleton
+    abilities: [
+      "shadow_bolt",
+      "soul_drain",
+      "curse",
+      "banshee_wail",
+      "hemorrhage",
+      "summon_skeleton",
+    ],
+  },
+  DRUID: {
+    hp: 180,
+    mana: 140,
+    str: 10,
+    agi: 16,
+    int: 18,
+    speedTilesPerSecond: 7,
+    attackRange: 4,
+    attackCooldownMs: 550,
+    attackWindupMs: 120,
+    armor: 6,
+    maxCompanions: 3,
+    // Q: poison_arrow (DoT) | W: heal (self heal) | E: entangling_roots (stun) | R: acid_splash (AoE DoT) | T: cleansing_rain (AoE heal) | Y: thunderstorm (AoE)
+    abilities: [
+      "poison_arrow",
+      "heal",
+      "entangling_roots",
+      "acid_splash",
+      "cleansing_rain",
+      "thunderstorm",
+    ],
   },
 };
 
@@ -113,6 +165,8 @@ export const LEVEL_UP_STATS: Record<
   ROGUE: { str: 1, agi: 3, int: 0, hp: 22, mana: 8 },
   CLERIC: { str: 1, agi: 0, int: 3, hp: 26, mana: 15 },
   PALADIN: { str: 2, agi: 0, int: 2, hp: 28, mana: 12 },
+  NECROMANCER: { str: 0, agi: 1, int: 4, hp: 15, mana: 25 },
+  DRUID: { str: 1, agi: 1, int: 2, hp: 24, mana: 14 },
 };
 
 export const EXP_TABLE = [

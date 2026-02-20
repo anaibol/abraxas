@@ -8,6 +8,8 @@ export class Npc extends Char {
   @type("number") spellCastPercent = 0;
 
   @type("string") ownerId?: string;
+  @type("number") level: number = 1;
+  @type("number") exp: number = 0;
 
   // Server-only dataAI fields (not synced to clients) ──────────────────────
   /** Current AI state machine state. */
