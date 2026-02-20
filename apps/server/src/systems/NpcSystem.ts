@@ -688,7 +688,7 @@ export class NpcSystem {
 
     // Probability gate: only attempt an ability a fraction of eligible ticks so
     // NPCs mix in auto-attacks rather than spamming abilities at maximum cooldown rate.
-    if (Math.random() > (stats.abilityCastChance ?? 0.5)) return false;
+    if (Math.random() > stats.abilityCastChance) return false;
 
     // Only pick from abilities that are currently off cooldown; ignore ones still
     // on cooldown rather than wasting the roll and falling through to auto-attack.

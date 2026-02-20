@@ -1,4 +1,4 @@
-import { type Ability, EntityType, type NpcStats } from "@abraxas/shared";
+import { type Ability, type CharStats, type NpcStats, type ClassStats, EntityType } from "@abraxas/shared";
 import { type BufferedAction, Direction, type WindupAction } from "@abraxas/shared";
 import { Schema, type } from "@colyseus/schema";
 
@@ -41,7 +41,7 @@ export abstract class Char extends Schema {
   @type("uint16") overrideHeadId: number = 0;
 
   /** Returns the combat stats for this entity (class or NPC stats). */
-  abstract getStats(): NpcStats | undefined;
+  abstract getStats(): NpcStats | ClassStats | undefined;
 
   /** Returns the ability definition if the entity can use it. */
   abstract getAbility(abilityId: string): Ability | undefined;

@@ -184,11 +184,22 @@ export interface CharStats {
 }
 
 export interface NpcStats extends CharStats {
-  expReward?: number;
   /** NPC will not aggro players and does not move (e.g. merchants). */
+  passive: boolean;
+  /** NPC flees when HP drops below 25%. */
+  fleesWhenLow: boolean;
+  /**
+   * Probability (0–1) that the NPC will attempt an ability use on any given
+   * attack tick when the ability is off cooldown.
+   */
+  abilityCastChance: number;
+  /**
+   * When true the NPC is excluded from the random world-spawn pool.
+   */
+  rareSpawn: boolean;
+  expReward?: number;
   /**
    * Which NPC type is spawned when this NPC uses a "summon" ability.
-   * Required for any NPC with a summon ability in its ability list.
    */
   summonType?: NpcType;
   /** Minimum recommended player level for this NPC's difficulty bracket. */

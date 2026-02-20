@@ -3,6 +3,7 @@ import {
   type ClassStats,
   type ClientMessages,
   type ClientMessageType,
+  type ItemAffix,
   type JoinOptions,
   EntityType,
   type NpcType,

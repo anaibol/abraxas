@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { CLASS_APPEARANCE, NPC_APPEARANCE, ITEMS } from "./packages/shared/src/index";
+import { AudioAssets, CLASS_APPEARANCE, NPC_APPEARANCE, ITEMS } from "./packages/shared/src/index";
 
 // Configuration
 const PUBLIC_DIR = "apps/client/public";
@@ -113,16 +113,11 @@ async function main() {
 
   console.log(`✓ Identified ${usedPngs.size} required graphics.`);
 
-  // 2. Gather Audio needed from Preloader and SoundManager
-  const preloaderContent = fs.readFileSync(PRELOADER_PATH, "utf8");
-  const soundManagerContent = fs.readFileSync(SOUND_MANAGER_PATH, "utf8");
-
-  // Simple regex to find paths like "audio/..." or "npc-..."
-  const audioPaths = preloaderContent.match(/audio\/[^\s\"\'\`)]+/g) || [];
-  audioPaths.forEach(p => usedAudio.add(p));
-
-  // Also check SoundManager for hardcoded keys that might map to paths (though Preloader usually has the paths)
-  // In this project, Preloader has the paths.
+  // 2. Gather Audio needed from the AudioAssets manifest
+  // All files in the manifest are loaded by PreloaderScene via Object.entries(AudioAssets)
+  for (const audioPath of Object.values(AudioAssets)) {
+    usedAudio.add(audioPath as string);
+  }
 
   console.log(`✓ Identified ${usedAudio.size} required audio files.`);
 

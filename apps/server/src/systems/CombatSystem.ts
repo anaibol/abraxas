@@ -817,7 +817,7 @@ export class CombatSystem {
         target.rage = Math.min(target.maxRage, target.rage + 3);
       }
 
-      const healBack = Math.max(1, Math.round(damage * ability.leechRatio));
+      const healBack = Math.max(1, Math.round(damage * (ability.leechRatio ?? 0)));
       attacker.hp = Math.min(attacker.maxHp, attacker.hp + healBack);
       broadcast(ServerMessageType.Heal, {
         sessionId: attacker.sessionId,

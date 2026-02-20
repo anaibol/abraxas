@@ -244,12 +244,12 @@ export class InventorySystem {
       const def = ITEMS[item.itemId];
       if (!def) continue;
 
-      bonuses.str += def.stats.str;
-      bonuses.agi += def.stats.agi;
-      bonuses.int += def.stats.int;
-      bonuses.hp += def.stats.hp;
-      bonuses.mana += def.stats.mana;
-      bonuses.armor += def.stats.armor;
+      bonuses.str += def.stats.str ?? 0;
+      bonuses.agi += def.stats.agi ?? 0;
+      bonuses.int += def.stats.int ?? 0;
+      bonuses.hp += def.stats.hp ?? 0;
+      bonuses.mana += def.stats.mana ?? 0;
+      bonuses.armor += def.stats.armor ?? 0;
 
       // Affix bonuses
       for (const affix of item.affixes) {
