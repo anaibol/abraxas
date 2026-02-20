@@ -30,6 +30,7 @@ export class MessageHandler {
 		register(ClientMessageType.Attack, (c, m) => CombatHandlers.handleAttack(this.ctx, c, m));
 		register(ClientMessageType.Cast, (c, m) => CombatHandlers.handleCast(this.ctx, c, m));
 		register(ClientMessageType.Meditate, (c) => CombatHandlers.handleMeditate(this.ctx, c));
+		register(ClientMessageType.TogglePvP, (c) => CombatHandlers.handleTogglePvP(this.ctx, c));
 
 		register(ClientMessageType.Pickup, (c, m) => ItemHandlers.handlePickup(this.ctx, c, m));
 		register(ClientMessageType.DropItem, (c, m) => ItemHandlers.handleDropItem(this.ctx, c, m));
