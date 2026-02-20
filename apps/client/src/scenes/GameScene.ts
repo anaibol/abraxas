@@ -10,6 +10,7 @@ import { GameEventHandler } from "../handlers/GameEventHandler";
 import type { AudioManager } from "../managers/AudioManager";
 import { EffectManager } from "../managers/EffectManager";
 import { SpriteManager } from "../managers/SpriteManager";
+import { GameEventHandler } from "../handlers/GameEventHandler";
 import type { NetworkManager } from "../network/NetworkManager";
 import { CameraController } from "../systems/CameraController";
 import { DropManager } from "../systems/DropManager";
@@ -49,6 +50,7 @@ export class GameScene extends Phaser.Scene {
   private cameraController!: CameraController;
   private soundManager!: SoundManager;
   private audioManager: AudioManager;
+  private gameEventHandler!: GameEventHandler;
 
   private collisionGrid: number[][] = [];
   private stateUnsubscribers: (() => void)[] = [];
@@ -300,6 +302,17 @@ export class GameScene extends Phaser.Scene {
       }),
     );
 
+    this.gameEventHandler = new GameEventHandler(
+      this.room,
+      this.spriteManager,
+      this.effectManager,
+      this.soundManager,
+      this.inputHandler,
+      this.onConsoleMessage,
+      this.onKillFeed,
+    );
+    this.gameEventHandler.setupListeners();
+
     if (import.meta.env.DEV) {
       this.debugText = this.add.text(10, 10, "", {
         fontSize: "16px",
@@ -335,6 +348,7 @@ export class GameScene extends Phaser.Scene {
 
   shutdown() {
     document.removeEventListener("visibilitychange", this.handleVisibilityChange);
+    this.gameEventHandler.destroy();
     for (const unsub of this.stateUnsubscribers) unsub();
     this.stateUnsubscribers = [];
     this.inputHandler.destroy();
