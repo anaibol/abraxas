@@ -18,6 +18,7 @@ import { toaster } from "./toaster";
 import { Lobby } from "./Lobby";
 import { LoadingScreen } from "./LoadingScreen";
 import { Sidebar } from "./Sidebar";
+import type { PlayerState } from "./sidebar/types";
 import { DeathOverlay } from "./DeathOverlay";
 import { KillFeed, type KillFeedEntry } from "./KillFeed";
 import { Console } from "./Console";
@@ -77,8 +78,8 @@ export function App() {
     npcId: string;
     inventory: string[];
   } | null>(null);
-  const [partyData, setPartyData] = useState<{
-    partyId: string;
+  const [groupData, setGroupData] = useState<{
+    groupId: string;
     leaderId: string;
     members: { sessionId: string; name: string }[];
   } | null>(null);
@@ -131,7 +132,7 @@ export function App() {
     setShopData,
     setDialogueData,
     setQuests,
-    setPartyData,
+    setGroupData,
     setBankData,
     setTradeData,
     setKillStats,
@@ -500,12 +501,12 @@ export function App() {
                 onUnequip={(slot) => networkRef.current?.sendUnequip(slot)}
                 onUseItem={(itemId) => networkRef.current?.sendUseItem(itemId)}
                 onDropItem={(itemId) => networkRef.current?.sendDropItem(itemId)}
-                partyId={partyData?.partyId}
-                leaderId={partyData?.leaderId}
-                partyMembers={partyData?.members || []}
-                onPartyInvite={(sid: string) => networkRef.current?.sendPartyInvite(sid)}
-                onPartyLeave={() => networkRef.current?.sendPartyLeave()}
-                onPartyKick={(sid: string) => networkRef.current?.sendPartyKick(sid)}
+                groupId={groupData?.groupId}
+                leaderId={groupData?.leaderId}
+                groupMembers={groupData?.members || []}
+                onGroupInvite={(sid: string) => networkRef.current?.sendGroupInvite(sid)}
+                onGroupLeave={() => networkRef.current?.sendGroupLeave()}
+                onGroupKick={(sid: string) => networkRef.current?.sendGroupKick(sid)}
                 friends={friendsData}
                 pendingFriendRequests={pendingFriendRequests}
                 onFriendRequest={(name: string) => networkRef.current?.sendFriendRequest(name)}
@@ -642,7 +643,7 @@ export function App() {
           target={playerContextMenu}
           onWhisper={(name) => { setChatPrefill(`/w ${name} `); setIsChatOpen(true); }}
           onFriendRequest={(_, name) => networkRef.current?.sendFriendRequest(name)}
-          onPartyInvite={(sid) => networkRef.current?.sendPartyInvite(sid)}
+          onGroupInvite={(sid) => networkRef.current?.sendGroupInvite(sid)}
           onTradeRequest={(sid) => networkRef.current?.sendTradeRequest(sid)}
           onClose={() => setPlayerContextMenu(null)}
         />
