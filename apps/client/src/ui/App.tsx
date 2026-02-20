@@ -51,9 +51,10 @@ import { GameScene } from "../scenes/GameScene";
 import { PlayerContextMenu, type PlayerContextTarget } from "./PlayerContextMenu";
 import type { GameState } from "../../../server/src/schema/GameState";
 import type { Room } from "@colyseus/sdk";
-
+import { useAudio } from "../contexts/AudioContext";
 
 export function App() {
+  const { setSoundManager } = useAudio();
   const { t } = useTranslation();
   const killFeedIdRef = useRef(0);
   const [phase, setPhase] = useState<"lobby" | "game">("lobby");
@@ -299,7 +300,8 @@ export function App() {
                 ]);
               },
               addConsoleMessage,
-              () => {
+              (sm) => {
+                setSoundManager(sm);
                 setIsLoading(false);
                 setConnecting(false);
               },
