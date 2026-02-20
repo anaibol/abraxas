@@ -282,12 +282,12 @@ export enum ServerMessageType {
 	FriendAccept = "friend_accept",
 	FriendRemove = "friend_remove",
 	FriendUpdate = "friend_update",
-	PartyInvite = "party_invite",
-	PartyInvited = "party_invited",
-	PartyAccept = "party_accept",
-	PartyLeave = "party_leave",
-	PartyKick = "party_kick",
-	PartyUpdate = "party_update",
+	GroupInvite = "group_invite",
+	GroupInvited = "group_invited",
+	GroupAccept = "group_accept",
+	GroupLeave = "group_leave",
+	GroupKick = "group_kick",
+	GroupUpdate = "group_update",
 	Warp = "warp",
 	Audio = "audio",
 	QuestList = "quest_list",
@@ -309,7 +309,7 @@ export enum ServerMessageType {
 
 export enum ChatChannel {
 	Global = "global",
-	Party = "party",
+	Group = "group",
 	Whisper = "whisper",
 	System = "system",
 }
@@ -411,13 +411,13 @@ export type ServerMessages = {
 		friends: { id: string; name: string; online: boolean }[];
 		pendingRequests: { id: string; name: string }[];
 	};
-	[ServerMessageType.PartyInvite]: { targetSessionId: string };
-	[ServerMessageType.PartyInvited]: { partyId: string; inviterName: string };
-	[ServerMessageType.PartyAccept]: { partyId: string };
-	[ServerMessageType.PartyLeave]: {};
-	[ServerMessageType.PartyKick]: { targetSessionId: string };
-	[ServerMessageType.PartyUpdate]: {
-		partyId: string;
+	[ServerMessageType.GroupInvite]: { targetSessionId: string };
+	[ServerMessageType.GroupInvited]: { groupId: string; inviterName: string };
+	[ServerMessageType.GroupAccept]: { groupId: string };
+	[ServerMessageType.GroupLeave]: {};
+	[ServerMessageType.GroupKick]: { targetSessionId: string };
+	[ServerMessageType.GroupUpdate]: {
+		groupId: string;
 		leaderId: string;
 		members: { sessionId: string; name: string }[];
 	};
@@ -467,10 +467,10 @@ export enum ClientMessageType {
 	DropItem = "drop_item",
 	Chat = "chat",
 	Audio = "audio",
-	PartyInvite = "party_invite",
-	PartyAccept = "party_accept",
-	PartyLeave = "party_leave",
-	PartyKick = "party_kick",
+	GroupInvite = "group_invite",
+	GroupAccept = "group_accept",
+	GroupLeave = "group_leave",
+	GroupKick = "group_kick",
 	FriendRequest = "friend_request",
 	FriendAccept = "friend_accept",
 	Interact = "interact",
@@ -512,10 +512,10 @@ export type ClientMessages = {
 	[ClientMessageType.DropItem]: { itemId: string; quantity?: number };
 	[ClientMessageType.Chat]: { message: string };
 	[ClientMessageType.Audio]: ArrayBuffer;
-	[ClientMessageType.PartyInvite]: { targetSessionId: string };
-	[ClientMessageType.PartyAccept]: { partyId: string };
-	[ClientMessageType.PartyLeave]: {};
-	[ClientMessageType.PartyKick]: { targetSessionId: string };
+	[ClientMessageType.GroupInvite]: { targetSessionId: string };
+	[ClientMessageType.GroupAccept]: { groupId: string };
+	[ClientMessageType.GroupLeave]: {};
+	[ClientMessageType.GroupKick]: { targetSessionId: string };
 	[ClientMessageType.FriendRequest]: { targetName: string };
 	[ClientMessageType.FriendAccept]: { requesterId: string };
 	[ClientMessageType.Interact]: { npcId: string };
