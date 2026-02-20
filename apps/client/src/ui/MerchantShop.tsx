@@ -4,6 +4,7 @@ import { Button } from "./components/Button";
 import { ITEMS, type Item } from "@abraxas/shared";
 import { useTranslation } from "react-i18next";
 import { useAudio } from "../contexts/AudioContext";
+import { ItemGrid } from "./components/ItemGrid";
 
 interface MerchantShopProps {
   npcId: string;
@@ -122,80 +123,40 @@ export function MerchantShop({ npcId, merchantInventory, playerGold, playerInven
 
       <Box minH="300px">
         {tab === "buy" ? (
-          <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap="4">
-            {merchantInventory.map((itemId) => {
-              const item = ITEMS[itemId];
-              if (!item) return null;
-              const isSelected = selectedItem?.id === itemId;
-              return (
-                <Box
-                  key={itemId}
-                  p="3"
-                  bg={isSelected ? "whiteAlpha.100" : T.raised}
-                  border="1px solid"
-                  borderColor={isSelected ? T.gold : T.border}
-                  borderRadius="4px"
-                  cursor="pointer"
-                  transition="all 0.2s"
-                  _hover={{ borderColor: T.goldDim, transform: "translateY(-2px)", boxShadow: "0 4px 12px rgba(0,0,0,0.4)" }}
-                  onMouseEnter={() => { if (!isSelected) playUIHover?.(); }}
-                  onClick={() => { if (!isSelected) playUIClick?.(); setSelectedItem(item); setQuantity(1); }}
-                >
-                  <Flex align="center">
-                    <Box 
-                      w="40px" 
-                      h="40px" 
-                      bg="#000" 
-                      mr="4" 
-                      border="1px solid" 
-                      borderColor={isSelected ? T.gold : T.border}
-                      boxShadow={isSelected ? `0 0 10px ${HEX.goldDark}` : "none"}
-                    ></Box>
-                    <Box>
-                      <Text color="#fff" fontSize="13px" fontWeight="bold">{t(item.name)}</Text>
-                      <Text color={T.gold} fontSize="12px">{item.goldValue.toLocaleString()} GP</Text>
-                    </Box>
-                  </Flex>
-                </Box>
-              );
-            })}
-          </Grid>
+          <ItemGrid
+            slots={merchantInventory.map((id, i) => ({ itemId: id, quantity: 1, slotIndex: i }))}
+            selectedSlotIndex={selectedItem ? merchantInventory.indexOf(selectedItem.id) : null}
+            onSelect={(slot) => {
+              const item = ITEMS[slot.itemId];
+              if (item) {
+                setSelectedItem(item);
+                setQuantity(1);
+              }
+            }}
+            maxSlots={merchantInventory.length}
+          />
         ) : (
-          <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap="4">
+          <>
             {playerInventory.length === 0 && (
-              <Box gridColumn="span 2" py="10" textAlign="center">
+              <Box py="10" textAlign="center">
                 <Text color="#555" fontSize="14px" fontStyle="italic">{t("ui.merchant.no_items_sell")}</Text>
               </Box>
             )}
-            {playerInventory.map((invItem, idx) => {
-              const item = ITEMS[invItem.itemId];
-              if (!item) return null;
-              const isSelected = selectedItem?.id === invItem.itemId;
-              return (
-                <Box
-                  key={`${invItem.itemId}-${idx}`}
-                  p="3"
-                  bg={isSelected ? "whiteAlpha.100" : T.raised}
-                  border="1px solid"
-                  borderColor={isSelected ? T.gold : T.border}
-                  borderRadius="4px"
-                  cursor="pointer"
-                  transition="all 0.2s"
-                  _hover={{ borderColor: T.goldDim, transform: "translateY(-2px)" }}
-                  onMouseEnter={() => { if (!isSelected) playUIHover?.(); }}
-                  onClick={() => { if (!isSelected) playUIClick?.(); setSelectedItem(item); setQuantity(1); }}
-                >
-                  <Flex align="center">
-                    <Box w="40px" h="40px" bg="#000" mr="4" border="1px solid" borderColor={T.border}></Box>
-                    <Box>
-                      <Text color="#fff" fontSize="13px" fontWeight="bold">{t(item.name)} <Text as="span" color="whiteAlpha.600">(x{invItem.quantity})</Text></Text>
-                      <Text color={T.gold} fontSize="12px">{t("ui.merchant.value_label")}: {Math.floor(item.goldValue * 0.5).toLocaleString()} GP</Text>
-                    </Box>
-                  </Flex>
-                </Box>
-              );
-            })}
-          </Grid>
+            {playerInventory.length > 0 && (
+              <ItemGrid
+                slots={playerInventory.map((item, i) => ({ ...item, slotIndex: i }))}
+                selectedSlotIndex={selectedItem ? playerInventory.findIndex(i => i.itemId === selectedItem.id) : null}
+                onSelect={(slot) => {
+                  const item = ITEMS[slot.itemId];
+                  if (item) {
+                    setSelectedItem(item);
+                    setQuantity(1);
+                  }
+                }}
+                maxSlots={Math.max(24, Math.ceil(playerInventory.length / 6) * 6)}
+              />
+            )}
+          </>
         )}
       </Box>
 

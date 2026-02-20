@@ -3,6 +3,7 @@ import { Box, Flex, Text, HStack, VStack, Grid, Input } from "@chakra-ui/react";
 import { Button } from "./components/Button";
 import { useTranslation } from "react-i18next";
 import { ITEMS } from "@abraxas/shared";
+import { useAudio } from "../contexts/AudioContext";
 import type { TradeState } from "@abraxas/shared";
 import type { InventorySlot } from "./sidebar/types";
 import { T } from "./tokens";
@@ -35,6 +36,7 @@ export function TradeWindow({
   onCancel,
 }: TradeWindowProps) {
   const { t } = useTranslation();
+  const { playUIClick, playUIHover } = useAudio();
   const isAlice = trade.alice.sessionId === mySessionId;
   const me = isAlice ? trade.alice : trade.bob;
   const them = isAlice ? trade.bob : trade.alice;
