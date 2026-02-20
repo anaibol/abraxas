@@ -296,6 +296,19 @@ export class InventorySystem {
     const mount = player.equipMount;
     const mountDef = mount ? ITEMS[mount.itemId] : undefined;
     player.speedOverride = mountDef?.stats.speedBonus ?? 0;
+
+    // Keep public equip ID fields in sync so all clients see correct visuals.
+    this.syncPublicEquipIds(player);
+  }
+
+  /** Mirrors the @view() InventoryItem slots into the public string ID fields. */
+  syncPublicEquipIds(player: Player): void {
+    player.equipWeaponId  = player.equipWeapon?.itemId  ?? "";
+    player.equipArmorId   = player.equipArmor?.itemId   ?? "";
+    player.equipShieldId  = player.equipShield?.itemId  ?? "";
+    player.equipHelmetId  = player.equipHelmet?.itemId  ?? "";
+    player.equipRingId    = player.equipRing?.itemId    ?? "";
+    player.equipMountId   = player.equipMount?.itemId   ?? "";
   }
 
   dropAllItems(player: Player): InventoryItem[] {

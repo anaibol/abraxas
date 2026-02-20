@@ -13,6 +13,14 @@ export class Player extends Char {
   @type("boolean") meditating: boolean = false;
   @type("boolean") pvpEnabled: boolean = false;
 
+  /** Public equip item IDs — visible to all clients for rendering (weapon/shield/helmet/mount sprites). */
+  @type("string") equipWeaponId: string = "";
+  @type("string") equipArmorId: string = "";
+  @type("string") equipShieldId: string = "";
+  @type("string") equipHelmetId: string = "";
+  @type("string") equipRingId: string = "";
+  @type("string") equipMountId: string = "";
+
   // ── Private (only visible to the owning client via StateView) ────────────
 
   /** Internal DB references — server-only, never synced to clients */
