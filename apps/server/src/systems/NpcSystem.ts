@@ -483,9 +483,12 @@ export class NpcSystem {
       // B009: always teleport to a safe tile near the owner, never their exact tile.
       const safe = findSafeSpawn(owner.tileX, owner.tileY, map, this.spatial);
       if (safe) {
+        const oldX = npc.tileX;
+        const oldY = npc.tileY;
         npc.tileX = safe.x;
         npc.tileY = safe.y;
         npc.path = [];
+        this.spatial.updatePosition(npc, oldX, oldY);
       }
       // If no safe spot found, stay in place rather than overlapping the owner.
       return;
@@ -519,9 +522,9 @@ export class NpcSystem {
       this.moveTowards(npc, owner.tileX, owner.tileY, map, now, tickCount, roomId);
     } else {
       npc.path = [];
-      // Naturally regenerate HP while following and resting
-      if (tickCount % 20 === 0 && npc.hp < npc.maxHp) {
-        npc.hp = Math.min(npc.maxHp, npc.hp + Math.ceil(npc.maxHp * 0.05));
+      // Naturally regenerate HP while following and resting (B008)
+      if (tickCount % 25 === 0 && npc.hp < npc.maxHp) {
+        npc.hp = Math.min(npc.maxHp, npc.hp + Math.ceil(npc.maxHp * 0.02));
       }
     }
   }

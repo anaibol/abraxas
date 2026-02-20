@@ -219,7 +219,7 @@ export class BuffSystem {
       s.dots = s.dots.filter((d) => now < d.expiresAt);
       for (const dot of s.dots) {
         if (now - dot.lastTickAt < dot.intervalMs) continue;
-        dot.lastTickAt = now;
+        dot.lastTickAt += dot.intervalMs;
         entity.hp -= dot.damage;
 
         broadcast(ServerMessageType.Damage, {
