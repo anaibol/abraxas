@@ -10,7 +10,6 @@ import { GameEventHandler } from "../handlers/GameEventHandler";
 import type { AudioManager } from "../managers/AudioManager";
 import { EffectManager } from "../managers/EffectManager";
 import { SpriteManager } from "../managers/SpriteManager";
-import { GameEventHandler } from "../handlers/GameEventHandler";
 import type { NetworkManager } from "../network/NetworkManager";
 import { CameraController } from "../systems/CameraController";
 import { DropManager } from "../systems/DropManager";
