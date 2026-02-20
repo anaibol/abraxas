@@ -526,6 +526,7 @@ export function App() {
                 onGuildKick={(name: string) => networkRef.current?.sendGuildKick(name)}
                 onGuildPromote={(name: string) => networkRef.current?.sendGuildPromote(name)}
                 onGuildDemote={(name: string) => networkRef.current?.sendGuildDemote(name)}
+                onTogglePvP={() => networkRef.current?.sendTogglePvP()}
                 friends={friendsData}
                 pendingFriendRequests={pendingFriendRequests}
                 onFriendRequest={(name: string) => networkRef.current?.sendFriendRequest(name)}

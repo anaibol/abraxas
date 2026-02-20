@@ -43,6 +43,7 @@ enum EquipSlot {
   RING1
   RING2
   AMULET
+  MOUNT
 }
 
 enum QuestStatus {

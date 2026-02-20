@@ -11,6 +11,7 @@ const EQUIPMENT_SLOT_MAP: Record<string, EquipSlot | undefined> = {
   helmet: EquipSlot.HEAD,
   armor: EquipSlot.CHEST,
   ring: EquipSlot.RING1,
+  mount: EquipSlot.MOUNT,
 };
 
 /** Common include shape used by loadChar and createChar. */

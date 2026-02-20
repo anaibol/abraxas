@@ -57,6 +57,7 @@ export function Sidebar({
   onGuildDemote,
   selectedItemId,
   onSelectItem,
+  onTogglePvP,
   onSpellClick,
   pendingSpellId,
   onClose,
@@ -239,7 +240,7 @@ export function Sidebar({
       </Box>
 
       {/* Footer */}
-      <SidebarFooter state={state} onSettings={onSettings} onLogout={onLogout} />
+      <SidebarFooter state={state} onSettings={onSettings} onLogout={onLogout} onTogglePvP={onTogglePvP} />
     </Flex>
   );
 

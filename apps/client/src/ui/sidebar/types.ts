@@ -71,6 +71,7 @@ export interface SidebarProps {
   onSelectItem?: (itemId: string | null) => void;
   onSpellClick?: (spellId: string, rangeTiles: number) => void;
   pendingSpellId?: string | null;
+  onTogglePvP?: () => void;
   onClose?: () => void;
   onSettings?: () => void;
   onLogout?: () => void;
