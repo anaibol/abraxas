@@ -75,7 +75,7 @@ export class EconomyHandlers {
     const player = HandlerUtils.getActivePlayer(ctx, client);
     if (!player) return;
 
-    const trade = ctx.systems.trade.updateOffer(client.sessionId, data);
+    const trade = ctx.systems.trade.updateOffer(player, data);
     if (trade) {
       EconomyHandlers.sendToParticipants(ctx, trade, ServerMessageType.TradeStateUpdate, trade);
     }
@@ -249,7 +249,7 @@ export class EconomyHandlers {
 
     const sellValue = Math.floor(itemDef.goldValue * 0.5) * quantity;
 
-    if (ctx.systems.inventory.removeItem(player, slot.slotIndex, quantity)) {
+    if (ctx.systems.inventory.removeItem(player, slot.itemId, quantity)) {
       player.gold += sellValue;
       client.send(ServerMessageType.Notification, {
         message: "game.sold_item",
