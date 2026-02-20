@@ -175,9 +175,54 @@ model ItemInstance {
 
   boundToCharacterId String?
 
+  // Diablo-style randomization
+  rarity       String? // common, uncommon, rare, epic, legendary
+  nameOverride String?
+  /// [ItemAffixes]
+  affixesJson  Json?
+
   inventorySlot InventorySlot?
   equipment     Equipment?
   bankSlot      BankSlot?
+  worldDrop     WorldDrop?
+}
+
+model Npc {
+  id        String @id @default(cuid())
+  npcType   String
+  mapId     String
+  tileX     Int
+  tileY     Int
+  spawnX    Int
+  spawnY    Int
+  level     Int    @default(1)
+  hp        Int
+  maxHp     Int
+  statsJson Json? // For persisting specific stat rolls if any
+
+  // For unique/boss NPCs
+  isUnique Boolean @default(false)
+  uniqueId String? @unique // For cross-session persistence of specific named NPCs
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([mapId])
+}
+
+model WorldDrop {
+  id         String        @id @default(cuid())
+  mapId      String
+  tileX      Int
+  tileY      Int
+  itemType   String // "item" or "gold"
+  itemId     String?       @unique
+  item       ItemInstance? @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  quantity   Int           @default(1)
+  goldAmount Int           @default(0)
+  spawnedAt  DateTime      @default(now())
+
+  @@index([mapId])
 }
 
 model Inventory {

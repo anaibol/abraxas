@@ -185,15 +185,12 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       });
 
       for (const n of this.map.npcs ?? []) this.npcSystem.spawnNpcAt(n.type, this.map, n.x, n.y);
-      const npcCount = this.map.npcCount      case "gm_spawn":
-        console.log(`[GM_SPAWN] From player ${player.sessionId}, role: ${player.role}, type: ${message.type}`);
-        if (player.role !== "ADMIN") {
-            console.log(`[GM_SPAWN] REJECTED: role ${player.role} is not ADMIN`);
-            return;
-        }
-        this.npcSystem.spawnNpc(message.type as NpcType, this.map);
-        console.log(`[GM_SPAWN] SUCCESS: requested spawn of ${message.type}`);
-        break;this.setSimulationInterval((dt) => this.tickSystem.tick(dt), TICK_MS);
+      const npcCount = this.map.npcCount ?? 0;
+      for (let i = 0; i < npcCount; i++) {
+        this.npcSystem.spawnNpcAtRandom(this.map);
+      }
+
+      this.setSimulationInterval((dt) => this.tickSystem.tick(dt), TICK_MS);
 
       logger.info({ room: this.roomId, message: "onCreate completed successfully" });
     } catch (e: unknown) {

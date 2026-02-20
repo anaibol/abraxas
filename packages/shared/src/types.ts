@@ -5,6 +5,11 @@ export enum Direction {
   RIGHT = 3,
 }
 
+export enum EntityType {
+  PLAYER = "player",
+  NPC = "npc",
+}
+
 export const DIRECTION_DELTA: Record<Direction, { dx: number; dy: number }> = {
   [Direction.UP]: { dx: 0, dy: -1 },
   [Direction.DOWN]: { dx: 0, dy: 1 },
@@ -13,6 +18,22 @@ export const DIRECTION_DELTA: Record<Direction, { dx: number; dy: number }> = {
 };
 export const EQUIPMENT_SLOTS = ["weapon", "armor", "shield", "helmet", "ring", "mount"] as const;
 export type EquipmentSlot = (typeof EQUIPMENT_SLOTS)[number];
+
+export type ItemRarity = "common" | "uncommon" | "rare" | "epic" | "legendary";
+
+export interface ItemAffix {
+  type: string;
+  value: number;
+  stat: string;
+}
+
+export interface ItemInstanceData {
+  id: string;
+  itemDefId: string;
+  rarity: ItemRarity;
+  nameOverride?: string;
+  affixes: ItemAffix[];
+}
 export type ClassType =
   | "WARRIOR"
   | "MAGE"
@@ -51,6 +72,7 @@ export enum NpcState {
   ATTACK = "attack",
   FLEE = "flee",
   RETURN = "return",
+  FOLLOW = "follow",
 }
 
 export interface JoinOptions {
@@ -206,6 +228,8 @@ export type Ability = {
   dotDurationMs?: number;
   /** Fraction of damage returned as healing to the caster (used by "leech" effect). */
   leechRatio?: number;
+  /** Optional body and head IDs to override the character appearance (used for shapeshifting). */
+  appearanceOverride?: { bodyId: number; headId: number };
 };
 
 /** @deprecated Use `Ability` instead. */
@@ -260,6 +284,8 @@ export interface BaseEntityState {
   stealthed: boolean;
   stunned: boolean;
   spawnProtection: boolean;
+  overrideBodyId?: number;
+  overrideHeadId?: number;
 }
 
 export interface PlayerEntityState extends BaseEntityState {
