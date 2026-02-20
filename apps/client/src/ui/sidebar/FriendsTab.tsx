@@ -12,6 +12,7 @@ interface FriendsTabProps {
   setFriendName: (val: string) => void;
   onFriendRequest?: (name: string) => void;
   onFriendAccept?: (id: string) => void;
+  onFriendRemove?: (id: string) => void;
   onWhisper?: (name: string) => void;
   onTradeRequest?: (id: string) => void;
   onGroupInvite?: (id: string) => void;
@@ -24,6 +25,7 @@ export function FriendsTab({
   setFriendName,
   onFriendRequest,
   onFriendAccept,
+  onFriendRemove,
   onWhisper,
   onTradeRequest,
   onGroupInvite,
@@ -127,6 +129,18 @@ export function FriendsTab({
                     {t("sidebar.social.trade")}
                   </Button>
                 )}
+                <Button
+                  size="xs"
+                  variant="ghost"
+                  p="0"
+                  h="auto"
+                  minW="auto"
+                  color="red.400"
+                  fontSize="12px"
+                  onClick={() => onFriendRemove?.(friend.id)}
+                >
+                  {t("sidebar.friends.remove")}
+                </Button>
               </HStack>
             </Flex>
           ))}

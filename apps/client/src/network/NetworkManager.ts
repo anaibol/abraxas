@@ -279,6 +279,10 @@ export class NetworkManager {
     this._send(ClientMessageType.FriendAccept, { requesterId });
   }
 
+  sendFriendRemove(friendId: string) {
+    this._send(ClientMessageType.FriendRemove, { friendId });
+  }
+
   // Interaction
   sendInteract(npcId: string) {
     this._send(ClientMessageType.Interact, { npcId });
