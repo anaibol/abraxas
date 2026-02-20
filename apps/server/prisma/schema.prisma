@@ -3,6 +3,10 @@ generator client {
   output   = "../src/generated/prisma"
 }
 
+generator json {
+  provider = "prisma-json-types-generator"
+}
+
 datasource db {
   provider = "postgresql"
 }
@@ -248,6 +252,7 @@ model CharacterQuest {
   quest   Quest  @relation(fields: [questId], references: [id], onDelete: Restrict)
 
   status       QuestStatus @default(NOT_STARTED)
+  /// [QuestProgress]
   progressJson Json?
   startedAt    DateTime?
   completedAt  DateTime?
