@@ -20,7 +20,7 @@ import type { Drop } from "../../../server/src/schema/Drop";
 type StateCallback = (state: PlayerState) => void;
 type KillFeedCallback = (killer: string, victim: string) => void;
 export type ConsoleCallback = (text: string, color?: string, channel?: "global" | "group" | "whisper" | "system" | "combat") => void;
-export type PlayerRightClickCallback = (sessionId: string, name: string, screenX: number, screenY: number) => void;
+type PlayerRightClickCallback = (sessionId: string, name: string, screenX: number, screenY: number) => void;
 export type GMMapClickCallback = (tileX: number, tileY: number) => void;
 
 export class GameScene extends Phaser.Scene {

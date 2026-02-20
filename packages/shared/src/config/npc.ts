@@ -20,6 +20,19 @@ export const NPC_APPEARANCE: Record<
 };
 
 export const NPC_STATS: Record<NpcType, NpcStats> = {
+	horse: {
+		hp: 200,
+		str: 5,
+		agi: 20,
+		int: 5,
+		speedTilesPerSecond: 10,
+		attackRange: 1,
+		attackCooldownMs: 1500,
+		attackWindupMs: 500,
+		armor: 5,
+		abilities: [],
+		passive: true,
+	},
 	orc: {
 		hp: 120,
 		str: 12,

@@ -6,13 +6,13 @@ import { T, HEX } from "../tokens";
 import { type PlayerState } from "./types";
 import { useAudio } from "../../contexts/AudioContext";
 
-export const RARITY_COLORS: Record<string, string> = {
+const RARITY_COLORS: Record<string, string> = {
 	common: HEX.goldMuted,
 	uncommon: "#33aa44",
 	rare: "#3355cc",
 };
 
-export const ITEM_ICONS: Record<string, string> = {
+const ITEM_ICONS: Record<string, string> = {
 	weapon: "\u2694\uFE0F",
 	armor: "\uD83D\uDEE1\uFE0F",
 	shield: "\uD83D\uDEE1\uFE0F",
