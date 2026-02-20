@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button } from "../components/Button";
+import { Button } from "./components/Button";
 import { ITEMS, type Item } from "@abraxas/shared";
 import { T, HEX } from "./tokens";
 import { useTranslation } from "react-i18next";
