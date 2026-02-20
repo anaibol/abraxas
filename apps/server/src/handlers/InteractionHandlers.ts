@@ -41,7 +41,7 @@ export class InteractionHandlers {
     }
   }
 
-  static openShop(ctx: RoomContext, client: Client, npc: Npc) {
+  static openShop(_ctx: RoomContext, client: Client, npc: Npc) {
     const inventory = MERCHANT_INVENTORY.general_store ?? [];
     client.send(ServerMessageType.OpenShop, { npcId: npc.sessionId, inventory });
   }

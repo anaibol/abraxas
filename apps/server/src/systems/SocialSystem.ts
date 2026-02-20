@@ -2,7 +2,6 @@ import { type ServerMessages, ServerMessageType } from "@abraxas/shared";
 import type { Client } from "@colyseus/core";
 import type { GameState } from "../schema/GameState";
 import { Group } from "../schema/Group";
-import { Player } from "../schema/Player";
 import { HandlerUtils } from "../handlers/HandlerUtils";
 
 export class SocialSystem {

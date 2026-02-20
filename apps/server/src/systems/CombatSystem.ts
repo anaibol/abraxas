@@ -7,7 +7,6 @@ import {
   calcRangedDamage,
   calcSpellDamage,
   DamageSchool,
-  EntityType,
   GCD_MS,
   MathUtils,
   ServerMessageType,
@@ -573,7 +572,6 @@ export class CombatSystem {
     // AoE heal — heals all same-faction entities (including caster) in radius.
     // Handled before the rangeTiles === 0 check so aoeRadius is respected.
     if (ability.effect === "aoe_heal") {
-      const casterLevel = attacker instanceof Player || attacker instanceof Npc ? attacker.level : 1;
       const radius = ability.aoeRadius ?? 3;
       const candidates = this.spatial.findEntitiesInRadius(
         windup.targetTileX,

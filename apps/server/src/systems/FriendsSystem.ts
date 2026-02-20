@@ -23,7 +23,7 @@ export class FriendsSystem {
     this.broadcastStatusToFriends(userId, false);
   }
 
-  private async broadcastStatusToFriends(userId: string, online: boolean) {
+  private async broadcastStatusToFriends(userId: string, _online: boolean) {
     // Find all accepted friends
     const friendships = await prisma.requesterFriend.findMany({
       where: {

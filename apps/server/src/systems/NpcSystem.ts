@@ -42,8 +42,6 @@ const PATROL_STEPS = 4;
 /** Max Manhattan distance a patrolling NPC may wander from its spawn point. */
 const PATROL_TETHER_RADIUS = 8;
 
-/** Max number of live summon minions per summoner. */
-const MAX_SUMMONS = 3;
 
 /** Minimum ms between bark broadcasts per NPC (avoids bark spam). */
 const BARK_COOLDOWN_MS = 8_000;
@@ -141,7 +139,7 @@ export class NpcSystem {
     return npc;
   }
 
-  private calculateSpawnLevel(npcType: NpcType, map: TileMap): number {
+  private calculateSpawnLevel(npcType: NpcType, _map: TileMap): number {
     const stats = NPC_STATS[npcType];
     if (stats.minLevel !== undefined && stats.maxLevel !== undefined) {
       return Math.floor(Math.random() * (stats.maxLevel - stats.minLevel + 1)) + stats.minLevel;

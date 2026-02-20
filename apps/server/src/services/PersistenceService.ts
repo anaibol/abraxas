@@ -1,4 +1,4 @@
-import type { EquipmentData, InventoryEntry, StatType } from "@abraxas/shared";
+import type { EquipmentData, InventoryEntry } from "@abraxas/shared";
 import { type ClassType, Direction } from "@abraxas/shared";
 import { prisma } from "../database/db";
 import { DropType, EquipSlot, ItemRarity, type Prisma } from "../generated/prisma";

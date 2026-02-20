@@ -1,7 +1,7 @@
 import { DROP_EXPIRY_MS, DropType, ItemRarity, StatType } from "@abraxas/shared";
 import type { MapSchema } from "@colyseus/schema";
 import { Drop } from "../schema/Drop";
-import { InventoryItem, ItemAffixSchema } from "../schema/InventoryItem";
+import { ItemAffixSchema } from "../schema/InventoryItem";
 import type { Player } from "../schema/Player";
 import type { InventorySystem } from "./InventorySystem";
 
@@ -57,8 +57,8 @@ export class DropSystem {
     player: Player,
     dropId: string,
     drops: MapSchema<Drop>,
-    roomId: string,
-    tick: number,
+    _roomId: string,
+    _tick: number,
     onError?: (message: string) => void,
   ): boolean {
     const drop = drops.get(dropId);

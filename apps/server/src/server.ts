@@ -1,4 +1,3 @@
-import { extname, join } from "node:path";
 import type { TileMap } from "@abraxas/shared";
 import { createRouter, defineRoom, defineServer, type Server } from "@colyseus/core";
 import { logger } from "./logger";

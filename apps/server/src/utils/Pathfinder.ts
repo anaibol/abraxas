@@ -170,13 +170,6 @@ export class Pathfinder {
       }
     }
 
-    // If max iterations hit and no path found to EXACT target, return partial path to the best node
-    let bestNode = startNode;
-    for (const node of closedSet) {
-       // Let's actually just return empty path if we can't find goal to prevent weird wandering
-       // or we could track the best 'h' during the loop. For now, strict empty.
-    }
-
     return [];
   }
 
