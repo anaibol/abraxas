@@ -124,7 +124,7 @@ export class EffectManager {
 
 		// fx-spark — bright plus/cross with a radial glow centre for hot-ember / electric looks
 		if (!this.scene.textures.exists(TEX.SPARK)) {
-			const g = this.scene.make.graphics({ add: false });
+			const g = this.scene.add.graphics();
 			// Soft radial glow behind the cross
 			for (let r = 4; r >= 1; r--) {
 				const a = Math.pow(1 - (r - 1) / 4, 2) * 0.55;
@@ -141,7 +141,7 @@ export class EffectManager {
 
 		// fx-ring — thin circle outline with a soft double-stroke glow (orbiting rings / halos)
 		if (!this.scene.textures.exists(TEX.RING)) {
-			const g = this.scene.make.graphics({ add: false });
+			const g = this.scene.add.graphics();
 			// Soft outer glow
 			g.lineStyle(4, 0xffffff, 0.28);
 			g.strokeCircle(8, 8, 6);
