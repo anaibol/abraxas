@@ -1,12 +1,11 @@
-import {
+import type {
   ClassType,
   Direction,
-  type EquipmentData,
-  EXP_TABLE,
-  type InventoryEntry,
-  ITEMS,
-  STARTING_EQUIPMENT,
+  EquipmentData,
+  InventoryEntry,
+  NpcType,
 } from "@abraxas/shared";
+import { EXP_TABLE, ITEMS, STARTING_EQUIPMENT } from "@abraxas/shared";
 import type { Client } from "@colyseus/core";
 import { logger } from "../logger";
 import type { GameState } from "../schema/GameState";
@@ -109,10 +108,21 @@ export class PlayerService {
           }
         }
       }
-      // Recalculate stats now that equipment is applied (accounts for level bonuses too)
       this.inventorySystem.recalcStats(player);
       player.hp = Math.min(player.hp, player.maxHp);
       player.mana = Math.min(player.mana, player.maxMana);
+    }
+
+    // Attach saved companions to player for the Room to spawn, or spawn them here if we have NpcSystem...
+    // Actually, we don't have NpcSystem in PlayerService constructor. Let's just store them on the Player object temporarily
+    // so the Room can read them after createPlayer.
+    if (char.companions && char.companions.length > 0) {
+      player.savedCompanions = char.companions.map((c) => ({
+        type: c.type as NpcType,
+        level: c.level,
+        exp: c.exp,
+        hp: c.hp,
+      }));
     }
 
     return player;
@@ -184,7 +194,22 @@ export class PlayerService {
       inventory,
       equipment,
       classType: player.classType,
+      companions: [], // We will populate this from the active NPCs in the room
+    };
+
+    // Find active companions owned by this player
+    this.state.npcs.forEach((npc) => {
+      if (npc.ownerId === player.sessionId && npc.alive) {
+        saveData.companions.push({
+          type: npc.type,
+          level: npc.level,
+          exp: npc.exp,
+          hp: npc.hp,
+        });
+      }
     });
+
+    await PersistenceService.saveChar(player.dbId, saveData);
   }
 
   async cleanupPlayer(player: Player, mapId: string) {
