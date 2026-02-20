@@ -83,21 +83,6 @@ function generateArena() {
     }
   }
 
-  saveMap("arena.test", {
-    width,
-    height,
-    tileSize,
-    collision,
-    tileTypes,
-    spawns: [{ x: 100, y: 100 }],
-    newbieSpawns: [{ x: 100, y: 100 }],
-    safeZones: [{ x: 90, y: 90, w: 20, h: 20 }],
-    npcCount: 50, // Auto random enemies
-    merchantCount: 5,
-    npcs,
-    warps
-  });
-
   saveMap("arena", {
     width,
     height,
