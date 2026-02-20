@@ -488,7 +488,7 @@ export const ITEMS: Record<string, Item> = {
     id: "bear_mount",
     name: "items.bear_mount.name",
     slot: "mount",
-    rarity: "uncommon",
+    rarity: ItemRarity.UNCOMMON,
     stats: { speedBonus: 3 },
     goldValue: 400,
     mountNpcType: "bear",
