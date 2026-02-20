@@ -46,6 +46,13 @@ export enum StatType {
   FOCUS = "focus",
   HOLY_POWER = "holyPower",
   COMBO_POINTS = "comboPoints",
+  CRIT_CHANCE = "critChance",
+  CRIT_MULTIPLIER = "critMultiplier",
+  HIT_RATING = "hitRating",
+  ARMOR_PEN = "armorPen",
+  DODGE_CHANCE = "dodgeChance",
+  PARRY_CHANCE = "parryChance",
+  BLOCK_CHANCE = "blockChance",
 }
 
 export interface ItemAffix {
@@ -70,6 +77,16 @@ export type ClassType =
   | "PALADIN"
   | "NECROMANCER"
   | "DRUID";
+export enum FactionId {
+  UNDEAD = "undead",
+  BEASTKIN = "beastkin",
+  HUMAN = "human",
+  NEUTRAL = "neutral",
+  MONSTER = "monster",
+}
+
+export type BarkTrigger = "aggro" | "low_hp" | "kill" | "idle";
+
 export type NpcType =
   | "orc"
   | "skeleton"
@@ -176,6 +193,16 @@ export interface CharStats {
   attackCooldownMs: number;
   attackWindupMs: number;
   armor: number;
+
+  // Secondary Offensive/Defensive Stats
+  critChance?: number;
+  critMultiplier?: number;
+  hitRating?: number;
+  armorPen?: number;
+  dodgeChance?: number;
+  parryChance?: number;
+  blockChance?: number;
+
   abilities: string[];
   passive?: boolean;
   fleesWhenLow?: boolean;
@@ -206,6 +233,28 @@ export interface NpcStats extends CharStats {
   minLevel?: number;
   /** Maximum recommended player level for this NPC's difficulty bracket. */
   maxLevel?: number;
+
+  // ── Feature 31: Per-NPC aggro radius ──────────────────────────────────────
+  /** Override the global AGGRO_RANGE for this NPC type. */
+  aggroRange?: number;
+
+  // ── Feature 32: Bark system ───────────────────────────────────────────────
+  /** Lines spoken by the NPC on various triggers (aggro, low_hp, kill, idle). */
+  barks?: Partial<Record<BarkTrigger, string[]>>;
+
+  // ── Feature 33: Faction system ────────────────────────────────────────────
+  /** The faction this NPC belongs to. Players with high rep won't be attacked. */
+  faction?: FactionId;
+
+  // ── Feature 29: Boss mechanics ────────────────────────────────────────────
+  /** HP fraction (0–1) at which boss enters phase 2. Only applies to bosses. */
+  bossPhaseThreshold?: number;
+  /** Additional abilities unlocked when boss enters phase 2. */
+  phaseAbilities?: string[];
+
+  // ── Feature 34: Elite/Rare spawn timer ───────────────────────────────────
+  /** How long after death before this rare NPC respawns (ms). Requires rareSpawn=true. */
+  rareSpawnIntervalMs?: number;
 }
 
 /** Stats for player classes — extends CharStats with a required mana pool. */
@@ -275,6 +324,10 @@ export type Ability = {
   holyPowerCost?: number;
   comboPointsCost?: number;
   comboPointsGain?: number;
+
+  executeThreshold?: number;     // 0.0 to 1.0. Applies executeMultiplier to damage if target HP is below this %.
+  executeMultiplier?: number;    // Multiplier for damage when in execute threshold.
+  comboDamageMultiplier?: number;// Additional damage multiplier per combo point spent.
 };
 
 export interface InventoryEntry {
@@ -406,6 +459,11 @@ export enum ServerMessageType {
   QuestAvailable = "quest_available",
   OpenDialogue = "open_dialogue",
 
+  // NPC
+  NpcBark = "npc_bark",
+  WorldEventStart = "world_event_start",
+  WorldEventEnd = "world_event_end",
+
   // Trading
   TradeRequested = "trade_requested",
   TradeStarted = "trade_started",
@@ -474,6 +532,11 @@ export type ServerMessages = {
     amount: number;
     hpAfter: number;
     type: "physical" | "magic" | "dot";
+    crit?: boolean;
+    blocked?: boolean;
+    parried?: boolean;
+    dodged?: boolean;
+    glancing?: boolean;
   };
   [ServerMessageType.Heal]: {
     sessionId: string;
@@ -558,6 +621,11 @@ export type ServerMessages = {
     text: string;
     options: { text: string; action: string; data?: unknown }[];
   };
+
+  // NPC
+  [ServerMessageType.NpcBark]: { npcId: string; text: string };
+  [ServerMessageType.WorldEventStart]: { eventId: string; name: string; description: string; durationMs: number };
+  [ServerMessageType.WorldEventEnd]: { eventId: string };
 
   // Trading
   [ServerMessageType.TradeRequested]: {
@@ -734,4 +802,29 @@ export interface StatBonuses {
   hp: number;
   mana: number;
   armor: number;
+  critChance?: number;
+  critMultiplier?: number;
+  hitRating?: number;
+  armorPen?: number;
+  dodgeChance?: number;
+  parryChance?: number;
+  blockChance?: number;
+}
+
+// ── Feature 35: World Events ──────────────────────────────────────────────────
+
+/** A timed world event that spawns waves of NPCs on a recurring schedule. */
+export interface WorldEvent {
+  /** Unique identifier for this event type. */
+  id: string;
+  /** Display name shown to players. */
+  name: string;
+  /** Broadcast description when the event begins. */
+  description: string;
+  /** NPC types + count to spawn when the event starts. */
+  spawns: { npcType: NpcType; count: number }[];
+  /** How long the event lasts (ms). */
+  durationMs: number;
+  /** How often the event recurs (ms between event ends and next start). */
+  intervalMs: number;
 }

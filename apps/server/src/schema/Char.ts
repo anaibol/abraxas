@@ -18,6 +18,7 @@ export abstract class Char extends Schema {
   // Transient server-side state (not synced to clients)
   lastMoveMs: number = 0;
   lastGcdMs: number = 0;
+  lastCombatMs: number = 0;
   spellCooldowns = new Map<string, number>();
   bufferedAction: BufferedAction | null = null;
   windupAction: WindupAction | null = null;

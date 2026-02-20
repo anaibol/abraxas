@@ -2,6 +2,8 @@ import { AudioAssets } from "@abraxas/shared";
 import Phaser from "phaser";
 import { gameSettings } from "../settings/gameSettings";
 
+
+
 const BASE_MUSIC_VOL = 0.15;
 const MAX_AUDIBLE_TILES = 18;
 
@@ -12,12 +14,14 @@ const BASE_SFX: Partial<Record<string, number>> = {
   [AudioAssets.ATTACK_1]: 0.5, [AudioAssets.ATTACK_2]: 0.5, [AudioAssets.ATTACK_3]: 0.5,
   [AudioAssets.SPELL]: 0.5,    [AudioAssets.HIT_1]: 0.5,    [AudioAssets.HIT_2]: 0.5,
   [AudioAssets.HIT_3]: 0.5,    [AudioAssets.DEATH]: 0.6,    [AudioAssets.HEAL]: 0.5,
-  [AudioAssets.CLICK]: 0.4,    [AudioAssets.CLICK_HOVER]: 0.2,
-  [AudioAssets.CLICK_OPEN]: 0.4, [AudioAssets.CLICK_CLOSE]: 0.4,
-  [AudioAssets.LEVEL_UP]: 0.6, [AudioAssets.NOTIFICATION]: 0.7,
-  [AudioAssets.MOUNT]: 0.5,    [AudioAssets.BUFF]: 0.6,     [AudioAssets.STEALTH]: 0.6,
-  [AudioAssets.SUMMON]: 0.6,   [AudioAssets.MAGIC_HIT]: 0.5,[AudioAssets.BOW]: 0.5,
-  [AudioAssets.COINS]: 0.7,    [AudioAssets.QUEST_ACCEPT]: 0.6, [AudioAssets.QUEST_COMPLETE]: 0.6,
+  // UI – tuned for medieval tactile feel
+  [AudioAssets.CLICK]: 0.35,        [AudioAssets.CLICK_HOVER]: 0.15,
+  [AudioAssets.CLICK_OPEN]: 0.35,   [AudioAssets.CLICK_CLOSE]: 0.35,
+  [AudioAssets.NOTIFICATION]: 0.45, [AudioAssets.LEVEL_UP]: 0.55,
+  [AudioAssets.QUEST_ACCEPT]: 0.5,  [AudioAssets.QUEST_COMPLETE]: 0.65,
+  [AudioAssets.COINS]: 0.7,
+  [AudioAssets.MOUNT]: 0.5,         [AudioAssets.BUFF]: 0.6,     [AudioAssets.STEALTH]: 0.6,
+  [AudioAssets.SUMMON]: 0.6,        [AudioAssets.MAGIC_HIT]: 0.5,[AudioAssets.BOW]: 0.5,
 };
 
 /** A value is either a single asset key or a random-pick array. */
@@ -120,8 +124,6 @@ export class SoundManager {
   private music: Phaser.Sound.BaseSound | null = null;
   private unsubscribe: (() => void) | null = null;
   private currentAmbiance: Phaser.Sound.BaseSound | null = null;
-  private ambianceVolume = 0.3;
-
   // Throttle: per-key timestamp + last-played guard
   private readonly SFX_COOLDOWN_MS = 80;
   private lastPlayTime = new Map<string, number>();
@@ -129,7 +131,10 @@ export class SoundManager {
   private lastKeyAt = 0;
 
   constructor(private scene: Phaser.Scene) {
-    this.unsubscribe = gameSettings.subscribe(s => this.applyMusicVolume(s.musicVolume));
+    this.unsubscribe = gameSettings.subscribe(s => {
+      this.applyMusicVolume(s.musicVolume);
+      this.applyAmbianceVolume(s.ambianceVolume);
+    });
   }
 
   private applyMusicVolume(vol: number) {
@@ -137,6 +142,15 @@ export class SoundManager {
     if (this.music instanceof Phaser.Sound.WebAudioSound ||
         this.music instanceof Phaser.Sound.HTML5AudioSound) {
       this.music.setVolume(BASE_MUSIC_VOL * vol);
+    }
+  }
+
+  /** Item 79: Sync live ambiance volume when setting changes. */
+  private applyAmbianceVolume(vol: number) {
+    if (!this.currentAmbiance) return;
+    if (this.currentAmbiance instanceof Phaser.Sound.WebAudioSound ||
+        this.currentAmbiance instanceof Phaser.Sound.HTML5AudioSound) {
+      this.currentAmbiance.setVolume(vol * 0.6);
     }
   }
 
@@ -176,8 +190,17 @@ export class SoundManager {
       const spatial = this.calculateSpatial(opts);
       const baseOptVol = opts?.volume ?? 1;
       const baseSfxVol = BASE_SFX[key] ?? 0.5;
-      
-      const vol = baseSfxVol * gameSettings.get().sfxVolume * spatial.volume * baseOptVol;
+      const s = gameSettings.get();
+
+      // Item 79: UI sounds use uiVolume instead of sfxVolume
+      const isUISfx = [
+        AudioAssets.CLICK, AudioAssets.CLICK_HOVER,
+        AudioAssets.CLICK_OPEN, AudioAssets.CLICK_CLOSE,
+        AudioAssets.NOTIFICATION,
+      ].includes(key as typeof AudioAssets.CLICK);
+      const categoryVol = isUISfx ? s.uiVolume : s.sfxVolume;
+
+      const vol = baseSfxVol * categoryVol * spatial.volume * baseOptVol;
       const rate = (opts?.rate ?? 1) * (0.92 + Math.random() * 0.16); // ±8% pitch
 
       const playConfig: Phaser.Types.Sound.SoundConfig = { ...opts, volume: vol, rate, pan: spatial.pan };
@@ -249,9 +272,11 @@ export class SoundManager {
   startAmbiance(key: typeof AudioAssets.AMBIANCE_WIND | typeof AudioAssets.AMBIANCE_CRICKETS) {
     if (this.currentAmbiance?.key === key) return;
     this.stopAmbiance();
+    // Item 79: use ambianceVolume setting
+    const targetVol = gameSettings.get().ambianceVolume * 0.6;
     this.currentAmbiance = this.scene.sound.add(key, { loop: true, volume: 0 });
     this.currentAmbiance.play();
-    this.scene.tweens.add({ targets: this.currentAmbiance, volume: this.ambianceVolume, duration: 2000 });
+    this.scene.tweens.add({ targets: this.currentAmbiance, volume: targetVol, duration: 2000 });
   }
 
   stopAmbiance() {

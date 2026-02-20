@@ -15,6 +15,7 @@ export interface WindupAction {
   targetTileX: number;
   targetTileY: number;
   abilityId?: string;
+  comboPointsSpent?: number;
 }
 
 export interface EntityCombatState {
@@ -25,25 +26,97 @@ export interface EntityCombatState {
   windupAction: WindupAction | null;
 }
 
-/** Melee physical damage: STR scaling, armor reduction, AGI dodge chance */
+export interface DamageResult {
+  damage: number;
+  dodged: boolean;
+  parried: boolean;
+  blocked: boolean;
+  crit: boolean;
+  glancing: boolean;
+}
+
+// Helpers for secondary stats mapping from 0-100 values to percentages if needed.
+// Assuming the stats passed to formulas are percentages (e.g. 5 = 5%, 0.05 = 5%).
+// Let's assume all these arguments are passed as decimals (0.05 = 5%).
+
+function checkHit(attackerHit: number, targetAgi: number, baseDodge: number): boolean {
+  // Base hit starts around 0.95
+  // Defender dodge chance reduces hit chance.
+  let dodgeVal = baseDodge;
+  const bonusAgi = Math.max(0, targetAgi - 10);
+  dodgeVal += bonusAgi / (bonusAgi + 100);
+  
+  // Total chance to hit is Hit Rating minus Target Dodge
+  const hitChance = attackerHit - dodgeVal;
+  return Math.random() <= hitChance;
+}
+
+/** Melee physical damage: STR scaling, armor reduction, AGI dodge chance, parry, block */
 export function calcMeleeDamage(
   attackerStr: number,
   defenderArmor: number,
   defenderAgi: number,
-): { damage: number; dodged: boolean } {
-  // Dodge: diminishing returns formula for AGI > 10
-  const bonusAgi = Math.max(0, defenderAgi - 10);
-  const dodgeChance = bonusAgi / (bonusAgi + 100); // 50 AGI = 33% dodge, 100 AGI = 50% dodge
-  if (Math.random() < dodgeChance) {
-    return { damage: 0, dodged: true };
+  attackerLvl: number = 1,
+  defenderLvl: number = 1,
+  attackerHitChance: number = 0.95,
+  attackerCritChance: number = 0.05,
+  attackerCritMult: number = 1.5,
+  attackerArmorPen: number = 0,
+  defenderParryChance: number = 0.05,
+  defenderBlockChance: number = 0,
+): DamageResult {
+  
+  // 1. Check Hit & Dodge
+  if (!checkHit(attackerHitChance, defenderAgi, 0)) { // 0 base dodge aside from agi
+    return { damage: 0, dodged: true, parried: false, blocked: false, crit: false, glancing: false };
+  }
+
+  // 2. Check Parry
+  if (Math.random() < defenderParryChance) {
+    return { damage: 0, dodged: false, parried: true, blocked: false, crit: false, glancing: false };
   }
 
   // Base damage scales with attacker STR
-  const raw = attackerStr * 1.5;
-  // Armor reduction: armor / (armor + 50) formula for diminishing returns
-  const reductionMult = 1 - defenderArmor / (defenderArmor + 50);
-  const damage = Math.max(1, Math.round(raw * reductionMult));
-  return { damage, dodged: false };
+  let raw = attackerStr * 1.5;
+
+  // 3. Glancing blows
+  let glancing = false;
+  if (defenderLvl > attackerLvl + 2) {
+    const levelDiff = defenderLvl - attackerLvl;
+    const glancingChance = Math.min(0.4, levelDiff * 0.1);
+    if (Math.random() < glancingChance) {
+      raw *= 0.7; // 30% reduction
+      glancing = true;
+    }
+  }
+
+  // 4. Crit
+  let crit = false;
+  if (!glancing && Math.random() < attackerCritChance) {
+    raw *= attackerCritMult;
+    crit = true;
+  }
+
+  // 5. Armor reduction & Armor Pen
+  const effectiveArmor = Math.max(0, defenderArmor * (1 - attackerArmorPen));
+  const reductionMult = 1 - effectiveArmor / (effectiveArmor + 50);
+  let damage = raw * reductionMult;
+
+  // 6. Block (Flat damage reduction or %)
+  let blocked = false;
+  if (Math.random() < defenderBlockChance) {
+    damage *= 0.5; // Block mitigates 50%
+    blocked = true;
+  }
+
+  return { 
+    damage: Math.max(1, Math.round(damage)), 
+    dodged: false, 
+    parried: false, 
+    blocked, 
+    crit, 
+    glancing 
+  };
 }
 
 /** Ranged physical damage: AGI scaling for archer class */
@@ -51,18 +124,60 @@ export function calcRangedDamage(
   attackerAgi: number,
   defenderArmor: number,
   defenderAgi: number,
-): { damage: number; dodged: boolean } {
-  // Reduced dodge chance vs ranged using diminishing returns
-  const bonusAgi = Math.max(0, defenderAgi - 10);
-  const dodgeChance = (bonusAgi / (bonusAgi + 100)) * 0.6; // 60% of melee dodge chance
-  if (Math.random() < dodgeChance) {
-    return { damage: 0, dodged: true };
+  attackerLvl: number = 1,
+  defenderLvl: number = 1,
+  attackerHitChance: number = 0.95,
+  attackerCritChance: number = 0.05,
+  attackerCritMult: number = 1.5,
+  attackerArmorPen: number = 0,
+  defenderBlockChance: number = 0,
+): DamageResult {
+
+  // Reduced dodge chance vs ranged
+  let bonusAgi = Math.max(0, defenderAgi - 10);
+  let dodgeVal = (bonusAgi / (bonusAgi + 100)) * 0.6; 
+  const hitChance = attackerHitChance - dodgeVal;
+
+  if (Math.random() > hitChance) {
+    return { damage: 0, dodged: true, parried: false, blocked: false, crit: false, glancing: false };
   }
 
-  const raw = attackerAgi * 1.3;
-  const reductionMult = 1 - defenderArmor / (defenderArmor + 60); // Ranged penetrates slightly more
-  const damage = Math.max(1, Math.round(raw * reductionMult));
-  return { damage, dodged: false };
+  let raw = attackerAgi * 1.3;
+
+  let glancing = false;
+  if (defenderLvl > attackerLvl + 2) {
+    const levelDiff = defenderLvl - attackerLvl;
+    const glancingChance = Math.min(0.4, levelDiff * 0.1);
+    if (Math.random() < glancingChance) {
+      raw *= 0.7;
+      glancing = true;
+    }
+  }
+
+  let crit = false;
+  if (!glancing && Math.random() < attackerCritChance) {
+    raw *= attackerCritMult;
+    crit = true;
+  }
+
+  const effectiveArmor = Math.max(0, defenderArmor * (1 - attackerArmorPen));
+  const reductionMult = 1 - effectiveArmor / (effectiveArmor + 60);
+  let damage = raw * reductionMult;
+
+  let blocked = false;
+  if (Math.random() < defenderBlockChance) {
+    damage *= 0.5;
+    blocked = true;
+  }
+
+  return { 
+    damage: Math.max(1, Math.round(damage)), 
+    dodged: false, 
+    parried: false, 
+    blocked, 
+    crit, 
+    glancing 
+  };
 }
 
 /** Spell damage: base + scaling stat * ratio, minus magic resist from INT */
@@ -71,11 +186,34 @@ export function calcSpellDamage(
   scalingStat: number,
   scalingRatio: number,
   defenderInt: number,
-): number {
-  const raw = baseDamage + scalingStat * scalingRatio;
-  // Magic resist: ~0.5% per INT point
+  attackerLvl: number = 1,
+  defenderLvl: number = 1,
+  attackerCritChance: number = 0.05,
+  attackerCritMult: number = 1.5,
+): { damage: number, crit: boolean, glancing: boolean } {
+  let raw = baseDamage + scalingStat * scalingRatio;
+  
+  let glancing = false;
+  if (defenderLvl > attackerLvl + 2) {
+    const levelDiff = defenderLvl - attackerLvl;
+    const glancingChance = Math.min(0.4, levelDiff * 0.1);
+    if (Math.random() < glancingChance) {
+      raw *= 0.7;
+      glancing = true;
+    }
+  }
+
+  let crit = false;
+  // Spells can crit too
+  if (!glancing && Math.random() < attackerCritChance) {
+    raw *= attackerCritMult;
+    crit = true;
+  }
+
   const resistMult = Math.max(0.3, 1 - defenderInt * 0.005);
-  return Math.max(1, Math.round(raw * resistMult));
+  const damage = Math.max(1, Math.round(raw * resistMult));
+  
+  return { damage, crit, glancing };
 }
 
 /** Heal amount: base + caster INT * ratio */
@@ -83,6 +221,16 @@ export function calcHealAmount(
   baseAmount: number,
   casterInt: number,
   scalingRatio: number,
-): number {
-  return Math.max(1, Math.round(baseAmount + casterInt * scalingRatio));
+  attackerCritChance: number = 0.05,
+  attackerCritMult: number = 1.5,
+): { heal: number, crit: boolean } {
+  let raw = baseAmount + casterInt * scalingRatio;
+  let crit = false;
+  
+  if (Math.random() < attackerCritChance) {
+    raw *= attackerCritMult;
+    crit = true;
+  }
+
+  return { heal: Math.max(1, Math.round(raw)), crit };
 }
