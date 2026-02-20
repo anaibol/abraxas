@@ -243,6 +243,34 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       client.view = new StateView();
       client.view.add(player);
       this.spatial.addToGrid(player);
+
+      // Restore saved companions
+      if (player.savedCompanions && player.savedCompanions.length > 0) {
+        for (const comp of player.savedCompanions) {
+          const spawnLoc = findSafeSpawn(player.tileX, player.tileY, this.map, this.spatial) ?? player;
+          this.npcSystem.spawnNpcAt(
+            comp.type,
+            this.map,
+            spawnLoc.x,
+            spawnLoc.y,
+            player.sessionId,
+          );
+          
+          // Apply saved level and HP
+          // Note: spawnNpcAt operates synchronously and pushes to this.state.npcs,
+          // so we can find the most recently added npc with this ownerId.
+          const npcs = Array.from(this.state.npcs.values());
+          const newNpc = npcs[npcs.length - 1];
+          if (newNpc && newNpc.ownerId === player.sessionId) {
+            newNpc.level = comp.level;
+            newNpc.exp = comp.exp;
+            newNpc.hp = Math.min(newNpc.maxHp, comp.hp);
+          }
+        }
+        // clear it from memory since they exist in the world now
+        player.savedCompanions = [];
+      }
+
       this.friends.setUserOnline(auth.id, client.sessionId);
       await this.friends.sendUpdateToUser(auth.id, client.sessionId);
       const quests = await this.quests.loadCharQuests(char.id);
@@ -308,7 +336,22 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     const player = this.state.players.get(client.sessionId);
     if (player) {
       SocialHandlers.handleGroupLeave(this.messageHandler.ctx, client);
-      await this.playerService.cleanupPlayer(player, this.roomMapName);
+
+      const activeCompanions: { type: string; level: number; exp: number; hp: number }[] = [];
+      this.state.npcs.forEach((npc) => {
+        if (npc.ownerId === player.sessionId && npc.alive) {
+          activeCompanions.push({
+            type: npc.type,
+            level: npc.level,
+            exp: npc.exp,
+            hp: npc.hp,
+          });
+          // Also remove the companion from the game world when the player logs out
+          this.state.npcs.delete(npc.sessionId);
+        }
+      });
+
+      await this.playerService.cleanupPlayer(player, this.roomMapName, activeCompanions);
       await this.bankSystem.closeBank(player);
     }
     this.combat.removeEntity(client.sessionId);

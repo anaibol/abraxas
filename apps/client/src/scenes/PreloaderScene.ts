@@ -51,9 +51,9 @@ export class PreloaderScene extends Phaser.Scene {
     this.load.audio("sfx-attack2", "audio/kenney_rpg/Audio/drawKnife2.ogg");
     this.load.audio("sfx-attack3", "audio/kenney_rpg/Audio/drawKnife3.ogg");
 
-    this.load.audio("sfx-hit1", "audio/kenney_rpg/Audio/chop.ogg");
-    this.load.audio("sfx-hit2", "audio/kenney_rpg/Audio/knifeSlice.ogg");
-    this.load.audio("sfx-hit3", "audio/kenney_rpg/Audio/knifeSlice2.ogg");
+    this.load.audio("sfx-hit1", "audio/kenney_impact/Audio/impactMetal_heavy_000.ogg");
+    this.load.audio("sfx-hit2", "audio/kenney_impact/Audio/impactMetal_heavy_001.ogg");
+    this.load.audio("sfx-hit3", "audio/kenney_impact/Audio/impactMetal_heavy_002.ogg");
 
     this.load.audio("sfx-spell", "audio/magic/FX411.mp3");
     this.load.audio("sfx-death", "audio/sonidos/14.webm");
@@ -67,6 +67,10 @@ export class PreloaderScene extends Phaser.Scene {
     this.load.audio("sfx-levelup", "audio/kenney_ui/Audio/maximize_006.ogg");
     this.load.audio("sfx-notification", "audio/kenney_ui/Audio/bong_001.ogg");
     this.load.audio("sfx-mount", "audio/kenney_rpg/Audio/clothBelt.ogg");
+    this.load.audio("sfx-bow", "audio/misc/Archers-shooting.ogg");
+    this.load.audio("sfx-coins", "audio/kenney_rpg/Audio/handleCoins.ogg");
+    this.load.audio("sfx-quest-accept", "audio/kenney_ui/Audio/confirmation_001.ogg");
+    this.load.audio("sfx-quest-complete", "audio/kenney_ui/Audio/confirmation_002.ogg");
 
     // UI Sounds
     this.load.audio("sfx-click", "audio/kenney_ui/Audio/click_002.ogg");

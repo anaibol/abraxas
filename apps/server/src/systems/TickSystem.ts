@@ -123,9 +123,19 @@ export class TickSystem {
     systems.npc.handleDeath(npc);
 
     if (killerSessionId) {
-      const killer = state.players.get(killerSessionId);
-      if (killer?.alive) {
-        this.handleNpcKillRewards(killer, npc);
+      // If the killer is a Player
+      let killerPlayer = state.players.get(killerSessionId);
+      
+      // If the killer is a Companion, give the kill credit to its Owner
+      if (!killerPlayer) {
+        const killerNpc = state.npcs.get(killerSessionId);
+        if (killerNpc && killerNpc.ownerId) {
+          killerPlayer = state.players.get(killerNpc.ownerId);
+        }
+      }
+
+      if (killerPlayer?.alive) {
+        this.handleNpcKillRewards(killerPlayer, npc);
       }
     }
 
@@ -135,14 +145,35 @@ export class TickSystem {
     });
   }
 
-  private handleNpcKillRewards(player: Player, npc: Npc) {
-    const { systems } = this.opts;
-    const stats = NPC_STATS[npc.type];
+  private handleNpcKillRewards(player: Player, killedNpc: Npc) {
+    const { systems, state } = this.opts;
+    const stats = NPC_STATS[killedNpc.type];
+    
     if (stats && typeof stats.expReward === "number") {
-      this.opts.gainXp(player, stats.expReward);
+      // Find all living companions of this player to share EXP
+      const activeCompanions: Npc[] = [];
+      state.npcs.forEach((n) => {
+        if (n.ownerId === player.sessionId && n.alive) {
+          activeCompanions.push(n);
+        }
+      });
+
+      if (activeCompanions.length > 0) {
+        // Share EXP: 50% to player, 50% split among companions
+        const playerExp = Math.ceil(stats.expReward * 0.5);
+        const companionExp = Math.max(1, Math.floor((stats.expReward * 0.5) / activeCompanions.length));
+        
+        this.opts.gainXp(player, playerExp);
+        for (const comp of activeCompanions) {
+          systems.npc.gainExp(comp, companionExp, this.opts.roomId, this.opts.broadcast);
+        }
+      } else {
+        // 100% to player if no companions
+        this.opts.gainXp(player, stats.expReward);
+      }
     }
 
-    void systems.quests.updateProgress(player.dbId, "kill", npc.type, 1).then((updates) => {
+    void systems.quests.updateProgress(player.dbId, "kill", killedNpc.type, 1).then((updates) => {
       if (updates.length > 0) {
         const client = this.opts.findClient(player.sessionId);
         if (client) this.opts.sendQuestUpdates(client, updates);

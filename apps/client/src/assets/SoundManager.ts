@@ -29,6 +29,10 @@ const BASE_SFX: Record<string, number> = {
   "sfx-stealth": 0.6,
   "sfx-summon": 0.6,
   "sfx-magic-hit": 0.5,
+  "sfx-bow": 0.5,
+  "sfx-coins": 0.7,
+  "sfx-quest-accept": 0.6,
+  "sfx-quest-complete": 0.6,
 };
 
 export class SoundManager {
@@ -105,6 +109,18 @@ export class SoundManager {
   }
   playMagicHit() {
     this.play("sfx-magic-hit");
+  }
+  playBow() {
+    this.play("sfx-bow");
+  }
+  playCoins() {
+    this.play("sfx-coins");
+  }
+  playQuestAccept() {
+    this.play("sfx-quest-accept");
+  }
+  playQuestComplete() {
+    this.play("sfx-quest-complete");
   }
 
   playUIClick() {

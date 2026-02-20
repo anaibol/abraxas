@@ -1,5 +1,6 @@
 import { Box, Flex, Text, VStack } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
+import { useAudio } from "../contexts/AudioContext";
 import { Button } from "./components/Button";
 import { T } from "./tokens";
 
@@ -19,6 +20,7 @@ interface QuestDialogueProps {
 
 export function QuestDialogue({ npcId, text, options, onAction, onClose }: QuestDialogueProps) {
   const { t } = useTranslation();
+  const { playQuestAccept, playQuestComplete, playUIClick, playUIHover } = useAudio();
   return (
     <Flex
       pos="fixed"
@@ -61,11 +63,21 @@ export function QuestDialogue({ npcId, text, options, onAction, onClose }: Quest
             {options.map((opt, i) => (
               <Button
                 key={i}
+                disableSound={true}
+                onMouseEnter={() => playUIHover?.()}
                 variant="outline"
                 borderColor={T.goldDark}
                 color={T.gold}
                 _hover={{ bg: T.surface, borderColor: T.gold }}
                 onClick={() => {
+                  if (opt.action === "quest_accept") {
+                    playQuestAccept?.();
+                  } else if (opt.action === "quest_complete") {
+                    playQuestComplete?.();
+                  } else {
+                    playUIClick?.();
+                  }
+
                   if (opt.action === "close") {
                     onClose();
                   } else {

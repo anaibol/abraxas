@@ -28,7 +28,7 @@ export function MerchantShop({
   onClose,
 }: MerchantShopProps) {
   const { t } = useTranslation();
-  const { playUIClick, playUIHover } = useAudio();
+  const { playUIClick, playUIHover, playCoins } = useAudio();
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [tab, setTab] = useState<"buy" | "sell">("buy");
   const [quantity, setQuantity] = useState<number>(1);
@@ -306,6 +306,7 @@ export function MerchantShop({
             _active={{ bg: T.goldDark, transform: "scale(0.98)" }}
             transition="all 0.2s"
             onClick={() => {
+              playCoins?.();
               if (tab === "buy") onBuy(selectedItem.id, quantity);
               else onSell(selectedItem.id, quantity);
             }}

@@ -5,6 +5,7 @@ import {
   i18n,
   ServerMessageType,
   SPAWN_PROTECTION_MS,
+  TILE_SIZE,
 } from "@abraxas/shared";
 import type { Room } from "@colyseus/sdk";
 import type { SoundManager } from "../assets/SoundManager";
@@ -80,14 +81,28 @@ export class GameEventHandler {
       if (this.isSelf(data.sessionId))
         this.onConsoleMessage?.(t("game.you_attacked"), "#cccccc", "combat");
     }
-    this.soundManager.playAttack();
-
+    let isRanged = false;
     if (data.targetTileX !== undefined && data.targetTileY !== undefined) {
+      if (sprite) {
+        const casterTileX = Math.round(sprite.renderX / TILE_SIZE);
+        const casterTileY = Math.round(sprite.renderY / TILE_SIZE);
+        const dx = data.targetTileX - casterTileX;
+        const dy = data.targetTileY - casterTileY;
+        if (Math.sqrt(dx * dx + dy * dy) >= 1.5) {
+          isRanged = true;
+        }
+      }
       this.effectManager.maybeLaunchAttackProjectile(
         data.sessionId,
         data.targetTileX,
         data.targetTileY,
       );
+    }
+
+    if (isRanged) {
+      this.soundManager.playBow();
+    } else {
+      this.soundManager.playAttack();
     }
   }
 
