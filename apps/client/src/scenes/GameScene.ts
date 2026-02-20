@@ -1,4 +1,4 @@
-import type { Direction, WelcomeData } from "@abraxas/shared";
+import type { Direction, NpcEntityState, PlayerEntityState, WelcomeData } from "@abraxas/shared";
 import { CLASS_STATS, DIRECTION_DELTA, ITEMS, i18n, TILE_SIZE } from "@abraxas/shared";
 import { Callbacks, type Room } from "@colyseus/sdk";
 import Phaser from "phaser";
@@ -238,13 +238,14 @@ export class GameScene extends Phaser.Scene {
 
     unsub(
       $state.onAdd("players", (player, sessionId) => {
-        this.spriteManager.addPlayer(player as any, sessionId);
-        this.spriteManager.syncPlayer(player as any, sessionId);
+        const pState = player as unknown as PlayerEntityState;
+        this.spriteManager.addPlayer(pState, sessionId);
+        this.spriteManager.syncPlayer(pState, sessionId);
         const isLocal = sessionId === this.room.sessionId;
 
         // Phaser sprite sync: fires on any property change (position, hp, facing…)
         const onChangeUnsub = $state.onChange(player, () => {
-          this.spriteManager.syncPlayer(player as any, sessionId);
+          this.spriteManager.syncPlayer(player as unknown as PlayerEntityState, sessionId);
         });
         playerOnChangeUnsubs.set(sessionId, onChangeUnsub);
         unsub(onChangeUnsub);
@@ -315,9 +316,12 @@ export class GameScene extends Phaser.Scene {
         this.spriteManager.removePlayer(sessionId);
       }),
       $state.onAdd("npcs", (npc, id) => {
-        this.spriteManager.addNpc(npc as any, id);
-        this.spriteManager.syncNpc(npc as any, id);
-        const onChangeUnsub = $state.onChange(npc, () => this.spriteManager.syncNpc(npc as any, id));
+        const nState = npc as unknown as NpcEntityState;
+        this.spriteManager.addNpc(nState, id);
+        this.spriteManager.syncNpc(nState, id);
+        const onChangeUnsub = $state.onChange(npc, () =>
+          this.spriteManager.syncNpc(npc as unknown as NpcEntityState, id),
+        );
         npcOnChangeUnsubs.set(id, onChangeUnsub);
         unsub(onChangeUnsub);
       }),
