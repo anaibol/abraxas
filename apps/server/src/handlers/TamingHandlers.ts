@@ -1,7 +1,9 @@
 import {
+  type ClassStats,
   type ClientMessages,
   type ClientMessageType,
   ITEMS,
+  NpcState,
   ServerMessageType,
 } from "@abraxas/shared";
 import type { Client } from "@colyseus/core";
@@ -69,8 +71,27 @@ export class TamingHandlers {
     }
 
     if (Math.random() < successChance) {
-      // Remove the NPC from the world
-      ctx.state.npcs.delete(data.targetSessionId);
+      let cap = 1;
+      const classStats = player.getStats();
+      if (classStats && "maxCompanions" in classStats) {
+        cap = (classStats as ClassStats).maxCompanions;
+      }
+
+      let liveCompanions = 0;
+      ctx.state.npcs.forEach((n) => {
+        if (n.ownerId === player.sessionId && n.alive) liveCompanions++;
+      });
+
+      if (liveCompanions < cap) {
+        // Convert the NPC into a follower
+        targetNpc.ownerId = player.sessionId;
+        targetNpc.state = NpcState.FOLLOW;
+        targetNpc.hp = targetNpc.maxHp;
+        targetNpc.targetId = ""; // drop any aggro
+      } else {
+        // Cap reached, just remove the NPC from the world as before
+        ctx.state.npcs.delete(data.targetSessionId);
+      }
 
       // Give the player the tamed animal item
       const added = ctx.systems.inventory.addItem(player, rewardItemId, 1);

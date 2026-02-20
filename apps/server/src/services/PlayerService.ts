@@ -1,11 +1,15 @@
 import type {
   ClassType,
-  Direction,
   EquipmentData,
   InventoryEntry,
   NpcType,
 } from "@abraxas/shared";
-import { EXP_TABLE, ITEMS, STARTING_EQUIPMENT } from "@abraxas/shared";
+import {
+  Direction,
+  EXP_TABLE,
+  ITEMS,
+  STARTING_EQUIPMENT,
+} from "@abraxas/shared";
 import type { Client } from "@colyseus/core";
 import { logger } from "../logger";
 import type { GameState } from "../schema/GameState";
@@ -175,7 +179,7 @@ export class PlayerService {
       mount: player.equipMount,
     };
 
-    await PersistenceService.saveChar(player.dbId, {
+    const saveData = {
       x: player.tileX,
       y: player.tileY,
       mapId,
@@ -194,7 +198,7 @@ export class PlayerService {
       inventory,
       equipment,
       classType: player.classType,
-      companions: [], // We will populate this from the active NPCs in the room
+      companions: [] as { type: string; level: number; exp: number; hp: number }[], // We will populate this from the active NPCs in the room
     };
 
     // Find active companions owned by this player

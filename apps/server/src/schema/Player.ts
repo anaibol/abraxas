@@ -43,6 +43,9 @@ export class Player extends Char {
   @view() @type("string") equipRing: string = "";
   @view() @type("string") equipMount: string = "";
 
+  /** Temporary storage for reconstructed companions on login */
+  savedCompanions: { type: string; level: number; exp: number; hp: number }[] = [];
+
   getStats(): ClassStats {
     return CLASS_STATS[this.classType];
   }
