@@ -91,6 +91,17 @@ export class GameEventHandler {
     on(ServerMessageType.KillFeed, (data) => this.onKillFeedMessage(data));
     on(ServerMessageType.InvalidTarget, () => this.onInvalidTarget());
     on(ServerMessageType.StealthApplied, (data) => this.onStealthApplied(data));
+
+    // ── NPC Bark ──────────────────────────────────────────────────────────────
+    on(ServerMessageType.NpcBark, (data) => this.onNpcBark(data));
+
+    // ── World Events ─────────────────────────────────────────────────────────
+    on(ServerMessageType.WorldEventStart, (data) => this.onWorldEventStart(data));
+    on(ServerMessageType.WorldEventEnd, (data) => this.onWorldEventEnd(data));
+    on(ServerMessageType.WorldEventProgress, (data) => this.onWorldEventProgress(data));
+
+    // ── Fast Travel ──────────────────────────────────────────────────────────
+    on(ServerMessageType.FastTravelUsed, (data) => this.onFastTravelUsed(data));
   }
 
   destroy() {
@@ -380,7 +391,43 @@ export class GameEventHandler {
     }
   }
 
-  // ── Helpers ──────────────────────────────────────────────────────────────────
+  // ── NPC Bark ─────────────────────────────────────────────────────────────────
+  private onNpcBark(data: ServerMessages[ServerMessageType.NpcBark]) {
+    // Render bark as a speech bubble floating above the NPC sprite (same API as player chat).
+    this.spriteManager.showChatBubble(data.npcId, data.text);
+  }
+
+  // ── World Events ──────────────────────────────────────────────────────────────
+  private onWorldEventStart(data: ServerMessages[ServerMessageType.WorldEventStart]) {
+    const mins = Math.round(data.durationMs / 60_000);
+    this.onConsoleMessage?.(
+      `⚔ World Event: ${data.name} — ${data.description} (${mins}m)`,
+      "#ffcc44",
+      "system",
+    );
+    this.onCameraFlash?.(255, 180, 0, 400);
+  }
+
+  private onWorldEventEnd(_data: ServerMessages[ServerMessageType.WorldEventEnd]) {
+    this.onConsoleMessage?.("✓ World Event ended.", "#aaffaa", "system");
+  }
+
+  private onWorldEventProgress(data: ServerMessages[ServerMessageType.WorldEventProgress]) {
+    const pct = Math.round((data.npcsDead / data.npcsTotalCount) * 100);
+    this.onConsoleMessage?.(
+      `⚔ Event progress: ${data.npcsDead}/${data.npcsTotalCount} (${pct}%)`,
+      "#ffcc44",
+      "system",
+    );
+  }
+
+  // ── Fast Travel ───────────────────────────────────────────────────────────────
+  private onFastTravelUsed(_data: ServerMessages[ServerMessageType.FastTravelUsed]) {
+    this.onCameraFlash?.(200, 255, 255, 400);
+    this.onConsoleMessage?.("✈ Fast travel used.", "#88ddff", "system");
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────────
 
   /** Flat ability→preset lookup for spell impact light flashes. */
   private readonly SPELL_LIGHT_MAP = new Map<string, { preset: LightPreset; durationMs: number }>([

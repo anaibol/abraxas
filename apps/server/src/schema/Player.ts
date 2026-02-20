@@ -34,6 +34,8 @@ export class Player extends Char {
   /** Internal DB references — server-only, never synced to clients */
   userId: string = "";
   dbId: string = "";
+  pvpKills: number = 0;
+  npcKills: number = 0;
   @type("string") role: string = "USER";
   @type("uint8") speedOverride: number = 0;
 

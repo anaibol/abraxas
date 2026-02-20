@@ -71,4 +71,42 @@ export class MovementHandlers {
       message: `[GM] Teleported to ${tileX}, ${tileY}`,
     });
   }
+
+  static handleFastTravel(
+    ctx: RoomContext,
+    client: Client,
+    data: ClientMessages[ClientMessageType.FastTravel],
+  ): void {
+    const player = HandlerUtils.getActivePlayer(ctx, client);
+    if (!player) return;
+
+    const waypoints = ctx.map.waypoints ?? [];
+    const waypoint = waypoints.find((w) => w.id === data.waypointId);
+
+    if (!waypoint) {
+      HandlerUtils.sendError(client, "fast_travel.invalid_waypoint");
+      return;
+    }
+
+    // Validate destination tile
+    if (
+      waypoint.x < 0 ||
+      waypoint.x >= ctx.map.width ||
+      waypoint.y < 0 ||
+      waypoint.y >= ctx.map.height ||
+      ctx.map.collision[waypoint.y]?.[waypoint.x] === 1
+    ) {
+      HandlerUtils.sendError(client, "fast_travel.blocked");
+      return;
+    }
+
+    ctx.systems.movement.teleport(player, waypoint.x, waypoint.y);
+
+    client.send(ServerMessageType.FastTravelUsed, {
+      waypointId: waypoint.id,
+      tileX: waypoint.x,
+      tileY: waypoint.y,
+    });
+  }
 }
+

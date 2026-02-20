@@ -1030,5 +1030,18 @@
   "quest_status": {
     "IN_PROGRESS": "En cours",
     "COMPLETED": "Terminée"
+  },
+  "leaderboard": {
+    "title": "Classement",
+    "tab_level": "Niveau",
+    "tab_npc_kills": "Chasseurs",
+    "tab_pvp_kills": "PvP",
+    "tab_gold": "Richesse",
+    "loading": "Chargement...",
+    "refresh": "Actualiser",
+    "error": "Impossible de charger le classement",
+    "try_again": "Réessayer",
+    "empty": "Aucune entrée pour l'instant",
+    "hint": "Top 10 joueurs par catégorie — mis à jour à la déconnexion"
   }
 }

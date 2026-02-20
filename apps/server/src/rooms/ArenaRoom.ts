@@ -298,19 +298,22 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       }
       const candidate = spawnsArray[spawnIndex % spawnsArray.length];
       if (candidate) {
-        console.error(`[DEBUG_SPAWN] mapName: ${this.roomMapName}, candidate: ${candidate.x},${candidate.y}, spawns length: ${spawnsArray.length}, map width: ${this.map.width}`);
         const safe = findSafeSpawn(candidate.x, candidate.y, this.map, this.spatial);
         player.tileX = safe?.x ?? candidate.x;
         player.tileY = safe?.y ?? candidate.y;
       }
+      // IMPORTANT: Set up the StateView BEFORE adding the player to state,
+      // so the very first patch includes all view-scoped fields (hp, alive, mana, etc.).
+      // If the view is set up after players.set(), Colyseus sends one patch without
+      // private fields and a second patch with them, causing onAdd to see undefined values.
+      client.view = new StateView();
+      client.view.add(player);
       this.state.players.set(client.sessionId, player);
       // If the player logged out while dead, queue an immediate respawn
       // so they enter the world alive on the first server tick.
       if (!player.alive) {
         this.respawnSystem.queueRespawn(client.sessionId, Date.now() - PLAYER_RESPAWN_TIME_MS);
       }
-      client.view = new StateView();
-      client.view.add(player);
       this.spatial.addToGrid(player);
 
       // Restore saved companions
@@ -479,6 +482,15 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       this.drops.spawnGoldDrop(this.state.drops, player.tileX, player.tileY, player.gold);
       player.gold = 0;
     }
+
+    // Track PvP kill on the killer
+    if (killerSessionId) {
+      const killer = this.state.players.get(killerSessionId);
+      if (killer?.alive) {
+        killer.pvpKills++;
+      }
+    }
+
     this.broadcast(ServerMessageType.Death, {
       sessionId: player.sessionId,
       killerSessionId,

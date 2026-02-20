@@ -1030,5 +1030,18 @@
   "quest_status": {
     "IN_PROGRESS": "In Progress",
     "COMPLETED": "Completed"
+  },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "tab_level": "Level",
+    "tab_npc_kills": "Hunters",
+    "tab_pvp_kills": "PvP",
+    "tab_gold": "Wealth",
+    "loading": "Loading...",
+    "refresh": "Refresh",
+    "error": "Could not load leaderboard",
+    "try_again": "Try again",
+    "empty": "No entries yet",
+    "hint": "Top 10 players per category — updated on disconnect"
   }
 }

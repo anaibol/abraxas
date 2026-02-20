@@ -59,6 +59,9 @@ export class NetworkManager {
 
   public onWarp: ((data: { targetMap: string; targetX: number; targetY: number }) => void) | null =
     null;
+  public onWorldEventStart: ((data: ServerMessages[ServerMessageType.WorldEventStart]) => void) | null = null;
+  public onWorldEventEnd: ((data: ServerMessages[ServerMessageType.WorldEventEnd]) => void) | null = null;
+  public onWorldEventProgress: ((data: ServerMessages[ServerMessageType.WorldEventProgress]) => void) | null = null;
 
   /** Subscribe to FriendUpdate messages. Setting this flushes any buffered initial message. */
   set onFriendUpdate(cb: ((data: ServerMessages[ServerMessageType.FriendUpdate]) => void) | null) {
@@ -123,6 +126,26 @@ export class NetworkManager {
     this.room.onMessage(ServerMessageType.StunApplied, noop);
     this.room.onMessage(ServerMessageType.StealthApplied, noop);
     this.room.onMessage(ServerMessageType.LevelUp, noop);
+    this.room.onMessage(ServerMessageType.NpcBark, noop);
+    this.room.onMessage(
+      ServerMessageType.WorldEventStart,
+      (data: ServerMessages[ServerMessageType.WorldEventStart]) => {
+        if (this.onWorldEventStart) this.onWorldEventStart(data);
+      },
+    );
+    this.room.onMessage(
+      ServerMessageType.WorldEventEnd,
+      (data: ServerMessages[ServerMessageType.WorldEventEnd]) => {
+        if (this.onWorldEventEnd) this.onWorldEventEnd(data);
+      },
+    );
+    this.room.onMessage(
+      ServerMessageType.WorldEventProgress,
+      (data: ServerMessages[ServerMessageType.WorldEventProgress]) => {
+        if (this.onWorldEventProgress) this.onWorldEventProgress(data);
+      },
+    );
+    this.room.onMessage(ServerMessageType.FastTravelUsed, noop);
 
     this.room.onMessage(
       ServerMessageType.FriendUpdate,
@@ -367,6 +390,11 @@ export class NetworkManager {
   // GM commands
   sendGMTeleport(tileX: number, tileY: number) {
     this._send(ClientMessageType.GMTeleport, { tileX, tileY });
+  }
+
+  // Fast Travel
+  sendFastTravel(waypointId: string) {
+    this._send(ClientMessageType.FastTravel, { waypointId });
   }
 
   sendTogglePvP() {

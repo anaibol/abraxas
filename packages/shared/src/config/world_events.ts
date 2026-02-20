@@ -40,4 +40,37 @@ export const WORLD_EVENTS: WorldEvent[] = [
     durationMs: 10 * 60_000, // 10 minutes
     intervalMs: 90 * 60_000, // every 90 minutes
   },
+  {
+    id: "troll_invasion",
+    name: "Troll Invasion",
+    description: "A war party of trolls is storming the settlement!",
+    spawns: [
+      { npcType: "troll", count: 3 },
+      { npcType: "orc", count: 2 },
+    ],
+    durationMs: 6 * 60_000,  // 6 minutes
+    intervalMs: 40 * 60_000, // every 40 minutes
+  },
+  {
+    id: "spider_swarm",
+    name: "Spider Swarm",
+    description: "Thousands of giant spiders are emerging from hidden lairs!",
+    spawns: [
+      { npcType: "spider", count: 6 },
+      { npcType: "vampire", count: 1 },
+    ],
+    durationMs: 4 * 60_000,  // 4 minutes
+    intervalMs: 25 * 60_000, // every 25 minutes
+  },
+  {
+    id: "vampire_hunt",
+    name: "Vampire Hunt",
+    description: "Ancient vampires have risen — protect the living before dawn!",
+    spawns: [
+      { npcType: "vampire", count: 2 },
+      { npcType: "lich", count: 1 },
+    ],
+    durationMs: 8 * 60_000,  // 8 minutes
+    intervalMs: 60 * 60_000, // every 60 minutes
+  },
 ];

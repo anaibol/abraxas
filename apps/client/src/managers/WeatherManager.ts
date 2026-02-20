@@ -63,7 +63,7 @@ export class WeatherManager {
       speedX: { min: -100, max: -50 },
       scale: { start: 0.5, end: 1 },
       alpha: { start: 0.8, end: 0.2 },
-      frequency: 10,
+      frequency: 18,
       blendMode: Phaser.BlendModes.ADD,
     });
     this.rainEmitter.setScrollFactor(0);
@@ -143,7 +143,7 @@ export class WeatherManager {
       speedY: { min: -80, max: 80 },
       scale: { start: 0.8, end: 0.3 },
       alpha: { start: 0.9, end: 0 },
-      frequency: 5,
+      frequency: 12,
       blendMode: Phaser.BlendModes.ADD,
     });
     this.sandEmitter.setScrollFactor(0);

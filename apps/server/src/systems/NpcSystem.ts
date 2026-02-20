@@ -151,7 +151,7 @@ export class NpcSystem {
     return 1; // Default level
   }
 
-  public spawnNpc(type: NpcType, map: TileMap, ownerId?: string): void {
+  public spawnNpc(type: NpcType, map: TileMap, ownerId?: string): Npc | undefined {
     // Pick a random walkable tile then spiral to avoid any occupied cell
     for (let attempt = 0; attempt < 20; attempt++) {
       const rx = Math.floor(Math.random() * map.width);
@@ -160,13 +160,14 @@ export class NpcSystem {
 
       const safe = findSafeSpawn(rx, ry, map, this.spatial);
       if (safe) {
-        this.spawnNpcAt(type, map, safe.x, safe.y, ownerId);
-        return;
+        return this.spawnNpcAt(type, map, safe.x, safe.y, ownerId);
       }
     }
 
     logger.error({ intent: "spawn_npc", result: "failed", npcType: type });
+    return undefined;
   }
+
 
   public spawnSummon(caster: Entity, abilityId: string, x: number, y: number): void {
     const ability = ABILITIES[abilityId];

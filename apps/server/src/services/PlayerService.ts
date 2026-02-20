@@ -56,6 +56,8 @@ export class PlayerService {
     player.level = char.level;
     player.xp = char.exp;
     player.maxXp = EXP_TABLE[player.level] ?? 100;
+    player.pvpKills = char.pvpKills;
+    player.npcKills = char.npcKills;
 
     if (char.inventory?.slots) {
       for (const slot of char.inventory.slots) {
@@ -213,6 +215,8 @@ export class PlayerService {
       equipment,
       classType: player.classType,
       companions: activeCompanions,
+      pvpKills: player.pvpKills,
+      npcKills: player.npcKills,
     };
 
     await PersistenceService.saveChar(player.dbId, saveData);

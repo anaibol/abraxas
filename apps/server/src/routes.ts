@@ -6,6 +6,15 @@ import { prisma } from "./database/db";
 import { CharacterClass } from "./generated/prisma";
 import { logger } from "./logger";
 
+const LEADERBOARD_SELECT = {
+  name: true,
+  class: true,
+  level: true,
+  pvpKills: true,
+  npcKills: true,
+  gold: true,
+} as const;
+
 function extractBearerToken(req: Request): string | null {
   const authHeader = req.headers.get("authorization");
   return authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
@@ -82,7 +91,7 @@ export const loginEndpoint: ReturnType<typeof createEndpoint> = createEndpoint(
         email: user.email,
         role: user.role,
       });
-      return ctx.json({ token, characters });
+      return ctx.json({ token, characters, role: user.role });
     } catch (e) {
       logger.error({ message: "Login error", error: String(e) });
       return ctx.json({ error: "Login failed" }, { status: 500 });
@@ -112,7 +121,7 @@ export const meEndpoint: ReturnType<typeof createEndpoint> = createEndpoint(
       orderBy: { lastLoginAt: "desc" },
     });
 
-    return ctx.json({ characters });
+    return ctx.json({ characters, role: payload.role });
   },
 );
 
@@ -185,6 +194,77 @@ export const createCharacterEndpoint: ReturnType<typeof createEndpoint> = create
     } catch (e) {
       logger.error({ message: "Character creation error", error: String(e) });
       return ctx.json({ error: "Character creation failed" }, { status: 500 });
+    }
+  },
+);
+
+export const adminCharactersEndpoint: ReturnType<typeof createEndpoint> = createEndpoint(
+  "/api/admin/characters",
+  { method: "GET" },
+  async (ctx) => {
+    if (!ctx.request) return ctx.json({ error: "Missing request" }, { status: 400 });
+    const token = extractBearerToken(ctx.request);
+    if (!token) return ctx.json({ error: "Unauthorized" }, { status: 401 });
+
+    const payload = verifyToken(token);
+    if (!payload || payload.role !== "ADMIN") {
+      return ctx.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    try {
+      const characters = await prisma.character.findMany({
+        select: {
+          id: true,
+          name: true,
+          class: true,
+          level: true,
+          account: { select: { email: true } },
+        },
+        orderBy: { name: "asc" },
+      });
+      return ctx.json({ characters });
+    } catch (e) {
+      logger.error({ message: "Admin characters error", error: String(e) });
+      return ctx.json({ error: "Failed to load characters" }, { status: 500 });
+    }
+  },
+);
+
+export const leaderboardEndpoint: ReturnType<typeof createEndpoint> = createEndpoint(
+  "/api/leaderboard",
+  { method: "GET" },
+  async (ctx) => {
+    try {
+      const [byLevel, byNpcKills, byPvpKills, byGold] = await Promise.all([
+        prisma.character.findMany({
+          select: LEADERBOARD_SELECT,
+          orderBy: { level: "desc" },
+          take: 10,
+        }),
+        prisma.character.findMany({
+          select: LEADERBOARD_SELECT,
+          orderBy: { npcKills: "desc" },
+          where: { npcKills: { gt: 0 } },
+          take: 10,
+        }),
+        prisma.character.findMany({
+          select: LEADERBOARD_SELECT,
+          orderBy: { pvpKills: "desc" },
+          where: { pvpKills: { gt: 0 } },
+          take: 10,
+        }),
+        prisma.character.findMany({
+          select: LEADERBOARD_SELECT,
+          orderBy: { gold: "desc" },
+          where: { gold: { gt: 0 } },
+          take: 10,
+        }),
+      ]);
+
+      return ctx.json({ byLevel, byNpcKills, byPvpKills, byGold });
+    } catch (e) {
+      logger.error({ message: "Leaderboard error", error: String(e) });
+      return ctx.json({ error: "Failed to load leaderboard" }, { status: 500 });
     }
   },
 );

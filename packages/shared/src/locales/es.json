@@ -1030,5 +1030,18 @@
   "quest_status": {
     "IN_PROGRESS": "En Progreso",
     "COMPLETED": "Completada"
+  },
+  "leaderboard": {
+    "title": "Clasificación",
+    "tab_level": "Nivel",
+    "tab_npc_kills": "Cazadores",
+    "tab_pvp_kills": "PvP",
+    "tab_gold": "Riqueza",
+    "loading": "Cargando...",
+    "refresh": "Actualizar",
+    "error": "No se pudo cargar la clasificación",
+    "try_again": "Intentar de nuevo",
+    "empty": "Sin registros aún",
+    "hint": "Top 10 jugadores por categoría — actualizado al desconectarse"
   }
 }

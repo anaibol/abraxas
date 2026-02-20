@@ -77,4 +77,5 @@ export interface SidebarProps {
   onClose?: () => void;
   onSettings?: () => void;
   onLogout?: () => void;
+  onLeaderboard?: () => void;
 }

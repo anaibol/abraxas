@@ -8,6 +8,7 @@ import {
 import type { Client } from "@colyseus/core";
 import { CombatHandlers } from "./CombatHandlers";
 import { EconomyHandlers } from "./EconomyHandlers";
+import { FastTravelHandlers } from "./FastTravelHandlers";
 import { HandlerUtils } from "./HandlerUtils";
 import { InteractionHandlers } from "./InteractionHandlers";
 import { ItemHandlers } from "./ItemHandlers";
@@ -32,8 +33,12 @@ export class MessageHandler {
     ) => void,
   ) {
     register(ClientMessageType.Move, (c, m) => MovementHandlers.handleMove(this.ctx, c, m));
+    register(ClientMessageType.FastTravel, (c, m) => MovementHandlers.handleFastTravel(this.ctx, c, m));
     register(ClientMessageType.GMTeleport, (c, m) =>
       MovementHandlers.handleGMTeleport(this.ctx, c, m),
+    );
+    register(ClientMessageType.FastTravel, (c, m) =>
+      FastTravelHandlers.handleFastTravel(this.ctx, c, m),
     );
 
     register(ClientMessageType.Attack, (c, m) => CombatHandlers.handleAttack(this.ctx, c, m));

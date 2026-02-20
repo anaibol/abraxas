@@ -34,6 +34,23 @@ export class WorldEventSystem {
     }));
   }
 
+  /** Called by TickSystem when an event NPC is killed — updates progress counter. */
+  onEventNpcDied(npcSessionId: string, broadcast: BroadcastFn): void {
+    for (const schedule of this.schedules) {
+      const idx = schedule.activeNpcIds.indexOf(npcSessionId);
+      if (idx === -1) continue;
+      schedule.activeNpcIds.splice(idx, 1);
+
+      // Broadcast live progress
+      broadcast(ServerMessageType.WorldEventProgress, {
+        eventId: schedule.event.id,
+        npcsDead: schedule.event.spawns.reduce((s, w) => s + w.count, 0) - schedule.activeNpcIds.length,
+        npcsTotalCount: schedule.event.spawns.reduce((s, w) => s + w.count, 0),
+      });
+      break;
+    }
+  }
+
   tick(map: TileMap, now: number, broadcast: BroadcastFn): void {
     for (const schedule of this.schedules) {
       if (schedule.nextStartAt === 0) continue;
@@ -63,13 +80,16 @@ export class WorldEventSystem {
   ): void {
     const { event } = schedule;
 
-    // Spawn NPC waves for this event
+    // Spawn NPC waves for this event and track their session IDs
     schedule.activeNpcIds = [];
     for (const wave of event.spawns) {
       for (let i = 0; i < wave.count; i++) {
-        this.npcSystem.spawnNpc(wave.npcType, map);
+        const npc = this.npcSystem.spawnNpc(wave.npcType, map);
+        if (npc) schedule.activeNpcIds.push(npc.sessionId);
       }
     }
+
+    const totalNpcs = event.spawns.reduce((s, w) => s + w.count, 0);
 
     // Update synced state so clients can show event banners
     this.state.worldEventId = event.id;
@@ -83,6 +103,7 @@ export class WorldEventSystem {
       name: event.name,
       description: event.description,
       durationMs: event.durationMs,
+      totalNpcs,
     });
 
     logger.info({

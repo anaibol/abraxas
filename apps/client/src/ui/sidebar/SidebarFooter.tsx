@@ -1,5 +1,5 @@
 import { Box, Flex, Text } from "@chakra-ui/react";
-import { LogOut, Settings } from "lucide-react";
+import { LogOut, Settings, Trophy } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { HEX, T } from "../tokens";
 import type { PlayerState } from "./types";
@@ -9,9 +9,10 @@ type SidebarFooterProps = {
   onSettings?: () => void;
   onLogout?: () => void;
   onTogglePvP?: () => void;
+  onLeaderboard?: () => void;
 };
 
-export function SidebarFooter({ state, onSettings, onLogout, onTogglePvP }: SidebarFooterProps) {
+export function SidebarFooter({ state, onSettings, onLogout, onTogglePvP, onLeaderboard }: SidebarFooterProps) {
   const { t } = useTranslation();
   const hpPct = state.maxHp > 0 ? Math.max(0, (state.hp / state.maxHp) * 100) : 0;
   const manaPct = state.maxMana > 0 ? Math.max(0, (state.mana / state.maxMana) * 100) : 0;
@@ -117,8 +118,13 @@ export function SidebarFooter({ state, onSettings, onLogout, onTogglePvP }: Side
         />
       </Flex>
 
-      {/* Settings + Logout row */}
+      {/* Settings + Logout + Leaderboard row */}
       <Flex borderTop="1px solid" borderTopColor={T.border} px="2" py="2" gap="2">
+        <FooterButton
+          icon={<Trophy size={14} />}
+          label={t("leaderboard.title")}
+          onClick={onLeaderboard}
+        />
         <FooterButton
           icon={<Settings size={14} />}
           label={t("sidebar.settings")}

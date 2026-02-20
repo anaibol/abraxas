@@ -19,6 +19,7 @@ type ScoreboardOverlayProps = {
   onlinePlayers: OnlinePlayer[];
   myName: string;
   myLevel: number;
+  onOpenLeaderboard?: () => void;
 };
 
 const FONT = T.display;
@@ -150,6 +151,7 @@ export function ScoreboardOverlay({
   onlinePlayers,
   myName,
   myLevel,
+  onOpenLeaderboard,
 }: ScoreboardOverlayProps) {
   const { t } = useTranslation();
   if (!visible) return null;
@@ -214,6 +216,22 @@ export function ScoreboardOverlay({
           >
             {t("scoreboard.hold_tab_hint")}
           </Box>
+          {onOpenLeaderboard && (
+            <Box
+              pos="absolute"
+              left="4"
+              fontSize="10px"
+              color={T.goldDim}
+              letterSpacing="1px"
+              fontFamily={FONT}
+              cursor="pointer"
+              _hover={{ color: T.gold }}
+              pointerEvents="all"
+              onClick={onOpenLeaderboard}
+            >
+              🏆 {t("leaderboard.title")} →
+            </Box>
+          )}
         </Flex>
 
         {/* Body */}

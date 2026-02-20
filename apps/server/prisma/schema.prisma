@@ -139,6 +139,8 @@ model Character {
   facing String @default("down")
 
   pvpEnabled  Boolean      @default(false)
+  pvpKills    Int          @default(0)
+  npcKills    Int          @default(0)
   guildMember GuildMember?
 
   stats      CharacterStats?
@@ -151,6 +153,10 @@ model Character {
 
   @@index([accountId])
   @@index([mapId])
+  @@index([level])
+  @@index([pvpKills])
+  @@index([npcKills])
+  @@index([gold])
 }
 
 model Guild {

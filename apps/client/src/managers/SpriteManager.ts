@@ -31,14 +31,13 @@ export class SpriteManager {
   addPlayer(player: PlayerEntityState, sessionId: string) {
     if (this.sprites.has(sessionId)) return;
     const isLocal = sessionId === this.getSessionId();
-    // classType may be undefined during the initial Colyseus snapshot; default to WARRIOR.
     const sprite = new PlayerSprite(
       this.scene,
       sessionId,
       player.tileX,
       player.tileY,
-      player.classType ?? "WARRIOR",
-      player.name ?? "",
+      player.classType,
+      player.name,
       isLocal,
     );
     this.sprites.set(sessionId, sprite);
@@ -103,14 +102,13 @@ export class SpriteManager {
 
   addNpc(npc: NpcEntityState, id: string) {
     if (this.sprites.has(id)) return;
-    // npcType may be undefined during the initial Colyseus snapshot; default to 'orc'.
     const sprite = new PlayerSprite(
       this.scene,
       id,
       npc.tileX,
       npc.tileY,
-      npc.npcType ?? "orc",
-      npc.name ?? "",
+      npc.npcType,
+      npc.name,
       false,
     );
     this.sprites.set(id, sprite);

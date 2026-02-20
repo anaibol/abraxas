@@ -37,11 +37,36 @@ const TEX = {
 
 export class EffectManager {
   private texturesReady = false;
+  /** Persistent emitters (teleport pads) — tracked so destroy() can clean them up. */
+  private teleportEmitters: Phaser.GameObjects.Particles.ParticleEmitter[] = [];
 
   constructor(
     private scene: Phaser.Scene,
     private spriteManager: SpriteManager,
   ) {}
+
+  /** Clean up all persistent emitters. Call from GameScene.shutdown(). */
+  public destroy() {
+    for (const e of this.teleportEmitters) {
+      try { e.destroy(); } catch { /* already destroyed */ }
+    }
+    this.teleportEmitters = [];
+  }
+
+  /**
+   * Returns true if the world pixel position (px, py) is within the current
+   * camera viewport (plus a small margin). Use to skip effects that the player
+   * cannot see, saving particle CPU budget.
+   */
+  private isOnScreen(px: number, py: number, margin = 80): boolean {
+    const wv = this.scene.cameras.main.worldView;
+    return (
+      px >= wv.left - margin &&
+      px <= wv.right + margin &&
+      py >= wv.top - margin &&
+      py <= wv.bottom + margin
+    );
+  }
 
   // ── Texture generation ────────────────────────────────────────────────────
 
@@ -233,24 +258,25 @@ export class EffectManager {
 
   /**
    * Creates a persistent, looping particle effect for a teleport pad.
+   * Emitters are tracked so they can be destroyed on scene shutdown.
    */
   public createTeleportEffect(px: number, py: number) {
     this.ensureTextures();
 
     // Base glowing aura on the ground
-    this.scene.add
+    const aura = this.scene.add
       .particles(px, py + 8, TEX.CIRCLE, {
         tint: [0xaaffff, 0xffffff, 0x4488ff],
         scale: { start: 1.2, end: 0.8 },
         alpha: { start: 0.8, end: 0 },
         lifespan: 2000,
-        frequency: 400,
+        frequency: 500,
         blendMode: Phaser.BlendModes.ADD,
       })
       .setDepth(1);
 
     // Magical stars floating upwards continuously
-    this.scene.add
+    const stars = this.scene.add
       .particles(px, py, TEX.STAR, {
         tint: [0xffffff, 0xaaffff],
         scale: { start: 0.4, end: 0 },
@@ -259,13 +285,15 @@ export class EffectManager {
         angle: { min: 250, max: 290 }, // Flowing upwards
         gravityY: -10,
         lifespan: { min: 1500, max: 2500 },
-        frequency: 150,
+        frequency: 200,
         rotate: { start: 0, end: 360 },
         x: { min: -12, max: 12 },
         y: { min: 0, max: 8 },
         blendMode: Phaser.BlendModes.ADD,
       })
       .setDepth(2);
+
+    this.teleportEmitters.push(aura, stars);
   }
 
   /**
@@ -444,24 +472,20 @@ export class EffectManager {
     // Use the new hyper-realistic lightning effect for the main strike
     this.createLightningStrike(px, py);
 
-    // Follow up with smaller, secondary strikes
-    this.scene.time.delayedCall(45, () => {
+    // Two secondary strikes (reduced from 4 for perf)
+    this.scene.time.delayedCall(60, () => {
       this.lightning(px - 38, py, 0xddddff, 108, 7);
       this.lightning(px + 32, py, 0xddddff, 118, 8);
     });
-    this.scene.time.delayedCall(110, () => {
-      this.lightning(px - 18, py, 0xaaaaff, 84, 6);
-      this.lightning(px + 50, py, 0xaaaaff, 94, 6);
-    });
-    
-    // An additional wave of horizontal electric sparks
+
+    // Horizontal electric sparks
     this.burst(px, py, TEX.SPARK, {
       colors: [0xffffff, 0xffffaa],
-      count: 30,
+      count: 22,
       speed: { min: 80, max: 220 },
       scale: { start: 0.5, end: 0 },
       lifespan: { min: 100, max: 300 },
-      angle: { min: 160, max: 200 }, // Sweeping horizontally
+      angle: { min: 160, max: 200 },
       radius: 30,
     });
   }
@@ -591,31 +615,19 @@ export class EffectManager {
   private fx_holy_nova(px: number, py: number) {
     this.flash(px, py, 0xffffff, 55, 120);
     this.ring(px, py, 0xffee44, 5, 94, 720, 0.9, 6);
-    this.scene.time.delayedCall(70, () => this.ring(px, py, 0xffffff, 5, 76, 590, 0.7, 3));
-    this.scene.time.delayedCall(140, () => this.ring(px, py, 0xffcc88, 5, 60, 475, 0.5, 2));
+    this.scene.time.delayedCall(100, () => this.ring(px, py, 0xffcc88, 5, 60, 475, 0.5, 2));
     this.burst(px, py, TEX.STAR, {
       colors: [0xffffff, 0xffffaa, 0xffcc44],
-      count: 44,
+      count: 36,
       speed: { min: 80, max: 230 },
       scale: { start: 0.7, end: 0 },
       lifespan: { min: 500, max: 1000 },
       rotate: { start: 0, end: 540 },
       radius: 12,
     });
-    // Cross-shaped holy light bursts
-    this.burst(px, py, TEX.CROSS, {
-      colors: [0xffffff, 0xffffcc],
-      count: 16,
-      speed: { min: 30, max: 90 },
-      scale: { start: 0.6, end: 0 },
-      lifespan: { min: 600, max: 1100 },
-      rotate: { start: 0, end: 360 },
-      gravityY: -32,
-      radius: 42,
-    });
     this.burst(px, py, TEX.CIRCLE, {
       colors: [0xffffff, 0xffffa0],
-      count: 28,
+      count: 20,
       speed: { min: 20, max: 65 },
       scale: { start: 0.5, end: 0 },
       lifespan: { min: 700, max: 1300 },
@@ -1355,6 +1367,7 @@ export class EffectManager {
     this.ensureTextures();
     const px = sprite.renderX;
     const py = sprite.renderY - TILE_SIZE * 0.4;
+    if (!this.isOnScreen(px, py)) return;
 
     // Brief white flash → red flash for dramatic impact
     this.flash(px, py, 0xffffff, 22, 60);
@@ -1454,6 +1467,7 @@ export class EffectManager {
     this.ensureTextures();
     const px = tileX * TILE_SIZE + TILE_SIZE / 2;
     const py = tileY * TILE_SIZE + TILE_SIZE / 2;
+    if (!this.isOnScreen(px, py)) return;
     this.ring(px, py, color, 8, 3, 300, 0.65, 2);
     this.burst(px, py, TEX.SPARK, {
       colors: [color, 0xffffff],
@@ -1528,6 +1542,7 @@ export class EffectManager {
     this.ensureTextures();
     const px = targetTileX * TILE_SIZE + TILE_SIZE / 2;
     const py = targetTileY * TILE_SIZE + TILE_SIZE / 2;
+    if (!this.isOnScreen(px, py)) return;
 
     switch (spellId) {
       case "fireball":
@@ -1664,6 +1679,7 @@ export class EffectManager {
     this.ensureTextures();
     const px = sprite.renderX;
     const py = sprite.renderY - TILE_SIZE * 0.5;
+    if (!this.isOnScreen(px, py)) return;
     this.flash(px, py, 0xff4444, 16, 60);
     this.burst(px, py, TEX.SPARK, {
       colors: [0xff4444, 0xff8844, 0xffcc88, 0xffffff],
@@ -1921,7 +1937,7 @@ export class EffectManager {
     }
     orb.setPosition(sx, sy);
 
-    // Denser trail with slight colour variation
+    // Trail with slight colour variation
     const trail = this.scene.add.particles(sx, sy, texKey, {
       speed: { min: 2, max: 15 },
       scale: { start: 0.55, end: 0 },
@@ -1929,7 +1945,7 @@ export class EffectManager {
       tint: [color, 0xffffff],
       blendMode: Phaser.BlendModes.ADD,
       alpha: { start: 0.9, end: 0 },
-      frequency: 12,
+      frequency: 22,
     });
     trail.setDepth(15);
 
@@ -2048,24 +2064,25 @@ export class EffectManager {
    */
   public createThickSmoke(px: number, py: number) {
     this.ensureTextures();
+    const m = this.particleMultiplier();
 
-    // The main body of smoke
+    // The main body of smoke (quality-scaled)
     this.burst(px, py, TEX.SMOKE, {
       colors: [0x888888, 0x666666, 0x444444, 0x222222],
-      count: 45,
+      count: Math.max(8, Math.round(30 * m)),
       speed: { min: 10, max: 45 },
-      scale: { start: 0.5, end: 2.8 }, // Huge expansion scale for "volumetric" look
+      scale: { start: 0.5, end: 2.8 },
       lifespan: { min: 1800, max: 3500 },
-      gravityY: -8, // Slow rise
+      gravityY: -8,
       radius: 18,
-      blendMode: Phaser.BlendModes.NORMAL, // Essential for thick, obscuring smoke
+      blendMode: Phaser.BlendModes.NORMAL,
       alpha: { start: 0.85, end: 0 },
     });
 
-    // A tiny bit of initial blast to give it impact
+    // Initial blast
     this.burst(px, py, TEX.CIRCLE, {
       colors: [0xaaaaaa, 0x888888],
-      count: 15,
+      count: Math.max(4, Math.round(10 * m)),
       speed: { min: 40, max: 80 },
       scale: { start: 0.6, end: 0 },
       lifespan: { min: 400, max: 800 },
@@ -2130,6 +2147,7 @@ export class EffectManager {
    */
   public createLightningStrike(px: number, py: number) {
     this.ensureTextures();
+    const m = this.particleMultiplier();
     // Flash and Rings
     this.flash(px, py, 0xffffff, 80, 150);
     this.ring(px, py, 0xaaffff, 5, 120, 500, 0.9, 6);
@@ -2138,7 +2156,7 @@ export class EffectManager {
     // Ozone smoke (ionized air)
     this.burst(px, py, TEX.SMOKE, {
       colors: [0xccccff, 0x8888aa],
-      count: 15,
+      count: Math.max(5, Math.round(10 * m)),
       speed: { min: 20, max: 60 },
       scale: { start: 1.5, end: 0.2 },
       lifespan: { min: 800, max: 1500 },
@@ -2147,10 +2165,10 @@ export class EffectManager {
       alpha: { start: 0.6, end: 0 },
     });
 
-    // Crackling electrical sparks shooting everywhere
+    // Crackling electrical sparks
     this.burst(px, py, TEX.SPARK, {
       colors: [0xffffff, 0xaaffff, 0xffff44],
-      count: 40,
+      count: Math.max(10, Math.round(28 * m)),
       speed: { min: 100, max: 350 },
       scale: { start: 0.7, end: 0 },
       lifespan: { min: 200, max: 600 },
@@ -2196,13 +2214,14 @@ export class EffectManager {
    */
   public createFrostExplosion(px: number, py: number) {
     this.ensureTextures();
+    const m = this.particleMultiplier();
 
     this.ring(px, py, 0x88ddff, 6, 120, 500, 0.8, 4);
 
     // Sharp ice shards exploding outward
     this.burst(px, py, TEX.SHARD, {
       colors: [0xffffff, 0xccffff, 0x88ddff],
-      count: 60,
+      count: Math.max(12, Math.round(40 * m)),
       speed: { min: 150, max: 450 },
       scale: { start: 0.9, end: 0 },
       lifespan: { min: 300, max: 700 },
@@ -2210,14 +2229,14 @@ export class EffectManager {
       blendMode: Phaser.BlendModes.ADD,
     });
 
-    // Freezing mist left behind (Cold air sinks)
+    // Freezing mist left behind
     this.burst(px, py, TEX.SMOKE, {
       colors: [0xddffff, 0xaaddff],
-      count: 30,
+      count: Math.max(8, Math.round(20 * m)),
       speed: { min: 10, max: 50 },
       scale: { start: 0.5, end: 2.5 },
       lifespan: { min: 1200, max: 2400 },
-      gravityY: 25, // Cold air sinks
+      gravityY: 25,
       blendMode: Phaser.BlendModes.NORMAL,
       alpha: { start: 0.7, end: 0 },
     });

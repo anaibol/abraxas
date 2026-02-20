@@ -1,6 +1,7 @@
 import { type ClassType, getRandomName } from "@abraxas/shared";
 import { Badge, Box, Button, Flex, Grid, IconButton, Input, Spinner, Text } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
+import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { HEX, T } from "./tokens";
@@ -15,6 +16,10 @@ type CharacterSummary = {
   name: string;
   class: ClassType;
   level: number;
+};
+
+type AdminCharacterSummary = CharacterSummary & {
+  ownerEmail: string;
 };
 
 type Mode = "login" | "register" | "character_select" | "character_create";
@@ -121,9 +126,29 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
   const [error, setError] = useState("");
   const [creating, setCreating] = useState(false);
   const [isCheckingToken, setIsCheckingToken] = useState(() => !!localStorage.getItem("abraxas_token"));
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminCharacters, setAdminCharacters] = useState<AdminCharacterSummary[]>([]);
+  const [charSearch, setCharSearch] = useState("");
 
   const [token, setToken] = useState("");
   const [characters, setCharacters] = useState<CharacterSummary[]>([]);
+
+  const fetchAdminCharacters = async (tok: string) => {
+    const res = await fetch("/api/admin/characters", {
+      headers: { Authorization: `Bearer ${tok}` },
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    setAdminCharacters(
+      (data.characters ?? []).map((c: any) => ({
+        id: c.id,
+        name: c.name,
+        class: c.class,
+        level: c.level,
+        ownerEmail: c.account?.email ?? "",
+      }))
+    );
+  };
 
   useEffect(() => {
     const stored = localStorage.getItem("abraxas_token");
@@ -140,9 +165,12 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
         return res.json();
       })
       .then((data) => {
+        const admin = data.role === "ADMIN";
         setToken(stored);
+        setIsAdmin(admin);
         setCharacters(data.characters ?? []);
         setMode("character_select");
+        if (admin) fetchAdminCharacters(stored);
       })
       .catch(() => {
         localStorage.removeItem("abraxas_token");
@@ -179,10 +207,13 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
         return;
       }
 
+      const admin = data.role === "ADMIN";
       localStorage.setItem("abraxas_token", data.token);
       setToken(data.token);
+      setIsAdmin(admin);
       setCharacters(data.characters ?? []);
       setMode("character_select");
+      if (admin) fetchAdminCharacters(data.token);
     } catch {
       setError(t("lobby.error.network_error"));
     }
@@ -243,12 +274,20 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
     setMode("login");
     setToken("");
     setCharacters([]);
+    setIsAdmin(false);
+    setAdminCharacters([]);
+    setCharSearch("");
     setEmail("");
     setPassword("");
     setError("");
   };
 
-  const isCharSelectWide = mode === "character_select" || mode === "character_create";
+  const isCharSelectWide = mode === "character_select" || mode === "character_create" || isAdmin;
+
+  const filteredAdminChars = adminCharacters.filter((c) => {
+    const q = charSearch.toLowerCase();
+    return c.name.toLowerCase().includes(q) || c.ownerEmail.toLowerCase().includes(q);
+  });
 
   return (
     <Flex
@@ -270,7 +309,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
         backdropFilter="blur(20px)"
         borderRadius="12px"
         p={{ base: "6", md: "12" }}
-        w={{ base: "calc(100vw - 32px)", md: isCharSelectWide ? "540px" : "460px" }}
+        w={{ base: "calc(100vw - 32px)", md: isCharSelectWide ? (isAdmin ? "600px" : "540px") : "460px" }}
         maxW={{ base: "100%", md: "600px" }}
         boxShadow={`0 10px 50px rgba(0,0,0,0.8), 0 0 0 1px ${HEX.border}`}
         fontFamily={T.display}
@@ -453,111 +492,179 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
         {/* ── Character Select ── */}
         {mode === "character_select" && (
           <Box animation={`${entrance} 0.4s ease-out`}>
-            <Flex justify="space-between" align="center" mb="5">
+            {/* Admin header */}
+            {isAdmin && (
+              <Flex
+                align="center"
+                gap="2"
+                mb="4"
+                px="3"
+                py="2"
+                bg="rgba(180, 60, 20, 0.12)"
+                border="1px solid rgba(180, 60, 20, 0.35)"
+                borderRadius="6px"
+              >
+                <Text fontSize="14px">🛡️</Text>
+                <Text fontSize="11px" color="#e07050" letterSpacing="2px" textTransform="uppercase" fontWeight="700">
+                  Admin — All Characters
+                </Text>
+                <Text fontSize="10px" color="rgba(180,90,60,0.7)" ml="auto">
+                  {adminCharacters.length} total
+                </Text>
+              </Flex>
+            )}
+
+            <Flex justify="space-between" align="center" mb={isAdmin ? "3" : "5"}>
               <Text {...labelStyle} mb="0">
-                {t("lobby.choose_champion")}
+                {isAdmin ? "Select Character" : t("lobby.choose_champion")}
               </Text>
-              <Text fontSize="11px" color={T.goldDark}>
-                {t("lobby.characters_count", { count: characters.length, max: MAX_CHARACTERS })}
-              </Text>
+              {!isAdmin && (
+                <Text fontSize="11px" color={T.goldDark}>
+                  {t("lobby.characters_count", { count: characters.length, max: MAX_CHARACTERS })}
+                </Text>
+              )}
             </Flex>
 
-            {characters.length === 0 ? (
+            {/* Admin search bar */}
+            {isAdmin && (
+              <Box mb="3" position="relative">
+                <Box
+                  position="absolute"
+                  left="10px"
+                  top="50%"
+                  transform="translateY(-50%)"
+                  color={T.goldDark}
+                  pointerEvents="none"
+                  zIndex={1}
+                >
+                  <Search size={14} />
+                </Box>
+                <Input
+                  pl="32px"
+                  value={charSearch}
+                  onChange={(e) => setCharSearch(e.target.value)}
+                  placeholder="Search by name or email…"
+                  {...inputStyle}
+                />
+              </Box>
+            )}
+
+            {/* Character list */}
+            {(isAdmin ? filteredAdminChars.length === 0 : characters.length === 0) ? (
               <Flex direction="column" align="center" justify="center" py="10" gap="3">
                 <Text fontSize="32px" opacity="0.4">
                   ⚔️
                 </Text>
                 <Text fontSize="13px" color={T.goldMuted} textAlign="center">
-                  {t("lobby.no_champions")}
+                  {isAdmin && charSearch ? "No characters match your search." : t("lobby.no_champions")}
                 </Text>
               </Flex>
             ) : (
-              <Grid templateColumns="repeat(1, 1fr)" gap="3" mb="5">
-                {characters.map((char) => {
-                  const info = CLASS_INFO[char.class];
-                  return (
-                    <Box
-                      key={char.id}
-                      p="4"
-                      bg="rgba(8, 8, 12, 0.4)"
-                      border="1px solid"
-                      borderColor={T.border}
-                      borderRadius="8px"
-                      cursor="pointer"
-                      transition="all 0.2s"
-                      onClick={() => onJoin(char.id, char.class, token)}
-                      _hover={{
-                        bg: `${info.color}11`,
-                        borderColor: info.color,
-                        transform: "translateX(4px)",
-                      }}
-                    >
-                      <Flex align="center" gap="4">
-                        <Box fontSize="26px" w="40px" textAlign="center" flexShrink={0}>
-                          {info.icon}
-                        </Box>
-                        <Box flex="1">
-                          <Text
-                            fontSize="15px"
-                            fontWeight="900"
-                            color={T.goldText}
-                            letterSpacing="1px"
+              <Box maxH="400px" overflowY="auto" pr="1" mb="4"
+                css={{
+                  "&::-webkit-scrollbar": { width: "4px" },
+                  "&::-webkit-scrollbar-track": { background: "transparent" },
+                  "&::-webkit-scrollbar-thumb": { background: `${HEX.border}`, borderRadius: "2px" },
+                }}
+              >
+                <Grid templateColumns="repeat(1, 1fr)" gap="2">
+                  {(isAdmin ? filteredAdminChars : characters).map((char) => {
+                    const info = CLASS_INFO[char.class];
+                    const adminChar = char as AdminCharacterSummary;
+                    return (
+                      <Box
+                        key={char.id}
+                        p="3"
+                        bg="rgba(8, 8, 12, 0.4)"
+                        border="1px solid"
+                        borderColor={T.border}
+                        borderRadius="8px"
+                        cursor="pointer"
+                        transition="all 0.2s"
+                        onClick={() => onJoin(char.id, char.class, token)}
+                        _hover={{
+                          bg: `${info.color}11`,
+                          borderColor: info.color,
+                          transform: "translateX(4px)",
+                        }}
+                      >
+                        <Flex align="center" gap="3">
+                          <Box fontSize="22px" w="32px" textAlign="center" flexShrink={0}>
+                            {info.icon}
+                          </Box>
+                          <Box flex="1" minW={0}>
+                            <Text
+                              fontSize="14px"
+                              fontWeight="900"
+                              color={T.goldText}
+                              letterSpacing="1px"
+                            >
+                              {char.name}
+                            </Text>
+                            <Flex align="center" gap="2">
+                              <Text
+                                fontSize="11px"
+                                color={T.goldDark}
+                                textTransform="uppercase"
+                                letterSpacing="1px"
+                              >
+                                {t(`classes.${char.class}.name`)}
+                              </Text>
+                              {isAdmin && adminChar.ownerEmail && (
+                                <Text fontSize="10px" color="rgba(180,100,60,0.7)" truncate>
+                                  · {adminChar.ownerEmail}
+                                </Text>
+                              )}
+                            </Flex>
+                          </Box>
+                          <Badge
+                            px="2"
+                            py="0.5"
+                            borderRadius="4px"
+                            bg={`${info.color}22`}
+                            color={info.color}
+                            border="1px solid"
+                            borderColor={`${info.color}44`}
+                            fontSize="11px"
+                            fontFamily={T.display}
+                            fontWeight="700"
+                            flexShrink={0}
                           >
-                            {char.name}
-                          </Text>
-                          <Text
-                            fontSize="12px"
-                            color={T.goldDark}
-                            textTransform="uppercase"
-                            letterSpacing="1px"
-                          >
-                            {t(`classes.${char.class}.name`)}
-                          </Text>
-                        </Box>
-                        <Badge
-                          px="2"
-                          py="0.5"
-                          borderRadius="4px"
-                          bg={`${info.color}22`}
-                          color={info.color}
-                          border="1px solid"
-                          borderColor={`${info.color}44`}
-                          fontSize="11px"
-                          fontFamily={T.display}
-                          fontWeight="700"
-                        >
-                          {t("sidebar.inventory.level")} {char.level}
-                        </Badge>
-                      </Flex>
-                    </Box>
-                  );
-                })}
-              </Grid>
+                            {t("sidebar.inventory.level")} {char.level}
+                          </Badge>
+                        </Flex>
+                      </Box>
+                    );
+                  })}
+                </Grid>
+              </Box>
             )}
 
-            <Button
-              w="100%"
-              h="44px"
-              bg={characters.length >= MAX_CHARACTERS ? T.goldDark : "transparent"}
-              border="1px solid"
-              borderColor={characters.length >= MAX_CHARACTERS ? "transparent" : T.border}
-              color={characters.length >= MAX_CHARACTERS ? T.goldDark : T.goldMuted}
-              fontFamily={T.display}
-              fontWeight="700"
-              fontSize="13px"
-              letterSpacing="3px"
-              textTransform="uppercase"
-              disabled={characters.length >= MAX_CHARACTERS}
-              onClick={() => {
-                setError("");
-                setMode("character_create");
-              }}
-              _hover={
-                characters.length < MAX_CHARACTERS ? { borderColor: T.gold, color: T.goldText } : {}
-              }
-            >
-              + {t("lobby.new_character")}
-            </Button>
+            {!isAdmin && (
+              <Button
+                w="100%"
+                h="44px"
+                bg={characters.length >= MAX_CHARACTERS ? T.goldDark : "transparent"}
+                border="1px solid"
+                borderColor={characters.length >= MAX_CHARACTERS ? "transparent" : T.border}
+                color={characters.length >= MAX_CHARACTERS ? T.goldDark : T.goldMuted}
+                fontFamily={T.display}
+                fontWeight="700"
+                fontSize="13px"
+                letterSpacing="3px"
+                textTransform="uppercase"
+                disabled={characters.length >= MAX_CHARACTERS}
+                onClick={() => {
+                  setError("");
+                  setMode("character_create");
+                }}
+                _hover={
+                  characters.length < MAX_CHARACTERS ? { borderColor: T.gold, color: T.goldText } : {}
+                }
+              >
+                + {t("lobby.new_character")}
+              </Button>
+            )}
 
             {connecting && (
               <Text fontSize="11px" color={T.goldMuted} textAlign="center" mt="3">

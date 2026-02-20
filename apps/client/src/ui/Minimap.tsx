@@ -1,4 +1,4 @@
-import type { TileMap } from "@abraxas/shared";
+import type { MinimapMarker, TileMap } from "@abraxas/shared";
 import { type FC, type MouseEvent, useEffect, useRef } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
 
@@ -13,6 +13,8 @@ type MinimapProps = {
   currentPlayerId: string;
   isGM?: boolean;
   onGMClick?: (tileX: number, tileY: number) => void;
+  /** Optional static markers: quest pins, waypoints, event locations. */
+  markers?: MinimapMarker[];
 };
 
 export const Minimap: FC<MinimapProps> = ({
@@ -22,6 +24,7 @@ export const Minimap: FC<MinimapProps> = ({
   currentPlayerId,
   isGM,
   onGMClick,
+  markers = [],
 }) => {
   const isMobile = useIsMobile();
   const size = isMobile ? 120 : 200;
@@ -133,12 +136,52 @@ export const Minimap: FC<MinimapProps> = ({
         }
       });
 
+      // ── Markers (quest pins, waypoints, event) ─────────────────────────────
+      for (const marker of markers) {
+        const mx = (marker.tileX - sX) * TILE_SCALE;
+        const my = (marker.tileY - sY) * TILE_SCALE;
+        const r = Math.max(3, TILE_SCALE * 1.2);
+
+        if (marker.type === "quest") {
+          // Yellow ? badge
+          ctx.fillStyle = "rgba(255,230,0,0.85)";
+          ctx.beginPath();
+          ctx.arc(mx + TILE_SCALE / 2, my + TILE_SCALE / 2, r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#000";
+          ctx.font = `bold ${Math.max(6, r)}px sans-serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText("?", mx + TILE_SCALE / 2, my + TILE_SCALE / 2);
+        } else if (marker.type === "waypoint") {
+          // Blue diamond
+          const half = r;
+          ctx.fillStyle = "rgba(80,160,255,0.85)";
+          ctx.beginPath();
+          ctx.moveTo(mx + TILE_SCALE / 2, my + TILE_SCALE / 2 - half);
+          ctx.lineTo(mx + TILE_SCALE / 2 + half, my + TILE_SCALE / 2);
+          ctx.lineTo(mx + TILE_SCALE / 2, my + TILE_SCALE / 2 + half);
+          ctx.lineTo(mx + TILE_SCALE / 2 - half, my + TILE_SCALE / 2);
+          ctx.closePath();
+          ctx.fill();
+        } else if (marker.type === "event") {
+          // Pulsing red star (just a big glowing dot here for canvas simplicity)
+          ctx.fillStyle = `rgba(255,80,80,${0.6 + 0.4 * Math.sin(Date.now() / 300)})`;
+          ctx.beginPath();
+          ctx.arc(mx + TILE_SCALE / 2, my + TILE_SCALE / 2, r * 1.4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = "rgba(255,200,200,0.8)";
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+      }
+
       rafId = requestAnimationFrame(render);
     };
 
     render();
     return () => cancelAnimationFrame(rafId);
-  }, [map, size]);
+  }, [map, size, markers]);
 
   const handleCanvasClick = (e: MouseEvent<HTMLCanvasElement>) => {
     if (!isGM || !onGMClick) return;

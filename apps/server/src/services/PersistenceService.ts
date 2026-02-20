@@ -80,6 +80,8 @@ export class PersistenceService {
       equipment: EquipmentData;
       classType: ClassType;
       companions: { type: string; level: number; exp: number; hp: number }[];
+      pvpKills: number;
+      npcKills: number;
     },
   ) {
     try {
@@ -95,6 +97,8 @@ export class PersistenceService {
           level: data.level,
           exp: data.xp,
           facing: facingStr,
+          pvpKills: data.pvpKills,
+          npcKills: data.npcKills,
           stats: {
             update: {
               hp: data.hp,

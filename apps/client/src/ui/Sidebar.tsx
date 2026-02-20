@@ -64,6 +64,7 @@ export function Sidebar({
   onClose,
   onSettings,
   onLogout,
+  onLeaderboard,
 }: SidebarProps) {
   const isMobile = useIsMobile();
   const { t } = useTranslation();
@@ -246,7 +247,7 @@ export function Sidebar({
       </Box>
 
       {/* Footer */}
-      <SidebarFooter state={state} onSettings={onSettings} onLogout={onLogout} onTogglePvP={onTogglePvP} />
+      <SidebarFooter state={state} onSettings={onSettings} onLogout={onLogout} onTogglePvP={onTogglePvP} onLeaderboard={onLeaderboard} />
     </Flex>
   );
 

@@ -188,6 +188,7 @@ export class TickSystem {
       }
 
       if (killerPlayer?.alive) {
+        killerPlayer.npcKills++;
         this.handleNpcKillRewards(killerPlayer, npc);
       }
     }
@@ -196,7 +197,11 @@ export class TickSystem {
       sessionId: npc.sessionId,
       killerSessionId,
     });
+
+    // Feature 91: Notify WorldEventSystem so it can track kill progress
+    systems.worldEvent.onEventNpcDied(npc.sessionId, broadcast);
   }
+
 
   private handleNpcKillRewards(player: Player, killedNpc: Npc) {
     const { systems, state } = this.opts;

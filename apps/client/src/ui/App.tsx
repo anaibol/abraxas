@@ -1,6 +1,7 @@
 import type {
   ClassType,
   Direction,
+  MinimapMarker,
   PlayerQuestState,
   ServerMessages,
   TileMap,
@@ -43,6 +44,7 @@ import { BankWindow } from "./BankWindow";
 import { Console } from "./Console";
 import { DeathOverlay } from "./DeathOverlay";
 import { DropQuantityDialog } from "./DropQuantityDialog";
+import { FastTravelModal } from "./FastTravelModal";
 import { KillFeed, type KillFeedEntry } from "./KillFeed";
 import { LoadingScreen } from "./LoadingScreen";
 import { Lobby } from "./Lobby";
@@ -53,11 +55,14 @@ import { NpcContextMenu, type NpcContextTarget } from "./NpcContextMenu";
 import { PlayerContextMenu, type PlayerContextTarget } from "./PlayerContextMenu";
 import { QuestDialogue } from "./QuestDialogue";
 import { type KillStats, ScoreboardOverlay } from "./ScoreboardOverlay";
+import { LeaderboardModal } from "./LeaderboardModal";
 import { SettingsModal } from "./SettingsModal";
 import { Sidebar } from "./Sidebar";
 import type { PlayerState } from "./sidebar/types";
 import { TradeWindow } from "./TradeWindow";
 import { SummonOverlay } from "./SummonOverlay";
+import { WorldEventBanner } from "./WorldEventBanner";
+import { WorldMapModal } from "./WorldMapModal";
 import { system } from "./theme";
 import { toaster } from "./toaster";
 import { HEX, T } from "./tokens";
@@ -139,6 +144,7 @@ export function App() {
   const [tradeData, setTradeData] = useState<TradeState | null>(null);
   const [chatPrefill, setChatPrefill] = useState<string | undefined>();
   const [showScoreboard, setShowScoreboard] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [killStats, setKillStats] = useState<Record<string, KillStats>>({});
   const [pendingSpellId, setPendingSpellId] = useState<string | null>(null);
   const [playerContextMenu, setPlayerContextMenu] = useState<PlayerContextTarget | null>(null);
@@ -148,6 +154,17 @@ export function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [showSummonOverlay, setShowSummonOverlay] = useState(false);
   const [isGM, setIsGM] = useState(false);
+  const [showWorldMap, setShowWorldMap] = useState(false);
+  const [showFastTravel, setShowFastTravel] = useState(false);
+  const [worldEvent, setWorldEvent] = useState<{
+    eventId: string;
+    name: string;
+    description: string;
+    endsAt: number;
+    totalNpcs: number;
+    npcsDead: number;
+  } | null>(null);
+  const [currentMapName, setCurrentMapName] = useState("arena");
   const { settings: gameSettingsState } = useGameSettings();
 
   const [room, setRoom] = useState<Room<GameState> | null>(null);
@@ -234,6 +251,39 @@ export function App() {
     setSelectedItemId,
   });
 
+  // L key opens leaderboard
+  useEffect(() => {
+    if (phase !== "game") return;
+    const handler = (e: KeyboardEvent) => {
+      if (isChatOpen) return;
+      if (e.key === "l" || e.key === "L") {
+        setShowLeaderboard((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [phase, isChatOpen]);
+
+  // M key opens World Map
+  useEffect(() => {
+    if (phase !== "game") return;
+    const handler = (e: KeyboardEvent) => {
+      if (isChatOpen) return;
+      if (e.key === "m" || e.key === "M") {
+        setShowWorldMap((v) => !v);
+      }
+      if (e.key === "f" || e.key === "F") {
+        setShowFastTravel((v) => !v);
+      }
+      if (e.key === "Escape") {
+        setShowWorldMap(false);
+        setShowFastTravel(false);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [phase, isChatOpen]);
+
   useEffect(() => {
     return () => {
       audioManagerRef.current?.cleanup();
@@ -262,6 +312,8 @@ export function App() {
         setRoom(room);
 
         const welcome = network.getWelcomeData();
+
+        setCurrentMapName(welcome.roomMapName ?? "arena");
 
         if (!audioManagerRef.current) {
           audioManagerRef.current = new AudioManager();
@@ -296,6 +348,25 @@ export function App() {
 
         network.onWarp = (data) => {
           handleJoin(charId, classType, token, data.targetMap);
+        };
+
+        network.onWorldEventStart = (data) => {
+          setWorldEvent({
+            eventId: data.eventId,
+            name: data.name,
+            description: data.description,
+            endsAt: Date.now() + data.durationMs,
+            totalNpcs: data.totalNpcs,
+            npcsDead: 0,
+          });
+        };
+        network.onWorldEventEnd = () => {
+          setWorldEvent(null);
+        };
+        network.onWorldEventProgress = (data) => {
+          setWorldEvent((prev) =>
+            prev ? { ...prev, npcsDead: data.npcsDead } : null,
+          );
         };
 
         resetConsoleMessages({
@@ -500,6 +571,37 @@ export function App() {
                   currentPlayerId={roomRef.current.sessionId}
                   isGM={isGM}
                   onGMClick={(tileX, tileY) => networkRef.current?.sendGMTeleport(tileX, tileY)}
+                  markers={[
+                    // Quest NPCs: show yellow ? pin at quest NPC locations (derived from active quests)
+                    ...quests
+                      .filter((q) => q.status === "IN_PROGRESS")
+                      .flatMap((q): MinimapMarker[] => {
+                        const npc = roomRef.current?.state?.npcs
+                          ? Array.from(roomRef.current.state.npcs.values()).find(
+                              (n) => n.sessionId === q.questId,
+                            )
+                          : undefined;
+                        return npc
+                          ? [{ id: `quest-${q.questId}`, tileX: npc.tileX, tileY: npc.tileY, type: "quest" as const }]
+                          : [];
+                      }),
+                    // Waypoints from current map
+                    ...(mapData.waypoints ?? []).map((wp): MinimapMarker => ({
+                      id: `wp-${wp.id}`,
+                      tileX: wp.x,
+                      tileY: wp.y,
+                      type: "waypoint" as const,
+                    })),
+                    // Active world event marker (approx center of map)
+                    ...(worldEvent
+                      ? [{
+                          id: "world-event",
+                          tileX: Math.floor((mapData.width ?? 80) / 2),
+                          tileY: Math.floor((mapData.height ?? 60) / 2),
+                          type: "event" as const,
+                        } satisfies MinimapMarker]
+                      : []),
+                  ]}
                 />
               )}
 
@@ -597,6 +699,7 @@ export function App() {
                 pendingSpellId={pendingSpellId}
                 onClose={isMobile ? () => setIsSidebarOpen(false) : undefined}
                 onSettings={() => setShowSettings(true)}
+                onLeaderboard={() => setShowLeaderboard(true)}
                 onLogout={handleLogout}
               />
             )}
@@ -654,6 +757,9 @@ export function App() {
               )}
               myName={playerState.name}
               myLevel={playerState.level}
+              onOpenLeaderboard={() => {
+                setShowLeaderboard(true);
+              }}
             />
           )}
           <KillFeed entries={killFeed} />
@@ -720,14 +826,51 @@ export function App() {
             />
           )}
           {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+          {showLeaderboard && (
+            <LeaderboardModal
+              myName={playerState.name}
+              onClose={() => setShowLeaderboard(false)}
+            />
+          )}
           {showSummonOverlay && roomRef.current && (
             <SummonOverlay 
               onSummon={(npcType) => networkRef.current?.sendChat(`/gm spawn ${npcType}`)} 
               onClose={() => setShowSummonOverlay(false)} 
             />
           )}
+
+          {/* Feature 91: World Event Banner */}
+          {worldEvent && (
+            <WorldEventBanner
+              visible
+              eventName={worldEvent.name}
+              description={worldEvent.description}
+              endsAt={worldEvent.endsAt}
+              totalNpcs={worldEvent.totalNpcs}
+              npcsDead={worldEvent.npcsDead}
+            />
+          )}
+
+          {/* Feature 88: Fast Travel Modal (F key) */}
+          {showFastTravel && (
+            <FastTravelModal
+              waypoints={mapData.waypoints ?? []}
+              currentMapName={currentMapName}
+              onTravel={(wpId) => networkRef.current?.sendFastTravel(wpId)}
+              onClose={() => setShowFastTravel(false)}
+            />
+          )}
+
+          {/* Feature 89: World Map Modal (M key) */}
+          {showWorldMap && (
+            <WorldMapModal
+              currentMapName={currentMapName}
+              onClose={() => setShowWorldMap(false)}
+            />
+          )}
         </>
       )}
+
 
       {/* Player context menu */}
       {playerContextMenu && (

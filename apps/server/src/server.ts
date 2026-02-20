@@ -7,8 +7,10 @@ import { logger } from "./logger";
 import { GameTransport } from "./GameTransport";
 import { ArenaRoom } from "./rooms/ArenaRoom";
 import {
+  adminCharactersEndpoint,
   createCharacterEndpoint,
   healthEndpoint,
+  leaderboardEndpoint,
   loginEndpoint,
   meEndpoint,
   registerEndpoint,
@@ -44,6 +46,8 @@ export async function createGameServer(options: {
       loginEndpoint,
       meEndpoint,
       createCharacterEndpoint,
+      leaderboardEndpoint,
+      adminCharactersEndpoint,
     }),
   });
 

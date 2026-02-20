@@ -149,6 +149,20 @@ export interface PlayerQuestState {
   status: QuestStatus;
   progress: Record<string, number>; // Maps requirement target to current count
 }
+export interface FastTravelWaypoint {
+  id: string;
+  label: string;
+  x: number;
+  y: number;
+}
+
+export interface MinimapMarker {
+  id: string;
+  tileX: number;
+  tileY: number;
+  type: "quest" | "waypoint" | "event";
+}
+
 export interface Warp {
   x: number;
   y: number;
@@ -171,6 +185,7 @@ export interface TileMap {
   merchantCount?: number;
   npcs?: { type: NpcType; x: number; y: number }[];
   warps?: Warp[];
+  waypoints?: FastTravelWaypoint[];
 }
 
 /** Stats shared by all character types (players and NPCs). */
@@ -451,6 +466,10 @@ export enum ServerMessageType {
   NpcBark = "npc_bark",
   WorldEventStart = "world_event_start",
   WorldEventEnd = "world_event_end",
+  WorldEventProgress = "world_event_progress",
+
+  // Fast Travel
+  FastTravelUsed = "fast_travel_used",
 
   // Trading
   TradeRequested = "trade_requested",
@@ -612,8 +631,12 @@ export type ServerMessages = {
 
   // NPC
   [ServerMessageType.NpcBark]: { npcId: string; text: string };
-  [ServerMessageType.WorldEventStart]: { eventId: string; name: string; description: string; durationMs: number };
+  [ServerMessageType.WorldEventStart]: { eventId: string; name: string; description: string; durationMs: number; totalNpcs: number };
   [ServerMessageType.WorldEventEnd]: { eventId: string };
+  [ServerMessageType.WorldEventProgress]: { eventId: string; npcsDead: number; npcsTotalCount: number };
+
+  // Fast Travel
+  [ServerMessageType.FastTravelUsed]: { waypointId: string; tileX: number; tileY: number };
 
   // Trading
   [ServerMessageType.TradeRequested]: {
@@ -699,6 +722,9 @@ export enum ClientMessageType {
   Meditate = "meditate",
   Tame = "tame",
 
+  // Fast Travel
+  FastTravel = "fast_travel",
+
   // GM commands
   GMTeleport = "gm_teleport",
 }
@@ -772,6 +798,9 @@ export type ClientMessages = {
 
   [ClientMessageType.Meditate]: {};
   [ClientMessageType.Tame]: { targetSessionId: string };
+
+  // Fast Travel
+  [ClientMessageType.FastTravel]: { waypointId: string };
 
   // GM commands
   [ClientMessageType.GMTeleport]: { tileX: number; tileY: number };

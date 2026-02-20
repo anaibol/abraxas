@@ -477,13 +477,18 @@ export class GameScene extends Phaser.Scene {
 
     const localSprite = this.spriteManager.getSprite(this.room.sessionId);
     if (this.debugText && localSprite) {
-      this.debugText.setText(`X: ${localSprite.predictedTileX} Y: ${localSprite.predictedTileY}`);
+      this.debugText.setText(
+        `X: ${localSprite.predictedTileX}  Y: ${localSprite.predictedTileY}\n` +
+        `FPS: ${this.game.loop.actualFps.toFixed(1)}  \u03B4: ${delta.toFixed(1)}ms\n` +
+        `Tweens: ${this.tweens.getTweens().length}`,
+      );
     }
   }
 
   shutdown() {
     document.removeEventListener("visibilitychange", this.handleVisibilityChange);
     this.gameEventHandler.destroy();
+    this.effectManager?.destroy();
     this.lightManager?.destroy();
     for (const unsub of this.stateUnsubscribers) unsub();
     this.stateUnsubscribers = [];
