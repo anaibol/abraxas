@@ -135,6 +135,12 @@ export interface NpcStats {
 	 * natural mix of auto-attacks and abilities. Defaults to 0.4 if omitted.
 	 */
 	abilityCastChance?: number;
+	/**
+	 * When true the NPC is excluded from the random world-spawn pool and can
+	 * only be placed via fixed map.npcs entries. Use for boss/elite enemies that
+	 * should not appear alongside regular mobs.
+	 */
+	rareSpawn?: boolean;
 }
 
 /** Stats for player classes — extends NpcStats with a required mana pool. */

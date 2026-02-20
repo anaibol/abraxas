@@ -40,7 +40,10 @@ export class MovementSystem {
 		const stats = entity.getStats();
 		if (!stats) return { success: false };
 
-		const speed = stats.speedTilesPerSecond;
+		let speed = stats.speedTilesPerSecond;
+		if ('speedOverride' in entity && typeof entity.speedOverride === 'number' && entity.speedOverride > 0) {
+			speed = entity.speedOverride;
+		}
 		if (speed <= 0) return { success: false };
 		const moveIntervalMs = 1000 / speed;
 

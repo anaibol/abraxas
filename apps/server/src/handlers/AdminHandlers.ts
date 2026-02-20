@@ -66,6 +66,19 @@ export class AdminHandlers {
 				logger.info({ room: ctx.roomId, sessionId: client.sessionId, message: `[GM] ${player.name} fully healed` });
 				break;
 			}
+			case "speed": {
+				const amount = parseInt(args[1]);
+				if (isNaN(amount) || amount < 0) {
+					HandlerUtils.sendError(client, "Usage: /gm speed <amount>");
+					return;
+				}
+				player.speedOverride = amount;
+				client.send(ServerMessageType.Notification, {
+					message: `[GM] Speed overridden to ${amount}`,
+				});
+				logger.info({ room: ctx.roomId, sessionId: client.sessionId, message: `[GM] ${player.name} changed speed to ${amount}` });
+				break;
+			}
 			case "spawn": {
 				const npcType = args[1] as any;
 				if (!npcType) {

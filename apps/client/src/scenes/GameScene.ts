@@ -143,6 +143,8 @@ export class GameScene extends Phaser.Scene {
 			() => this.room.sessionId,
 		);
 		this.effectManager = new EffectManager(this, this.spriteManager);
+		this.mapBaker = new MapBaker(this, this.welcome);
+		this.dropManager = new DropManager(this, this.effectManager);
 
 		// Spawn visual indicators for all map teleporters
 		if (this.welcome.warps) {
@@ -247,8 +249,12 @@ export class GameScene extends Phaser.Scene {
 				playerOnChangeUnsubs.delete(sessionId);
 				this.spriteManager.removePlayer(sessionId);
 			}),
-			$state.onAdd("drops", (drop, id) => this.addDrop(drop, id)),
-			$state.onRemove("drops", (_drop, id) => this.removeDrop(id)),
+			$state.onAdd("drops", (drop, id) =>
+				this.dropManager.addDrop(drop, id),
+			),
+			$state.onRemove("drops", (_drop, id) =>
+				this.dropManager.removeDrop(id),
+			),
 			$state.onAdd("npcs", (npc, id) => {
 				this.spriteManager.addNpc(npc, id);
 				this.spriteManager.syncNpc(npc, id);
@@ -294,13 +300,7 @@ export class GameScene extends Phaser.Scene {
 	}
 
 	update(time: number, delta: number) {
-		// Schedule nearby chunks into the bake queue each tick
-		this.scheduleNearbyChunks();
-		// Bake one queued chunk per tick — keeps each rAF well under 16ms
-		if (this.chunkBakeQueue.length > 0) {
-			const next = this.chunkBakeQueue.shift();
-			if (next) this.bakeMapChunk(next);
-		}
+		this.mapBaker.update();
 
 		this.inputHandler.update(time, () => this.getMouseTile());
 		this.spriteManager.update(delta);
@@ -314,11 +314,7 @@ export class GameScene extends Phaser.Scene {
 		// Show drop labels only within 5 tiles of the local player (Diablo 2-style)
 		const lp = this.room.state.players.get(this.room.sessionId);
 		if (lp) {
-			for (const [, v] of this.dropVisuals) {
-				const dist =
-					Math.abs(v.tileX - lp.tileX) + Math.abs(v.tileY - lp.tileY);
-				v.label.setVisible(dist <= 5);
-			}
+			this.dropManager.updateLabels(lp.tileX, lp.tileY);
 		}
 
 		const localSprite = this.spriteManager.getSprite(this.room.sessionId);
@@ -478,173 +474,6 @@ export class GameScene extends Phaser.Scene {
 		}));
 	}
 
-	/** Draws the entire map onto a single persistent Graphics object. */
-	/**
-	 * Called every update() tick. Looks at the camera world position and enqueues
-	 * any un-baked chunks within BAKE_RADIUS chunks of the camera for lazy baking.
-	 * Chunks are sorted nearest-first so the player sees them in order.
-	 */
-	private scheduleNearbyChunks() {
-		const { mapWidth, mapHeight } = this.welcome;
-		const CHUNK = 25;
-		const BAKE_RADIUS = 2; // chunks around the camera to keep baked
-
-		const cam = this.cameras.main;
-		// Camera center in tile coords
-		const camTileX = (cam.scrollX + cam.width / 2 / cam.zoom) / TILE_SIZE;
-		const camTileY = (cam.scrollY + cam.height / 2 / cam.zoom) / TILE_SIZE;
-		// Camera center in chunk coords
-		const camChunkX = Math.floor(camTileX / CHUNK);
-		const camChunkY = Math.floor(camTileY / CHUNK);
-
-		const toQueue: Array<{ cx: number; cy: number; dist: number }> = [];
-
-		for (let dy = -BAKE_RADIUS; dy <= BAKE_RADIUS; dy++) {
-			for (let dx = -BAKE_RADIUS; dx <= BAKE_RADIUS; dx++) {
-				const col = camChunkX + dx;
-				const row = camChunkY + dy;
-				const cx = col * CHUNK;
-				const cy = row * CHUNK;
-				if (cx < 0 || cy < 0 || cx >= mapWidth || cy >= mapHeight) continue;
-				const key = `${cx},${cy}`;
-				if (this.bakedChunks.has(key)) continue;
-				if (this.chunkBakeQueue.some(c => c.cx === cx && c.cy === cy)) continue;
-				toQueue.push({ cx, cy, dist: dx * dx + dy * dy });
-			}
-		}
-
-		// Nearest chunks first
-		toQueue.sort((a, b) => a.dist - b.dist);
-		for (const { cx, cy } of toQueue) {
-			this.chunkBakeQueue.push({ cx, cy });
-		}
-	}
-
-	/**
-	 * Bakes one map chunk into a Canvas texture and places a static Image.
-	 * Called once per update() tick from the queue so each frame stays fast.
-	 *
-	 * The Graphics object is never added to the display list and is destroyed
-	 * immediately after generateTexture(), leaving only a lightweight Image quad.
-	 */
-	private bakeMapChunk({ cx, cy }: { cx: number; cy: number }) {
-		const { mapWidth, mapHeight, collision, tileTypes } = this.welcome;
-		const CHUNK = 25;
-		const chW = Math.min(CHUNK, mapWidth - cx);
-		const chH = Math.min(CHUNK, mapHeight - cy);
-		const T = TILE_SIZE;
-		const chPxW = chW * T;
-		const chPxH = chH * T;
-
-		const g = this.make.graphics();
-
-		g.fillStyle(0x4a8c2a, 1);
-		g.fillRect(0, 0, chPxW, chPxH);
-
-		for (let ty = cy; ty < cy + chH; ty++) {
-			for (let tx = cx; tx < cx + chW; tx++) {
-				const type =
-					tileTypes?.[ty]?.[tx] ??
-					(collision[ty]?.[tx] === 1 ? 1 : 0);
-				const px = (tx - cx) * T;
-				const py = (ty - cy) * T;
-				const h = ((tx * 2246822519 + ty * 3266489917) >>> 0);
-
-				switch (type) {
-					case 0: {
-						const shade = h % 3;
-						if (shade === 0) {
-							g.fillStyle(0x3e7a1e, 0.45);
-							g.fillRect(px + (h & 7), py + ((h >> 4) & 7), 10, 8);
-						} else if (shade === 1) {
-							g.fillStyle(0x5aaa2c, 0.35);
-							g.fillRect(px + ((h >> 2) & 15), py + ((h >> 6) & 15), 8, 6);
-						}
-						if ((h >> 8) % 7 === 0) {
-							g.fillStyle(0x72cc40, 0.5);
-							g.fillRect(px + ((h >> 10) & 27), py + ((h >> 14) & 27), 2, 4);
-						}
-						break;
-					}
-					case 1: {
-						g.fillStyle(0x484848, 1);
-						g.fillRect(px, py, T, T);
-						g.fillStyle(0x606060, 1);
-						g.fillRect(px + 1, py + 1, 14, 6);
-						g.fillRect(px + 17, py + 1, 14, 6);
-						g.fillRect(px + 1, py + 9, 8, 6);
-						g.fillRect(px + 11, py + 9, 10, 6);
-						g.fillRect(px + 23, py + 9, 8, 6);
-						g.fillRect(px + 1, py + 17, 14, 6);
-						g.fillRect(px + 17, py + 17, 14, 6);
-						g.fillRect(px + 1, py + 25, 8, 5);
-						g.fillRect(px + 11, py + 25, 10, 5);
-						g.fillRect(px + 23, py + 25, 8, 5);
-						g.fillStyle(0x2c2c2c, 1);
-						g.fillRect(px, py, T, 1);
-						g.fillRect(px, py + 8, T, 2);
-						g.fillRect(px, py + 16, T, 2);
-						g.fillRect(px, py + 24, T, 2);
-						g.fillRect(px + 15, py, 2, 9);
-						g.fillRect(px + 9, py + 8, 2, 9);
-						g.fillRect(px + 21, py + 8, 2, 9);
-						g.fillRect(px + 15, py + 16, 2, 9);
-						g.fillRect(px + 9, py + 24, 2, 8);
-						g.fillRect(px + 21, py + 24, 2, 8);
-						g.fillStyle(0x7a7a7a, 0.5);
-						g.fillRect(px + 1, py + 1, 14, 1);
-						g.fillRect(px + 1, py + 1, 1, 6);
-						g.fillRect(px + 17, py + 1, 14, 1);
-						g.fillRect(px + 17, py + 1, 1, 6);
-						break;
-					}
-					case 2: {
-						g.fillStyle(0x2a5018, 1);
-						g.fillRect(px, py, T, T);
-						g.fillStyle(0x1a3a10, 0.55);
-						g.fillCircle(px + 16, py + 19, 12);
-						g.fillStyle(0x2c7c18, 1);
-						g.fillCircle(px + 16, py + 13, 11);
-						g.fillStyle(0x3a9820, 0.85);
-						g.fillCircle(px + 12, py + 10, 7);
-						g.fillCircle(px + 20, py + 10, 7);
-						g.fillStyle(0x50c030, 0.65);
-						g.fillCircle(px + 14, py + 8, 5);
-						g.fillStyle(0x46280c, 1);
-						g.fillRect(px + 13, py + 21, 6, 11);
-						g.fillStyle(0x624014, 0.6);
-						g.fillRect(px + 13, py + 21, 2, 11);
-						break;
-					}
-					case 3: {
-						g.fillStyle(0x0c2a68, 1);
-						g.fillRect(px, py, T, T);
-						g.fillStyle(0x1848b0, 0.7);
-						g.fillRect(px, py, T, T);
-						g.fillStyle(0x2860cc, 0.5);
-						g.fillRect(px, py + 10, T, 10);
-						g.fillStyle(0x58a0e8, 0.55);
-						g.fillRect(px + 2, py + 5, 12, 2);
-						g.fillRect(px + 18, py + 8, 10, 2);
-						g.fillRect(px + 4, py + 17, 14, 2);
-						g.fillRect(px + 20, py + 22, 8, 2);
-						g.fillRect(px + 1, py + 26, 10, 2);
-						g.fillStyle(0xa0d4ff, 0.28);
-						g.fillRect(px + 6, py + 5, 3, 1);
-						g.fillRect(px + 22, py + 9, 2, 1);
-						break;
-					}
-				}
-			}
-		}
-
-		const key = `map-chunk-${cx}-${cy}`;
-		g.generateTexture(key, chPxW, chPxH);
-		g.destroy();
-		this.add.image(cx * T, cy * T, key).setOrigin(0, 0).setDepth(0);
-		this.bakedChunks.add(`${cx},${cy}`);
-	}
-
 	private getMouseTile(): { x: number; y: number } {
 		const pointer = this.input.activePointer;
 		const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
@@ -678,184 +507,5 @@ export class GameScene extends Phaser.Scene {
 		sprite.setFacing(direction);
 		sprite.predictMove(direction);
 		this.soundManager.playStep();
-	}
-
-	private addDrop(drop: Drop, id: string) {
-		const px = drop.tileX * TILE_SIZE + TILE_SIZE / 2;
-		const py = drop.tileY * TILE_SIZE + TILE_SIZE / 2;
-		const color = this.dropColor(drop);
-		const isRare = drop.itemType === "item" && ITEMS[drop.itemId]?.rarity === "rare";
-
-		const arc = this.add.circle(px, py, isRare ? 7 : 6, color).setDepth(5);
-
-		// Gentle bob — rare items bob a bit more dramatically
-		const tween = this.tweens.add({
-			targets: arc,
-			y: py - (isRare ? 6 : 4),
-			duration: isRare ? 700 : 900,
-			yoyo: true,
-			repeat: -1,
-			ease: "Sine.InOut",
-		});
-
-		// Lazy-create sparkle textures
-		if (!this.textures.exists("drop-spark")) {
-			const g = this.add.graphics();
-			g.fillStyle(0xffffff, 1);
-			g.fillCircle(3, 3, 3);
-			g.generateTexture("drop-spark", 6, 6);
-			g.destroy();
-		}
-		if (!this.textures.exists("drop-star")) {
-			const g = this.add.graphics();
-			g.fillStyle(0xffffff, 1);
-			const outer = 5, inner = 2, cx = 6, cy = 6;
-			const pts: Phaser.Math.Vector2[] = [];
-			for (let i = 0; i < 8; i++) {
-				const angle = (i * Math.PI) / 4 - Math.PI / 2;
-				const r = i % 2 === 0 ? outer : inner;
-				pts.push(new Phaser.Math.Vector2(cx + r * Math.cos(angle), cy + r * Math.sin(angle)));
-			}
-			g.fillPoints(pts, true);
-			g.generateTexture("drop-star", 12, 12);
-			g.destroy();
-		}
-
-		const sparkTex = isRare ? "drop-star" : "drop-spark";
-		const emitter = this.add.particles(px, py, sparkTex, {
-			tint: [color, 0xffffff],
-			speed: { min: 8, max: isRare ? 28 : 22 },
-			angle: { min: 0, max: 360 },
-			scale: { start: isRare ? 0.7 : 0.55, end: 0 },
-			alpha: { start: 0.9, end: 0 },
-			lifespan: { min: 420, max: isRare ? 900 : 780 },
-			quantity: isRare ? 2 : 1,
-			frequency: isRare ? 80 : 180,
-			gravityY: -20,
-			rotate: isRare ? { start: 0, end: 360 } : undefined,
-		});
-		emitter.setDepth(6);
-
-		// Item name label — hidden until player is within range (shown in update())
-		const labelStr = this.dropLabelText(drop);
-		const labelColor = this.dropLabelColor(drop);
-		const label = this.add
-			.text(px, py + 10, labelStr, {
-				fontSize: isRare ? "9px" : "8px",
-				color: labelColor,
-				stroke: "#000000",
-				strokeThickness: 3,
-				fontFamily: "'Courier New', Courier, monospace",
-				fontStyle: isRare ? "bold" : "normal",
-			})
-			.setOrigin(0.5, 0)
-			.setDepth(7)
-			.setVisible(false);
-
-		// Landing effect only for freshly spawned drops (not pre-existing when player joins)
-		const ageMs = Date.now() - drop.spawnedAt;
-		if (ageMs < 3000 && this.effectManager) {
-			this.effectManager.playDropLanded(drop.tileX, drop.tileY, color);
-		}
-
-		this.dropVisuals.set(id, {
-			arc,
-			tween,
-			emitter,
-			label,
-			color,
-			tileX: drop.tileX,
-			tileY: drop.tileY,
-		});
-	}
-
-	private removeDrop(id: string) {
-		const visual = this.dropVisuals.get(id);
-		if (!visual) return;
-
-		const { arc, tween, emitter, label, color } = visual;
-
-		// Colored pickup burst matching item rarity/type
-		if (this.textures.exists("drop-spark")) {
-			const burstTex = this.textures.exists("drop-star") ? "drop-star" : "drop-spark";
-			const burst = this.add.particles(arc.x, arc.y, burstTex, {
-				tint: [color, 0xffffff],
-				speed: { min: 35, max: 105 },
-				angle: { min: 0, max: 360 },
-				scale: { start: 0.7, end: 0 },
-				alpha: { start: 1, end: 0 },
-				lifespan: { min: 220, max: 500 },
-				rotate: { start: 0, end: 360 },
-			});
-			burst.setDepth(6);
-			burst.explode(20);
-			this.time.delayedCall(560, () => burst.destroy());
-		}
-
-		tween.stop();
-		emitter.destroy();
-		label.destroy();
-		arc.destroy();
-		this.dropVisuals.delete(id);
-	}
-
-	/** Circle color for a drop based on item type and rarity — like Diablo 2. */
-	private dropColor(drop: Drop): number {
-		if (drop.itemType === "gold") return 0xffcc00;
-		const item = ITEMS[drop.itemId];
-		if (!item) return 0xffffff;
-		if (item.slot === "consumable") {
-			const e = item.consumeEffect;
-			if (e?.healHp && !e?.healMana) return 0xff3333;  // health potion — red
-			if (e?.healMana && !e?.healHp) return 0x4466ff;  // mana potion — blue
-			return 0xaaffaa;                                  // other consumable — green
-		}
-		switch (item.rarity) {
-			case "common":   return 0xdddddd;
-			case "uncommon": return 0x4488ff;
-			case "rare":     return 0xffaa00;
-			default:         return 0xffffff;
-		}
-	}
-
-	/** CSS color string for the drop name label, matching Diablo 2 rarity conventions. */
-	private dropLabelColor(drop: Drop): string {
-		if (drop.itemType === "gold") return "#ffcc00";
-		const item = ITEMS[drop.itemId];
-		if (!item) return "#ffffff";
-		if (item.slot === "consumable") {
-			const e = item.consumeEffect;
-			if (e?.healHp && !e?.healMana) return "#ff6666";
-			if (e?.healMana && !e?.healHp) return "#6699ff";
-			return "#aaffaa";
-		}
-		switch (item.rarity) {
-			case "common":   return "#dddddd";
-			case "uncommon": return "#6699ff";
-			case "rare":     return "#ffbb44";
-			default:         return "#ffffff";
-		}
-	}
-
-	/** Human-readable label for a drop — "Iron Sword", "42 Gold", "Health Potion (x3)", etc. */
-	private dropLabelText(drop: Drop): string {
-		if (drop.itemType === "gold") return `${drop.goldAmount} Gold`;
-		const item = ITEMS[drop.itemId];
-		if (!item) return drop.itemId;
-		// Resolve i18n key → actual name; fall back to humanising the item ID
-		let name: string;
-		try {
-			const translated = i18n.t(item.name);
-			name = translated !== item.name ? translated : "";
-		} catch {
-			name = "";
-		}
-		if (!name) {
-			name = drop.itemId
-				.split("_")
-				.map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-				.join(" ");
-		}
-		return drop.quantity > 1 ? `${name} (${drop.quantity})` : name;
 	}
 }

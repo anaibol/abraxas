@@ -16,6 +16,7 @@ export class Player extends Char {
 	userId: string = "";
 	dbId: string = "";
 	role: string = "USER";
+	speedOverride: number = 0;
 
 	/** Mana — only the local player's mana bar is rendered */
 	@view() @type("int32") mana: number = 0;

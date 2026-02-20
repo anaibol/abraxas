@@ -7,12 +7,6 @@ import { useAudio } from "../contexts/AudioContext";
 import type { TradeState } from "@abraxas/shared";
 import type { InventorySlot } from "./sidebar/types";
 import { T } from "./tokens";
-
-
-// Import removed. dup import
-import { ItemGrid } from "./components/ItemGrid";
-
-import { useAudio } from "../contexts/AudioContext";
 import { ItemGrid } from "./components/ItemGrid";
 
 const ITEM_ICONS: Record<string, string> = {
