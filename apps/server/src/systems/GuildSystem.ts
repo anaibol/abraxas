@@ -46,11 +46,26 @@ export class GuildSystem {
     }
   }
 
-  async handleInvite(client: Client, targetSessionId: string): Promise<void> {
+  async handleInvite(client: Client, targetName: string): Promise<void> {
     const inviter = this.state.players.get(client.sessionId);
-    const target = this.state.players.get(targetSessionId);
+    if (!inviter || !inviter.guildId) return;
 
-    if (!inviter || !target || inviter === target || !inviter.guildId) return;
+    // Resolve target by name
+    let targetSessionId: string | undefined;
+    for (const [sid, p] of this.state.players) {
+      if (p.name === targetName) {
+        targetSessionId = sid;
+        break;
+      }
+    }
+
+    if (!targetSessionId) {
+      this.sendError(client, "Player not found or not online.");
+      return;
+    }
+
+    const target = this.state.players.get(targetSessionId);
+    if (!target || target === inviter) return;
 
     if (target.guildId) {
       this.sendError(client, "Target is already in a guild.");
