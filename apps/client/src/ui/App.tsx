@@ -419,7 +419,7 @@ export function App() {
     return classStats.abilities.flatMap((abilityId) => {
       const ability = ABILITIES[abilityId];
       return ability
-        ? [{ key: ability.key, spellId: ability.id, rangeTiles: ability.rangeTiles ?? 0 }]
+        ? [{ key: ability.key, spellId: ability.id, rangeTiles: ability.rangeTiles }]
         : [];
     });
   }, [playerState.classType]);
