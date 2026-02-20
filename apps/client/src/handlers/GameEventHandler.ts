@@ -127,16 +127,14 @@ export class GameEventHandler {
       );
     }
 
+    const opts = sprite ? { sourceX: sprite.renderX, sourceY: sprite.renderY } : undefined;
     if (isRanged) {
-      const opts = sprite ? { sourceX: sprite.renderX, sourceY: sprite.renderY } : undefined;
       this.soundManager.playBow(opts);
     } else {
       const npc = this.room.state.npcs.get(data.sessionId);
-      const opts = sprite ? { sourceX: sprite.renderX, sourceY: sprite.renderY } : undefined;
       if (npc) {
         this.soundManager.playNpcAttack(npc.npcType, opts);
       } else {
-        // Item #6: Pass weapon id for weapon-type SFX routing
         const player = this.room.state.players.get(data.sessionId);
         this.soundManager.playAttack(player?.equipWeaponId ?? undefined, opts);
       }
@@ -271,17 +269,9 @@ export class GameEventHandler {
     const opts = sprite ? { sourceX: sprite.renderX, sourceY: sprite.renderY } : undefined;
     this.soundManager.playHeal(opts);
 
-    // ── Item #37: Holy-gold flash light on heal ────────────────────────────────
-    if (this.lightManager) {
-      const sprite = this.spriteManager.getSprite(data.sessionId);
-      if (sprite) {
-        const px = sprite.renderX;
-        const py = sprite.renderY;
-        this.lightManager.flashLight(px, py, LightPreset.HEAL, undefined, 700);
-      }
+    if (sprite) {
+      this.lightManager?.flashLight(sprite.renderX, sprite.renderY, LightPreset.HEAL, undefined, 700);
     }
-
-    // ── Item #46: Brief golden-white glow on healing ──────────────────────────
     this.spriteManager.applyGlowFx(data.sessionId, 0xaaffaa, 500);
 
     if (this.isSelf(data.sessionId)) {
@@ -376,13 +366,10 @@ export class GameEventHandler {
     }
   }
 
-  // ── NPC Bark ─────────────────────────────────────────────────────────────────
   private onNpcBark(data: ServerMessages[ServerMessageType.NpcBark]) {
-    // Render bark as a speech bubble floating above the NPC sprite (same API as player chat).
     this.spriteManager.showChatBubble(data.npcId, data.text);
   }
 
-  // ── World Events ──────────────────────────────────────────────────────────────
   private onWorldEventStart(data: ServerMessages[ServerMessageType.WorldEventStart]) {
     const mins = Math.round(data.durationMs / 60_000);
     this.onConsoleMessage?.(
@@ -406,7 +393,6 @@ export class GameEventHandler {
     );
   }
 
-  // ── Fast Travel ───────────────────────────────────────────────────────────────
   private onFastTravelUsed(_data: ServerMessages[ServerMessageType.FastTravelUsed]) {
     this.onCameraFlash?.(200, 255, 255, 400);
     this.onConsoleMessage?.("✈ Fast travel used.", "#88ddff", "system");

@@ -6,13 +6,13 @@ import {
   calcMeleeDamage,
   calcRangedDamage,
   calcSpellDamage,
+  CLASS_APPEARANCE,
   DamageSchool,
   GCD_MS,
   MathUtils,
+  NPC_APPEARANCE,
   ServerMessageType,
   StatType,
-  CLASS_APPEARANCE,
-  NPC_APPEARANCE,
 } from "@abraxas/shared";
 import type { GameState } from "../schema/GameState";
 import { Player } from "../schema/Player";

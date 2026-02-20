@@ -601,29 +601,6 @@ export function App() {
                 />
               )}
 
-              {/* Safe Zone Indicator */}
-              {playerState.inSafeZone && (
-                <Box
-                  position="absolute"
-                  top="24px"
-                  left="50%"
-                  transform="translateX(-50%)"
-                  bg="rgba(10, 40, 10, 0.7)"
-                  border="1px solid rgba(40, 160, 40, 0.6)"
-                  color="#4f4"
-                  px="4"
-                  py="1.5"
-                  borderRadius="full"
-                  fontWeight="bold"
-                  fontSize="sm"
-                  letterSpacing="2px"
-                  zIndex={40}
-                  textShadow="1px 1px 2px black"
-                  pointerEvents="none"
-                >
-                  {t("game.safe_zone", { defaultValue: "SAFE ZONE" })}
-                </Box>
-              )}
 
               {/* Mobile sidebar toggle button */}
               {isMobile && (

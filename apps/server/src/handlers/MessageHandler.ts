@@ -33,7 +33,6 @@ export class MessageHandler {
     ) => void,
   ) {
     register(ClientMessageType.Move, (c, m) => MovementHandlers.handleMove(this.ctx, c, m));
-    register(ClientMessageType.FastTravel, (c, m) => MovementHandlers.handleFastTravel(this.ctx, c, m));
     register(ClientMessageType.GMTeleport, (c, m) =>
       MovementHandlers.handleGMTeleport(this.ctx, c, m),
     );

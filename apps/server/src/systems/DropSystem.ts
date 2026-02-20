@@ -33,15 +33,15 @@ export class DropSystem {
     drop.quantity = quantity;
     
     if (instanceData) {
-        drop.rarity = instanceData.rarity;
-        drop.nameOverride = instanceData.nameOverride ?? "";
-        instanceData.affixes.forEach(a => {
-            const s = new ItemAffixSchema();
-            s.affixType = a.type;
-            s.stat = a.stat;
-            s.value = a.value;
-            drop.affixes.push(s);
-        });
+      drop.rarity = instanceData.rarity;
+      drop.nameOverride = instanceData.nameOverride ?? "";
+      instanceData.affixes.forEach(a => {
+        const s = new ItemAffixSchema();
+        s.affixType = a.type;
+        s.stat = a.stat;
+        s.value = a.value;
+        drop.affixes.push(s);
+      });
     }
     
     return drop;
@@ -79,17 +79,17 @@ export class DropSystem {
     // Handle item drops
     if (drop.itemType === DropType.ITEM && drop.itemId) {
       const data = {
-          rarity: drop.rarity as ItemRarity,
-          nameOverride: drop.nameOverride,
-          affixes: Array.from(drop.affixes).map((a: ItemAffixSchema) => ({
-            type: a.affixType,
-            stat: a.stat as StatType,
-            value: a.value
-          }))
+        rarity: drop.rarity as ItemRarity,
+        nameOverride: drop.nameOverride,
+        affixes: Array.from(drop.affixes).map((a: ItemAffixSchema) => ({
+          type: a.affixType,
+          stat: a.stat as StatType,
+          value: a.value,
+        })),
       };
       if (!this.inventorySystem.addItem(player, drop.itemId, drop.quantity, data)) {
         onError?.("Inventory full");
-        return false; // Inventory full
+        return false;
       }
       drops.delete(dropId);
       return true;

@@ -104,11 +104,7 @@ export class SocialSystem {
 
   /** Sends an empty GroupUpdate to signal the client they are no longer in a group. */
   private sendGroupLeft(client: Client): void {
-    client.send(ServerMessageType.GroupUpdate, {
-      groupId: "",
-      leaderId: "",
-      members: [],
-    });
+    client.send(ServerMessageType.GroupUpdate, { groupId: "", leaderId: "", members: [] });
   }
 
   handleLeaveGroup(client: Client): void {
@@ -149,9 +145,7 @@ export class SocialSystem {
 
       const targetClient = this.findClient(targetSessionId);
       if (targetClient) {
-        targetClient.send(ServerMessageType.Notification, {
-          message: "social.kicked_from_group",
-        });
+        targetClient.send(ServerMessageType.Notification, { message: "social.kicked_from_group" });
         this.sendGroupLeft(targetClient);
       }
       this.broadcastGroupUpdate(group.id);
@@ -160,14 +154,11 @@ export class SocialSystem {
 
   private removePlayerFromGroup(group: Group, sessionId: string): void {
     const index = group.memberIds.indexOf(sessionId);
-    if (index !== -1) {
-      group.memberIds.splice(index, 1);
-    }
+    if (index !== -1) group.memberIds.splice(index, 1);
 
     if (group.memberIds.length === 0) {
       this.state.groups.delete(group.id);
     } else if (group.leaderSessionId === sessionId) {
-      // New leader
       const newLeaderId = group.memberIds[0];
       if (newLeaderId) {
         group.leaderSessionId = newLeaderId;
@@ -206,11 +197,9 @@ export class SocialSystem {
     const group = this.state.groups.get(groupId);
     if (!group) return;
 
-    group.memberIds.forEach((sid) => {
+    for (const sid of group.memberIds) {
       const client = this.findClient(sid);
-      if (client) {
-        client.send(type, message);
-      }
-    });
+      if (client) client.send(type, message);
+    }
   }
 }
