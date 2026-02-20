@@ -160,7 +160,11 @@ export class PlayerService {
     }
   }
 
-  async savePlayer(player: Player, mapId: string) {
+  async savePlayer(
+    player: Player,
+    mapId: string,
+    activeCompanions: { type: string; level: number; exp: number; hp: number }[] = [],
+  ) {
     const inventory: InventoryEntry[] = [];
     player.inventory.forEach((item) => {
       inventory.push({
@@ -198,26 +202,18 @@ export class PlayerService {
       inventory,
       equipment,
       classType: player.classType,
-      companions: [] as { type: string; level: number; exp: number; hp: number }[], // We will populate this from the active NPCs in the room
+      companions: activeCompanions,
     };
-
-    // Find active companions owned by this player
-    this.state.npcs.forEach((npc) => {
-      if (npc.ownerId === player.sessionId && npc.alive) {
-        saveData.companions.push({
-          type: npc.type,
-          level: npc.level,
-          exp: npc.exp,
-          hp: npc.hp,
-        });
-      }
-    });
 
     await PersistenceService.saveChar(player.dbId, saveData);
   }
 
-  async cleanupPlayer(player: Player, mapId: string) {
-    await this.savePlayer(player, mapId);
+  async cleanupPlayer(
+    player: Player,
+    mapId: string,
+    activeCompanions: { type: string; level: number; exp: number; hp: number }[] = [],
+  ) {
+    await this.savePlayer(player, mapId, activeCompanions);
 
     this.friends.setUserOffline(player.userId);
     this.quests.removeChar(player.dbId);
