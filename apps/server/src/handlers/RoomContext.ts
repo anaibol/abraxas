@@ -9,9 +9,9 @@ import type { FriendsSystem } from "../systems/FriendsSystem";
 import type { InventorySystem } from "../systems/InventorySystem";
 import type { MovementSystem } from "../systems/MovementSystem";
 import type { QuestSystem } from "../systems/QuestSystem";
-import { SocialSystem } from "../systems/SocialSystem";
-import { GuildSystem } from "../systems/GuildSystem";
-import { TradeSystem } from "../systems/TradeSystem";
+import type { SocialSystem } from "../systems/SocialSystem";
+import type { GuildSystem } from "../systems/GuildSystem";
+import type { TradeSystem } from "../systems/TradeSystem";
 import type { BankSystem } from "../systems/BankSystem";
 import type { NpcSystem } from "../systems/NpcSystem";
 
