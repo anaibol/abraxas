@@ -116,7 +116,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 				this.broadcastMessage,
 				findClientByName,
 				(sid) => this.findClient(sid),
-				this.social.broadcastToParty.bind(this.social),
+				this.social.broadcastToGroup.bind(this.social),
 			);
 
 			this.messageHandler = new MessageHandler({
@@ -304,7 +304,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 	private async removePlayer(client: Client) {
 		const player = this.state.players.get(client.sessionId);
 		if (player) {
-			this.messageHandler.handlePartyLeave(client);
+			this.messageHandler.handleGroupLeave(client);
 			await this.playerService.cleanupPlayer(player, this.roomMapName);
 			await this.bankSystem.closeBank(player);
 		}

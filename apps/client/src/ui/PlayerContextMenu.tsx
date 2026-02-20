@@ -14,7 +14,7 @@ type PlayerContextMenuProps = {
   target: PlayerContextTarget;
   onWhisper: (name: string) => void;
   onFriendRequest: (sessionId: string, name: string) => void;
-  onPartyInvite: (sessionId: string) => void;
+  onGroupInvite: (sessionId: string) => void;
   onTradeRequest: (sessionId: string) => void;
   onClose: () => void;
 };
@@ -23,7 +23,7 @@ export function PlayerContextMenu({
   target,
   onWhisper,
   onFriendRequest,
-  onPartyInvite,
+  onGroupInvite,
   onTradeRequest,
   onClose,
 }: PlayerContextMenuProps) {
@@ -65,9 +65,9 @@ export function PlayerContextMenu({
       onClick: () => { onFriendRequest(target.sessionId, target.name); onClose(); },
     },
     {
-      label: t("context_menu.party_invite"),
+      label: t("context_menu.group_invite"),
       color: "#88aaff",
-      onClick: () => { onPartyInvite(target.sessionId); onClose(); },
+      onClick: () => { onGroupInvite(target.sessionId); onClose(); },
     },
     {
       label: t("context_menu.trade"),

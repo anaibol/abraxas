@@ -1,43 +1,43 @@
 import React from "react";
-import { Box, Flex, Text, VStack, HStack, Input, Button } from "@chakra-ui/react";
+import { Button } from "../components/Button";
 import { useTranslation } from "react-i18next";
 import { T } from "../tokens";
-import { type PartyMember } from "./types";
+import { type GroupMember } from "./types";
 
-interface PartyTabProps {
-	partyId: string;
+interface GroupTabProps {
+	groupId: string;
 	leaderId: string;
-	partyMembers: PartyMember[];
+	groupMembers: GroupMember[];
 	inviteId: string;
 	setInviteId: (val: string) => void;
-	onPartyInvite?: (id: string) => void;
-	onPartyLeave?: () => void;
-	onPartyKick?: (id: string) => void;
+	onGroupInvite?: (id: string) => void;
+	onGroupLeave?: () => void;
+	onGroupKick?: (id: string) => void;
 	onTradeRequest?: (id: string) => void;
 }
 
-export function PartyTab({
-	partyId,
+export function GroupTab({
+	groupId,
 	leaderId,
-	partyMembers,
+	groupMembers,
 	inviteId,
 	setInviteId,
-	onPartyInvite,
-	onPartyLeave,
-	onPartyKick,
+	onGroupInvite,
+	onGroupLeave,
+	onGroupKick,
 	onTradeRequest,
-}: PartyTabProps) {
+}: GroupTabProps) {
 	const { t } = useTranslation();
 	return (
 		<Box p="3">
-			{!partyId ? (
+			{!groupId ? (
 				<VStack align="stretch" gap="3">
 					<Text textStyle={T.bodyMuted} color={T.goldDark} fontStyle="italic">
-						{t("sidebar.party.not_in_party")}
+						{t("sidebar.group.not_in_group")}
 					</Text>
 					<HStack gap="2">
 						<Input
-							placeholder={t("sidebar.party.session_id")}
+							placeholder={t("sidebar.group.session_id")}
 							size="xs"
 							value={inviteId}
 							onChange={(e) => setInviteId(e.target.value)}
@@ -56,20 +56,20 @@ export function PartyTab({
 							border="1px solid"
 							_hover={{ bg: T.surface, borderColor: T.gold }}
 							onClick={() => {
-								onPartyInvite?.(inviteId);
+								onGroupInvite?.(inviteId);
 								setInviteId("");
 							}}
 						>
-							{t("sidebar.party.invite")}
+							{t("sidebar.group.invite")}
 						</Button>
 					</HStack>
 				</VStack>
 			) : (
 				<VStack align="stretch" gap="2">
 					<Text textStyle={T.statLabel} color={T.goldDark} letterSpacing="2px">
-						{t("sidebar.party.party_id", { id: partyId })}
+						{t("sidebar.group.group_id", { id: groupId })}
 					</Text>
-					{partyMembers.map((member) => (
+					{groupMembers.map((member) => (
 						<Flex
 							key={member.sessionId}
 							layerStyle={T.rowItem}
@@ -91,7 +91,7 @@ export function PartyTab({
 								>
 									{member.name}
 									{member.sessionId === leaderId
-										? ` ${t("sidebar.party.leader_tag")}`
+										? ` ${t("sidebar.group.leader_tag")}`
 										: ""}
 								</Text>
 							</HStack>
@@ -110,7 +110,7 @@ export function PartyTab({
 										{t("sidebar.social.trade")}
 									</Button>
 								)}
-								{leaderId === partyMembers[0]?.sessionId &&
+								{leaderId === groupMembers[0]?.sessionId &&
 									member.sessionId !== leaderId && (
 										<Button
 											size="xs"
@@ -120,7 +120,7 @@ export function PartyTab({
 											minW="auto"
 											color="red.400"
 											fontSize="12px"
-											onClick={() => onPartyKick?.(member.sessionId)}
+											onClick={() => onGroupKick?.(member.sessionId)}
 										>
 											{t("sidebar.social.kick")}
 										</Button>
@@ -136,9 +136,9 @@ export function PartyTab({
 						color="red.400"
 						_hover={{ bg: T.blood }}
 						fontSize="12px"
-						onClick={onPartyLeave}
+						onClick={onGroupLeave}
 					>
-						{t("sidebar.party.leave")}
+						{t("sidebar.group.leave")}
 					</Button>
 				</VStack>
 			)}

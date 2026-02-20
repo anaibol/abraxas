@@ -1,13 +1,13 @@
 import { Client } from "@colyseus/core";
 import { GameState } from "../schema/GameState";
 import { Player } from "../schema/Player";
-import { Party } from "../schema/Party";
+import { Group } from "../schema/Group";
 import { ServerMessageType, ServerMessages } from "@abraxas/shared";
 
 export class SocialSystem {
   private invitations = new Map<
     string,
-    { partyId: string; inviterSessionId: string }
+    { groupId: string; inviterSessionId: string }
   >();
 
   constructor(
@@ -25,26 +25,26 @@ export class SocialSystem {
 
     if (!inviter || !target || inviter === target) return;
 
-    // Check if target is already in a party
-    if (target.partyId) {
-      this.sendError(client, "social.already_in_party");
+    // Check if target is already in a group
+    if (target.groupId) {
+      this.sendError(client, "social.already_in_group");
       return;
     }
 
-    let partyId = inviter.partyId;
-    if (!partyId) {
-      // Create a new party
-      partyId = crypto.randomUUID();
-      const party = new Party();
-      party.id = partyId;
-      party.leaderSessionId = inviter.sessionId;
-      party.memberIds.push(inviter.sessionId);
-      this.state.parties.set(partyId, party);
-      inviter.partyId = partyId;
-      this.broadcastPartyUpdate(partyId);
+    let groupId = inviter.groupId;
+    if (!groupId) {
+      // Create a new group
+      groupId = crypto.randomUUID();
+      const group = new Group();
+      group.id = groupId;
+      group.leaderSessionId = inviter.sessionId;
+      group.memberIds.push(inviter.sessionId);
+      this.state.groups.set(groupId, group);
+      inviter.groupId = groupId;
+      this.broadcastGroupUpdate(groupId);
     } else {
-      const party = this.state.parties.get(partyId);
-      if (party && party.leaderSessionId !== inviter.sessionId) {
+      const group = this.state.groups.get(groupId);
+      if (group && group.leaderSessionId !== inviter.sessionId) {
         this.sendError(client, "social.leader_only_invite");
         return;
       }
@@ -52,89 +52,89 @@ export class SocialSystem {
 
     // Send invitation to target
     this.invitations.set(targetSessionId, {
-      partyId,
+      groupId,
       inviterSessionId: inviter.sessionId,
     });
     const targetClient = this.findClient(targetSessionId);
     if (targetClient) {
-      targetClient.send(ServerMessageType.PartyInvited, {
-        partyId,
+      targetClient.send(ServerMessageType.GroupInvited, {
+        groupId,
         inviterName: inviter.name,
       });
       client.send(ServerMessageType.Notification, {
-        message: "social.invited_to_party",
+        message: "social.invited_to_group",
         templateData: { name: target.name },
       });
     }
   }
 
-  handleAcceptInvite(client: Client, partyId: string): void {
+  handleAcceptInvite(client: Client, groupId: string): void {
     const invite = this.invitations.get(client.sessionId);
-    if (!invite || invite.partyId !== partyId) {
+    if (!invite || invite.groupId !== groupId) {
       this.sendError(client, "social.no_invite");
       return;
     }
 
-    const party = this.state.parties.get(partyId);
+    const group = this.state.groups.get(groupId);
     const player = this.state.players.get(client.sessionId);
 
-    if (!party || !player) {
+    if (!group || !player) {
       this.invitations.delete(client.sessionId);
       return;
     }
 
-    if (party.memberIds.length >= 5) {
-      this.sendError(client, "social.party_full");
+    if (group.memberIds.length >= 5) {
+      this.sendError(client, "social.group_full");
       this.invitations.delete(client.sessionId);
       return;
     }
 
-    // Join party
-    player.partyId = partyId;
-    party.memberIds.push(client.sessionId);
+    // Join group
+    player.groupId = groupId;
+    group.memberIds.push(client.sessionId);
     this.invitations.delete(client.sessionId);
 
-    this.broadcastPartyUpdate(partyId);
-    this.broadcastToParty(partyId, ServerMessageType.Notification, {
-      message: "social.joined_party",
+    this.broadcastGroupUpdate(groupId);
+    this.broadcastToGroup(groupId, ServerMessageType.Notification, {
+      message: "social.joined_group",
       templateData: { name: player.name },
     });
   }
 
-  /** Sends an empty PartyUpdate to signal the client they are no longer in a party. */
-  private sendPartyLeft(client: Client): void {
-    client.send(ServerMessageType.PartyUpdate, {
-      partyId: "",
+  /** Sends an empty GroupUpdate to signal the client they are no longer in a group. */
+  private sendGroupLeft(client: Client): void {
+    client.send(ServerMessageType.GroupUpdate, {
+      groupId: "",
       leaderId: "",
       members: [],
     });
   }
 
-  handleLeaveParty(client: Client): void {
+  handleLeaveGroup(client: Client): void {
     const player = this.state.players.get(client.sessionId);
-    if (!player || !player.partyId) return;
+    if (!player || !player.groupId) return;
 
-    const partyId = player.partyId;
-    const party = this.state.parties.get(partyId);
-    if (!party) return;
+    const groupId = player.groupId;
+    const group = this.state.groups.get(groupId);
+    if (!group) return;
 
-    this.removePlayerFromParty(party, client.sessionId);
-    player.partyId = "";
+    this.removePlayerFromGroup(group, client.sessionId);
+    player.groupId = "";
 
-    this.broadcastToParty(partyId, ServerMessageType.Notification, {
-      message: "social.left_party",
+    this.broadcastToGroup(groupId, ServerMessageType.Notification, {
+      message: "social.left_group",
       templateData: { name: player.name },
     });
-    this.broadcastPartyUpdate(partyId);
-    this.sendPartyLeft(client);
+    this.broadcastGroupUpdate(groupId);
+    this.sendGroupLeft(client);
   }
 
   handleKickPlayer(client: Client, targetSessionId: string): void {
     const player = this.state.players.get(client.sessionId);
-    if (!player || !player.partyId) return;
+    if (!player || !player.groupId) return;
 
-    const party = this.state.parties.get(player.partyId);
-    if (!party || party.leaderSessionId !== client.sessionId) {
+    const group = this.state.groups.get(player.groupId);
+    if (!group || group.leaderSessionId !== client.sessionId) {
       this.sendError(client, "social.leader_only_kick");
       return;
     }
@@ -142,37 +142,37 @@ export class SocialSystem {
     if (targetSessionId === client.sessionId) return;
 
     const target = this.state.players.get(targetSessionId);
-    if (target && target.partyId === player.partyId) {
-      this.removePlayerFromParty(party, targetSessionId);
-      target.partyId = "";
+    if (target && target.groupId === player.groupId) {
+      this.removePlayerFromGroup(group, targetSessionId);
+      target.groupId = "";
 
       const targetClient = this.findClient(targetSessionId);
       if (targetClient) {
         targetClient.send(ServerMessageType.Notification, {
-          message: "social.kicked_from_party",
+          message: "social.kicked_from_group",
         });
-        this.sendPartyLeft(targetClient);
+        this.sendGroupLeft(targetClient);
       }
-      this.broadcastPartyUpdate(party.id);
+      this.broadcastGroupUpdate(group.id);
     }
   }
 
-  private removePlayerFromParty(party: Party, sessionId: string): void {
-    const index = party.memberIds.indexOf(sessionId);
+  private removePlayerFromGroup(group: Group, sessionId: string): void {
+    const index = group.memberIds.indexOf(sessionId);
     if (index !== -1) {
-      party.memberIds.splice(index, 1);
+      group.memberIds.splice(index, 1);
     }
 
-    if (party.memberIds.length === 0) {
-      this.state.parties.delete(party.id);
-    } else if (party.leaderSessionId === sessionId) {
+    if (group.memberIds.length === 0) {
+      this.state.groups.delete(group.id);
+    } else if (group.leaderSessionId === sessionId) {
       // New leader
-      const newLeaderId = party.memberIds[0];
+      const newLeaderId = group.memberIds[0];
       if (newLeaderId) {
-        party.leaderSessionId = newLeaderId;
+        group.leaderSessionId = newLeaderId;
         const newLeader = this.state.players.get(newLeaderId);
         if (newLeader) {
-          this.broadcastToParty(party.id, ServerMessageType.Notification, {
+          this.broadcastToGroup(group.id, ServerMessageType.Notification, {
             message: "social.new_leader",
             templateData: { name: newLeader.name },
           });
@@ -181,31 +181,31 @@ export class SocialSystem {
     }
   }
 
-  private broadcastPartyUpdate(partyId: string): void {
-    const party = this.state.parties.get(partyId);
-    if (!party) return;
+  private broadcastGroupUpdate(groupId: string): void {
+    const group = this.state.groups.get(groupId);
+    if (!group) return;
 
-    const members = party.memberIds.map((sid) => {
+    const members = group.memberIds.map((sid) => {
       const p = this.state.players.get(sid);
       return { sessionId: sid, name: p ? p.name : "Unknown" };
     });
 
-    this.broadcastToParty(partyId, ServerMessageType.PartyUpdate, {
-      partyId: party.id,
-      leaderId: party.leaderSessionId,
+    this.broadcastToGroup(groupId, ServerMessageType.GroupUpdate, {
+      groupId: group.id,
+      leaderId: group.leaderSessionId,
       members,
     });
   }
 
-  public broadcastToParty<T extends ServerMessageType>(
-    partyId: string,
+  public broadcastToGroup<T extends ServerMessageType>(
+    groupId: string,
     type: T,
     message: ServerMessages[T],
   ): void {
-    const party = this.state.parties.get(partyId);
-    if (!party) return;
+    const group = this.state.groups.get(groupId);
+    if (!group) return;
 
-    party.memberIds.forEach((sid) => {
+    group.memberIds.forEach((sid) => {
       const client = this.findClient(sid);
       if (client) {
         client.send(type, message);

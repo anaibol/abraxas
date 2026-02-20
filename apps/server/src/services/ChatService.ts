@@ -13,7 +13,7 @@ export class ChatService {
     private broadcast: BroadcastFn,
     private findClientByName: (name: string) => Client | undefined,
     private findClientBySessionId: (sessionId: string) => Client | undefined,
-    private broadcastToParty: <T extends ServerMessageType>(partyId: string, type: T, msg: ServerMessages[T]) => void,
+    private broadcastToGroup: <T extends ServerMessageType>(groupId: string, type: T, msg: ServerMessages[T]) => void,
   ) {}
 
   public handleChat(player: Player, message: string): void {
@@ -27,7 +27,7 @@ export class ChatService {
     }
 
     if (safeText.startsWith("/p ")) {
-      this.handlePartyChat(player, safeText.slice(3).trim());
+      this.handleGroupChat(player, safeText.slice(3).trim());
       return;
     }
 
@@ -47,27 +47,27 @@ export class ChatService {
     });
   }
 
-  private handlePartyChat(player: Player, text: string): void {
-    if (!text || !player.partyId) {
+  private handleGroupChat(player: Player, text: string): void {
+    if (!text || !player.groupId) {
       const senderClient = this.findClientBySessionId(player.sessionId);
       senderClient?.send(ServerMessageType.Notification, {
-        message: player.partyId ? "Message cannot be empty." : "You are not in a party.",
+        message: player.groupId ? "Message cannot be empty." : "You are not in a group.",
       });
       return;
     }
 
-    this.broadcastToParty(player.partyId, ServerMessageType.Chat, {
+    this.broadcastToGroup(player.groupId, ServerMessageType.Chat, {
       senderId: player.sessionId,
       senderName: player.name,
       message: text,
-      channel: ChatChannel.Party,
+      channel: ChatChannel.Group,
     });
 
     logger.debug({
       intent: "chat",
       clientId: player.sessionId,
-      channel: ChatChannel.Party,
-      partyId: player.partyId,
+      channel: ChatChannel.Group,
+      groupId: player.groupId,
       message: text,
     });
   }

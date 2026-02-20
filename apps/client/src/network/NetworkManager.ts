@@ -229,21 +229,21 @@ export class NetworkManager {
     this._send(ClientMessageType.Chat, { message });
   }
 
-  // Party System
-  sendPartyInvite(targetSessionId: string) {
-    this._send(ClientMessageType.PartyInvite, { targetSessionId });
+  // Group System
+  sendGroupInvite(targetSessionId: string) {
+    this._send(ClientMessageType.GroupInvite, { targetSessionId });
   }
 
-  sendPartyAccept(partyId: string) {
-    this._send(ClientMessageType.PartyAccept, { partyId });
+  sendGroupAccept(groupId: string) {
+    this._send(ClientMessageType.GroupAccept, { groupId });
   }
 
-  sendPartyLeave() {
-    this._send(ClientMessageType.PartyLeave, {});
+  sendGroupLeave() {
+    this._send(ClientMessageType.GroupLeave, {});
   }
 
-  sendPartyKick(targetSessionId: string) {
-    this._send(ClientMessageType.PartyKick, { targetSessionId });
+  sendGroupKick(targetSessionId: string) {
+    this._send(ClientMessageType.GroupKick, { targetSessionId });
   }
 
   // Friend System

@@ -86,10 +86,10 @@ export class MessageHandler {
 		register(ClientMessageType.Interact, this.handleInteract.bind(this));
 		register(ClientMessageType.BuyItem, this.handleBuyItem.bind(this));
 		register(ClientMessageType.SellItem, this.handleSellItem.bind(this));
-		register(ClientMessageType.PartyInvite, this.handlePartyInvite.bind(this));
-		register(ClientMessageType.PartyAccept, this.handlePartyAccept.bind(this));
-		register(ClientMessageType.PartyLeave, this.handlePartyLeave.bind(this));
-		register(ClientMessageType.PartyKick, this.handlePartyKick.bind(this));
+		register(ClientMessageType.GroupInvite, this.handleGroupInvite.bind(this));
+		register(ClientMessageType.GroupAccept, this.handleGroupAccept.bind(this));
+		register(ClientMessageType.GroupLeave, this.handleGroupLeave.bind(this));
+		register(ClientMessageType.GroupKick, this.handleGroupKick.bind(this));
 		register(ClientMessageType.FriendRequest, this.handleFriendRequest.bind(this));
 		register(ClientMessageType.FriendAccept, this.handleFriendAccept.bind(this));
 		register(ClientMessageType.QuestAccept, this.handleQuestAccept.bind(this));
@@ -732,27 +732,27 @@ export class MessageHandler {
 		this.ctx.systems.friends.handleFriendAccept(client, data.requesterId);
 	}
 
-	handlePartyInvite(
+	handleGroupInvite(
 		client: Client,
-		data: ClientMessages[ClientMessageType.PartyInvite],
+		data: ClientMessages[ClientMessageType.GroupInvite],
 	): void {
 		this.ctx.systems.social.handleInvite(client, data.targetSessionId);
 	}
 
-	handlePartyAccept(
+	handleGroupAccept(
 		client: Client,
-		data: ClientMessages[ClientMessageType.PartyAccept],
+		data: ClientMessages[ClientMessageType.GroupAccept],
 	): void {
-		this.ctx.systems.social.handleAcceptInvite(client, data.partyId);
+		this.ctx.systems.social.handleAcceptInvite(client, data.groupId);
 	}
 
-	handlePartyLeave(client: Client): void {
-		this.ctx.systems.social.handleLeaveParty(client);
+	handleGroupLeave(client: Client): void {
+		this.ctx.systems.social.handleLeaveGroup(client);
 	}
 
-	handlePartyKick(
+	handleGroupKick(
 		client: Client,
-		data: ClientMessages[ClientMessageType.PartyKick],
+		data: ClientMessages[ClientMessageType.GroupKick],
 	): void {
 		this.ctx.systems.social.handleKickPlayer(client, data.targetSessionId);
 	}

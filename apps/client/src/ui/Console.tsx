@@ -8,7 +8,7 @@ export interface ConsoleMessage {
   text: string;
   color?: string;
   timestamp: number;
-  channel?: "global" | "party" | "whisper" | "system" | "combat";
+  channel?: "global" | "group" | "whisper" | "system" | "combat";
 }
 
 interface ConsoleProps {
@@ -18,12 +18,12 @@ interface ConsoleProps {
   prefillMessage?: string;
 }
 
-type Channel = "all" | "global" | "party" | "whisper" | "system" | "combat";
+type Channel = "all" | "global" | "group" | "whisper" | "system" | "combat";
 
 const TABS: { id: Channel; labelKey: string; color: string }[] = [
   { id: "all", labelKey: "console.tab_all", color: "#ccc" },
   { id: "global", labelKey: "console.tab_global", color: "#fff" },
-  { id: "party", labelKey: "console.tab_party", color: "#77f" },
+  { id: "group", labelKey: "console.tab_group", color: "#77f" },
   { id: "whisper", labelKey: "console.tab_whisper", color: "#f7f" },
   { id: "system", labelKey: "console.tab_system", color: "#ff7" },
   { id: "combat", labelKey: "console.tab_combat", color: "#f84" },
@@ -87,7 +87,7 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage }: Co
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
-      const prefix = activeChannel === "party" ? "/p " : "";
+      const prefix = activeChannel === "group" ? "/p " : "";
       onSendChat?.(prefix + inputValue);
       setInputValue("");
     }
@@ -180,7 +180,7 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage }: Co
                 outline: "none",
                 fontSize: "13px"
             }}
-            placeholder={activeChannel === "party" ? t("console.placeholder_party") : t("console.placeholder_default")}
+            placeholder={activeChannel === "group" ? t("console.placeholder_group") : t("console.placeholder_default")}
           />
       </Box>
     </Box>

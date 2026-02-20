@@ -552,9 +552,9 @@ export class CombatSystem {
 
 	private sameFaction(a: Entity, b: Entity): boolean {
 		if (a instanceof Player && b instanceof Player) {
-			// Party members are same faction (prevent friendly fire)
-			if (a.partyId && a.partyId === b.partyId) return true;
-			return false; // Players can hit other players not in their party
+			// Group members are same faction (prevent friendly fire)
+			if (a.groupId && a.groupId === b.groupId) return true;
+			return false; // Players can hit other players not in their group
 		}
 		// NPCs of same type are same faction
 		if (!(a instanceof Player) && !(b instanceof Player)) {

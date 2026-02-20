@@ -36,7 +36,7 @@ export type PlayerState = {
 	equipment?: EquipmentState;
 };
 
-export type PartyMember = { sessionId: string; name: string };
+export type GroupMember = { sessionId: string; name: string };
 export type Friend = { id: string; name: string; online: boolean };
 
 export interface SidebarProps {
@@ -47,12 +47,12 @@ export interface SidebarProps {
 	onUseItem?: (itemId: string) => void;
 	onDropItem?: (itemId: string) => void;
 	quests?: PlayerQuestState[];
-	partyId?: string;
+	groupId?: string;
 	leaderId?: string;
-	partyMembers?: PartyMember[];
-	onPartyInvite?: (targetId: string) => void;
-	onPartyLeave?: () => void;
-	onPartyKick?: (targetSessionId: string) => void;
+	groupMembers?: GroupMember[];
+	onGroupInvite?: (targetId: string) => void;
+	onGroupLeave?: () => void;
+	onGroupKick?: (targetSessionId: string) => void;
 	friends?: Friend[];
 	pendingFriendRequests?: { id: string; name: string }[];
 	onFriendRequest?: (name: string) => void;
