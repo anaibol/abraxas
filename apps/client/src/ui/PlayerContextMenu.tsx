@@ -17,6 +17,7 @@ type PlayerContextMenuProps = {
   onGroupInvite: (sessionId: string) => void;
   onTradeRequest: (sessionId: string) => void;
   onClose: () => void;
+  onGMTeleportTo?: (sessionId: string) => void;
 };
 
 export function PlayerContextMenu({
@@ -26,6 +27,7 @@ export function PlayerContextMenu({
   onGroupInvite,
   onTradeRequest,
   onClose,
+  onGMTeleportTo,
 }: PlayerContextMenuProps) {
   const { t } = useTranslation();
   const menuRef = useRef<HTMLDivElement>(null);
