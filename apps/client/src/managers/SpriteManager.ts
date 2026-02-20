@@ -56,10 +56,10 @@ export class SpriteManager {
     sprite.updateHpMana(player.hp, player.mana ?? 0);
     sprite.updateAppearance(player.overrideBodyId ?? 0, player.overrideHeadId ?? 0);
     sprite.updateEquipment(
-      player.equipWeapon,
-      player.equipShield,
-      player.equipHelmet,
-      player.equipMount ?? "",
+      player.equipWeaponId,
+      player.equipShieldId,
+      player.equipHelmetId,
+      player.equipMountId ?? "",
     );
     sprite.setMeditating(player.meditating ?? false);
     this.updateAlpha(sprite, player);
@@ -75,7 +75,7 @@ export class SpriteManager {
     }
 
     // ── Item #49: Mount glow ───────────────────────────────────────────────────
-    if (player.equipMount && player.equipMount !== "") {
+    if (player.equipMountId && player.equipMountId !== "") {
       this.applyGlowFx(sessionId, 0xffe066, 3000, 1.5);
     }
   }

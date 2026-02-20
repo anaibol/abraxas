@@ -342,12 +342,13 @@ export interface PlayerEntityState extends BaseEntityState {
   classType: ClassType;
   mana: number;
   maxMana: number;
-  equipWeapon: string;
-  equipShield: string;
-  equipHelmet: string;
-  equipArmor: string;
-  equipRing: string;
-  equipMount: string;
+  /** Public equip item IDs exposed by equipWeaponId / equipShieldId etc. on the schema */
+  equipWeaponId: string;
+  equipShieldId: string;
+  equipHelmetId: string;
+  equipArmorId: string;
+  equipRingId: string;
+  equipMountId: string;
   meditating: boolean;
   guildId?: string;
   pvpEnabled: boolean;

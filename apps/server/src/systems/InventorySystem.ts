@@ -11,6 +11,7 @@ import {
 } from "@abraxas/shared";
 import { InventoryItem, ItemAffixSchema } from "../schema/InventoryItem";
 import type { Player } from "../schema/Player";
+import type { BuffSystem } from "./BuffSystem";
 
 /** The subset of Player property keys that hold equipment item IDs. */
 type EquipSlotKey =
@@ -29,8 +30,6 @@ const EQUIP_SLOT_MAP: Record<EquipmentSlot, EquipSlotKey> = {
   ring: "equipRing",
   mount: "equipMount",
 };
-
-import type { BuffSystem } from "./BuffSystem";
 
 export class InventorySystem {
   constructor(private buffSystem?: BuffSystem) {}

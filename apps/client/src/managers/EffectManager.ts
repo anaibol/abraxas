@@ -1509,6 +1509,37 @@ export class EffectManager {
         return this.fx_acid_splash(px, py);
       case "earthquake":
         return this.fx_earthquake(px, py);
+      // ── Druid ─────────────────────────────────────────────────────────────
+      case "bear_form":
+        return this.fx_bear_form(px, py);
+      case "cat_form":
+        return this.fx_cat_form(px, py);
+      case "tree_form":
+        return this.fx_tree_form(px, py);
+      // ── Necromancer ────────────────────────────────────────────────────────
+      case "summon_zombie":
+      case "summon_skeleton":
+        return this.fx_summon(px, py);
+      case "soul_blast":
+        return this.fx_soul_drain(px, py); // reuse: dark expanding burst
+      // ── Warrior extras ────────────────────────────────────────────────────
+      case "execute":
+        return this.fx_backstab(px, py);   // devastating melee finisher
+      case "leap":
+        return this.fx_earthquake(px, py); // ground impact on landing
+      case "cleave":
+        return this.fx_whirlwind(px, py);  // wide arc attack
+      case "berserker_rage":
+        return this.fx_enrage(px, py);
+      // ── Rogue extras ──────────────────────────────────────────────────────
+      case "shadowstep":
+        return this.fx_stealth(px, py);
+      case "fan_of_knives":
+        return this.fx_multi_shot(px, py);
+      // ── Detect invisibility ───────────────────────────────────────────────
+      case "detect_invisibility":
+      case "cleanse_paralysis":
+        return this.fx_divine_shield(px, py);
       default:
         return this.fx_default(px, py);
     }
