@@ -1,4 +1,4 @@
-import { Direction, DIRECTION_DELTA } from "../types";
+import { Direction } from "../types";
 
 export interface Point {
   x: number;
