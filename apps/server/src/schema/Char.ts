@@ -1,6 +1,6 @@
 import { type Ability, EntityType, type NpcStats } from "@abraxas/shared";
 import { type BufferedAction, Direction, type WindupAction } from "@abraxas/shared";
-import { Schema, type as schemaType } from "@colyseus/schema";
+import { Schema, type as typeSchema } from "@colyseus/schema";
 
 /**
  * Base schema shared by both Player and Npc.
@@ -8,12 +8,12 @@ import { Schema, type as schemaType } from "@colyseus/schema";
  * and are common across character types.
  */
 export abstract class Char extends Schema {
-  @schemaType("string") type: EntityType = EntityType.NPC;
-  @schemaType("string") sessionId: string = "";
-  @schemaType("string") name: string = "";
-  @schemaType("uint16") tileX: number = 0;
-  @schemaType("uint16") tileY: number = 0;
-  @schemaType("uint8") facing: Direction = Direction.DOWN;
+  @typeSchema("string") type: EntityType = EntityType.NPC;
+  @typeSchema("string") sessionId: string = "";
+  @typeSchema("string") name: string = "";
+  @typeSchema("uint16") tileX: number = 0;
+  @typeSchema("uint16") tileY: number = 0;
+  @typeSchema("uint8") facing: Direction = Direction.DOWN;
 
   // Transient server-side state (not synced to clients)
   lastMoveMs: number = 0;
@@ -23,22 +23,22 @@ export abstract class Char extends Schema {
   windupAction: WindupAction | null = null;
 
   // Combat stats (common to players and NPCs)
-  @schemaType("uint8") str: number = 0;
-  @schemaType("uint8") agi: number = 0;
-  @schemaType("uint8") intStat: number = 0;
-  @schemaType("uint16") armor: number = 0;
+  @typeSchema("uint8") str: number = 0;
+  @typeSchema("uint8") agi: number = 0;
+  @typeSchema("uint8") intStat: number = 0;
+  @typeSchema("uint16") armor: number = 0;
 
   // hp is the Colyseus-tracked field; `alive` is kept in sync by the setter.
   // _hp is a plain backing field — NOT decorated — to avoid double-registration.
-  @schemaType("int32") hp: number = 0;
-  @schemaType("int32") maxHp: number = 0;
+  @typeSchema("int32") hp: number = 0;
+  @typeSchema("int32") maxHp: number = 0;
 
-  @schemaType("boolean") alive: boolean = true;
-  @schemaType("boolean") stealthed: boolean = false;
-  @schemaType("boolean") stunned: boolean = false;
-  @schemaType("boolean") spawnProtection: boolean = false;
-  @schemaType("uint16") overrideBodyId: number = 0;
-  @schemaType("uint16") overrideHeadId: number = 0;
+  @typeSchema("boolean") alive: boolean = true;
+  @typeSchema("boolean") stealthed: boolean = false;
+  @typeSchema("boolean") stunned: boolean = false;
+  @typeSchema("boolean") spawnProtection: boolean = false;
+  @typeSchema("uint16") overrideBodyId: number = 0;
+  @typeSchema("uint16") overrideHeadId: number = 0;
 
   /** Returns the combat stats for this entity (class or NPC stats). */
   abstract getStats(): NpcStats | undefined;

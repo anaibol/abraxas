@@ -1,16 +1,19 @@
-import type { Ability, NpcStats, NpcType } from "@abraxas/shared";
+import { type Ability, type NpcStats, type NpcType } from "@abraxas/shared";
 import { ABILITIES, EntityType, NPC_STATS, NpcState } from "@abraxas/shared";
-import { type as schemaType } from "@colyseus/schema";
+import { type } from "@colyseus/schema";
 import { Char } from "./Char";
 
 export class Npc extends Char {
   type = EntityType.NPC;
-  @schemaType("string") npcType: NpcType = "orc";
-  @schemaType("uint8") spellCastPercent = 0;
+  @type("string") npcType: NpcType = "orc";
+  @type("uint8") spellCastPercent = 0;
 
-  @schemaType("string") ownerId?: string;
-  @schemaType("uint8") level: number = 1;
-  @schemaType("uint32") exp: number = 0;
+  @type("string") ownerId?: string;
+  @type("uint8") level: number = 1;
+  @type("uint32") exp: number = 0;
+
+  hp: number = 0;
+  maxHp: number = 0;
 
   // Server-only dataAI fields (not synced to clients) ──────────────────────
   /** Current AI state machine state. */

@@ -1,18 +1,18 @@
-import { ArraySchema, Schema, type as typeSchema } from "@colyseus/schema";
+import { ArraySchema, Schema, type } from "@colyseus/schema";
 
 export class ItemAffixSchema extends Schema {
-  @typeSchema("string") type: string = "";
-  @typeSchema("string") stat: string = "";
-  @typeSchema("int32") value: number = 0;
+  @type("string") type: string = "";
+  @type("string") stat: string = "";
+  @type("int32") value: number = 0;
 }
 
 export class InventoryItem extends Schema {
-  @typeSchema("string") itemId: string = "";
-  @typeSchema("uint8") quantity: number = 1;
-  @typeSchema("uint8") slotIndex: number = 0;
+  @type("string") itemId: string = "";
+  @type("uint8") quantity: number = 1;
+  @type("uint8") slotIndex: number = 0;
 
   // Instance data
-  @typeSchema("string") rarity: string = "common";
-  @typeSchema("string") nameOverride: string = "";
-  @typeSchema([ItemAffixSchema]) affixes = new ArraySchema<ItemAffixSchema>();
+  @type("string") rarity: string = "common";
+  @type("string") nameOverride: string = "";
+  @type([ItemAffixSchema]) affixes = new ArraySchema<ItemAffixSchema>();
 }

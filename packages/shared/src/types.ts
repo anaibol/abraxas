@@ -19,12 +19,29 @@ export const DIRECTION_DELTA: Record<Direction, { dx: number; dy: number }> = {
 export const EQUIPMENT_SLOTS = ["weapon", "armor", "shield", "helmet", "ring", "mount"] as const;
 export type EquipmentSlot = (typeof EQUIPMENT_SLOTS)[number];
 
-export type ItemRarity = "common" | "uncommon" | "rare" | "epic" | "legendary";
+export enum ItemRarity {
+  COMMON = "common",
+  UNCOMMON = "uncommon",
+  RARE = "rare",
+  EPIC = "epic",
+  LEGENDARY = "legendary",
+}
+
+export enum StatType {
+  STR = "str",
+  AGI = "agi",
+  INT = "int",
+  HP = "hp",
+  MANA = "mana",
+  ARMOR = "armor",
+  STUN = "stun",
+  INVULNERABLE = "invulnerable",
+}
 
 export interface ItemAffix {
   type: string;
   value: number;
-  stat: string;
+  stat: StatType;
 }
 
 export interface ItemInstanceData {
@@ -180,6 +197,11 @@ export interface ClassStats extends NpcStats {
   maxCompanions: number;
 }
 
+export enum DamageSchool {
+  PHYSICAL = "physical",
+  MAGICAL = "magical",
+}
+
 export type AbilityEffect =
   | "damage"
   | "heal"
@@ -206,7 +228,7 @@ export type Ability = {
   rangeTiles: number;
   manaCost: number;
   baseDamage: number;
-  scalingStat: "str" | "agi" | "int";
+  scalingStat: StatType;
   scalingRatio: number;
   cooldownMs: number;
   windupMs: number;
@@ -216,12 +238,12 @@ export type Ability = {
    * "physical" uses armor reduction (and dodge for melee-range abilities).
    * "magical" uses INT-based magic resistance.
    */
-  damageSchool: "physical" | "magical";
+  damageSchool: DamageSchool;
   key: string;
   fxId: number;
   durationMs?: number;
   aoeRadius?: number;
-  buffStat?: string;
+  buffStat?: StatType;
   buffAmount?: number;
   soulCost?: number;
   dotDamage?: number;
@@ -378,6 +400,7 @@ export enum ChatChannel {
 export type ServerMessages = {
   [ServerMessageType.Welcome]: {
     sessionId: string;
+    roomMapName: string;
     tileX: number;
     tileY: number;
     mapWidth: number;

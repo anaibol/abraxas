@@ -79,9 +79,6 @@ export class TickSystem {
       else if (rnd < 0.85) state.weather = "rain";
       else state.weather = "snow";
     }
-
-    const now = Date.now();
-
     // 1. Buffs — resolves DoTs and expires effects for both Players and NPCs
     systems.buff.tick(
       now,

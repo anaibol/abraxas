@@ -20,6 +20,7 @@ import { MessageHandler } from "../handlers/MessageHandler";
 import { SocialHandlers } from "../handlers/SocialHandlers";
 import { logger } from "../logger";
 import { GameState } from "../schema/GameState";
+import { InventoryItem, ItemAffixSchema } from "../schema/InventoryItem";
 import { Npc } from "../schema/Npc";
 import { Player } from "../schema/Player";
 import { ChatService } from "../services/ChatService";
@@ -210,7 +211,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
               drop.nameOverride = d.item.nameOverride || "";
               const affixes = (d.item.affixesJson as any) || [];
               affixes.forEach((a: any) => {
-                  const s = new (require("../schema/InventoryItem").ItemAffixSchema)();
+                  const s = new ItemAffixSchema();
                   s.type = a.type;
                   s.stat = a.stat;
                   s.value = a.value;
@@ -370,6 +371,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
   private sendWelcome(client: Client, player: Player) {
     client.send(ServerMessageType.Welcome, {
       sessionId: client.sessionId,
+      roomMapName: this.roomMapName,
       tileX: player.tileX,
       tileY: player.tileY,
       mapWidth: this.map.width,
@@ -381,6 +383,8 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       role: player.role,
     });
   }
+
+
 
   async onLeave(client: Client) {
     await this.removePlayer(client);

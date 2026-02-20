@@ -180,12 +180,12 @@ export class PlayerService {
     });
 
     const equipment: EquipmentData = {
-      weapon: player.equipWeapon?.itemId,
-      shield: player.equipShield?.itemId,
-      helmet: player.equipHelmet?.itemId,
-      armor: player.equipArmor?.itemId,
-      ring: player.equipRing?.itemId,
-      mount: player.equipMount?.itemId,
+      weapon: player.equipWeapon?.itemId || "",
+      shield: player.equipShield?.itemId || "",
+      helmet: player.equipHelmet?.itemId || "",
+      armor: player.equipArmor?.itemId || "",
+      ring: player.equipRing?.itemId || "",
+      mount: player.equipMount?.itemId || "",
     };
 
     const saveData = {

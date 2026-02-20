@@ -6,10 +6,12 @@ import {
   calcMeleeDamage,
   calcRangedDamage,
   calcSpellDamage,
+  DamageSchool,
   EntityType,
   GCD_MS,
   MathUtils,
   ServerMessageType,
+  StatType,
 } from "@abraxas/shared";
 import type { GameState } from "../schema/GameState";
 import { Player } from "../schema/Player";
@@ -643,7 +645,7 @@ export class CombatSystem {
     const harmful =
       ["damage", "dot", "stun", "debuff", "leech", "reveal"].includes(ability.effect) ||
       ability.baseDamage > 0 ||
-      ability.buffStat === "stun";
+      ability.buffStat === StatType.STUN;
 
     if (harmful) {
       return this.canAttack(attacker, target);
@@ -853,14 +855,13 @@ export class CombatSystem {
     return calcSpellDamage(ability.baseDamage, scalingStatValue, ability.scalingRatio, defenderInt);
   }
 
-  private boosted(entity: Entity, stat: string, now: number): number {
-    const bases: Record<string, number> = {
-      str: entity.str,
-      agi: entity.agi,
-      int: entity.intStat,
-      intStat: entity.intStat,
-      armor: entity.armor,
-      hp: entity.maxHp,
+  private boosted(entity: Entity, stat: StatType, now: number): number {
+    const bases: Partial<Record<StatType, number>> = {
+      [StatType.STR]: entity.str,
+      [StatType.AGI]: entity.agi,
+      [StatType.INT]: entity.intStat,
+      [StatType.ARMOR]: entity.armor,
+      [StatType.HP]: entity.maxHp,
     };
     return (bases[stat] ?? 0) + this.buffSystem.getBuffBonus(entity.sessionId, stat, now);
   }

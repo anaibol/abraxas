@@ -1,6 +1,7 @@
 import { DROP_EXPIRY_MS } from "@abraxas/shared";
 import type { MapSchema } from "@colyseus/schema";
 import { Drop } from "../schema/Drop";
+import { InventoryItem, ItemAffixSchema } from "../schema/InventoryItem";
 import type { Player } from "../schema/Player";
 import type { InventorySystem } from "./InventorySystem";
 
@@ -33,9 +34,9 @@ export class DropSystem {
     
     if (instanceData) {
         drop.rarity = instanceData.rarity;
-        drop.nameOverride = instanceData.nameOverride;
+        drop.nameOverride = instanceData.nameOverride ?? "";
         instanceData.affixes.forEach(a => {
-            const s = new (require("../schema/InventoryItem").ItemAffixSchema)();
+            const s = new ItemAffixSchema();
             s.type = a.type;
             s.stat = a.stat;
             s.value = a.value;

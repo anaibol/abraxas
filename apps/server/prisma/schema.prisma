@@ -55,6 +55,32 @@ enum QuestStatus {
   TURNED_IN
 }
 
+enum ItemRarity {
+  COMMON
+  UNCOMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
+
+enum DropType {
+  ITEM
+  GOLD
+}
+
+enum FriendRequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+enum Direction {
+  UP
+  DOWN
+  LEFT
+  RIGHT
+}
+
 model Account {
   id        String      @id @default(cuid())
   email     String      @unique
@@ -176,7 +202,7 @@ model ItemInstance {
   boundToCharacterId String?
 
   // Diablo-style randomization
-  rarity       String? // common, uncommon, rare, epic, legendary
+  rarity       ItemRarity? // common, uncommon, rare, epic, legendary
   nameOverride String?
   /// [ItemAffixes]
   affixesJson  Json?
@@ -215,7 +241,7 @@ model WorldDrop {
   mapId      String
   tileX      Int
   tileY      Int
-  itemType   String // "item" or "gold"
+  itemType   DropType // "item" or "gold"
   itemId     String?       @unique
   item       ItemInstance? @relation(fields: [itemId], references: [id], onDelete: Cascade)
   quantity   Int           @default(1)
