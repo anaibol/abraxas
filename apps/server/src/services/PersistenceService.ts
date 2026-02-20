@@ -143,6 +143,9 @@ export class PersistenceService {
                 data: {
                   itemDefId: itemDef.id,
                   boundToCharacterId: char.id,
+                  rarity: (item as any).rarity || "common",
+                  nameOverride: (item as any).nameOverride,
+                  affixesJson: (item as any).affixes || [],
                 },
               });
 
@@ -217,5 +220,99 @@ export class PersistenceService {
     } catch (e) {
       logger.error({ message: "Failed to save char", error: String(e) });
     }
+  }
+
+  static async loadWorldDrops(mapId: string) {
+    return prisma.worldDrop.findMany({
+      where: { mapId },
+      include: {
+        item: {
+          include: { itemDef: true },
+        },
+      },
+    });
+  }
+
+  static async saveWorldDrop(data: {
+    id: string;
+    mapId: string;
+    tileX: number;
+    tileY: number;
+    itemType: string;
+    itemId?: string;
+    quantity: number;
+    goldAmount: number;
+    instanceData?: { rarity: string; nameOverride?: string; affixes: any[] };
+  }) {
+    let itemInstanceId = data.itemId;
+
+    if (data.itemType === "item" && data.instanceData) {
+      const itemDef = await prisma.itemDef.findUnique({ where: { code: data.itemId } });
+      if (itemDef) {
+        const instance = await prisma.itemInstance.create({
+          data: {
+            itemDefId: itemDef.id,
+            rarity: data.instanceData.rarity,
+            nameOverride: data.instanceData.nameOverride,
+            affixesJson: data.instanceData.affixes,
+          },
+        });
+        itemInstanceId = instance.id;
+      }
+    }
+
+    return prisma.worldDrop.create({
+      data: {
+        id: data.id,
+        mapId: data.mapId,
+        tileX: data.tileX,
+        tileY: data.tileY,
+        itemType: data.itemType,
+        itemId: itemInstanceId,
+        quantity: data.quantity,
+        goldAmount: data.goldAmount,
+      },
+    });
+  }
+
+  static async deleteWorldDrop(id: string) {
+    return prisma.worldDrop.deleteMany({ where: { id } });
+  }
+
+  static async loadPersistentNpcs(mapId: string) {
+    return prisma.npc.findMany({ where: { mapId } });
+  }
+
+  static async savePersistentNpcs(
+    mapId: string,
+    npcs: {
+      npcType: string;
+      tileX: number;
+      tileY: number;
+      spawnX: number;
+      spawnY: number;
+      level: number;
+      hp: number;
+      maxHp: number;
+      isUnique: boolean;
+      uniqueId?: string;
+    }[],
+  ) {
+    await prisma.npc.deleteMany({ where: { mapId } });
+    return prisma.npc.createMany({
+      data: npcs.map((n) => ({
+        mapId,
+        npcType: n.npcType,
+        tileX: n.tileX,
+        tileY: n.tileY,
+        spawnX: n.spawnX,
+        spawnY: n.spawnY,
+        level: n.level,
+        hp: n.hp,
+        maxHp: n.maxHp,
+        isUnique: n.isUnique,
+        uniqueId: n.uniqueId,
+      })),
+    });
   }
 }

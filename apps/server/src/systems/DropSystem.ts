@@ -25,10 +25,24 @@ export class DropSystem {
     tileY: number,
     itemId: string,
     quantity: number,
+    instanceData?: { rarity: string; nameOverride?: string; affixes: { type: string; stat: string; value: number }[] }
   ): Drop {
     const drop = this.createDrop(drops, tileX, tileY, "item");
     drop.itemId = itemId;
     drop.quantity = quantity;
+    
+    if (instanceData) {
+        drop.rarity = instanceData.rarity;
+        drop.nameOverride = instanceData.nameOverride;
+        instanceData.affixes.forEach(a => {
+            const s = new (require("../schema/InventoryItem").ItemAffixSchema)();
+            s.type = a.type;
+            s.stat = a.stat;
+            s.value = a.value;
+            drop.affixes.push(s);
+        });
+    }
+    
     return drop;
   }
 
@@ -63,7 +77,12 @@ export class DropSystem {
 
     // Handle item drops
     if (drop.itemType === "item" && drop.itemId) {
-      if (!this.inventorySystem.addItem(player, drop.itemId, drop.quantity)) {
+      const instanceData = {
+          rarity: drop.rarity,
+          nameOverride: drop.nameOverride,
+          affixes: drop.affixes.map(a => ({ type: a.type, stat: a.stat, value: a.value }))
+      };
+      if (!this.inventorySystem.addItem(player, drop.itemId, drop.quantity, instanceData)) {
         onError?.("Inventory full");
         return false; // Inventory full
       }

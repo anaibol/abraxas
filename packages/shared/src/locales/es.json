@@ -490,6 +490,10 @@
     "holy_bolt": {
       "name": "Perno Sagrado",
       "desc": "Lanza un rayo concentrado de luz divina a un enemigo distante."
+    },
+    "bear_form": {
+      "name": "Forma de Oso",
+      "desc": "Canaliza el espíritu de la naturaleza para transformarte en un oso, aumentando masivamente tus HP."
     }
   },
   "item_slot": {

@@ -40,6 +40,7 @@ export class SpatialLookup {
       this.grid.set(key, cell);
     }
     cell.add(entity.sessionId);
+    console.log(`[SpatialLookup] addToGrid: ${entity.sessionId} (${entity.type}) at ${entity.tileX},${entity.tileY} (alive: ${entity.alive})`);
   }
 
   removeFromGrid(entity: Entity) {
@@ -64,6 +65,7 @@ export class SpatialLookup {
 
     // Add to new pos
     this.addToGrid(entity);
+    console.log(`[SpatialLookup] updatePosition: ${entity.sessionId} from ${oldX},${oldY} to ${entity.tileX},${entity.tileY}`);
   }
 
   findEntityBySessionId(sessionId: string): Entity | undefined {
@@ -88,6 +90,9 @@ export class SpatialLookup {
       if (entity) {
         const match = entity.alive && Number(entity.tileX) === x && Number(entity.tileY) === y;
         if (match) return entity;
+        else {
+          console.log(`[SpatialLookup] findEntityAtTile: Found ${sessionId} at cell ${key} but match FAILED. alive: ${entity.alive}, pos: ${entity.tileX},${entity.tileY}, requested: ${x},${y}`);
+        }
       }
     }
     return undefined;

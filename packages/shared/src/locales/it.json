@@ -489,7 +489,11 @@
     },
     "holy_bolt": {
       "name": "Dardo Sacro",
-      "desc": "Lancia un dardo concentrato di luce divina a un nemico distante."
+      "desc": "Lancia un dardo concentrato di luce divina a un bersaglio distante."
+    },
+    "bear_form": {
+      "name": "Forma d'Orso",
+      "desc": "Incanala lo spirito della natura per trasformarti in un orso, aumentando massicciamente i tuoi HP."
     }
   },
   "item_slot": {

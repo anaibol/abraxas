@@ -490,6 +490,10 @@
     "holy_bolt": {
       "name": "Éclair Sacré",
       "desc": "Lance un éclair concentré de lumière divine sur un ennemi distant."
+    },
+    "bear_form": {
+      "name": "Forme d'Ours",
+      "desc": "Canalisez l'esprit de la nature pour vous transformer en ours, augmentant massivement vos PV."
     }
   },
   "item_slot": {

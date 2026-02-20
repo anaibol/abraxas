@@ -473,6 +473,10 @@
       "name": "Holy Nova",
       "desc": "Burst of holy light that heals all nearby allies."
     },
+    "bear_form": {
+      "name": "Bear Form",
+      "desc": "Channel the spirit of nature to transform into a bear, massively increasing your HP."
+    },
     "curse": {
       "name": "Curse",
       "desc": "Afflict an enemy with a dark curse, lowering their INT for 10s."

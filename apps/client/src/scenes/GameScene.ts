@@ -126,8 +126,17 @@ export class GameScene extends Phaser.Scene {
     this.collisionGrid = this.welcome.collision;
 
     this.sound.pauseOnBlur = false;
+    this.soundManager = new SoundManager(this);
+    this.soundManager.startMusic();
 
+    // Start ambiance based on map
+    if (this.welcome.roomMapName.includes("arena")) {
+      this.soundManager.startAmbiance("ambiance-wind");
+    } else {
+      this.soundManager.startAmbiance("ambiance-crickets");
+    }
 
+    this.onReady?.(this.soundManager);
 
     this.muteKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.BACKTICK);
     this.muteKey?.on("down", () => {

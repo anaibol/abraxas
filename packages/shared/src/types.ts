@@ -598,10 +598,10 @@ export type ClientMessages = {
     targetTileY: number;
   };
   [ClientMessageType.Pickup]: { dropId: string };
-  [ClientMessageType.Equip]: { itemId: string };
+  [ClientMessageType.Equip]: { slotIndex: number };
   [ClientMessageType.Unequip]: { slot: EquipmentSlot };
-  [ClientMessageType.UseItem]: { itemId: string };
-  [ClientMessageType.DropItem]: { itemId: string; quantity?: number };
+  [ClientMessageType.UseItem]: { slotIndex: number };
+  [ClientMessageType.DropItem]: { slotIndex: number; quantity?: number };
   [ClientMessageType.Chat]: { message: string };
   [ClientMessageType.Audio]: ArrayBuffer;
   [ClientMessageType.GroupInvite]: { targetSessionId: string };

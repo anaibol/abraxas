@@ -127,7 +127,7 @@ describe("Progression System", () => {
         const npcId = npc.sessionId;
         console.log(`Starting attack on NPC ${npcId} at ${npc.tileX},${npc.tileY}`);
         while (room.state.npcs.has(npcId)) {
-            room.send("attack", { targetX: npc.tileX, targetY: npc.tileY });
+            room.send("attack", { targetTileX: npc.tileX, targetTileY: npc.tileY });
             await wait(200); 
         }
 

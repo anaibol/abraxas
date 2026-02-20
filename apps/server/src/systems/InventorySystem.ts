@@ -73,7 +73,7 @@ export class InventorySystem {
         
         if (instanceData) {
             item.rarity = instanceData.rarity;
-            item.nameOverride = instanceData.nameOverride;
+            item.nameOverride = instanceData.nameOverride ?? "";
             instanceData.affixes.forEach(a => {
                 const s = new (require("../schema/InventoryItem").ItemAffixSchema)();
                 s.type = a.type;
@@ -92,8 +92,8 @@ export class InventorySystem {
     return false;
   }
 
-  removeItem(player: Player, itemId: string, quantity: number = 1): boolean {
-    const item = this.findItem(player, itemId);
+  removeItem(player: Player, slotIndex: number, quantity: number = 1): boolean {
+    const item = player.inventory.find(i => i.slotIndex === slotIndex);
     if (!item) return false;
     if (item.quantity > quantity) {
       item.quantity -= quantity;
