@@ -42,11 +42,11 @@ const PATROL_STEPS = 4;
 /** Max Manhattan distance a patrolling NPC may wander from its spawn point. */
 const PATROL_TETHER_RADIUS = 8;
 
-/** Boss/rare NPCs get a larger initial aggro radius (multiplier of AGGRO_RANGE). */
-const BOSS_AGGRO_MULTIPLIER = 1.5;
-
 /** Max number of live summon minions per summoner. */
 const MAX_SUMMONS = 3;
+
+/** Minimum ms between bark broadcasts per NPC (avoids bark spam). */
+const BARK_COOLDOWN_MS = 8_000;
 
 type RespawnEntry = {
   npcType: NpcType;
@@ -261,11 +261,12 @@ export class NpcSystem {
     });
   }
 
-  /** Returns the effective aggro radius for this NPC (bosses get a bonus). */
+  /** Returns the effective aggro radius for this NPC.
+   * Uses the per-NPC `aggroRange` stat when set; otherwise falls back to the
+   * global AGGRO_RANGE constant.
+   */
   private getAggroRange(npc: Npc): number {
-    return NPC_STATS[npc.npcType].rareSpawn
-      ? Math.floor(AGGRO_RANGE * BOSS_AGGRO_MULTIPLIER)
-      : AGGRO_RANGE;
+    return NPC_STATS[npc.npcType].aggroRange ?? AGGRO_RANGE;
   }
 
   /** Finds the nearest attackable player within the NPC's aggro range, or null. */
@@ -406,6 +407,9 @@ export class NpcSystem {
       npc.state = NpcState.CHASE;
       return;
     }
+
+    // Feature 29: Boss phase transition
+    this.updateBossPhase(npc, now, broadcast);
 
     npc.facing = MathUtils.getDirection(npc.getPosition(), target.getPosition());
     if (stats.abilities.length > 0 && this.tryUseAbility(npc, now, broadcast)) return;
@@ -685,23 +689,35 @@ export class NpcSystem {
     // Emergency heal takes priority regardless of the cast-chance roll.
     if (npc.hp / npc.maxHp < 0.3) {
       const healId = stats.abilities.find((id: string) => ABILITIES[id]?.effect === "heal");
-      if (healId)
+      if (healId) {
+        this.tryBark(npc, "low_hp", broadcast);
         return this.combatSystem.tryCast(npc, healId, npc.tileX, npc.tileY, broadcast, now);
+      }
     }
 
     // Probability gate: only attempt an ability a fraction of eligible ticks so
     // NPCs mix in auto-attacks rather than spamming abilities at maximum cooldown rate.
     if (Math.random() > stats.abilityCastChance) return false;
 
+    // Feature 30: Phase-aware ability pool.
+    // In phase 2 (bossPhase >= 1), add phaseAbilities to the candidate pool.
+    const phaseAbilities = npc.bossPhase >= 1 ? (stats.phaseAbilities ?? []) : [];
+    const allAbilities = [...new Set([...stats.abilities, ...phaseAbilities])];
+
     // Only pick from abilities that are currently off cooldown; ignore ones still
     // on cooldown rather than wasting the roll and falling through to auto-attack.
-    const available = stats.abilities.filter((id: string) => {
+    const available = allAbilities.filter((id: string) => {
       const cd = npc.spellCooldowns.get(id) ?? 0;
       return now >= cd;
     });
     if (!available.length) return false;
 
-    const abilityId = available[Math.floor(Math.random() * available.length)];
+    // Prioritise: phaseAbilities come first when in phase 2, otherwise use order-as-priority.
+    const ordered = npc.bossPhase >= 1
+      ? [...available.filter(id => phaseAbilities.includes(id)), ...available.filter(id => !phaseAbilities.includes(id))]
+      : available;
+
+    const abilityId = ordered[0];
     const didCast = this.combatSystem.tryCast(
       npc,
       abilityId,
@@ -717,6 +733,41 @@ export class NpcSystem {
     }
 
     return didCast;
+  }
+
+  // ── Feature 29: Boss Phase ────────────────────────────────────────────────
+  /** Transitions the boss into phase 2 if HP has crossed the threshold. */
+  private updateBossPhase(npc: Npc, now: number, broadcast: BroadcastFn): void {
+    const stats = NPC_STATS[npc.npcType];
+    if (!stats.bossPhaseThreshold || npc.bossPhase >= 1) return;
+    if (npc.hp / npc.maxHp <= stats.bossPhaseThreshold) {
+      npc.bossPhase = 1;
+      npc.lastPhaseChangeAt = now;
+      // Announce the transition
+      broadcast(ServerMessageType.Notification, {
+        message: `${npc.npcType.replace("_", " ").toUpperCase()} enrages! The battle intensifies!`,
+      });
+      this.tryBark(npc, "low_hp", broadcast);
+      logger.info({ intent: "boss_phase_2", npcId: npc.sessionId, type: npc.npcType });
+    }
+  }
+
+  // ── Feature 32: Bark System ───────────────────────────────────────────────
+  /**
+   * Attempts to broadcast an NPC bark to all nearby clients.
+   * Rate-limited by BARK_COOLDOWN_MS per NPC.
+   */
+  tryBark(npc: Npc, trigger: import("@abraxas/shared").BarkTrigger, broadcast: BroadcastFn): void {
+    const stats = NPC_STATS[npc.npcType];
+    const lines = stats.barks?.[trigger];
+    if (!lines || lines.length === 0) return;
+
+    const now = Date.now();
+    if (now - npc.lastBarkAt < BARK_COOLDOWN_MS) return;
+
+    npc.lastBarkAt = now;
+    const text = lines[Math.floor(Math.random() * lines.length)];
+    broadcast(ServerMessageType.NpcBark, { npcId: npc.sessionId, text });
   }
 
   /**
@@ -762,13 +813,71 @@ export class NpcSystem {
   handleDeath(npc: Npc): void {
     this.buffSystem.removePlayer(npc.sessionId);
     this.combatSystem.removeEntity(npc.sessionId);
-    this.respawns.push({
-      npcType: npc.npcType,
-      deadAt: Date.now(),
-      spawnX: npc.spawnX,
-      spawnY: npc.spawnY,
-    });
+
+    const stats = NPC_STATS[npc.npcType];
+    const now = Date.now();
+
+    // Feature 34: Rare NPCs use a long custom respawn timer tracked on the NPC itself.
+    // They are NOT added to the generic respawn queue — WorldEventSystem or manual
+    // re-placement handles their reappearance.
+    if (stats.rareSpawnIntervalMs) {
+      npc.rareRespawnAt = now + stats.rareSpawnIntervalMs;
+      logger.info({
+        intent: "rare_npc_death",
+        npcId: npc.sessionId,
+        type: npc.npcType,
+        respawnAt: new Date(npc.rareRespawnAt).toISOString(),
+      });
+    } else {
+      this.respawns.push({
+        npcType: npc.npcType,
+        deadAt: now,
+        spawnX: npc.spawnX,
+        spawnY: npc.spawnY,
+      });
+    }
+
     this.state.npcs.delete(npc.sessionId);
     this.spatial.removeFromGrid(npc);
+  }
+
+  // ── Feature 34: Rare spawn polling ───────────────────────────────────────
+  /**
+   * Called every tick by TickSystem.
+   * Respawns rare NPCs whose `rareRespawnAt` timer has elapsed.
+   * Rare NPCs are stored in the NPC registry with `rareRespawnAt > 0` and removed
+   * from the map on death; we track pending rare respawns in a side array.
+   */
+  private rareRespawnQueue: { npcType: NpcType; rareRespawnAt: number; spawnX: number; spawnY: number }[] = [];
+
+  /** Register a rare NPC so its respawn timer can be polled. Call after map load. */
+  registerRareNpc(type: NpcType, spawnX: number, spawnY: number, rareRespawnAt: number = 0): void {
+    this.rareRespawnQueue.push({ npcType: type, rareRespawnAt, spawnX, spawnY });
+  }
+
+  tickRareSpawns(map: TileMap, now: number, broadcast: BroadcastFn): void {
+    for (const entry of this.rareRespawnQueue) {
+      if (entry.rareRespawnAt === 0 || now < entry.rareRespawnAt) continue;
+      entry.rareRespawnAt = 0; // Reset — will be set again on next death via handleDeath
+      const safe = this.spatial.isTileOccupied(entry.spawnX, entry.spawnY)
+        ? null
+        : { x: entry.spawnX, y: entry.spawnY };
+      const spawnTile = safe ?? { x: entry.spawnX, y: entry.spawnY };
+      this.spawnNpcAt(entry.npcType, map, spawnTile.x, spawnTile.y);
+      broadcast(ServerMessageType.Notification, {
+        message: `A ${entry.npcType.replace("_", " ")} has been spotted in the world!`,
+      });
+      logger.info({ intent: "rare_npc_respawn", type: entry.npcType });
+    }
+
+    // Sync rareRespawnAt from newly-dead rare NPCs into the queue.
+    this.state.npcs.forEach((npc) => {
+      if (!npc.alive && npc.rareRespawnAt > 0) {
+        const existing = this.rareRespawnQueue.find((e) => e.npcType === npc.npcType);
+        if (existing && existing.rareRespawnAt === 0) {
+          existing.rareRespawnAt = npc.rareRespawnAt;
+        }
+      }
+    });
   }
 }

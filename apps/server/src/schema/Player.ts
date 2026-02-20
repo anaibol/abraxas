@@ -1,6 +1,6 @@
 import type { Ability, ClassStats, ClassType } from "@abraxas/shared";
 import { ABILITIES, CLASS_STATS, EntityType } from "@abraxas/shared";
-import { ArraySchema, type, view } from "@colyseus/schema";
+import { ArraySchema, type } from "@colyseus/schema";
 import { Char } from "./Char";
 import { InventoryItem } from "./InventoryItem";
 
@@ -73,8 +73,11 @@ export class Player extends Char {
   @type("uint32") xp: number = 0;
   @type("uint32") maxXp: number = 100;
 
-  /** Inventory — only the owning client needs item contents */
-  @view() @type([InventoryItem]) inventory = new ArraySchema<InventoryItem>();
+  /** Inventory — only the owning client needs item contents.
+   * client.view.add(player) in ArenaRoom already scopes the entire Player schema
+   * to the owning client, so @view() here is redundant and causes refId desync
+   * on non-owning clients' decoders. */
+  @type([InventoryItem]) inventory = new ArraySchema<InventoryItem>();
 
   /**
    * Equipment slots — server-only plain properties (no @type decorator).

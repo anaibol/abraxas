@@ -16,6 +16,7 @@ import { DropManager } from "../systems/DropManager";
 import { InputHandler } from "../systems/InputHandler";
 import { MapBaker } from "../systems/MapBaker";
 import { WeatherManager } from "../managers/WeatherManager";
+import type { WeatherType } from "../managers/WeatherManager";
 import { LightManager } from "../managers/LightManager";
 import type { PlayerState } from "../ui/sidebar/types";
 
@@ -246,11 +247,16 @@ export class GameScene extends Phaser.Scene {
         const isLocal = sessionId === this.room.sessionId;
 
         // Phaser sprite sync: fires on any property change (position, hp, facing…)
-        const onChangeUnsub = $state.onChange(player, () => {
-          this.spriteManager.syncPlayer(player as unknown as PlayerEntityState, sessionId);
-        });
-        playerOnChangeUnsubs.set(sessionId, onChangeUnsub);
-        unsub(onChangeUnsub);
+        // Guard: same refId issue as NPCs can happen for players arriving via snapshot.
+        try {
+          const onChangeUnsub = $state.onChange(player, () => {
+            this.spriteManager.syncPlayer(player as unknown as PlayerEntityState, sessionId);
+          });
+          playerOnChangeUnsubs.set(sessionId, onChangeUnsub);
+          unsub(onChangeUnsub);
+        } catch (e) {
+          // Expected for snapshot-loaded players — state is already synced above.
+        }
 
         if (isLocal) {
           if (import.meta.env.DEV) {
@@ -386,12 +392,12 @@ export class GameScene extends Phaser.Scene {
 
     unsub(
       $state.listen("timeOfDay", (val) => this.updateAmbientLighting(val)),
-      $state.listen("weather", (val) => this.weatherManager.updateWeather(val)),
+      $state.listen("weather", (val) => this.weatherManager.updateWeather(val as WeatherType)),
     );
 
     // Initial state
     this.updateAmbientLighting(this.room.state.timeOfDay);
-    this.weatherManager.updateWeather(this.room.state.weather);
+    this.weatherManager.updateWeather(this.room.state.weather as WeatherType);
 
     if (import.meta.env.DEV) {
       this.debugText = this.add.text(10, 10, "", {
@@ -411,8 +417,10 @@ export class GameScene extends Phaser.Scene {
   }
 
   private updateAmbientLighting(time: number) {
+    if (!this.ambientOverlay || !this.cameras.main) return;
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
+    if (!width || !height) return;
     this.ambientOverlay.clear();
 
     let color = 0xffffff;

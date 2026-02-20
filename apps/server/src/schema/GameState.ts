@@ -12,4 +12,10 @@ export class GameState extends Schema {
   @type("uint32") tick: number = 0;
   @type("float32") timeOfDay: number = 12;
   @type("string") weather: string = "clear";
+
+  // ── Feature 35: World Events ───────────────────────────────────────────────
+  /** ID of the currently active world event, or empty string when none. */
+  @type("string") worldEventId: string = "";
+  /** Unix ms timestamp when the current event ends. 0 when no event is active. */
+  @type("float32") worldEventEndsAt: number = 0;
 }

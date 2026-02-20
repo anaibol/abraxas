@@ -390,3 +390,57 @@ function ToggleSetting({ icon, label, value, onChange }: ToggleSettingProps) {
     </Flex>
   );
 }
+
+// ── ParticleQualitySelector ───────────────────────────────────────────────────
+
+type ParticleQualitySelectorProps = {
+  value: ParticleQuality;
+  onChange: (v: ParticleQuality) => void;
+};
+
+const QUALITY_OPTIONS: { key: ParticleQuality; label: string }[] = [
+  { key: "low",    label: "Low" },
+  { key: "medium", label: "Med" },
+  { key: "high",   label: "High" },
+];
+
+function ParticleQualitySelector({ value, onChange }: ParticleQualitySelectorProps) {
+  const { t } = useTranslation();
+  return (
+    <Flex align="center" justify="space-between">
+      <Flex align="center" gap="2" color={T.goldText}>
+        <Box color={T.goldDark}><Sparkles size={15} /></Box>
+        <Text fontFamily={T.display} fontSize="12px" fontWeight="600" letterSpacing="0.5px">
+          {t("settings.particle_quality", "Particle Quality")}
+        </Text>
+      </Flex>
+      <Flex gap="1">
+        {QUALITY_OPTIONS.map(({ key, label }) => {
+          const active = value === key;
+          return (
+            <Box
+              key={key}
+              as="button"
+              px="2.5"
+              py="1"
+              borderRadius="5px"
+              border="1px solid"
+              borderColor={active ? T.gold : T.border}
+              bg={active ? T.surface : T.raised}
+              color={active ? T.gold : T.goldDark}
+              fontFamily={T.display}
+              fontSize="10px"
+              fontWeight="700"
+              cursor="pointer"
+              transition="all 0.12s"
+              _hover={{ borderColor: T.gold, color: T.goldText }}
+              onClick={() => onChange(key)}
+            >
+              {label}
+            </Box>
+          );
+        })}
+      </Flex>
+    </Flex>
+  );
+}

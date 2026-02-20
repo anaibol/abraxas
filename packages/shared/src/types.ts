@@ -77,14 +77,6 @@ export type ClassType =
   | "PALADIN"
   | "NECROMANCER"
   | "DRUID";
-export enum FactionId {
-  UNDEAD = "undead",
-  BEASTKIN = "beastkin",
-  HUMAN = "human",
-  NEUTRAL = "neutral",
-  MONSTER = "monster",
-}
-
 export type BarkTrigger = "aggro" | "low_hp" | "kill" | "idle";
 
 export type NpcType =
@@ -241,10 +233,6 @@ export interface NpcStats extends CharStats {
   // ── Feature 32: Bark system ───────────────────────────────────────────────
   /** Lines spoken by the NPC on various triggers (aggro, low_hp, kill, idle). */
   barks?: Partial<Record<BarkTrigger, string[]>>;
-
-  // ── Feature 33: Faction system ────────────────────────────────────────────
-  /** The faction this NPC belongs to. Players with high rep won't be attacked. */
-  faction?: FactionId;
 
   // ── Feature 29: Boss mechanics ────────────────────────────────────────────
   /** HP fraction (0–1) at which boss enters phase 2. Only applies to bosses. */

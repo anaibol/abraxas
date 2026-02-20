@@ -69,6 +69,10 @@ export class PlayerSprite {
   private curShieldAoId: number = 0;
   private curHelmetAoId: number = 0;
   private curMountItemId: string = "";
+  /** Item 85: active gait tween for mount bob animation. */
+  private mountGaitTween: Phaser.Tweens.Tween | null = null;
+  /** Item 85: speed bonus of currently equipped mount (drives gait style). */
+  private curMountSpeedBonus = 0;
 
   public predictedTileX: number = 0;
   public predictedTileY: number = 0;
@@ -443,9 +447,43 @@ export class PlayerSprite {
     this.isMoving = moving;
     if (moving) {
       this.playWalkAnims();
+      this.startMountGait(); // item 85
     } else {
       this.setIdleFrame();
+      this.stopMountGait(); // item 85
     }
+  }
+
+  // ── Item 85: Mount gait animation helpers ─────────────────────────────────
+
+  private startMountGait() {
+    if (!this.mountSprite || this.mountGaitTween) return;
+    const scene = this.container.scene;
+    if (!scene) return;
+
+    // Gallop (fast mounts speedBonus ≥ 5): pronounced bob at 12hz
+    // Trot (normal mounts): gentle sway at 7hz
+    const isGallop = this.curMountSpeedBonus >= 5;
+    const bobAmplitude = isGallop ? 5 : 3;
+    const bobDuration = isGallop ? 85 : 140;
+
+    const baseY = TILE_SIZE * 0.6;
+    this.mountGaitTween = scene.tweens.add({
+      targets: this.mountSprite,
+      y: { from: baseY - bobAmplitude, to: baseY + bobAmplitude },
+      duration: bobDuration,
+      yoyo: true,
+      repeat: -1,
+      ease: "Sine.InOut",
+    });
+  }
+
+  private stopMountGait() {
+    if (!this.mountGaitTween) return;
+    this.mountGaitTween.stop();
+    this.mountGaitTween = null;
+    // Reset mount sprite Y to its resting position
+    if (this.mountSprite) this.mountSprite.setY(TILE_SIZE * 0.6);
   }
 
   /** Update equipment visuals based on item IDs from server. Pass empty string for an empty slot. */
@@ -507,7 +545,8 @@ export class PlayerSprite {
 
   /** Creates or removes the mount sprite based on whether a mount is equipped. */
   private updateMountSprite(mountItemId: string) {
-    // Remove existing mount sprite
+    // Stop any running gait and remove existing mount sprite
+    this.stopMountGait();
     if (this.mountSprite) {
       this.container.remove(this.mountSprite, true);
       this.mountSprite = null;
@@ -516,11 +555,17 @@ export class PlayerSprite {
       this.headSprite?.setY(0);
     }
 
-    if (!mountItemId) return;
+    if (!mountItemId) {
+      this.curMountSpeedBonus = 0;
+      return;
+    }
 
     // Use the NPC appearance of the mount type
     const mountItem = ITEMS[mountItemId];
     if (!mountItem?.mountNpcType) return;
+
+    // Item 85: store speed bonus to choose gait style
+    this.curMountSpeedBonus = mountItem.stats?.speedBonus ?? 0;
 
     const mountAppearance = NPC_APPEARANCE[mountItem.mountNpcType];
     if (!mountAppearance) return;
@@ -548,6 +593,9 @@ export class PlayerSprite {
     this.headSprite?.setY(-12);
 
     this.resolver.ensureAnimation(scene, mountGrhId, "mount");
+
+    // If already moving when mount is equipped, start gait immediately
+    if (this.isMoving) this.startMountGait();
   }
 
   // ── Status effect API ─────────────────────────────────────────────────────
