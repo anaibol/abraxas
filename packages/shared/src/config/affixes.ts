@@ -1,4 +1,4 @@
-import { StatType, type ItemAffix } from "../types";
+import { StatType } from "../types";
 
 export interface AffixDef {
   id: string;

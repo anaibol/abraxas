@@ -1,8 +1,6 @@
 import { extname, join } from "node:path";
 import type { TileMap } from "@abraxas/shared";
-import { BunWebSockets } from "@colyseus/bun-websockets";
-import { createRouter, defineRoom, defineServer, type Router, type Server } from "@colyseus/core";
-import type { ServerWebSocket } from "bun";
+import { createRouter, defineRoom, defineServer, type Server } from "@colyseus/core";
 import { logger } from "./logger";
 import { GameTransport } from "./GameTransport";
 import { ArenaRoom } from "./rooms/ArenaRoom";

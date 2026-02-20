@@ -14,7 +14,7 @@ type Deps = {
   networkRef: React.RefObject<NetworkManager | null>;
   roomRef: React.RefObject<Room<GameState> | null>;
   setIsChatOpen: (open: boolean) => void;
-  setShowScoreboard: (show: boolean) => void;
+  setShowLeaderboard: React.Dispatch<React.SetStateAction<boolean>>;
   setDropDialog: (d: { itemId: string; itemName: string; maxQty: number } | null) => void;
   setSelectedItemId: (id: string | null) => void;
 };
@@ -28,7 +28,7 @@ export function useGameKeyboard({
   networkRef,
   roomRef,
   setIsChatOpen,
-  setShowScoreboard,
+  setShowLeaderboard,
   setDropDialog,
   setSelectedItemId,
 }: Deps) {
@@ -43,28 +43,18 @@ export function useGameKeyboard({
     return () => window.removeEventListener("keydown", handler);
   }, [phase, isChatOpen, setIsChatOpen]);
 
-  // Tab for scoreboard
+  // Tab key opens leaderboard
   useEffect(() => {
     if (phase !== "game") return;
     const down = (e: KeyboardEvent) => {
       if (e.key === "Tab") {
         e.preventDefault();
-        setShowScoreboard(true);
-      }
-    };
-    const up = (e: KeyboardEvent) => {
-      if (e.key === "Tab") {
-        e.preventDefault();
-        setShowScoreboard(false);
+        setShowLeaderboard((v) => !v);
       }
     };
     window.addEventListener("keydown", down);
-    window.addEventListener("keyup", up);
-    return () => {
-      window.removeEventListener("keydown", down);
-      window.removeEventListener("keyup", up);
-    };
-  }, [phase, setShowScoreboard]);
+    return () => window.removeEventListener("keydown", down);
+  }, [phase, setShowLeaderboard]);
 
   // Game actions: A (pickup), T (drop)
   useEffect(() => {

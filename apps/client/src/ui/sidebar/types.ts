@@ -26,6 +26,7 @@ export type PlayerState = {
   stealthed?: boolean;
   stunned?: boolean;
   meditating?: boolean;
+  spawnProtection?: boolean;
   pvpEnabled?: boolean;
   inSafeZone?: boolean;
   guildId?: string;

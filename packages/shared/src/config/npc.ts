@@ -1,4 +1,4 @@
-import type { BarkTrigger, NpcStats, NpcType } from "../types";
+import type { NpcStats, NpcType } from "../types";
 
 export const NPC_APPEARANCE: Record<string, { bodyId: number; headId: number }> = {
   orc: { bodyId: 30, headId: 0 },

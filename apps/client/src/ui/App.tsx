@@ -35,7 +35,7 @@ import { useConsoleMessages } from "../hooks/useConsoleMessages";
 import { useGameKeyboard } from "../hooks/useGameKeyboard";
 import { useGameSettings } from "../hooks/useGameSettings";
 import { useIsMobile } from "../hooks/useIsMobile";
-import { type RoomListenerCallbacks, useRoomListeners } from "../hooks/useRoomListeners";
+import { useRoomListeners } from "../hooks/useRoomListeners";
 import { AudioManager } from "../managers/AudioManager";
 import { NetworkManager } from "../network/NetworkManager";
 import { GameScene } from "../scenes/GameScene";
@@ -54,7 +54,6 @@ import { MobileControls } from "./MobileControls";
 import { NpcContextMenu, type NpcContextTarget } from "./NpcContextMenu";
 import { PlayerContextMenu, type PlayerContextTarget } from "./PlayerContextMenu";
 import { QuestDialogue } from "./QuestDialogue";
-import { type KillStats, ScoreboardOverlay } from "./ScoreboardOverlay";
 import { LeaderboardModal } from "./LeaderboardModal";
 import { SettingsModal } from "./SettingsModal";
 import { Sidebar } from "./Sidebar";
@@ -143,9 +142,7 @@ export function App() {
   } | null>(null);
   const [tradeData, setTradeData] = useState<TradeState | null>(null);
   const [chatPrefill, setChatPrefill] = useState<string | undefined>();
-  const [showScoreboard, setShowScoreboard] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
-  const [killStats, setKillStats] = useState<Record<string, KillStats>>({});
   const [pendingSpellId, setPendingSpellId] = useState<string | null>(null);
   const [playerContextMenu, setPlayerContextMenu] = useState<PlayerContextTarget | null>(null);
   const [npcContextMenu, setNpcContextMenu] = useState<NpcContextTarget | null>(null);
@@ -186,7 +183,6 @@ export function App() {
     setGuildData,
     setBankData,
     setTradeData,
-    setKillStats,
     networkRef,
   });
 
@@ -246,7 +242,7 @@ export function App() {
     networkRef,
     roomRef,
     setIsChatOpen,
-    setShowScoreboard,
+    setShowLeaderboard,
     setDropDialog,
     setSelectedItemId,
   });
@@ -744,24 +740,6 @@ export function App() {
             )}
           </Flex>
           <DeathOverlay visible={showDeath} deathTime={deathTime} />
-          {roomRef.current && (
-            <ScoreboardOverlay
-              visible={showScoreboard}
-              killStats={killStats}
-              onlinePlayers={Array.from(roomRef.current.state?.players?.values() ?? []).map(
-                (p) => ({
-                  name: p.name,
-                  classType: p.classType,
-                  alive: p.alive,
-                }),
-              )}
-              myName={playerState.name}
-              myLevel={playerState.level}
-              onOpenLeaderboard={() => {
-                setShowLeaderboard(true);
-              }}
-            />
-          )}
           <KillFeed entries={killFeed} />
           <Console
             messages={consoleMessages}

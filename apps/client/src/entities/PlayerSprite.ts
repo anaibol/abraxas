@@ -1092,6 +1092,10 @@ export class PlayerSprite {
     this.invulnEmitter?.destroy();
     this.invulnRingTween?.stop();
     this.tintTween?.stop();
-    this.container.destroy();
+    // Pass `true` so Phaser also destroys all container children (bodySprite,
+    // headSprite, weaponSprite, nameText, hpBarGfx, speakingIcon, etc.).
+    // Without this, those objects remain on the display list and run every frame,
+    // causing the "1072 sprites" display-list leak that tanks performance.
+    this.container.destroy(true);
   }
 }

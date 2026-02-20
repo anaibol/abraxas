@@ -93,6 +93,11 @@ export class LightManager {
     return this.scene.lights.lights.length < this.MAX_LIGHTS;
   }
 
+  /** Returns the current number of active Lights2D point lights (for debug display). */
+  getLightCount(): number {
+    return this.scene.lights.lights.length;
+  }
+
   /**
    * Add a persistent, flickering world light using a preset or raw params.
    * Item #25 — fades in on creation.

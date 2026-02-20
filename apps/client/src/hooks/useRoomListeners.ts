@@ -9,7 +9,6 @@ import type { Room } from "@colyseus/sdk";
 import { useEffect } from "react";
 import type { GameState } from "../../../server/src/schema/GameState";
 import type { NetworkManager } from "../network/NetworkManager";
-import type { KillStats } from "../ui/ScoreboardOverlay";
 import { toaster } from "../ui/toaster";
 
 export type RoomListenerCallbacks = {
@@ -51,7 +50,6 @@ export type RoomListenerCallbacks = {
     data: { items: { itemId: string; quantity: number; slotIndex: number }[] } | null,
   ) => void;
   setTradeData: (data: TradeState | null) => void;
-  setKillStats: (fn: (prev: Record<string, KillStats>) => Record<string, KillStats>) => void;
   networkRef: { current: NetworkManager | null };
 };
 
@@ -73,7 +71,6 @@ export function useRoomListeners(
       setGuildData,
       setBankData,
       setTradeData,
-      setKillStats,
       networkRef,
     } = cb;
 
@@ -86,22 +83,6 @@ export function useRoomListeners(
     ) => {
       unsubs.push(room.onMessage(type, handler));
     };
-
-    on(ServerMessageType.KillFeed, (data) => {
-      const isPvp = room.state.players.has(data.victimSessionId);
-      if (data.killerName) {
-        setKillStats((prev) => {
-          const cur = prev[data.killerName] ?? { npcKills: 0, pvpKills: 0 };
-          return {
-            ...prev,
-            [data.killerName]: {
-              npcKills: cur.npcKills + (isPvp ? 0 : 1),
-              pvpKills: cur.pvpKills + (isPvp ? 1 : 0),
-            },
-          };
-        });
-      }
-    });
 
     on(ServerMessageType.Chat, (data) => {
       const color =

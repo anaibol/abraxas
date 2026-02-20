@@ -1,14 +1,9 @@
 import type { EquipmentData, InventoryEntry, StatType } from "@abraxas/shared";
 import { type ClassType, Direction } from "@abraxas/shared";
 import { prisma } from "../database/db";
-import { Direction as PrismaDirection, DropType, EquipSlot, ItemRarity, type Prisma } from "../generated/prisma";
+import { DropType, EquipSlot, ItemRarity, type Prisma } from "../generated/prisma";
 import { logger } from "../logger";
 
-interface SavedItemAffix {
-  type: string;
-  stat: StatType;
-  value: number;
-}
 
 /** Maps EquipmentData keys to Prisma EquipSlot enum values. */
 const EQUIPMENT_SLOT_MAP: Record<string, EquipSlot | undefined> = {

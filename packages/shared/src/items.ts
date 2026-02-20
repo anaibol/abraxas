@@ -1,4 +1,4 @@
-import { type ClassType, EquipmentSlot, ItemRarity, StatType } from "./types";
+import { type ClassType, ItemRarity, StatType } from "./types";
 
 export type ItemSlot = "weapon" | "armor" | "shield" | "helmet" | "ring" | "mount" | "consumable" | "material";
 

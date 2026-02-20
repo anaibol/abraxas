@@ -1,8 +1,5 @@
 import {
   type BroadcastFn,
-  type ClassStats,
-  type ClientMessages,
-  type ClientMessageType,
   type ItemAffix,
   type JoinOptions,
   EntityType,
@@ -23,7 +20,7 @@ import { MessageHandler } from "../handlers/MessageHandler";
 import { SocialHandlers } from "../handlers/SocialHandlers";
 import { logger } from "../logger";
 import { GameState } from "../schema/GameState";
-import { InventoryItem, ItemAffixSchema } from "../schema/InventoryItem";
+import { ItemAffixSchema } from "../schema/InventoryItem";
 import { Npc } from "../schema/Npc";
 import { Player } from "../schema/Player";
 import { ChatService } from "../services/ChatService";
@@ -412,6 +409,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       tileTypes: this.map.tileTypes,
       warps: this.map.warps,
       role: player.role,
+      safeZones: this.map.safeZones,
     });
   }
 

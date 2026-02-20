@@ -8,7 +8,7 @@ import {
   TILE_SIZE,
 } from "@abraxas/shared";
 import type { Room } from "@colyseus/sdk";
-import { HEAVY_HIT_ABILITIES, SPELL_IMPACT_SFX, type SoundManager } from "../assets/SoundManager";
+import { HEAVY_HIT_ABILITIES, type SoundManager } from "../assets/SoundManager";
 import { LightPreset, type LightManager } from "../managers/LightManager";
 import type { EffectManager } from "../managers/EffectManager";
 import type { SpriteManager } from "../managers/SpriteManager";
@@ -57,15 +57,6 @@ export class GameEventHandler {
     const lp = this.room.state.players.get(this.room.sessionId);
     if (!lp) return null;
     return { tileX: lp.tileX, tileY: lp.tileY };
-  }
-
-  /** Item #3/distance: Distance in tiles from local player to a tile position. */
-  private distanceToLocal(tileX: number, tileY: number): number {
-    const lp = this.getLocalPlayerTile();
-    if (!lp) return 0;
-    const dx = tileX - lp.tileX;
-    const dy = tileY - lp.tileY;
-    return Math.sqrt(dx * dx + dy * dy);
   }
 
   setupListeners() {

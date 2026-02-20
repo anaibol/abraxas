@@ -55,6 +55,76 @@ export function CharacterHeader({ state, isRecording }: CharacterHeaderProps) {
           </Text>
         )}
       </HStack>
+
+      {/* Attackability indicator */}
+      {state.alive && (() => {
+        if (state.spawnProtection) {
+          return (
+            <Box
+              mt="1.5"
+              px="3"
+              py="0.5"
+              bg="rgba(20, 15, 35, 0.85)"
+              border="1px solid rgba(180, 140, 255, 0.6)"
+              borderRadius="full"
+              display="inline-block"
+            >
+              <Text textStyle={T.statLabel} color="#c8a0ff" fontWeight="700" letterSpacing="2px" fontSize="10px">
+                🛡 {t("status.spawn_protected", { defaultValue: "PROTECTED" })}
+              </Text>
+            </Box>
+          );
+        }
+        if (state.inSafeZone) {
+          return (
+            <Box
+              mt="1.5"
+              px="3"
+              py="0.5"
+              bg="rgba(10, 30, 10, 0.85)"
+              border="1px solid rgba(40, 160, 40, 0.6)"
+              borderRadius="full"
+              display="inline-block"
+            >
+              <Text textStyle={T.statLabel} color="#4edb6e" fontWeight="700" letterSpacing="2px" fontSize="10px">
+                🏠 {t("status.safe_zone", { defaultValue: "SAFE ZONE" })}
+              </Text>
+            </Box>
+          );
+        }
+        if (!state.pvpEnabled) {
+          return (
+            <Box
+              mt="1.5"
+              px="3"
+              py="0.5"
+              bg="rgba(10, 20, 40, 0.85)"
+              border="1px solid rgba(60, 120, 220, 0.6)"
+              borderRadius="full"
+              display="inline-block"
+            >
+              <Text textStyle={T.statLabel} color="#6aabff" fontWeight="700" letterSpacing="2px" fontSize="10px">
+                🔵 {t("status.pvp_off", { defaultValue: "PvP OFF" })}
+              </Text>
+            </Box>
+          );
+        }
+        return (
+          <Box
+            mt="1.5"
+            px="3"
+            py="0.5"
+            bg="rgba(40, 5, 5, 0.85)"
+            border="1px solid rgba(220, 50, 50, 0.7)"
+            borderRadius="full"
+            display="inline-block"
+          >
+            <Text textStyle={T.statLabel} color="#ff6b6b" fontWeight="700" letterSpacing="2px" fontSize="10px">
+              ⚔ {t("status.pvp_on", { defaultValue: "PvP ON" })}
+            </Text>
+          </Box>
+        );
+      })()}
       {isRecording && (
         <Flex align="center" justify="center" gap="2" mt="1.5">
           <Box w="8px" h="8px" bg="#ff0000" borderRadius="full" animation="pulse 1s infinite" />

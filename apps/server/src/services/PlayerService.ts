@@ -1,17 +1,13 @@
 import {
-  type ClassType,
   type EquipmentData,
   type InventoryEntry,
   type NpcType,
-  ItemRarity,
-  StatType,
   Direction,
   EXP_TABLE,
   ITEMS,
   STARTING_EQUIPMENT,
 } from "@abraxas/shared";
 import type { Client } from "@colyseus/core";
-import { logger } from "../logger";
 import type { GameState } from "../schema/GameState";
 import { InventoryItem } from "../schema/InventoryItem";
 import { Player } from "../schema/Player";

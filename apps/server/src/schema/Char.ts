@@ -1,4 +1,4 @@
-import { type Ability, type CharStats, type NpcStats, type ClassStats, EntityType } from "@abraxas/shared";
+import { type Ability, type NpcStats, type ClassStats, EntityType } from "@abraxas/shared";
 import { type BufferedAction, Direction, type WindupAction } from "@abraxas/shared";
 import { Schema, type } from "@colyseus/schema";
 
