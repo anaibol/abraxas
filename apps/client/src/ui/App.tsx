@@ -648,6 +648,10 @@ export function App() {
           onGroupInvite={(sid) => networkRef.current?.sendGroupInvite(sid)}
           onTradeRequest={(sid) => networkRef.current?.sendTradeRequest(sid)}
           onClose={() => setPlayerContextMenu(null)}
+          onGMTeleportTo={isGM ? (sid) => {
+            const target = roomRef.current?.state.players.get(sid);
+            if (target) networkRef.current?.sendGMTeleport(target.tileX, target.tileY);
+          } : undefined}
         />
       )}
 

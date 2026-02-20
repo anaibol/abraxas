@@ -13,6 +13,10 @@ export const NPC_APPEARANCE: Record<
 	ghost: { bodyId: 15, headId: 0 },
 	lich: { bodyId: 70, headId: 0 },
 	banker: { bodyId: 5, headId: 0 },
+	zombie: { bodyId: 40, headId: 0 },
+	troll: { bodyId: 25, headId: 0 },
+	bat: { bodyId: 50, headId: 0 },
+	dark_knight: { bodyId: 3, headId: 0 },
 };
 
 export const NPC_STATS: Record<NpcType, NpcStats> = {

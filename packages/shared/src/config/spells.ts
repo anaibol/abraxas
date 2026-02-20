@@ -709,6 +709,41 @@ export const ABILITIES: Record<string, Ability> = {
     fxId: 22,
   },
 
+  /** Zombie: slow-ticking disease DoT with long duration */
+  disease_bite: {
+    id: "disease_bite",
+    rangeTiles: 1,
+    manaCost: 0,
+    baseDamage: 8,
+    scalingStat: "int",
+    scalingRatio: 0.3,
+    // Cooldown exceeds dotDurationMs (10000ms) so the disease always expires
+    // before it can be reapplied, preventing a permanent diseased state.
+    cooldownMs: 13000,
+    windupMs: 250,
+    effect: "dot",
+    key: "",
+    dotDamage: 4,
+    dotIntervalMs: 2000,
+    dotDurationMs: 10000,
+    fxId: 19,
+  },
+
+  /** Troll: emergency self-heal when critically low on HP */
+  troll_regen: {
+    id: "troll_regen",
+    rangeTiles: 0,
+    manaCost: 0,
+    baseDamage: 80,
+    scalingStat: "str",
+    scalingRatio: 0.5,
+    cooldownMs: 20000,
+    windupMs: 600,
+    effect: "heal",
+    key: "",
+    fxId: 1,
+  },
+
   /** Lich: summons skeleton minions */
   summon_skeleton: {
     id: "summon_skeleton",

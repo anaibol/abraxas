@@ -51,7 +51,9 @@ export function PlayerContextMenu({
 
   // Keep menu within viewport
   const MENU_W = 180;
-  const MENU_H = 160;
+  const baseActions = 4;
+  const gmActions = onGMTeleportTo ? 1 : 0;
+  const MENU_H = (baseActions + gmActions) * 32 + 44; // 32px per action row + 44px header
   const left = Math.min(target.screenX, window.innerWidth - MENU_W - 8);
   const top = Math.min(target.screenY, window.innerHeight - MENU_H - 8);
 
@@ -76,6 +78,13 @@ export function PlayerContextMenu({
       color: "#88ffcc",
       onClick: () => { onTradeRequest(target.sessionId); onClose(); },
     },
+    ...(onGMTeleportTo
+      ? [{
+          label: "⬡ Teleport to",
+          color: "#ffaa33",
+          onClick: () => { onGMTeleportTo(target.sessionId); onClose(); },
+        }]
+      : []),
   ];
 
   return (
