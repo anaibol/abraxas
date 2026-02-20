@@ -38,6 +38,20 @@ export class Npc extends Char {
   /** Y coordinate of the target the cached path goes to. */
   pathTargetTileY: number = -1;
 
+  // ── Feature 29: Boss mechanics ─────────────────────────────────────────────
+  /** Current boss phase (0 = normal, 1 = phase 2 triggered). */
+  bossPhase: number = 0;
+  /** Timestamp when the boss last transitioned phases (ms). */
+  lastPhaseChangeAt: number = 0;
+
+  // ── Feature 32: Bark system ────────────────────────────────────────────────
+  /** Timestamp of the last bark broadcast (rate-limited). */
+  lastBarkAt: number = 0;
+
+  // ── Feature 34: Elite/Rare spawn timer ────────────────────────────────────
+  /** Unix ms after which this rare NPC is allowed to respawn. 0 = not tracked. */
+  rareRespawnAt: number = 0;
+
   getStats(): NpcStats | undefined {
     return NPC_STATS[this.npcType];
   }
@@ -46,3 +60,4 @@ export class Npc extends Char {
     return ABILITIES[abilityId];
   }
 }
+
