@@ -175,7 +175,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
           return;
         }
         this.npcSystem.spawnNpc(message.type as NpcType, this.map);
-        console.log(`[GM_SPAWN] SUCCESS: requested spawn of ${message.type}`);
+        logger.debug({ intent: "gm_spawn", result: "success", type: message.type });
       });
 
       this.tickSystem = new TickSystem({

@@ -328,9 +328,7 @@ export class CombatSystem {
         return false;
       }
       if (ability.holyPowerCost && caster.holyPower < ability.holyPowerCost) {
-        console.log(
-          `[tryCast] FAIL holyPower. has=${caster.holyPower} needs=${ability.holyPowerCost}`,
-        );
+        logger.debug({ intent: "try_cast", result: "fail", reason: "no_holy_power", has: caster.holyPower, needs: ability.holyPowerCost });
         sendToClient?.(ServerMessageType.Notification, {
           message: "game.not_enough_holy_power",
         });
@@ -344,7 +342,7 @@ export class CombatSystem {
         y: targetTileY,
       });
       if (dist > ability.rangeTiles) {
-        console.log(`[tryCast] FAIL range. dist=${dist} max=${ability.rangeTiles}`);
+        logger.debug({ intent: "try_cast", result: "fail", reason: "range", dist, max: ability.rangeTiles });
         sendToClient?.(ServerMessageType.InvalidTarget);
         return false;
       }
@@ -354,7 +352,7 @@ export class CombatSystem {
           y: targetTileY,
         })
       ) {
-        console.log("[tryCast] FAIL LOS");
+        logger.debug({ intent: "try_cast", result: "fail", reason: "los" });
         sendToClient?.(ServerMessageType.InvalidTarget);
         return false;
       }

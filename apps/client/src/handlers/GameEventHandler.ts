@@ -124,15 +124,17 @@ export class GameEventHandler {
     }
 
     if (isRanged) {
-      this.soundManager.playBow();
+      const opts = sprite ? { sourceX: sprite.renderX, sourceY: sprite.renderY } : undefined;
+      this.soundManager.playBow(opts);
     } else {
       const npc = this.room.state.npcs.get(data.sessionId);
+      const opts = sprite ? { sourceX: sprite.renderX, sourceY: sprite.renderY } : undefined;
       if (npc) {
-        this.soundManager.playNpcAttack(npc.npcType);
+        this.soundManager.playNpcAttack(npc.npcType, opts);
       } else {
         // Item #6: Pass weapon id for weapon-type SFX routing
         const player = this.room.state.players.get(data.sessionId);
-        this.soundManager.playAttack(player?.equipWeaponId ?? undefined);
+        this.soundManager.playAttack(player?.equipWeaponId ?? undefined, opts);
       }
     }
   }
@@ -154,7 +156,8 @@ export class GameEventHandler {
     }
 
     // Per-spell SFX on CAST (not impact)
-    this.soundManager.playSpellSfx(data.abilityId);
+    const opts = sprite ? { sourceX: sprite.renderX, sourceY: sprite.renderY } : undefined;
+    this.soundManager.playSpellSfx(data.abilityId, opts);
 
     this.effectManager.maybeLaunchProjectile(
       data.sessionId,
@@ -168,7 +171,9 @@ export class GameEventHandler {
     this.effectManager.playSpellEffect(data.abilityId, data.targetTileX, data.targetTileY, data.sessionId);
 
     // Item #9: Impact SFX separate from cast SFX
-    this.soundManager.playSpellImpactSfx(data.abilityId);
+    const sourceX = data.targetTileX * TILE_SIZE + TILE_SIZE / 2;
+    const sourceY = data.targetTileY * TILE_SIZE + TILE_SIZE / 2;
+    this.soundManager.playSpellImpactSfx(data.abilityId, { sourceX, sourceY });
 
     // ── Item #11 + #12: Camera shake scaled by proximity & self-target ─────────
     const isHeavy = HEAVY_HIT_ABILITIES.has(data.abilityId);
@@ -196,6 +201,8 @@ export class GameEventHandler {
 
   private onDamage(data: ServerMessages["damage"]) {
     this.effectManager.showDamage(data.targetSessionId, data.amount, data.type);
+    const sprite = this.spriteManager.getSprite(data.targetSessionId);
+    const opts = sprite ? { sourceX: sprite.renderX, sourceY: sprite.renderY } : undefined;
 
     if (this.isSelf(data.targetSessionId)) {
       // ── Item #11: Scale shake from damage amount ───────────────────────────
@@ -209,14 +216,14 @@ export class GameEventHandler {
       // ── Item #13: Red flash screen on taking damage ────────────────────────
       this.onCameraFlash?.(255, 60, 60, 150);
 
-      this.soundManager.playHit();
+      this.soundManager.playHit(opts);
       this.onConsoleMessage?.(
         t("game.you_took_damage", { amount: data.amount }),
         "#ff4444",
         "combat",
       );
     } else {
-      this.soundManager.playHit();
+      this.soundManager.playHit(opts);
     }
   }
 
@@ -236,7 +243,8 @@ export class GameEventHandler {
       this.onCameraShake?.(0.018, 800);
       this.onCameraFlash?.(0, 0, 0, 1500);
     }
-    this.soundManager.playDeath();
+    const opts = sprite ? { sourceX: sprite.renderX, sourceY: sprite.renderY } : undefined;
+    this.soundManager.playDeath(opts);
   }
 
   private onRespawn(data: ServerMessages["respawn"]) {
@@ -255,7 +263,9 @@ export class GameEventHandler {
 
   private onHeal(data: ServerMessages["heal"]) {
     this.effectManager.showHeal(data.sessionId, data.amount);
-    this.soundManager.playHeal();
+    const sprite = this.spriteManager.getSprite(data.sessionId);
+    const opts = sprite ? { sourceX: sprite.renderX, sourceY: sprite.renderY } : undefined;
+    this.soundManager.playHeal(opts);
 
     // ── Item #37: Holy-gold flash light on heal ────────────────────────────────
     if (this.lightManager) {
@@ -350,13 +360,15 @@ export class GameEventHandler {
 
   private onLevelUp(data: ServerMessages["level_up"]) {
     this.effectManager.playLevelUp(data.sessionId);
+    const sprite = this.spriteManager.getSprite(data.sessionId);
+    const opts = sprite ? { sourceX: sprite.renderX, sourceY: sprite.renderY } : undefined;
     if (this.isSelf(data.sessionId)) {
-      this.soundManager.playLevelUp();
+      this.soundManager.playLevelUp(opts);
       // ── Item #19: Zoom pulse on level-up ──────────────────────────────────
       this.onCameraZoom?.(1.06, 300);
     } else {
       // Companion / NPC levelled up — play a shorter, distinct sound
-      this.soundManager.playNpcLevelUp();
+      this.soundManager.playNpcLevelUp(opts);
     }
   }
 

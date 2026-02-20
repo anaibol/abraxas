@@ -291,7 +291,9 @@ export class GameScene extends Phaser.Scene {
           unsub(
             $state.listen(player, "equipMountId", (newMount, oldMount) => {
               if (newMount && newMount !== oldMount) {
-                this.soundManager.playMount();
+                const sprite = this.spriteManager.getSprite(sessionId);
+                const opts = sprite ? { sourceX: sprite.renderX, sourceY: sprite.renderY } : undefined;
+                this.soundManager.playMount(opts);
               }
             }),
           );
@@ -655,6 +657,6 @@ export class GameScene extends Phaser.Scene {
 
     sprite.setFacing(direction);
     sprite.predictMove(direction);
-    this.soundManager.playStep();
+    this.soundManager.playStep({ sourceX: sprite.renderX, sourceY: sprite.renderY });
   }
 }
