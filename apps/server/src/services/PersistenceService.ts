@@ -127,13 +127,26 @@ export class PersistenceService {
           const current = currentMap.get(item.slotIndex);
 
           if (current && current.item?.itemDef.code === item.itemId) {
+            // Same item in the same slot — update qty AND metadata in-place.
+            // B094: preserves the ItemInstance DB row id so no FK churn.
             if (current.qty !== item.quantity) {
               await tx.inventorySlot.update({
                 where: { id: current.id },
                 data: { qty: item.quantity },
               });
             }
+            if (current.itemId) {
+              await tx.itemInstance.update({
+                where: { id: current.itemId },
+                data: {
+                  rarity: (item.rarity?.toUpperCase() as ItemRarity) || ItemRarity.COMMON,
+                  nameOverride: item.nameOverride ?? null,
+                  affixesJson: (item.affixes as unknown as Prisma.InputJsonValue) ?? [],
+                },
+              });
+            }
           } else {
+            // Different item in this slot (or slot is new) — must replace.
             if (current) {
               await tx.inventorySlot.delete({ where: { id: current.id } });
               if (current.itemId) {
@@ -152,7 +165,7 @@ export class PersistenceService {
                   boundToCharacterId: char.id,
                   rarity: (item.rarity?.toUpperCase() as ItemRarity) || ItemRarity.COMMON,
                   nameOverride: item.nameOverride,
-                  affixesJson: (item.affixes as unknown as Prisma.InputJsonValue) || [],
+                  affixesJson: (item.affixes as unknown as Prisma.InputJsonValue) ?? [],
                 },
               });
 
