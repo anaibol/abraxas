@@ -294,7 +294,7 @@ export class GameEventHandler {
       // ── Item #32: Dim player light on stealth ─────────────────────────────
       if (this.isSelf(data.sessionId)) {
         this.lightManager?.setPlayerLightColor(0x4466aa, 0.15);
-        this.scene.time?.delayedCall(durationMs, () => this.lightManager?.resetPlayerLightColor());
+        window.setTimeout(() => this.lightManager?.resetPlayerLightColor(), durationMs);
       }
     } else if (data.abilityId === "divine_shield") {
       this.spriteManager.applyInvulnerableVisual(data.sessionId, durationMs);
@@ -316,7 +316,7 @@ export class GameEventHandler {
         const playerLightColor = this.buffPlayerLightColor(data.abilityId);
         if (playerLightColor !== null) {
           this.lightManager?.setPlayerLightColor(playerLightColor, 1.4);
-          this.scene.time?.delayedCall(durationMs, () => this.lightManager?.resetPlayerLightColor());
+          window.setTimeout(() => this.lightManager?.resetPlayerLightColor(), durationMs);
         }
       }
     }
@@ -418,8 +418,4 @@ export class GameEventHandler {
     return map[abilityId] ?? null;
   }
 
-  // Allow access to scene for delayedCall — needed for stealth light reset
-  private get scene(): Phaser.Scene {
-    return (this.spriteManager as unknown as { scene: Phaser.Scene }).scene;
-  }
 }
