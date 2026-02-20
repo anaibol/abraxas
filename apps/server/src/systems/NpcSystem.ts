@@ -212,6 +212,7 @@ export class NpcSystem {
 
     if (this.checkAndFlee(npc)) return;
 
+    const stats = NPC_STATS[npc.type];
     const dist = MathUtils.manhattanDist(npc.getPosition(), target.getPosition());
     if (dist > AGGRO_RANGE * LEASH_MULTIPLIER) {
       npc.targetId = "";

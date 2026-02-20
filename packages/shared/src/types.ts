@@ -100,6 +100,7 @@ export interface TileMap {
 	/** Visual tile type per cell: 0=grass, 1=wall, 2=tree, 3=water */
 	tileTypes?: number[][];
 	spawns: { x: number; y: number }[];
+	newbieSpawns?: { x: number; y: number }[];
 	npcCount?: number;
 	merchantCount?: number;
 	npcs?: { type: NpcType; x: number; y: number }[];

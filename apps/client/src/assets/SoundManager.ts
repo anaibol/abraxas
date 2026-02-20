@@ -4,13 +4,24 @@ import type Phaser from "phaser";
 // Base volumes baked into each sound; settings scale these.
 const BASE_MUSIC_VOL = 0.15;
 const BASE_SFX: Record<string, number> = {
-  "sfx-step1":  0.3,
-  "sfx-step2":  0.3,
-  "sfx-attack": 0.5,
+  "sfx-step1":  0.4,
+  "sfx-step2":  0.4,
+  "sfx-step3":  0.4,
+  "sfx-step4":  0.4,
+  "sfx-step5":  0.4,
+  "sfx-attack1": 0.5,
+  "sfx-attack2": 0.5,
+  "sfx-attack3": 0.5,
   "sfx-spell":  0.5,
-  "sfx-hit":    0.4,
+  "sfx-hit1":    0.5,
+  "sfx-hit2":    0.5,
+  "sfx-hit3":    0.5,
   "sfx-death":  0.6,
   "sfx-heal":   0.5,
+  "sfx-click":  0.4,
+  "sfx-click-hover": 0.2,
+  "sfx-click-open": 0.4,
+  "sfx-click-close": 0.4,
 };
 
 export class SoundManager {
@@ -39,16 +50,22 @@ export class SoundManager {
     }
   }
 
-  playStep() {
-    const key = Math.random() < 0.5 ? "sfx-step1" : "sfx-step2";
-    this.play(key);
+  private playRandom(prefix: string, count: number, opts?: Phaser.Types.Sound.SoundConfig) {
+    const rnd = Math.floor(Math.random() * count) + 1; // 1 to count
+    this.play(`${prefix}${rnd}`, opts);
   }
 
-  playAttack() { this.play("sfx-attack"); }
+  playStep()   { this.playRandom("sfx-step", 5); }
+  playAttack() { this.playRandom("sfx-attack", 3); }
   playSpell()  { this.play("sfx-spell");  }
-  playHit()    { this.play("sfx-hit");    }
+  playHit()    { this.playRandom("sfx-hit", 3); }
   playDeath()  { this.play("sfx-death");  }
   playHeal()   { this.play("sfx-heal");   }
+
+  playUIClick() { this.play("sfx-click"); }
+  playUIHover() { this.play("sfx-click-hover"); }
+  playUIOpen()  { this.play("sfx-click-open"); }
+  playUIClose() { this.play("sfx-click-close"); }
 
   startMusic() {
     if (this.music) return;

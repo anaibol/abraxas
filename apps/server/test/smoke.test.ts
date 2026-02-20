@@ -105,8 +105,8 @@ describe("Arena multiplayer smoke test", () => {
       create: { email: emailB, password }
     });
 
-    const tokenA = generateToken({ userId: userA.id, email: emailA });
-    const tokenB = generateToken({ userId: userB.id, email: emailB });
+    const tokenA = generateToken({ userId: userA.id, email: emailA, role: userA.role });
+    const tokenB = generateToken({ userId: userB.id, email: emailB, role: userB.role });
     console.log("[smoke.test] Step 0.3: Tokens generated");
 
     async function joinWithRetry(
