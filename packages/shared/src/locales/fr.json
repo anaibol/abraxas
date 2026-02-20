@@ -201,7 +201,8 @@
       "group_invite_tag": "[G]",
       "trade_tag": "[Échanger]",
       "pending_requests": "Demandes en attente",
-      "accept": "[Accepter]"
+      "accept": "[Accepter]",
+      "remove": "[Supprimer]"
     },
     "social": {
       "trade": "[Échanger]",
@@ -716,6 +717,7 @@
     "tab_all": "TOUT",
     "tab_global": "GLOBAL",
     "tab_group": "GROUPE",
+    "tab_guild": "GUILDE",
     "tab_whisper": "MURMURE",
     "tab_system": "SYSTÈME",
     "tab_combat": "COMBAT",

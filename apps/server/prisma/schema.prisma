@@ -104,6 +104,7 @@ model RequesterFriend {
   createdAt   DateTime @default(now())
 
   @@unique([requesterId, recipientId])
+  @@index([recipientId, status])
 }
 
 model RecipientFriend {
@@ -115,6 +116,7 @@ model RecipientFriend {
   createdAt   DateTime @default(now())
 
   @@unique([recipientId, requesterId])
+  @@index([requesterId, status])
 }
 
 model Character {
@@ -211,6 +213,8 @@ model ItemInstance {
   equipment     Equipment?
   bankSlot      BankSlot?
   worldDrop     WorldDrop?
+
+  @@index([boundToCharacterId])
 }
 
 model Npc {

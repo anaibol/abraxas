@@ -201,7 +201,8 @@
       "group_invite_tag": "[G]",
       "trade_tag": "[Scambia]",
       "pending_requests": "Richieste in Sospeso",
-      "accept": "[Accetta]"
+      "accept": "[Accetta]",
+      "remove": "[Rimuovi]"
     },
     "social": {
       "trade": "[Scambia]",
@@ -716,6 +717,7 @@
     "tab_all": "TUTTO",
     "tab_global": "GLOBALE",
     "tab_group": "GRUPPO",
+    "tab_guild": "GILDA",
     "tab_whisper": "SUSSURRO",
     "tab_system": "SISTEMA",
     "tab_combat": "COMBATTIMENTO",

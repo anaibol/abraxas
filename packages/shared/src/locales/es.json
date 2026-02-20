@@ -201,7 +201,8 @@
       "group_invite_tag": "[G]",
       "trade_tag": "[Comerciar]",
       "pending_requests": "Peticiones Pendientes",
-      "accept": "[Aceptar]"
+      "accept": "[Aceptar]",
+      "remove": "[Eliminar]"
     },
     "social": {
       "trade": "[Comerciar]",
@@ -716,6 +717,7 @@
     "tab_all": "TODOS",
     "tab_global": "GLOBAL",
     "tab_group": "GRUPO",
+    "tab_guild": "CLAN",
     "tab_whisper": "SUSURRO",
     "tab_system": "SISTEMA",
     "tab_combat": "COMBATE",
