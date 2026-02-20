@@ -268,11 +268,13 @@ export class PlayerSprite {
     this.playPoof();
   }
 
-  setTilePosition(tileX: number, tileY: number) {
+  setTilePosition(tileX: number, tileY: number): boolean {
+    const changed = this.predictedTileX !== tileX || this.predictedTileY !== tileY;
     this.predictedTileX = tileX;
     this.predictedTileY = tileY;
     this.targetX = tileX * TILE_SIZE + TILE_SIZE / 2;
     this.targetY = tileY * TILE_SIZE + TILE_SIZE / 2;
+    return changed;
   }
 
   predictMove(direction: Direction) {

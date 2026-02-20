@@ -104,7 +104,8 @@ const NPC_AUDIO: Array<[string[], string, number, string, number]> = [
   [["rogue","bandit","thief"],       AudioAssets.ATTACK_1,   0.4, AudioAssets.NPC_HURT, 0.5],
 ];
 
-function npcAudio(type: string): { attack: string; atkVol: number; death: string; dthVol: number } {
+function npcAudio(type?: string): { attack: string; atkVol: number; death: string; dthVol: number } {
+  if (!type) return { attack: AudioAssets.NPC_GRUNT, atkVol: 0.4, death: AudioAssets.NPC_HURT, dthVol: 0.5 };
   for (const [keywords, attack, atkVol, death, dthVol] of NPC_AUDIO) {
     if (keywords.some(k => type.includes(k))) return { attack, atkVol, death, dthVol };
   }
@@ -235,11 +236,11 @@ export class SoundManager {
   playUIOpen(opts?: PlayOpts)   { this.play(AudioAssets.CLICK_OPEN, opts); }
   playUIClose(opts?: PlayOpts)  { this.play(AudioAssets.CLICK_CLOSE, opts); }
 
-  playNpcAttack(type: string, opts?: PlayOpts) {
+  playNpcAttack(type: string | undefined, opts?: PlayOpts) {
     const { attack, atkVol } = npcAudio(type);
     this.play(attack, { ...opts, volume: atkVol });
   }
-  playNpcDeath(type: string, opts?: PlayOpts) {
+  playNpcDeath(type: string | undefined, opts?: PlayOpts) {
     const { death, dthVol } = npcAudio(type);
     this.play(death, { ...opts, volume: dthVol });
   }

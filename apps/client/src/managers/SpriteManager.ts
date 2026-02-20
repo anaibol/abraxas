@@ -50,7 +50,10 @@ export class SpriteManager {
     if (sprite.isLocal) {
       sprite.reconcileServer(player.tileX, player.tileY);
     } else {
-      sprite.setTilePosition(player.tileX, player.tileY);
+      const moved = sprite.setTilePosition(player.tileX, player.tileY);
+      if (moved && player.alive) {
+        this.scene.soundManager.playStep({ sourceX: sprite.renderX, sourceY: sprite.renderY });
+      }
     }
     sprite.setFacing(player.facing);
     sprite.updateHpMana(player.hp, player.mana ?? 0);
@@ -114,7 +117,10 @@ export class SpriteManager {
   syncNpc(npc: NpcEntityState, id: string) {
     const sprite = this.sprites.get(id);
     if (!sprite) return;
-    sprite.setTilePosition(npc.tileX, npc.tileY);
+    const moved = sprite.setTilePosition(npc.tileX, npc.tileY);
+    if (moved && npc.alive) {
+      this.scene.soundManager.playStep({ sourceX: sprite.renderX, sourceY: sprite.renderY });
+    }
     sprite.setFacing(npc.facing);
     sprite.updateHpMana(npc.hp, 0);
     sprite.updateAppearance(npc.overrideBodyId ?? 0, npc.overrideHeadId ?? 0);

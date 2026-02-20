@@ -96,8 +96,8 @@ describe("Arena multiplayer smoke test", () => {
     const password = await hashPassword("password");
     const userA = await prisma.account.upsert({
       where: { email: emailA },
-      update: { password },
-      create: { email: emailA, password }
+      update: { password, role: "ADMIN" },
+      create: { email: emailA, password, role: "ADMIN" }
     });
     const userB = await prisma.account.upsert({
       where: { email: emailB },
@@ -339,8 +339,39 @@ describe("Arena multiplayer smoke test", () => {
     const newHpA = expectPlayer(roomB, roomA.sessionId).hp;
     expect(newHpA).toBeLessThan(initialHpA);
 
-    console.log("Step 8: Leaving...");
-    // ---- Step 7: Disconnect cleanly ----
+    console.log("Step 8: Progression check (NPC Kill)");
+    // ---- Step 8: Spawn NPC and check EXP ----
+    roomA.send("gm_spawn", { type: "orc" });
+    
+    await waitForState(roomA, (state) => state.npcs.size > 0, 10000);
+    const npc = Array.from(roomA.state.npcs.values()).find(n => !n.ownerId);
+    expect(npc).toBeDefined();
+
+    // Teleport to NPC
+    roomA.send("gm_teleport", { tileX: npc!.tileX, tileY: npc!.tileY });
+    await waitForState(roomA, (state) => {
+        const p = state.players.get(roomA.sessionId);
+        return p?.tileX === npc!.tileX && p?.tileY === npc!.tileY;
+    });
+
+    const initialXpA = expectPlayer(roomA, roomA.sessionId).xp;
+
+    // Attack NPC until dead
+    const npcId = npc!.sessionId;
+    while (roomA.state.npcs.has(npcId)) {
+        const currentNpc = roomA.state.npcs.get(npcId);
+        if (currentNpc) {
+            roomA.send("attack", { targetTileX: currentNpc.tileX, targetTileY: currentNpc.tileY });
+        }
+        await wait(200); 
+    }
+
+    // Verify EXP gain
+    const finalXpA = expectPlayer(roomA, roomA.sessionId).xp;
+    expect(finalXpA).toBeGreaterThan(initialXpA);
+
+    console.log("Step 9: Leaving...");
+    // ---- Step 9: Disconnect cleanly ----
     roomA.leave();
     roomB.leave();
     await wait(300);
