@@ -257,6 +257,7 @@ export interface PlayerEntityState extends BaseEntityState {
 	equipWeapon: string;
 	equipShield: string;
 	equipHelmet: string;
+	equipMount: string;
 	meditating: boolean;
 	guildId?: string;
 	pvpEnabled: boolean;
@@ -606,6 +607,7 @@ export type ClientMessages = {
 	[ClientMessageType.GuildDemote]: { targetName: string };
 
 	[ClientMessageType.Meditate]: {};
+	[ClientMessageType.Tame]: { targetSessionId: string };
 
 	// GM commands
 	[ClientMessageType.GMTeleport]: { tileX: number; tileY: number };
