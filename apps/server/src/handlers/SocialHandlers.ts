@@ -37,6 +37,14 @@ export class SocialHandlers {
     ctx.systems.friends.handleFriendAccept(client, data.requesterId);
   }
 
+  static handleFriendRemove(
+    ctx: RoomContext,
+    client: Client,
+    data: ClientMessages[ClientMessageType.FriendRemove],
+  ): void {
+    ctx.systems.friends.handleFriendRemove(client, data.friendId);
+  }
+
   static handleGroupInvite(
     ctx: RoomContext,
     client: Client,

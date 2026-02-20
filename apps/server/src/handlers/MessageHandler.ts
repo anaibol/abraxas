@@ -73,6 +73,9 @@ export class MessageHandler {
     register(ClientMessageType.FriendAccept, (c, m) =>
       SocialHandlers.handleFriendAccept(this.ctx, c, m),
     );
+    register(ClientMessageType.FriendRemove, (c, m) =>
+      SocialHandlers.handleFriendRemove(this.ctx, c, m),
+    );
 
     register(ClientMessageType.GuildCreate, (c, m) =>
       SocialHandlers.handleGuildCreate(this.ctx, c, m),
