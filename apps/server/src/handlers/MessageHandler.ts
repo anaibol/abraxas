@@ -170,13 +170,10 @@ export class MessageHandler {
 		for (const quest of updatedQuests) {
 			client.send(ServerMessageType.QuestUpdate, { quest });
 			if (quest.status === "COMPLETED") {
+				const def = QUESTS[quest.questId];
 				client.send(ServerMessageType.Notification, {
 					message: "quest.completed",
-					templateData: {
-						title: QUESTS[quest.questId].title,
-						exp: QUESTS[quest.questId].rewards.exp,
-						gold: QUESTS[quest.questId].rewards.gold,
-					},
+					templateData: { title: def.title, exp: def.rewards.exp, gold: def.rewards.gold },
 				});
 			}
 		}
@@ -499,19 +496,10 @@ export class MessageHandler {
 	}
 
 	/** Returns true if the player is within `range` Manhattan tiles of any living NPC with the given type. */
-	private isNearNpcType(
-		player: Player,
-		npcType: string,
-		range = 3,
-	): boolean {
-		return Array.from(this.ctx.state.npcs.values()).some(
-			(n) =>
-				n.type === npcType &&
-				n.alive &&
-				MathUtils.manhattanDist(
-					{ x: player.tileX, y: player.tileY },
-					{ x: n.tileX, y: n.tileY },
-				) <= range,
+	private isNearNpcType(player: Player, npcType: string, range = 3): boolean {
+		return [...this.ctx.state.npcs.values()].some(
+			(n) => n.type === npcType && n.alive &&
+				MathUtils.manhattanDist({ x: player.tileX, y: player.tileY }, { x: n.tileX, y: n.tileY }) <= range,
 		);
 	}
 

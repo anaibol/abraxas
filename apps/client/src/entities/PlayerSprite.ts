@@ -29,6 +29,12 @@ const GAME_TEXT_STYLE = {
   shadow: { offsetX: 1, offsetY: 1, color: "#000000", blur: 3, fill: true },
 };
 
+/** World-space Y offsets applied to each status emitter relative to the sprite origin. */
+const STATUS_EMITTER_OFFSETS: Record<string, number> = {
+  stun: -TILE_SIZE * 1.4,
+  poison: -TILE_SIZE * 0.2,
+};
+
 export class PlayerSprite {
   public container: Phaser.GameObjects.Container;
   private bodySprite: Phaser.GameObjects.Sprite;
@@ -73,15 +79,9 @@ export class PlayerSprite {
   private isMeditating: boolean = false;
 
   // ── Status-effect persistent visuals ───────────────────────────────────────
-  /** Stars spinning above the head while stunned. */
-  private stunEmitter: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
-  /** Green drips while a DoT / poison is active. */
-  private poisonEmitter: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
-  /** Golden shimmer while a buff is active. */
-  private buffEmitter: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
-  /** Purple smoke while a debuff is active. */
-  private debuffEmitter: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
-  /** Glowing ring + white sparkles while invulnerable. */
+  /** Active particle emitters keyed by status name (stun / poison / buff / debuff). */
+  private statusEmitters = new Map<string, Phaser.GameObjects.Particles.ParticleEmitter>();
+  /** Glowing ring + white sparkles while invulnerable (kept separate — has extra ring graphic). */
   private invulnEmitter: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
   /** Pulsing white ring added to the container during invulnerability. */
   private invulnRing: Phaser.GameObjects.Graphics | null = null;
@@ -107,16 +107,14 @@ export class PlayerSprite {
     this.classType = classType;
     this.isLocal = isLocal;
 
-    const stats = CLASS_STATS[classType] || (NPC_STATS as Record<string, typeof NPC_STATS[keyof typeof NPC_STATS]>)[classType];
-    if (!stats) {
+    const stats = CLASS_STATS[classType]
+      ?? (NPC_STATS as Record<string, typeof NPC_STATS[keyof typeof NPC_STATS]>)[classType]
+      ?? CLASS_STATS.WARRIOR;
+    if (!CLASS_STATS[classType] && !(NPC_STATS as Record<string, unknown>)[classType]) {
       console.warn(`No stats found for class/type: ${classType}, defaulting to warrior`);
-      const defaultStats = CLASS_STATS.WARRIOR;
-      this.pixelsPerSecond = defaultStats.speedTilesPerSecond * TILE_SIZE;
-      this.maxHp = defaultStats.hp;
-    } else {
-      this.pixelsPerSecond = stats.speedTilesPerSecond * TILE_SIZE;
-      this.maxHp = stats.hp;
     }
+    this.pixelsPerSecond = stats.speedTilesPerSecond * TILE_SIZE;
+    this.maxHp = stats.hp;
 
     const res = scene.registry.get("aoResolver");
     if (res instanceof AoGrhResolver) {
@@ -449,6 +447,34 @@ export class PlayerSprite {
     }
   }
 
+  /** Spawns a named status emitter and schedules its auto-clear. */
+  private applyStatusEffect(
+    name: "stun" | "poison" | "buff" | "debuff",
+    texture: string,
+    config: Phaser.Types.GameObjects.Particles.ParticleEmitterConfig,
+    offsetY: number,
+    depth: number,
+    durationMs: number,
+  ): void {
+    const scene = this.container.scene;
+    if (!scene || this.statusEmitters.has(name)) return;
+    this.ensureStatusTextures(scene);
+    const emitter = scene.add.particles(this.renderX, this.renderY + offsetY, texture, config);
+    emitter.setDepth(this.container.depth + depth);
+    this.statusEmitters.set(name, emitter);
+    this.activeStatusTints.add(name);
+    this.refreshTint();
+    scene.time.delayedCall(durationMs, () => this.clearStatusEffect(name));
+  }
+
+  /** Destroys a named status emitter and refreshes tint. */
+  private clearStatusEffect(name: "stun" | "poison" | "buff" | "debuff"): void {
+    this.statusEmitters.get(name)?.destroy();
+    this.statusEmitters.delete(name);
+    this.activeStatusTints.delete(name);
+    this.refreshTint();
+  }
+
   /**
    * Applies a colour-pulsing tint to the body and head sprites.
    * Colour interpolates from white to `color` on a sine wave.
@@ -505,152 +531,76 @@ export class PlayerSprite {
   // ── applyStun / clearStun ─────────────────────────────────────────────────
 
   applyStun(durationMs: number) {
-    const scene = this.container.scene;
-    if (!scene || this.stunEmitter) return;
-    this.ensureStatusTextures(scene);
-
-    this.stunEmitter = scene.add.particles(
-      this.renderX, this.renderY - TILE_SIZE * 1.4,
-      "status-star",
-      {
-        tint: [0xffff00, 0xffcc00, 0xffffff, 0xffee44],
-        speed: { min: 20, max: 48 },
-        angle: { min: 0, max: 360 },
-        scale: { start: 0.6, end: 0.12 },
-        alpha: { start: 1, end: 0.3 },
-        lifespan: { min: 700, max: 1100 },
-        quantity: 2,
-        frequency: 80,
-        rotate: { start: 0, end: 720 },
-        x: { min: -TILE_SIZE * 0.5, max: TILE_SIZE * 0.5 },
-      },
-    );
-    this.stunEmitter.setDepth(this.container.depth + 3);
-
-    this.activeStatusTints.add("stun");
-    this.refreshTint();
-    scene.time.delayedCall(durationMs, () => this.clearStun());
+    this.applyStatusEffect("stun", "status-star", {
+      tint: [0xffff00, 0xffcc00, 0xffffff, 0xffee44],
+      speed: { min: 20, max: 48 },
+      angle: { min: 0, max: 360 },
+      scale: { start: 0.6, end: 0.12 },
+      alpha: { start: 1, end: 0.3 },
+      lifespan: { min: 700, max: 1100 },
+      quantity: 2,
+      frequency: 80,
+      rotate: { start: 0, end: 720 },
+      x: { min: -TILE_SIZE * 0.5, max: TILE_SIZE * 0.5 },
+    }, -TILE_SIZE * 1.4, 3, durationMs);
   }
-
-  clearStun() {
-    this.stunEmitter?.destroy();
-    this.stunEmitter = null;
-    this.activeStatusTints.delete("stun");
-    this.refreshTint();
-  }
+  clearStun() { this.clearStatusEffect("stun"); }
 
   // ── applyPoison / clearPoison ─────────────────────────────────────────────
 
   applyPoison(durationMs: number) {
-    const scene = this.container.scene;
-    if (!scene || this.poisonEmitter) return;
-    this.ensureStatusTextures(scene);
-
-    this.poisonEmitter = scene.add.particles(
-      this.renderX, this.renderY - TILE_SIZE * 0.2,
-      "status-dot",
-      {
-        tint: [0x44ff44, 0x007700, 0x88ff00, 0x33cc00, 0xaaff00],
-        speed: { min: 8, max: 28 },
-        angle: { min: 0, max: 360 },
-        scale: { start: 0.52, end: 0 },
-        alpha: { start: 0.95, end: 0 },
-        lifespan: { min: 700, max: 1300 },
-        quantity: 2,
-        frequency: 60,
-        gravityY: 65,
-        x: { min: -12, max: 12 },
-      },
-    );
-    this.poisonEmitter.setDepth(this.container.depth + 2);
-
-    this.activeStatusTints.add("poison");
-    this.refreshTint();
-    scene.time.delayedCall(durationMs, () => this.clearPoison());
+    this.applyStatusEffect("poison", "status-dot", {
+      tint: [0x44ff44, 0x007700, 0x88ff00, 0x33cc00, 0xaaff00],
+      speed: { min: 8, max: 28 },
+      angle: { min: 0, max: 360 },
+      scale: { start: 0.52, end: 0 },
+      alpha: { start: 0.95, end: 0 },
+      lifespan: { min: 700, max: 1300 },
+      quantity: 2,
+      frequency: 60,
+      gravityY: 65,
+      x: { min: -12, max: 12 },
+    }, -TILE_SIZE * 0.2, 2, durationMs);
   }
-
-  clearPoison() {
-    this.poisonEmitter?.destroy();
-    this.poisonEmitter = null;
-    this.activeStatusTints.delete("poison");
-    this.refreshTint();
-  }
+  clearPoison() { this.clearStatusEffect("poison"); }
 
   // ── applyBuff / clearBuff ─────────────────────────────────────────────────
 
   applyBuff(durationMs: number) {
-    const scene = this.container.scene;
-    if (!scene || this.buffEmitter) return;
-    this.ensureStatusTextures(scene);
-
-    this.buffEmitter = scene.add.particles(
-      this.renderX, this.renderY,
-      "status-star",
-      {
-        tint: [0xffdd44, 0xffaa00, 0xffffff],
-        speed: { min: 12, max: 32 },
-        angle: { min: 240, max: 300 },
-        scale: { start: 0.38, end: 0 },
-        alpha: { start: 0.85, end: 0 },
-        lifespan: { min: 600, max: 950 },
-        quantity: 1,
-        frequency: 110,
-        gravityY: -45,
-        x: { min: -14, max: 14 },
-        rotate: { start: 0, end: 360 },
-      },
-    );
-    this.buffEmitter.setDepth(this.container.depth + 2);
-
-    this.activeStatusTints.add("buff");
-    this.refreshTint();
-    scene.time.delayedCall(durationMs, () => this.clearBuff());
+    this.applyStatusEffect("buff", "status-star", {
+      tint: [0xffdd44, 0xffaa00, 0xffffff],
+      speed: { min: 12, max: 32 },
+      angle: { min: 240, max: 300 },
+      scale: { start: 0.38, end: 0 },
+      alpha: { start: 0.85, end: 0 },
+      lifespan: { min: 600, max: 950 },
+      quantity: 1,
+      frequency: 110,
+      gravityY: -45,
+      x: { min: -14, max: 14 },
+      rotate: { start: 0, end: 360 },
+    }, 0, 2, durationMs);
   }
-
-  clearBuff() {
-    this.buffEmitter?.destroy();
-    this.buffEmitter = null;
-    this.activeStatusTints.delete("buff");
-    this.refreshTint();
-  }
+  clearBuff() { this.clearStatusEffect("buff"); }
 
   // ── applyDebuff / clearDebuff ─────────────────────────────────────────────
 
   applyDebuff(durationMs: number) {
-    const scene = this.container.scene;
-    if (!scene || this.debuffEmitter) return;
-    this.ensureStatusTextures(scene);
-
-    this.debuffEmitter = scene.add.particles(
-      this.renderX, this.renderY,
-      "status-dot",
-      {
-        tint: [0xcc44ff, 0x880088, 0x4400aa],
-        speed: { min: 6, max: 20 },
-        angle: { min: 240, max: 300 },
-        scale: { start: 0.5, end: 0 },
-        alpha: { start: 0.75, end: 0 },
-        lifespan: { min: 600, max: 1100 },
-        quantity: 1,
-        frequency: 100,
-        gravityY: -28,
-        blendMode: Phaser.BlendModes.NORMAL,
-        x: { min: -12, max: 12 },
-      },
-    );
-    this.debuffEmitter.setDepth(this.container.depth + 1);
-
-    this.activeStatusTints.add("debuff");
-    this.refreshTint();
-    scene.time.delayedCall(durationMs, () => this.clearDebuff());
+    this.applyStatusEffect("debuff", "status-dot", {
+      tint: [0xcc44ff, 0x880088, 0x4400aa],
+      speed: { min: 6, max: 20 },
+      angle: { min: 240, max: 300 },
+      scale: { start: 0.5, end: 0 },
+      alpha: { start: 0.75, end: 0 },
+      lifespan: { min: 600, max: 1100 },
+      quantity: 1,
+      frequency: 100,
+      gravityY: -28,
+      blendMode: Phaser.BlendModes.NORMAL,
+      x: { min: -12, max: 12 },
+    }, 0, 1, durationMs);
   }
-
-  clearDebuff() {
-    this.debuffEmitter?.destroy();
-    this.debuffEmitter = null;
-    this.activeStatusTints.delete("debuff");
-    this.refreshTint();
-  }
+  clearDebuff() { this.clearStatusEffect("debuff"); }
 
   // ── applyInvulnerable / clearInvulnerable ─────────────────────────────────
 
@@ -803,12 +753,11 @@ export class PlayerSprite {
 
     const wx = this.renderX;
     const wy = this.renderY;
-    if (this.meditationEmitter)  this.meditationEmitter.setPosition(wx, wy);
-    if (this.stunEmitter)        this.stunEmitter.setPosition(wx, wy - TILE_SIZE * 1.4);
-    if (this.poisonEmitter)      this.poisonEmitter.setPosition(wx, wy - TILE_SIZE * 0.2);
-    if (this.buffEmitter)        this.buffEmitter.setPosition(wx, wy);
-    if (this.debuffEmitter)      this.debuffEmitter.setPosition(wx, wy);
-    if (this.invulnEmitter)      this.invulnEmitter.setPosition(wx, wy);
+    this.meditationEmitter?.setPosition(wx, wy);
+    for (const [name, emitter] of this.statusEmitters) {
+      emitter.setPosition(wx, wy + (STATUS_EMITTER_OFFSETS[name] ?? 0));
+    }
+    this.invulnEmitter?.setPosition(wx, wy);
   }
 
   showSpeakingIndicator(visible: boolean) {
@@ -875,11 +824,8 @@ export class PlayerSprite {
   destroy() {
     this.chatBubbleText?.destroy();
     this.meditationEmitter?.destroy();
-    this.meditationEmitter = null;
-    this.stunEmitter?.destroy();
-    this.poisonEmitter?.destroy();
-    this.buffEmitter?.destroy();
-    this.debuffEmitter?.destroy();
+    for (const emitter of this.statusEmitters.values()) emitter.destroy();
+    this.statusEmitters.clear();
     this.invulnEmitter?.destroy();
     this.invulnRingTween?.stop();
     this.tintTween?.stop();
