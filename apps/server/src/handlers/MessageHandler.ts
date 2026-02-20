@@ -52,6 +52,14 @@ export class MessageHandler {
 		register(ClientMessageType.FriendRequest, (c, m) => SocialHandlers.handleFriendRequest(this.ctx, c, m));
 		register(ClientMessageType.FriendAccept, (c, m) => SocialHandlers.handleFriendAccept(this.ctx, c, m));
 
+		register(ClientMessageType.GuildCreate, (c, m) => SocialHandlers.handleGuildCreate(this.ctx, c, m));
+		register(ClientMessageType.GuildInvite, (c, m) => SocialHandlers.handleGuildInvite(this.ctx, c, m));
+		register(ClientMessageType.GuildAccept, (c, m) => SocialHandlers.handleGuildAccept(this.ctx, c, m));
+		register(ClientMessageType.GuildLeave, (c) => SocialHandlers.handleGuildLeave(this.ctx, c));
+		register(ClientMessageType.GuildKick, (c, m) => SocialHandlers.handleGuildKick(this.ctx, c, m));
+		register(ClientMessageType.GuildPromote, (c, m) => SocialHandlers.handleGuildPromote(this.ctx, c, m));
+		register(ClientMessageType.GuildDemote, (c, m) => SocialHandlers.handleGuildDemote(this.ctx, c, m));
+
 		register(ClientMessageType.BuyItem, (c, m) => EconomyHandlers.handleBuyItem(this.ctx, c, m));
 		register(ClientMessageType.SellItem, (c, m) => EconomyHandlers.handleSellItem(this.ctx, c, m));
 		register(ClientMessageType.TradeRequest, (c, m) => EconomyHandlers.handleTradeRequest(this.ctx, c, m));

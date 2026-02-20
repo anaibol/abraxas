@@ -9,8 +9,9 @@ import type { FriendsSystem } from "../systems/FriendsSystem";
 import type { InventorySystem } from "../systems/InventorySystem";
 import type { MovementSystem } from "../systems/MovementSystem";
 import type { QuestSystem } from "../systems/QuestSystem";
-import type { SocialSystem } from "../systems/SocialSystem";
-import type { TradeSystem } from "../systems/TradeSystem";
+import { SocialSystem } from "../systems/SocialSystem";
+import { GuildSystem } from "../systems/GuildSystem";
+import { TradeSystem } from "../systems/TradeSystem";
 import type { BankSystem } from "../systems/BankSystem";
 import type { NpcSystem } from "../systems/NpcSystem";
 
@@ -25,6 +26,7 @@ export interface RoomContext {
 		inventory: InventorySystem;
 		drops: DropSystem;
 		social: SocialSystem;
+		guild: GuildSystem;
 		friends: FriendsSystem;
 		quests: QuestSystem;
 		trade: TradeSystem;

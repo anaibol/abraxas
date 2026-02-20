@@ -64,4 +64,32 @@ export class SocialHandlers {
 	): void {
 		ctx.systems.social.handleKickPlayer(client, data.targetSessionId);
 	}
+
+	static handleGuildCreate(ctx: RoomContext, client: Client, data: ClientMessages[ClientMessageType.GuildCreate]): void {
+		ctx.systems.guild.handleCreateGuild(client, data.name);
+	}
+
+	static handleGuildInvite(ctx: RoomContext, client: Client, data: ClientMessages[ClientMessageType.GuildInvite]): void {
+		ctx.systems.guild.handleInvite(client, data.targetSessionId);
+	}
+
+	static handleGuildAccept(ctx: RoomContext, client: Client, data: ClientMessages[ClientMessageType.GuildAccept]): void {
+		ctx.systems.guild.handleAcceptInvite(client, data.guildId);
+	}
+
+	static handleGuildLeave(ctx: RoomContext, client: Client): void {
+		ctx.systems.guild.handleLeaveGuild(client);
+	}
+
+	static handleGuildKick(ctx: RoomContext, client: Client, data: ClientMessages[ClientMessageType.GuildKick]): void {
+		ctx.systems.guild.handleKickPlayer(client, data.targetName);
+	}
+
+	static handleGuildPromote(ctx: RoomContext, client: Client, data: ClientMessages[ClientMessageType.GuildPromote]): void {
+		ctx.systems.guild.handlePromotePlayer(client, data.targetName);
+	}
+
+	static handleGuildDemote(ctx: RoomContext, client: Client, data: ClientMessages[ClientMessageType.GuildDemote]): void {
+		ctx.systems.guild.handleDemotePlayer(client, data.targetName);
+	}
 }
