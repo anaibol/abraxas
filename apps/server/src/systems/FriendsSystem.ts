@@ -133,6 +133,41 @@ export class FriendsSystem {
     }
   }
 
+  public async handleFriendRemove(client: Client, friendId: string) {
+    const player = this.state.players.get(client.sessionId);
+    if (!player) return;
+
+    try {
+      // Remove in both directions (handles either party initiating removal)
+      await prisma.requesterFriend.deleteMany({
+        where: {
+          OR: [
+            { requesterId: player.userId, recipientId: friendId },
+            { requesterId: friendId, recipientId: player.userId },
+          ],
+        },
+      });
+
+      // Push updated friend list to the remover
+      await this.sendUpdateToUser(player.userId, client.sessionId);
+
+      // Notify the removed friend if online
+      const friendSessionId = this.onlineUsers.get(friendId);
+      if (friendSessionId) {
+        const friendClient = this.findClient(friendSessionId);
+        if (friendClient) {
+          friendClient.send(ServerMessageType.FriendRemove, { friendId: player.userId });
+          await this.sendUpdateToUser(friendId, friendSessionId);
+        }
+      }
+    } catch (e) {
+      logger.error({
+        message: "Error removing friend",
+        error: String(e),
+      });
+    }
+  }
+
   public async sendUpdateToUser(userId: string, sessionId: string) {
     const client = this.findClient(sessionId);
     if (!client) return;
