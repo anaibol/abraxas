@@ -786,6 +786,19 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     key: "",
     fxId: 1
   },
+  /** Druid: Spirit of the Bear — massive HP/Armor buff and appearance change */
+  bear_form: {
+    id: "bear_form",
+    rangeTiles: 0,
+    manaCost: 40,
+    cooldownMs: 30000,
+    durationMs: 15000,
+    effect: "buff",
+    buffStat: "hp", // Primary buff is HP
+    buffAmount: 100, // +100 max HP (will need adjustment to scale better maybe)
+    appearanceOverride: { bodyId: 75, headId: 0 },
+    fxId: 15, // Nature-y green burst
+  },
 };
 
 export const ABILITIES: Record<string, Ability> = Object.fromEntries(

@@ -4,6 +4,7 @@ import {
   type BroadcastFn,
   DIRECTION_DELTA,
   Direction,
+  EntityType,
   EXP_TABLE,
   MathUtils,
   NPC_RESPAWN_TIME_MS,
@@ -47,7 +48,7 @@ const BOSS_AGGRO_MULTIPLIER = 1.5;
 const MAX_SUMMONS = 3;
 
 type RespawnEntry = {
-  type: NpcType;
+  npcType: NpcType;
   deadAt: number;
   spawnX: number;
   spawnY: number;
@@ -78,29 +79,34 @@ export class NpcSystem {
 
     const mapHasMerchant = map.npcs?.some((n) => n.type === "merchant");
     if (!mapHasMerchant && map.spawns.length > 0) {
-      this.spawnNpcAt("merchant", map, map.spawns[0].x + 2, map.spawns[0].y);
+      this.spawnNpcAt("merchant" as NpcType, map, map.spawns[0].x + 2, map.spawns[0].y);
     }
   }
 
-  public spawnNpcAt(type: NpcType, map: TileMap, x: number, y: number, ownerId?: string): void {
+  public spawnNpcAt(
+    type: NpcType,
+    map: TileMap,
+    tileX: number,
+    tileY: number,
+    ownerId?: string,
+    forcedLevel?: number,
+  ): Npc {
     const npc = new Npc();
     npc.sessionId = crypto.randomUUID();
-    npc.type = type;
-    npc.tileX = x;
-    npc.tileY = y;
-    npc.spawnX = x;
-    npc.spawnY = y;
+    npc.npcType = type;
+    npc.tileX = tileX;
+    npc.tileY = tileY;
+    npc.spawnX = tileX;
+    npc.spawnY = tileY;
+
+    // Determine initial level
+    if (forcedLevel !== undefined) {
+      npc.level = forcedLevel;
+    } else {
+      npc.level = this.calculateSpawnLevel(type, map);
+    }
 
     const stats = NPC_STATS[type];
-    
-    // Determine initial level
-    let level = 1;
-    if (stats.minLevel !== undefined && stats.maxLevel !== undefined) {
-      level = Math.floor(Math.random() * (stats.maxLevel - stats.minLevel + 1)) + stats.minLevel;
-    } else if (stats.minLevel !== undefined) {
-      level = stats.minLevel;
-    }
-    npc.level = level;
 
     // Scale stats based on level (10% increase per level above 1)
     const scale = 1 + (npc.level - 1) * 0.1;
@@ -122,7 +128,19 @@ export class NpcSystem {
 
     this.state.npcs.set(npc.sessionId, npc);
     this.spatial.addToGrid(npc);
+    return npc;
   }
+
+  private calculateSpawnLevel(npcType: NpcType, map: TileMap): number {
+    const stats = NPC_STATS[npcType];
+    if (stats.minLevel !== undefined && stats.maxLevel !== undefined) {
+      return Math.floor(Math.random() * (stats.maxLevel - stats.minLevel + 1)) + stats.minLevel;
+    } else if (stats.minLevel !== undefined) {
+      return stats.minLevel;
+    }
+    return 1; // Default level
+  }
+
   public spawnNpc(type: NpcType, map: TileMap, ownerId?: string): void {
     // Pick a random walkable tile then spiral to avoid any occupied cell
     for (let attempt = 0; attempt < 20; attempt++) {
@@ -137,7 +155,53 @@ export class NpcSystem {
       }
     }
 
-    logger.error({ intent: "spawn_npc", result: "failed", type });
+    logger.error({ intent: "spawn_npc", result: "failed", npcType: type });
+  }
+
+  public spawnSummon(caster: Entity, abilityId: string, x: number, y: number): void {
+    const ability = ABILITIES[abilityId];
+    if (!ability) return;
+
+    // Determine what to summon based on ability or caster
+    let typeToSummon: NpcType = "skeleton";
+    if (abilityId === "summon_skeleton") typeToSummon = "skeleton";
+    // Druid summons could go here too
+
+    // Check caps
+    const ownerStats = caster.getStats();
+    const cap = (ownerStats as any)?.maxCompanions ?? 1;
+
+    let liveMinions = 0;
+    this.state.npcs.forEach((n) => {
+      if (n.ownerId === caster.sessionId && n.alive) liveMinions++;
+    });
+
+    if (liveMinions >= cap) {
+      // Find oldest summon and kill it to make room? Or just block?
+      // Blocking for now as is traditional.
+      return;
+    }
+
+    // Attempt to spawn at target tile
+    const safe = findSafeSpawn(x, y, this.currentMap, this.spatial);
+    const casterLevel = (caster as any).level ?? 1;
+
+    if (safe) {
+      this.spawnNpcAt(typeToSummon, this.currentMap, safe.x, safe.y, caster.sessionId, casterLevel);
+    } else {
+      // Find safe spot near caster instead
+      const fallback = findSafeSpawn(caster.tileX, caster.tileY, this.currentMap, this.spatial);
+      if (fallback) {
+        this.spawnNpcAt(
+          typeToSummon,
+          this.currentMap,
+          fallback.x,
+          fallback.y,
+          caster.sessionId,
+          casterLevel,
+        );
+      }
+    }
   }
 
   tick(map: TileMap, now: number, tickCount: number, roomId: string, broadcast: BroadcastFn): void {
@@ -146,7 +210,7 @@ export class NpcSystem {
     this.respawns = this.respawns.filter((r) => {
       if (now - r.deadAt < NPC_RESPAWN_TIME_MS) return true;
       const safe = findSafeSpawn(r.spawnX, r.spawnY, map, this.spatial);
-      safe ? this.spawnNpcAt(r.type, map, safe.x, safe.y) : this.spawnNpc(r.type, map);
+      safe ? this.spawnNpcAt(r.npcType, map, safe.x, safe.y) : this.spawnNpc(r.npcType, map);
       return false;
     });
 
@@ -199,7 +263,7 @@ export class NpcSystem {
       return;
     }
 
-    const stats = NPC_STATS[npc.type];
+    const stats = NPC_STATS[npc.npcType];
     if (stats.passive) return;
     if (tickCount % IDLE_SCAN_INTERVAL !== 0) return;
 
@@ -257,7 +321,7 @@ export class NpcSystem {
 
   /** Returns true and transitions to FLEE if the NPC should flee. */
   private checkAndFlee(npc: Npc): boolean {
-    const stats = NPC_STATS[npc.type];
+    const stats = NPC_STATS[npc.npcType];
     if (stats.fleesWhenLow && npc.hp / npc.maxHp < FLEE_HP_THRESHOLD) {
       npc.state = NpcState.FLEE;
       return true;
@@ -281,7 +345,7 @@ export class NpcSystem {
 
     if (this.checkAndFlee(npc)) return;
 
-    const stats = NPC_STATS[npc.type];
+    const stats = NPC_STATS[npc.npcType];
     const dist = MathUtils.manhattanDist(npc.getPosition(), target.getPosition());
     const maxLeash = npc.ownerId ? AGGRO_RANGE * 2 : AGGRO_RANGE * LEASH_MULTIPLIER;
     
@@ -313,7 +377,7 @@ export class NpcSystem {
 
     if (this.checkAndFlee(npc)) return;
 
-    const stats = NPC_STATS[npc.type];
+    const stats = NPC_STATS[npc.npcType];
     const dist = MathUtils.manhattanDist(npc.getPosition(), target.getPosition());
     if (dist > stats.attackRange) {
       npc.state = NpcState.CHASE;
@@ -415,7 +479,7 @@ export class NpcSystem {
       // Defend owner: scan for nearby hostiles targeting the owner
       const nearbyEnemies = this.spatial.findEntitiesInRadius(owner.tileX, owner.tileY, AGGRO_RANGE);
       for (const enemy of nearbyEnemies) {
-        if (enemy instanceof Npc && enemy.targetId === owner.sessionId) {
+        if (enemy.type === EntityType.NPC && (enemy as Npc).targetId === owner.sessionId) {
           npc.targetId = enemy.sessionId;
           npc.state = NpcState.CHASE;
           return;
@@ -513,11 +577,11 @@ export class NpcSystem {
 
     npc.exp += amount;
 
-    let nextLevelExp = EXP_TABLE[npc.level] || npc.level * 1000;
+    let nextLevelExp = EXP_TABLE[npc.level] || npc.level * 100;
     while (npc.exp >= nextLevelExp) {
       npc.exp -= nextLevelExp;
       this.levelUp(npc, roomId, broadcast);
-      nextLevelExp = EXP_TABLE[npc.level] || npc.level * 1000;
+      nextLevelExp = EXP_TABLE[npc.level] || npc.level * 100;
     }
   }
 
@@ -525,7 +589,7 @@ export class NpcSystem {
     npc.level++;
 
     // Stat boosts: ~10% increase per level based on base stats
-    const stats = NPC_STATS[npc.type];
+    const stats = NPC_STATS[npc.npcType];
     const scale = 1 + (npc.level - 1) * 0.1;
     npc.maxHp = Math.ceil(stats.hp * scale);
     npc.hp = npc.maxHp;
@@ -542,7 +606,7 @@ export class NpcSystem {
     logger.info({
       intent: "npc_levelup",
       sessionId: npc.sessionId,
-      type: npc.type,
+      type: npc.npcType,
       level: npc.level,
       room: roomId,
     });
@@ -561,14 +625,14 @@ export class NpcSystem {
   }
 
   private tryUseAbility(npc: Npc, now: number, broadcast: BroadcastFn): boolean {
-    const stats = NPC_STATS[npc.type];
+    const stats = NPC_STATS[npc.npcType];
     if (!stats?.abilities.length) return false;
     const target = this.spatial.findEntityBySessionId(npc.targetId);
     if (!target || !target.alive) return false;
 
     // Emergency heal takes priority regardless of the cast-chance roll.
     if (npc.hp / npc.maxHp < 0.3) {
-      const healId = stats.abilities.find((id) => ABILITIES[id]?.effect === "heal");
+      const healId = stats.abilities.find((id: string) => ABILITIES[id]?.effect === "heal");
       if (healId)
         return this.combatSystem.tryCast(npc, healId, npc.tileX, npc.tileY, broadcast, now);
     }
@@ -580,7 +644,7 @@ export class NpcSystem {
 
     // Only pick from abilities that are currently off cooldown; ignore ones still
     // on cooldown rather than wasting the roll and falling through to auto-attack.
-    const available = stats.abilities.filter((id) => {
+    const available = stats.abilities.filter((id: string) => {
       const cd = npc.spellCooldowns.get(id) ?? 0;
       return now >= cd;
     });
@@ -611,7 +675,7 @@ export class NpcSystem {
    */
   private handleSummonCast(summoner: Npc): void {
     const map = this.currentMap;
-    const stats = NPC_STATS[summoner.type];
+    const stats = NPC_STATS[summoner.npcType];
     if (!stats.summonType) return;
 
     // Use dynamic limit if summoner is a Player's companion, otherwise fallback to 3
@@ -647,7 +711,7 @@ export class NpcSystem {
   handleDeath(npc: Npc): void {
     this.buffSystem.removePlayer(npc.sessionId);
     this.respawns.push({
-      type: npc.type,
+      npcType: npc.npcType,
       deadAt: Date.now(),
       spawnX: npc.spawnX,
       spawnY: npc.spawnY,

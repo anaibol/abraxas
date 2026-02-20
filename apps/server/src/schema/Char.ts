@@ -30,22 +30,15 @@ export abstract class Char extends Schema {
 
   // hp is the Colyseus-tracked field; `alive` is kept in sync by the setter.
   // _hp is a plain backing field — NOT decorated — to avoid double-registration.
-  private _hp: number = 0;
+  @type("int32") hp: number = 0;
   @type("int32") maxHp: number = 0;
-
-  @type("int32")
-  get hp(): number {
-    return this._hp;
-  }
-  set hp(value: number) {
-    this._hp = value;
-    this.alive = this._hp > 0;
-  }
 
   @type("boolean") alive: boolean = true;
   @type("boolean") stealthed: boolean = false;
   @type("boolean") stunned: boolean = false;
   @type("boolean") spawnProtection: boolean = false;
+  @type("uint16") overrideBodyId: number = 0;
+  @type("uint16") overrideHeadId: number = 0;
 
   /** Returns the combat stats for this entity (class or NPC stats). */
   abstract getStats(): NpcStats | undefined;

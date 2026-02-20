@@ -29,12 +29,12 @@ export class InteractionHandlers {
     if (!HandlerUtils.assertInRange(client, player, npc, 3, "game.too_far")) return;
 
     ctx.systems.quests
-      .updateProgress(player.dbId, "talk", npc.type, 1)
+      .updateProgress(player.dbId, "talk", npc.npcType, 1)
       .then((updatedQuests) => HandlerUtils.sendQuestUpdates(client, updatedQuests));
 
-    if (npc.type === "merchant") {
+    if (npc.npcType === "merchant") {
       InteractionHandlers.openShop(ctx, client, npc);
-    } else if (npc.type === "banker") {
+    } else if (npc.npcType === "banker") {
       EconomyHandlers.openBank(ctx, client);
     } else {
       InteractionHandlers.openDialogue(ctx, client, player, npc);
@@ -47,7 +47,7 @@ export class InteractionHandlers {
   }
 
   static openDialogue(ctx: RoomContext, client: Client, player: Player, npc: Npc) {
-    const dialogue = ctx.systems.quests.getDialogueOptions(player.dbId, npc.sessionId, npc.type);
+    const dialogue = ctx.systems.quests.getDialogueOptions(player.dbId, npc.sessionId, npc.npcType);
     client.send(ServerMessageType.OpenDialogue, { npcId: npc.sessionId, ...dialogue });
   }
 
@@ -136,7 +136,7 @@ export class InteractionHandlers {
   static isNearNpcType(ctx: RoomContext, player: Player, npcType: string, range = 3): boolean {
     return [...ctx.state.npcs.values()].some(
       (n) =>
-        n.type === npcType &&
+        n.npcType === npcType &&
         n.alive &&
         MathUtils.manhattanDist({ x: player.tileX, y: player.tileY }, { x: n.tileX, y: n.tileY }) <=
           range,

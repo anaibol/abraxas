@@ -41,6 +41,7 @@ export class SpriteManager {
     }
     sprite.setFacing(player.facing);
     sprite.updateHpMana(player.hp, player.mana ?? 0);
+    sprite.updateAppearance(player.overrideBodyId ?? 0, player.overrideHeadId ?? 0);
     sprite.updateEquipment(
       player.equipWeapon,
       player.equipShield,

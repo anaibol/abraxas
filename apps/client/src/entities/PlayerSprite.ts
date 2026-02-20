@@ -60,6 +60,11 @@ export class PlayerSprite {
   private currentDir: Direction = Direction.DOWN;
   private isMoving: boolean = false;
 
+  private defaultBodyId: number;
+  private defaultHeadId: number;
+  private curBodyId: number;
+  private curHeadId: number;
+
   private curWeaponAoId: number = 0;
   private curShieldAoId: number = 0;
   private curHelmetAoId: number = 0;
@@ -142,6 +147,11 @@ export class PlayerSprite {
     }
     this.bodyEntry = bodyEntryResult;
     this.headEntry = this.resolver.getHeadEntry(appearance.headId);
+
+    this.defaultBodyId = appearance.bodyId;
+    this.defaultHeadId = appearance.headId;
+    this.curBodyId = appearance.bodyId;
+    this.curHeadId = appearance.headId;
 
     const px = tileX * TILE_SIZE + TILE_SIZE / 2;
     const py = tileY * TILE_SIZE + TILE_SIZE / 2;
@@ -231,6 +241,30 @@ export class PlayerSprite {
     const offY = this.bodyEntry.offHeadY ?? 0;
     this.headSprite?.setPosition(offX, bodyTopY + offY);
     this.helmetSprite?.setPosition(offX, bodyTopY + offY);
+  }
+
+  updateAppearance(bodyId: number, headId: number) {
+    const bid = bodyId || this.defaultBodyId;
+    const hid = headId || this.defaultHeadId;
+
+    if (bid === this.curBodyId && hid === this.curHeadId) return;
+
+    this.curBodyId = bid;
+    this.curHeadId = hid;
+
+    const bodyEntryResult = this.resolver.getBodyEntry(bid);
+    if (bodyEntryResult) {
+      this.bodyEntry = bodyEntryResult;
+    }
+    this.headEntry = this.resolver.getHeadEntry(hid);
+
+    // Force re-render of current frame
+    if (this.isMoving) {
+      this.playWalkAnims();
+    } else {
+      this.setIdleFrame();
+    }
+    this.updateHeadPosition();
   }
 
   setTilePosition(tileX: number, tileY: number) {

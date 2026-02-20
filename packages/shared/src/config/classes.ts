@@ -151,6 +151,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
       "acid_splash",
       "cleansing_rain",
       "thunderstorm",
+      "bear_form",
     ],
   },
 };

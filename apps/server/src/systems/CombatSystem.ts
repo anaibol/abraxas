@@ -6,12 +6,14 @@ import {
   calcMeleeDamage,
   calcRangedDamage,
   calcSpellDamage,
+  EntityType,
   GCD_MS,
   MathUtils,
   ServerMessageType,
 } from "@abraxas/shared";
 import type { GameState } from "../schema/GameState";
 import { Player } from "../schema/Player";
+import { Npc } from "../schema/Npc";
 import type { Entity, SpatialLookup } from "../utils/SpatialLookup";
 import type { BuffSystem } from "./BuffSystem";
 
@@ -251,8 +253,9 @@ export class CombatSystem {
     }
 
     // Class restriction: players may only use abilities assigned to their class
-    if (caster instanceof Player) {
-      const classStats = caster.getStats();
+    if (caster.type === EntityType.PLAYER) {
+      const pCaster = caster as Player;
+      const classStats = pCaster.getStats();
       if (classStats && !classStats.abilities.includes(abilityId)) {
         console.log("[tryCast] FAIL class restriction. abilities:", classStats.abilities);
         sendToClient?.(ServerMessageType.Notification, {
@@ -261,9 +264,9 @@ export class CombatSystem {
         return false;
       }
 
-      if (ability.requiredLevel && caster.level < ability.requiredLevel) {
+      if (ability.requiredLevel && pCaster.level < ability.requiredLevel) {
         console.log(
-          `[tryCast] FAIL level requirement. level=${caster.level} required=${ability.requiredLevel}`,
+          `[tryCast] FAIL level requirement. level=${pCaster.level} required=${ability.requiredLevel}`,
         );
         sendToClient?.(ServerMessageType.Notification, {
           message: "game.skill_locked",
@@ -293,12 +296,15 @@ export class CombatSystem {
 
     if (ability.rangeTiles > 0) this.faceToward(caster, targetTileX, targetTileY);
 
-    if (caster instanceof Player && caster.mana < ability.manaCost) {
-      console.log(`[tryCast] FAIL mana. has=${caster.mana} needs=${ability.manaCost}`);
-      sendToClient?.(ServerMessageType.Notification, {
-        message: "game.not_enough_mana",
-      });
-      return false;
+    if (caster.type === EntityType.PLAYER) {
+      const pCaster = caster as Player;
+      if (pCaster.mana < ability.manaCost) {
+        console.log(`[tryCast] FAIL mana. has=${pCaster.mana} needs=${ability.manaCost}`);
+        sendToClient?.(ServerMessageType.Notification, {
+          message: "game.not_enough_mana",
+        });
+        return false;
+      }
     }
 
     if (ability.rangeTiles > 0) {
@@ -323,8 +329,8 @@ export class CombatSystem {
       }
     }
 
-    if (caster instanceof Player) {
-      caster.mana -= ability.manaCost;
+    if (caster.type === EntityType.PLAYER) {
+      (caster as Player).mana -= ability.manaCost;
     }
 
     caster.lastGcdMs = now;
@@ -569,13 +575,23 @@ export class CombatSystem {
       }
     } else {
       const target = this.spatial.findEntityAtTile(windup.targetTileX, windup.targetTileY);
-      if (target && target.alive && this.isValidTarget(attacker, target, ability)) {
-        const dist = MathUtils.manhattanDist(attacker.getPosition(), {
-          x: target.tileX,
-          y: target.tileY,
-        });
-        if (dist > ability.rangeTiles) return;
-        this.applyAbilityToTarget(attacker, target, ability, broadcast, onDeath, now);
+      console.log(`[resolveAbility] target found at ${windup.targetTileX},${windup.targetTileY}: ${target?.sessionId} (alive: ${target?.alive})`);
+      if (target && target.alive) {
+        const valid = this.isValidTarget(attacker, target, ability);
+        console.log(`[resolveAbility] isValidTarget: ${valid}`);
+        if (valid) {
+          const dist = MathUtils.manhattanDist(attacker.getPosition(), {
+            x: target.tileX,
+            y: target.tileY,
+          });
+          if (dist > ability.rangeTiles) {
+            console.log(`[resolveAbility] Out of range! dist: ${dist}, range: ${ability.rangeTiles}`);
+            return;
+          }
+          this.applyAbilityToTarget(attacker, target, ability, broadcast, onDeath, now);
+        }
+      } else {
+        console.log(`[resolveAbility] No target found at tile or target dead.`);
       }
     }
   }
@@ -589,12 +605,14 @@ export class CombatSystem {
     if (bOwnerId && bOwnerId === a.sessionId) return true;
     if (aOwnerId && bOwnerId && aOwnerId === bOwnerId) return true;
 
-    if (a instanceof Player && b instanceof Player) {
-      if (a.groupId && a.groupId === b.groupId) return true;
-      if (a.guildId && a.guildId === b.guildId) return true;
+    if (a.type === EntityType.PLAYER && b.type === EntityType.PLAYER) {
+      const pA = a as Player;
+      const pB = b as Player;
+      if (pA.groupId && pA.groupId === pB.groupId) return true;
+      if (pA.guildId && pA.guildId === pB.guildId) return true;
       return false;
     }
-    if (!(a instanceof Player) && !(b instanceof Player)) {
+    if (a.type !== EntityType.PLAYER && b.type !== EntityType.PLAYER) {
       return a.type === b.type;
     }
     return false;
@@ -603,8 +621,10 @@ export class CombatSystem {
   private canAttack(attacker: Entity, target: Entity): boolean {
     if (attacker.sessionId === target.sessionId) return false;
     if (this.sameFaction(attacker, target)) return false;
-    if (attacker instanceof Player && target instanceof Player) {
-      if (!attacker.pvpEnabled || !target.pvpEnabled) return false;
+    if (attacker.type === EntityType.PLAYER && target.type === EntityType.PLAYER) {
+      const pAttacker = attacker as Player;
+      const pTarget = target as Player;
+      if (!pAttacker.pvpEnabled || !pTarget.pvpEnabled) return false;
       if (
         this.isInSafeZone(attacker.tileX, attacker.tileY) ||
         this.isInSafeZone(target.tileX, target.tileY)
@@ -648,7 +668,7 @@ export class CombatSystem {
     /** When true, skips the CastHit broadcast (AoE callers broadcast it once themselves). */
     suppressCastHit = false,
   ) {
-    if ("type" in target && target.type === "merchant") return;
+    if (target.type === EntityType.NPC && (target as Npc).npcType === "merchant") return;
 
     const isSelfCast = attacker.sessionId === target.sessionId;
     if (!isSelfCast && this.buffSystem.isInvulnerable(target.sessionId, now)) return;
@@ -775,6 +795,8 @@ export class CombatSystem {
         ability.buffAmount ?? 10,
         ability.durationMs ?? 5000,
         now,
+        ability.appearanceOverride?.bodyId,
+        ability.appearanceOverride?.headId,
       );
       broadcast(ServerMessageType.BuffApplied, {
         sessionId: target.sessionId,

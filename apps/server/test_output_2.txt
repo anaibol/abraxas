@@ -1,0 +1,222 @@
+bun test v1.3.9 (cf6cdbbb)
+
+test/smoke.test.ts:
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+
+   ___      _                                    ___   _ _____
+  / __\___ | |_   _ ___  ___ _   _ ___   __   __/ _ \ / |___  |
+ / /  / _ \| | | | / __|/ _ \ | | / __|  \ \ / / | | || |  / /
+/ /__| (_) | | |_| \__ \  __/ |_| \__ \   \ V /| |_| || | / /
+\____/\___/|_|\__, |___/\___|\__,_|___/    \_/  \___(_)_|/_/
+              |___/
+
+             \u00B7 Multiplayer Framework for Node.js \u00B7
+
+\u{1f496} Consider becoming a Sponsor on GitHub \u2192 https://github.com/sponsors/endel
+\u{1f31f} Give us a star on GitHub \u2192 https://github.com/colyseus/colyseus
+\u2601\uFE0F  Deploy and scale your project on Colyseus Cloud \u2192 https://cloud.colyseus.io
+
+{"timestamp":"2026-02-20T16:35:21.745Z","level":"info","intent":"server_start","result":"ok","port":3104}
+prisma:query INSERT INTO "public"."Account" ("id","email","password","role","createdAt","updatedAt") VALUES ($1,$2,$3,CAST($4::text AS "public"."AccountRole"),$5,$6) ON CONFLICT ("email") DO UPDATE SET "password" = $7, "updatedAt" = $8 WHERE ("public"."Account"."email" = $9 AND 1=1) RETURNING "public"."Account"."id", "public"."Account"."email", "public"."Account"."password", "public"."Account"."role"::text, "public"."Account"."createdAt", "public"."Account"."updatedAt"
+prisma:query INSERT INTO "public"."Account" ("id","email","password","role","createdAt","updatedAt") VALUES ($1,$2,$3,CAST($4::text AS "public"."AccountRole"),$5,$6) ON CONFLICT ("email") DO UPDATE SET "password" = $7, "updatedAt" = $8 WHERE ("public"."Account"."email" = $9 AND 1=1) RETURNING "public"."Account"."id", "public"."Account"."email", "public"."Account"."password", "public"."Account"."role"::text, "public"."Account"."createdAt", "public"."Account"."updatedAt"
+[smoke.test] Step 0.3: Tokens generated
+prisma:query INSERT INTO "public"."Character" ("id","accountId","name","class","level","exp","gold","createdAt","updatedAt","mapId","x","y","facing","pvpEnabled") VALUES ($1,$2,$3,CAST($4::text AS "public"."CharacterClass"),$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING "public"."Character"."id"
+prisma:query INSERT INTO "public"."CharacterStats" ("id","characterId","str","agi","int","maxHp","maxMp","hp","mp") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING "public"."CharacterStats"."id"
+prisma:query INSERT INTO "public"."Inventory" ("id","characterId","size") VALUES ($1,$2,$3) RETURNING "public"."Inventory"."id"
+prisma:query SELECT "public"."Character"."id", "public"."Character"."accountId", "public"."Character"."name", "public"."Character"."class"::text, "public"."Character"."level", "public"."Character"."exp", "public"."Character"."gold", "public"."Character"."createdAt", "public"."Character"."updatedAt", "public"."Character"."lastLoginAt", "public"."Character"."mapId", "public"."Character"."x", "public"."Character"."y", "public"."Character"."facing", "public"."Character"."pvpEnabled" FROM "public"."Character" WHERE "public"."Character"."id" = $1 LIMIT $2 OFFSET $3
+prisma:query COMMIT
+[smoke.test] Step 0.4: Character A created
+prisma:query INSERT INTO "public"."Character" ("id","accountId","name","class","level","exp","gold","createdAt","updatedAt","mapId","x","y","facing","pvpEnabled") VALUES ($1,$2,$3,CAST($4::text AS "public"."CharacterClass"),$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING "public"."Character"."id"
+prisma:query INSERT INTO "public"."CharacterStats" ("id","characterId","str","agi","int","maxHp","maxMp","hp","mp") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING "public"."CharacterStats"."id"
+prisma:query INSERT INTO "public"."Inventory" ("id","characterId","size") VALUES ($1,$2,$3) RETURNING "public"."Inventory"."id"
+prisma:query SELECT "public"."Character"."id", "public"."Character"."accountId", "public"."Character"."name", "public"."Character"."class"::text, "public"."Character"."level", "public"."Character"."exp", "public"."Character"."gold", "public"."Character"."createdAt", "public"."Character"."updatedAt", "public"."Character"."lastLoginAt", "public"."Character"."mapId", "public"."Character"."x", "public"."Character"."y", "public"."Character"."facing", "public"."Character"."pvpEnabled" FROM "public"."Character" WHERE "public"."Character"."id" = $1 LIMIT $2 OFFSET $3
+prisma:query COMMIT
+[smoke.test] Step 0.5: Character B created
+Step 1: Joining rooms...
+prisma:query SELECT "public"."Account"."id", "public"."Account"."email", "public"."Account"."password", "public"."Account"."role"::text, "public"."Account"."createdAt", "public"."Account"."updatedAt" FROM "public"."Account" WHERE ("public"."Account"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+{"timestamp":"2026-02-20T16:35:24.416Z","level":"info","room":"C0s3uR8OZ","message":"onCreate completed successfully"}
+prisma:query SELECT "public"."Character"."id", "public"."Character"."accountId", "public"."Character"."name", "public"."Character"."class"::text, "public"."Character"."level", "public"."Character"."exp", "public"."Character"."gold", "public"."Character"."createdAt", "public"."Character"."updatedAt", "public"."Character"."lastLoginAt", "public"."Character"."mapId", "public"."Character"."x", "public"."Character"."y", "public"."Character"."facing", "public"."Character"."pvpEnabled" FROM "public"."Character" WHERE ("public"."Character"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Inventory"."id", "public"."Inventory"."characterId", "public"."Inventory"."size" FROM "public"."Inventory" WHERE "public"."Inventory"."characterId" = $1 OFFSET $2
+prisma:query SELECT "public"."InventorySlot"."id", "public"."InventorySlot"."inventoryId", "public"."InventorySlot"."idx", "public"."InventorySlot"."itemId", "public"."InventorySlot"."qty" FROM "public"."InventorySlot" WHERE "public"."InventorySlot"."inventoryId" IN ($1) OFFSET $2
+prisma:query SELECT "public"."ItemInstance"."id", "public"."ItemInstance"."itemDefId", "public"."ItemInstance"."boundToCharacterId" FROM "public"."ItemInstance" WHERE "public"."ItemInstance"."id" IN (NULL) OFFSET $1
+prisma:query SELECT "public"."Equipment"."id", "public"."Equipment"."characterId", "public"."Equipment"."slot"::text, "public"."Equipment"."itemId" FROM "public"."Equipment" WHERE "public"."Equipment"."characterId" = $1 OFFSET $2
+prisma:query SELECT "public"."CharacterStats"."id", "public"."CharacterStats"."characterId", "public"."CharacterStats"."str", "public"."CharacterStats"."agi", "public"."CharacterStats"."int", "public"."CharacterStats"."maxHp", "public"."CharacterStats"."maxMp", "public"."CharacterStats"."hp", "public"."CharacterStats"."mp" FROM "public"."CharacterStats" WHERE "public"."CharacterStats"."characterId" = $1 OFFSET $2
+prisma:query SELECT "public"."Companion"."id", "public"."Companion"."characterId", "public"."Companion"."type", "public"."Companion"."level", "public"."Companion"."exp", "public"."Companion"."hp" FROM "public"."Companion" WHERE "public"."Companion"."characterId" = $1 OFFSET $2
+prisma:query SELECT "public"."ItemDef"."id", "public"."ItemDef"."code" FROM "public"."ItemDef" WHERE "public"."ItemDef"."id" IN (NULL) OFFSET $1
+prisma:query SELECT "public"."ItemInstance"."id", "public"."ItemInstance"."itemDefId", "public"."ItemInstance"."boundToCharacterId" FROM "public"."ItemInstance" WHERE "public"."ItemInstance"."id" IN (NULL) OFFSET $1
+prisma:query SELECT "public"."ItemDef"."id", "public"."ItemDef"."code" FROM "public"."ItemDef" WHERE "public"."ItemDef"."id" IN (NULL) OFFSET $1
+[DEBUG_SPAWN] mapName: arena.test, candidate: 2,4, spawns length: 2, map width: 10
+prisma:query SELECT "public"."RequesterFriend"."id", "public"."RequesterFriend"."requesterId", "public"."RequesterFriend"."recipientId", "public"."RequesterFriend"."status", "public"."RequesterFriend"."createdAt" FROM "public"."RequesterFriend" WHERE ("public"."RequesterFriend"."requesterId" = $1 AND "public"."RequesterFriend"."status" = $2) OFFSET $3
+prisma:query SELECT "public"."RecipientFriend"."id", "public"."RecipientFriend"."recipientId", "public"."RecipientFriend"."requesterId", "public"."RecipientFriend"."status", "public"."RecipientFriend"."createdAt" FROM "public"."RecipientFriend" WHERE ("public"."RecipientFriend"."recipientId" = $1 AND "public"."RecipientFriend"."status" = $2) OFFSET $3
+prisma:query UPDATE "public"."Character" SET "lastLoginAt" = $1, "updatedAt" = $2 WHERE ("public"."Character"."id" = $3 AND 1=1) RETURNING "public"."Character"."id", "public"."Character"."accountId", "public"."Character"."name", "public"."Character"."class"::text, "public"."Character"."level", "public"."Character"."exp", "public"."Character"."gold", "public"."Character"."createdAt", "public"."Character"."updatedAt", "public"."Character"."lastLoginAt", "public"."Character"."mapId", "public"."Character"."x", "public"."Character"."y", "public"."Character"."facing", "public"."Character"."pvpEnabled"
+prisma:query SELECT "public"."RequesterFriend"."id", "public"."RequesterFriend"."requesterId", "public"."RequesterFriend"."recipientId", "public"."RequesterFriend"."status", "public"."RequesterFriend"."createdAt" FROM "public"."RequesterFriend" WHERE (("public"."RequesterFriend"."requesterId" = $1 AND "public"."RequesterFriend"."status" = $2) OR ("public"."RequesterFriend"."recipientId" = $3 AND "public"."RequesterFriend"."status" = $4)) OFFSET $5
+prisma:query SELECT "public"."RequesterFriend"."id", "public"."RequesterFriend"."requesterId", "public"."RequesterFriend"."recipientId", "public"."RequesterFriend"."status", "public"."RequesterFriend"."createdAt" FROM "public"."RequesterFriend" WHERE ("public"."RequesterFriend"."recipientId" = $1 AND "public"."RequesterFriend"."status" = $2) OFFSET $3
+prisma:query SELECT "public"."Account"."id", "public"."Account"."email", "public"."Account"."password", "public"."Account"."role"::text, "public"."Account"."createdAt", "public"."Account"."updatedAt" FROM "public"."Account" WHERE "public"."Account"."id" IN (NULL) OFFSET $1
+prisma:query SELECT "public"."Character"."id", "public"."Character"."accountId", "public"."Character"."name", "public"."Character"."class"::text, "public"."Character"."level", "public"."Character"."exp", "public"."Character"."gold", "public"."Character"."createdAt", "public"."Character"."updatedAt", "public"."Character"."lastLoginAt", "public"."Character"."mapId", "public"."Character"."x", "public"."Character"."y", "public"."Character"."facing", "public"."Character"."pvpEnabled" FROM "public"."Character" WHERE "public"."Character"."accountId" IN (NULL) ORDER BY "public"."Character"."id" ASC OFFSET $1
+prisma:query SELECT "public"."CharacterQuest"."id", "public"."CharacterQuest"."characterId", "public"."CharacterQuest"."questId", "public"."CharacterQuest"."status"::text, "public"."CharacterQuest"."progressJson", "public"."CharacterQuest"."startedAt", "public"."CharacterQuest"."completedAt" FROM "public"."CharacterQuest" WHERE "public"."CharacterQuest"."characterId" = $1 OFFSET $2
+prisma:query SELECT "public"."Quest"."id", "public"."Quest"."code" FROM "public"."Quest" WHERE "public"."Quest"."id" IN (NULL) OFFSET $1
+{"timestamp":"2026-02-20T16:35:25.874Z","level":"info","room":"C0s3uR8OZ","sessionId":"TfinkGNBn","message":"Player Warrior_1771605322248 joined at 2,4"}
+@colyseus/sdk: onMessage() not registered for type 'friend_update'.
+@colyseus/sdk: onMessage() not registered for type 'quest_list'.
+@colyseus/sdk: onMessage() not registered for type 'welcome'.
+prisma:query SELECT "public"."Account"."id", "public"."Account"."email", "public"."Account"."password", "public"."Account"."role"::text, "public"."Account"."createdAt", "public"."Account"."updatedAt" FROM "public"."Account" WHERE ("public"."Account"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Character"."id", "public"."Character"."accountId", "public"."Character"."name", "public"."Character"."class"::text, "public"."Character"."level", "public"."Character"."exp", "public"."Character"."gold", "public"."Character"."createdAt", "public"."Character"."updatedAt", "public"."Character"."lastLoginAt", "public"."Character"."mapId", "public"."Character"."x", "public"."Character"."y", "public"."Character"."facing", "public"."Character"."pvpEnabled" FROM "public"."Character" WHERE ("public"."Character"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Equipment"."id", "public"."Equipment"."characterId", "public"."Equipment"."slot"::text, "public"."Equipment"."itemId" FROM "public"."Equipment" WHERE "public"."Equipment"."characterId" = $1 OFFSET $2
+prisma:query SELECT "public"."Companion"."id", "public"."Companion"."characterId", "public"."Companion"."type", "public"."Companion"."level", "public"."Companion"."exp", "public"."Companion"."hp" FROM "public"."Companion" WHERE "public"."Companion"."characterId" = $1 OFFSET $2
+prisma:query SELECT "public"."Inventory"."id", "public"."Inventory"."characterId", "public"."Inventory"."size" FROM "public"."Inventory" WHERE "public"."Inventory"."characterId" = $1 OFFSET $2
+prisma:query SELECT "public"."CharacterStats"."id", "public"."CharacterStats"."characterId", "public"."CharacterStats"."str", "public"."CharacterStats"."agi", "public"."CharacterStats"."int", "public"."CharacterStats"."maxHp", "public"."CharacterStats"."maxMp", "public"."CharacterStats"."hp", "public"."CharacterStats"."mp" FROM "public"."CharacterStats" WHERE "public"."CharacterStats"."characterId" = $1 OFFSET $2
+prisma:query SELECT "public"."ItemInstance"."id", "public"."ItemInstance"."itemDefId", "public"."ItemInstance"."boundToCharacterId" FROM "public"."ItemInstance" WHERE "public"."ItemInstance"."id" IN (NULL) OFFSET $1
+prisma:query SELECT "public"."InventorySlot"."id", "public"."InventorySlot"."inventoryId", "public"."InventorySlot"."idx", "public"."InventorySlot"."itemId", "public"."InventorySlot"."qty" FROM "public"."InventorySlot" WHERE "public"."InventorySlot"."inventoryId" IN ($1) OFFSET $2
+prisma:query SELECT "public"."ItemDef"."id", "public"."ItemDef"."code" FROM "public"."ItemDef" WHERE "public"."ItemDef"."id" IN (NULL) OFFSET $1
+prisma:query SELECT "public"."ItemInstance"."id", "public"."ItemInstance"."itemDefId", "public"."ItemInstance"."boundToCharacterId" FROM "public"."ItemInstance" WHERE "public"."ItemInstance"."id" IN (NULL) OFFSET $1
+prisma:query SELECT "public"."ItemDef"."id", "public"."ItemDef"."code" FROM "public"."ItemDef" WHERE "public"."ItemDef"."id" IN (NULL) OFFSET $1
+[DEBUG_SPAWN] mapName: arena.test, candidate: 4,4, spawns length: 2, map width: 10
+prisma:query UPDATE "public"."Character" SET "lastLoginAt" = $1, "updatedAt" = $2 WHERE ("public"."Character"."id" = $3 AND 1=1) RETURNING "public"."Character"."id", "public"."Character"."accountId", "public"."Character"."name", "public"."Character"."class"::text, "public"."Character"."level", "public"."Character"."exp", "public"."Character"."gold", "public"."Character"."createdAt", "public"."Character"."updatedAt", "public"."Character"."lastLoginAt", "public"."Character"."mapId", "public"."Character"."x", "public"."Character"."y", "public"."Character"."facing", "public"."Character"."pvpEnabled"
+prisma:query SELECT "public"."RequesterFriend"."id", "public"."RequesterFriend"."requesterId", "public"."RequesterFriend"."recipientId", "public"."RequesterFriend"."status", "public"."RequesterFriend"."createdAt" FROM "public"."RequesterFriend" WHERE ("public"."RequesterFriend"."recipientId" = $1 AND "public"."RequesterFriend"."status" = $2) OFFSET $3
+prisma:query SELECT "public"."RequesterFriend"."id", "public"."RequesterFriend"."requesterId", "public"."RequesterFriend"."recipientId", "public"."RequesterFriend"."status", "public"."RequesterFriend"."createdAt" FROM "public"."RequesterFriend" WHERE (("public"."RequesterFriend"."requesterId" = $1 AND "public"."RequesterFriend"."status" = $2) OR ("public"."RequesterFriend"."recipientId" = $3 AND "public"."RequesterFriend"."status" = $4)) OFFSET $5
+prisma:query SELECT "public"."RecipientFriend"."id", "public"."RecipientFriend"."recipientId", "public"."RecipientFriend"."requesterId", "public"."RecipientFriend"."status", "public"."RecipientFriend"."createdAt" FROM "public"."RecipientFriend" WHERE ("public"."RecipientFriend"."recipientId" = $1 AND "public"."RecipientFriend"."status" = $2) OFFSET $3
+prisma:query SELECT "public"."RequesterFriend"."id", "public"."RequesterFriend"."requesterId", "public"."RequesterFriend"."recipientId", "public"."RequesterFriend"."status", "public"."RequesterFriend"."createdAt" FROM "public"."RequesterFriend" WHERE ("public"."RequesterFriend"."requesterId" = $1 AND "public"."RequesterFriend"."status" = $2) OFFSET $3
+prisma:query SELECT "public"."Account"."id", "public"."Account"."email", "public"."Account"."password", "public"."Account"."role"::text, "public"."Account"."createdAt", "public"."Account"."updatedAt" FROM "public"."Account" WHERE "public"."Account"."id" IN (NULL) OFFSET $1
+prisma:query SELECT "public"."Character"."id", "public"."Character"."accountId", "public"."Character"."name", "public"."Character"."class"::text, "public"."Character"."level", "public"."Character"."exp", "public"."Character"."gold", "public"."Character"."createdAt", "public"."Character"."updatedAt", "public"."Character"."lastLoginAt", "public"."Character"."mapId", "public"."Character"."x", "public"."Character"."y", "public"."Character"."facing", "public"."Character"."pvpEnabled" FROM "public"."Character" WHERE "public"."Character"."accountId" IN (NULL) ORDER BY "public"."Character"."id" ASC OFFSET $1
+prisma:query SELECT "public"."CharacterQuest"."id", "public"."CharacterQuest"."characterId", "public"."CharacterQuest"."questId", "public"."CharacterQuest"."status"::text, "public"."CharacterQuest"."progressJson", "public"."CharacterQuest"."startedAt", "public"."CharacterQuest"."completedAt" FROM "public"."CharacterQuest" WHERE "public"."CharacterQuest"."characterId" = $1 OFFSET $2
+prisma:query SELECT "public"."Quest"."id", "public"."Quest"."code" FROM "public"."Quest" WHERE "public"."Quest"."id" IN (NULL) OFFSET $1
+{"timestamp":"2026-02-20T16:35:26.603Z","level":"info","room":"C0s3uR8OZ","sessionId":"vpKMtXgVQ","message":"Player Wizard_1771605322248 joined at 4,4"}
+@colyseus/sdk: onMessage() not registered for type 'friend_update'.
+@colyseus/sdk: onMessage() not registered for type 'quest_list'.
+@colyseus/sdk: onMessage() not registered for type 'welcome'.
+Step 2: Checking spawn positions...
+[DEBUG_PLAYER] pA: {
+  "type": "player",
+  "sessionId": "TfinkGNBn",
+  "name": "Warrior_1771605322248",
+  "tileX": 2,
+  "tileY": 4,
+  "facing": 1,
+  "str": 58,
+  "agi": 12,
+  "intStat": 19,
+  "armor": 30,
+  "maxHp": 315,
+  "hp": 315,
+  "alive": true,
+  "stealthed": false,
+  "stunned": false,
+  "spawnProtection": false,
+  "groupId": "",
+  "guildId": "",
+  "classType": "WARRIOR",
+  "meditating": false,
+  "pvpEnabled": true,
+  "speedOverride": 0,
+  "mana": 90,
+  "maxMana": 90,
+  "gold": 100,
+  "level": 1,
+  "xp": 0,
+  "maxXp": 100,
+  "inventory": [
+    {
+      "itemId": "great_health_potion",
+      "quantity": 3,
+      "slotIndex": 0
+    },
+    {
+      "itemId": "great_mana_potion",
+      "quantity": 3,
+      "slotIndex": 1
+    }
+  ],
+  "equipWeapon": "flame_blade",
+  "equipArmor": "plate_armor",
+  "equipShield": "iron_shield",
+  "equipHelmet": "crown_of_thorns",
+  "equipRing": "ring_of_strength",
+  "equipMount": ""
+}
+[DEBUG_PROPS] pA.tileX=2, pA.tileY=4, pA.maxXp=100, pA.xp=0
+Step 3: Moving Player A...
+Step 4: Moving into blocked tile...
+Step 5: Facing B...
+Step 6: Melee attack...
+[tryAttack] START attacker=TfinkGNBn target=4,4
+[tryAttack] SUCCESS broadcasting AttackStart for TfinkGNBn
+@colyseus/sdk: onMessage() not registered for type 'attack_start'.
+@colyseus/sdk: onMessage() not registered for type 'attack_start'.
+[resolveAutoAttack] HIT! damage=84. hpBefore=224
+@colyseus/sdk: onMessage() not registered for type 'attack_hit'.
+@colyseus/sdk: onMessage() not registered for type 'damage'.
+@colyseus/sdk: onMessage() not registered for type 'damage'.
+Step 6.5: Safe Zone protection check...
+[tryAttack] START attacker=vpKMtXgVQ target=1,4
+[tryAttack] SUCCESS broadcasting AttackStart for vpKMtXgVQ
+@colyseus/sdk: onMessage() not registered for type 'attack_start'.
+@colyseus/sdk: onMessage() not registered for type 'attack_start'.
+[resolveAutoAttack] Miss! Target not found or dead.
+@colyseus/sdk: onMessage() not registered for type 'attack_hit'.
+Step 6.8: Toggle PvP protection check...
+Step 7: Spell cast...
+[tryCast] START caster=vpKMtXgVQ ability=fireball target=2,3
+[tryCast] SUCCESS - broadcasting CastStart
+@colyseus/sdk: onMessage() not registered for type 'cast_start'.
+@colyseus/sdk: onMessage() not registered for type 'cast_start'.
+(fail) Arena multiplayer smoke test > full game flow: join, move, blocked move, melee, spell, disconnect [20000.05ms]
+  ^ this test timed out after 20000ms.
+prisma:query UPDATE "public"."Character" SET "x" = $1, "y" = $2, "mapId" = $3, "gold" = $4, "level" = $5, "exp" = $6, "facing" = $7, "updatedAt" = $8 WHERE ("public"."Character"."id" = $9 AND 1=1) RETURNING "public"."Character"."id", "public"."Character"."accountId", "public"."Character"."name", "public"."Character"."class"::text, "public"."Character"."level", "public"."Character"."exp", "public"."Character"."gold", "public"."Character"."createdAt", "public"."Character"."updatedAt", "public"."Character"."lastLoginAt", "public"."Character"."mapId", "public"."Character"."x", "public"."Character"."y", "public"."Character"."facing", "public"."Character"."pvpEnabled"
+prisma:query UPDATE "public"."Character" SET "x" = $1, "y" = $2, "mapId" = $3, "gold" = $4, "level" = $5, "exp" = $6, "facing" = $7, "updatedAt" = $8 WHERE ("public"."Character"."id" = $9 AND 1=1) RETURNING "public"."Character"."id", "public"."Character"."accountId", "public"."Character"."name", "public"."Character"."class"::text, "public"."Character"."level", "public"."Character"."exp", "public"."Character"."gold", "public"."Character"."createdAt", "public"."Character"."updatedAt", "public"."Character"."lastLoginAt", "public"."Character"."mapId", "public"."Character"."x", "public"."Character"."y", "public"."Character"."facing", "public"."Character"."pvpEnabled"
+prisma:query SELECT "public"."CharacterStats"."id", "public"."CharacterStats"."characterId" FROM "public"."CharacterStats" WHERE (1=1 AND "public"."CharacterStats"."characterId" IN ($1)) OFFSET $2
+prisma:query SELECT "public"."CharacterStats"."id", "public"."CharacterStats"."characterId" FROM "public"."CharacterStats" WHERE (1=1 AND "public"."CharacterStats"."characterId" IN ($1)) OFFSET $2
+prisma:query UPDATE "public"."CharacterStats" SET "hp" = $1, "maxHp" = $2, "mp" = $3, "maxMp" = $4, "str" = $5, "agi" = $6, "int" = $7 WHERE ("public"."CharacterStats"."id" IN ($8) AND 1=1) RETURNING "public"."CharacterStats"."id"
+prisma:query UPDATE "public"."CharacterStats" SET "hp" = $1, "maxHp" = $2, "mp" = $3, "maxMp" = $4, "str" = $5, "agi" = $6, "int" = $7 WHERE ("public"."CharacterStats"."id" IN ($8) AND 1=1) RETURNING "public"."CharacterStats"."id"
+prisma:query SELECT "public"."Character"."id", "public"."Character"."accountId", "public"."Character"."name", "public"."Character"."class"::text, "public"."Character"."level", "public"."Character"."exp", "public"."Character"."gold", "public"."Character"."createdAt", "public"."Character"."updatedAt", "public"."Character"."lastLoginAt", "public"."Character"."mapId", "public"."Character"."x", "public"."Character"."y", "public"."Character"."facing", "public"."Character"."pvpEnabled" FROM "public"."Character" WHERE "public"."Character"."id" = $1 LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Character"."id", "public"."Character"."accountId", "public"."Character"."name", "public"."Character"."class"::text, "public"."Character"."level", "public"."Character"."exp", "public"."Character"."gold", "public"."Character"."createdAt", "public"."Character"."updatedAt", "public"."Character"."lastLoginAt", "public"."Character"."mapId", "public"."Character"."x", "public"."Character"."y", "public"."Character"."facing", "public"."Character"."pvpEnabled" FROM "public"."Character" WHERE "public"."Character"."id" = $1 LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Inventory"."id", "public"."Inventory"."characterId", "public"."Inventory"."size" FROM "public"."Inventory" WHERE "public"."Inventory"."characterId" = $1 OFFSET $2
+prisma:query SELECT "public"."Inventory"."id", "public"."Inventory"."characterId", "public"."Inventory"."size" FROM "public"."Inventory" WHERE "public"."Inventory"."characterId" = $1 OFFSET $2
+prisma:query SELECT "public"."CharacterStats"."id", "public"."CharacterStats"."characterId", "public"."CharacterStats"."str", "public"."CharacterStats"."agi", "public"."CharacterStats"."int", "public"."CharacterStats"."maxHp", "public"."CharacterStats"."maxMp", "public"."CharacterStats"."hp", "public"."CharacterStats"."mp" FROM "public"."CharacterStats" WHERE "public"."CharacterStats"."characterId" = $1 OFFSET $2
+prisma:query SELECT "public"."CharacterStats"."id", "public"."CharacterStats"."characterId", "public"."CharacterStats"."str", "public"."CharacterStats"."agi", "public"."CharacterStats"."int", "public"."CharacterStats"."maxHp", "public"."CharacterStats"."maxMp", "public"."CharacterStats"."hp", "public"."CharacterStats"."mp" FROM "public"."CharacterStats" WHERE "public"."CharacterStats"."characterId" = $1 OFFSET $2
+prisma:query SELECT "public"."Equipment"."id", "public"."Equipment"."characterId", "public"."Equipment"."slot"::text, "public"."Equipment"."itemId" FROM "public"."Equipment" WHERE "public"."Equipment"."characterId" = $1 OFFSET $2
+prisma:query SELECT "public"."Equipment"."id", "public"."Equipment"."characterId", "public"."Equipment"."slot"::text, "public"."Equipment"."itemId" FROM "public"."Equipment" WHERE "public"."Equipment"."characterId" = $1 OFFSET $2
+prisma:query SELECT "public"."Companion"."id", "public"."Companion"."characterId", "public"."Companion"."type", "public"."Companion"."level", "public"."Companion"."exp", "public"."Companion"."hp" FROM "public"."Companion" WHERE "public"."Companion"."characterId" = $1 OFFSET $2
+prisma:query SELECT "public"."Companion"."id", "public"."Companion"."characterId", "public"."Companion"."type", "public"."Companion"."level", "public"."Companion"."exp", "public"."Companion"."hp" FROM "public"."Companion" WHERE "public"."Companion"."characterId" = $1 OFFSET $2
+prisma:query SELECT "public"."InventorySlot"."id", "public"."InventorySlot"."inventoryId", "public"."InventorySlot"."idx", "public"."InventorySlot"."itemId", "public"."InventorySlot"."qty" FROM "public"."InventorySlot" WHERE "public"."InventorySlot"."inventoryId" IN ($1) OFFSET $2
+prisma:query SELECT "public"."InventorySlot"."id", "public"."InventorySlot"."inventoryId", "public"."InventorySlot"."idx", "public"."InventorySlot"."itemId", "public"."InventorySlot"."qty" FROM "public"."InventorySlot" WHERE "public"."InventorySlot"."inventoryId" IN ($1) OFFSET $2
+prisma:query SELECT "public"."ItemInstance"."id", "public"."ItemInstance"."itemDefId", "public"."ItemInstance"."boundToCharacterId" FROM "public"."ItemInstance" WHERE "public"."ItemInstance"."id" IN (NULL) OFFSET $1
+prisma:query SELECT "public"."ItemInstance"."id", "public"."ItemInstance"."itemDefId", "public"."ItemInstance"."boundToCharacterId" FROM "public"."ItemInstance" WHERE "public"."ItemInstance"."id" IN (NULL) OFFSET $1
+prisma:query SELECT "public"."ItemInstance"."id", "public"."ItemInstance"."itemDefId", "public"."ItemInstance"."boundToCharacterId" FROM "public"."ItemInstance" WHERE "public"."ItemInstance"."id" IN (NULL) OFFSET $1
+prisma:query SELECT "public"."ItemInstance"."id", "public"."ItemInstance"."itemDefId", "public"."ItemInstance"."boundToCharacterId" FROM "public"."ItemInstance" WHERE "public"."ItemInstance"."id" IN (NULL) OFFSET $1
+prisma:query SELECT "public"."ItemDef"."id", "public"."ItemDef"."code" FROM "public"."ItemDef" WHERE "public"."ItemDef"."id" IN (NULL) OFFSET $1
+prisma:query SELECT "public"."ItemDef"."id", "public"."ItemDef"."code" FROM "public"."ItemDef" WHERE "public"."ItemDef"."id" IN (NULL) OFFSET $1
+prisma:query SELECT "public"."ItemDef"."id", "public"."ItemDef"."code" FROM "public"."ItemDef" WHERE "public"."ItemDef"."id" IN (NULL) OFFSET $1
+prisma:query SELECT "public"."ItemDef"."id", "public"."ItemDef"."code" FROM "public"."ItemDef" WHERE "public"."ItemDef"."id" IN (NULL) OFFSET $1
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query SELECT "public"."InventorySlot"."id", "public"."InventorySlot"."inventoryId", "public"."InventorySlot"."idx", "public"."InventorySlot"."itemId", "public"."InventorySlot"."qty" FROM "public"."InventorySlot" WHERE "public"."InventorySlot"."inventoryId" = $1 OFFSET $2
+prisma:query SELECT "public"."InventorySlot"."id", "public"."InventorySlot"."inventoryId", "public"."InventorySlot"."idx", "public"."InventorySlot"."itemId", "public"."InventorySlot"."qty" FROM "public"."InventorySlot" WHERE "public"."InventorySlot"."inventoryId" = $1 OFFSET $2
+prisma:query SELECT "public"."ItemInstance"."id", "public"."ItemInstance"."itemDefId", "public"."ItemInstance"."boundToCharacterId" FROM "public"."ItemInstance" WHERE "public"."ItemInstance"."id" IN (NULL) OFFSET $1
+prisma:query SELECT "public"."ItemInstance"."id", "public"."ItemInstance"."itemDefId", "public"."ItemInstance"."boundToCharacterId" FROM "public"."ItemInstance" WHERE "public"."ItemInstance"."id" IN (NULL) OFFSET $1
+prisma:query SELECT "public"."ItemDef"."id", "public"."ItemDef"."code" FROM "public"."ItemDef" WHERE "public"."ItemDef"."id" IN (NULL) OFFSET $1
+prisma:query SELECT "public"."ItemDef"."id", "public"."ItemDef"."code" FROM "public"."ItemDef" WHERE "public"."ItemDef"."id" IN (NULL) OFFSET $1
+prisma:query SELECT "public"."ItemDef"."id", "public"."ItemDef"."code" FROM "public"."ItemDef" WHERE ("public"."ItemDef"."code" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."ItemDef"."id", "public"."ItemDef"."code" FROM "public"."ItemDef" WHERE ("public"."ItemDef"."code" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."ItemDef"."id", "public"."ItemDef"."code" FROM "public"."ItemDef" WHERE ("public"."ItemDef"."code" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."ItemDef"."id", "public"."ItemDef"."code" FROM "public"."ItemDef" WHERE ("public"."ItemDef"."code" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."ItemInstance"."id", "public"."ItemInstance"."itemDefId", "public"."ItemInstance"."boundToCharacterId" FROM "public"."ItemInstance" LEFT JOIN "public"."ItemDef" AS "j0" ON ("j0"."id") = ("public"."ItemInstance"."itemDefId") WHERE ("public"."ItemInstance"."boundToCharacterId" = $1 AND ("j0"."code" = $2 AND ("j0"."id" IS NOT NULL))) LIMIT $3 OFFSET $4
+prisma:query SELECT "public"."ItemInstance"."id", "public"."ItemInstance"."itemDefId", "public"."ItemInstance"."boundToCharacterId" FROM "public"."ItemInstance" LEFT JOIN "public"."ItemDef" AS "j0" ON ("j0"."id") = ("public"."ItemInstance"."itemDefId") WHERE ("public"."ItemInstance"."boundToCharacterId" = $1 AND ("j0"."code" = $2 AND ("j0"."id" IS NOT NULL))) LIMIT $3 OFFSET $4
+prisma:query SELECT "public"."ItemInstance"."id", "public"."ItemInstance"."itemDefId", "public"."ItemInstance"."boundToCharacterId" FROM "public"."ItemInstance" LEFT JOIN "public"."ItemDef" AS "j0" ON ("j0"."id") = ("public"."ItemInstance"."itemDefId") WHERE ("public"."ItemInstance"."boundToCharacterId" = $1 AND ("j0"."code" = $2 AND ("j0"."id" IS NOT NULL))) LIMIT $3 OFFSET $4
+prisma:query DELETE FROM "public"."Equipment" WHERE ("public"."Equipment"."characterId" = $1 AND "public"."Equipment"."slot" = CAST($2::text AS "public"."EquipSlot"))
+prisma:query SELECT "public"."ItemInstance"."id", "public"."ItemInstance"."itemDefId", "public"."ItemInstance"."boundToCharacterId" FROM "public"."ItemInstance" LEFT JOIN "public"."ItemDef" AS "j0" ON ("j0"."id") = ("public"."ItemInstance"."itemDefId") WHERE ("public"."ItemInstance"."boundToCharacterId" = $1 AND ("j0"."code" = $2 AND ("j0"."id" IS NOT NULL))) LIMIT $3 OFFSET $4
+prisma:query SELECT "public"."ItemInstance"."id", "public"."ItemInstance"."itemDefId", "public"."ItemInstance"."boundToCharacterId" FROM "public"."ItemInstance" LEFT JOIN "public"."ItemDef" AS "j0" ON ("j0"."id") = ("public"."ItemInstance"."itemDefId") WHERE ("public"."ItemInstance"."boundToCharacterId" = $1 AND ("j0"."code" = $2 AND ("j0"."id" IS NOT NULL))) LIMIT $3 OFFSET $4
+prisma:query SELECT "public"."ItemInstance"."id", "public"."ItemInstance"."itemDefId", "public"."ItemInstance"."boundToCharacterId" FROM "public"."ItemInstance" LEFT JOIN "public"."ItemDef" AS "j0" ON ("j0"."id") = ("public"."ItemInstance"."itemDefId") WHERE ("public"."ItemInstance"."boundToCharacterId" = $1 AND ("j0"."code" = $2 AND ("j0"."id" IS NOT NULL))) LIMIT $3 OFFSET $4
+prisma:query SELECT "public"."ItemInstance"."id", "public"."ItemInstance"."itemDefId", "public"."ItemInstance"."boundToCharacterId" FROM "public"."ItemInstance" LEFT JOIN "public"."ItemDef" AS "j0" ON ("j0"."id") = ("public"."ItemInstance"."itemDefId") WHERE ("public"."ItemInstance"."boundToCharacterId" = $1 AND ("j0"."code" = $2 AND ("j0"."id" IS NOT NULL))) LIMIT $3 OFFSET $4
+prisma:query SELECT "public"."ItemInstance"."id", "public"."ItemInstance"."itemDefId", "public"."ItemInstance"."boundToCharacterId" FROM "public"."ItemInstance" LEFT JOIN "public"."ItemDef" AS "j0" ON ("j0"."id") = ("public"."ItemInstance"."itemDefId") WHERE ("public"."ItemInstance"."boundToCharacterId" = $1 AND ("j0"."code" = $2 AND ("j0"."id" IS NOT NULL))) LIMIT $3 OFFSET $4
+prisma:query SELECT "public"."ItemInstance"."id", "public"."ItemInstance"."itemDefId", "public"."ItemInstance"."boundToCharacterId" FROM "public"."ItemInstance" LEFT JOIN "public"."ItemDef" AS "j0" ON ("j0"."id") = ("public"."ItemInstance"."itemDefId") WHERE ("public"."ItemInstance"."boundToCharacterId" = $1 AND ("j0"."code" = $2 AND ("j0"."id" IS NOT NULL))) LIMIT $3 OFFSET $4
+prisma:query DELETE FROM "public"."Equipment" WHERE ("public"."Equipment"."characterId" = $1 AND "public"."Equipment"."slot" = CAST($2::text AS "public"."EquipSlot"))
+prisma:query DELETE FROM "public"."Equipment" WHERE ("public"."Equipment"."characterId" = $1 AND "public"."Equipment"."slot" = CAST($2::text AS "public"."EquipSlot"))
+prisma:query DELETE FROM "public"."Companion" WHERE "public"."Companion"."characterId" = $1
+prisma:query DELETE FROM "public"."Companion" WHERE "public"."Companion"."characterId" = $1
+prisma:query COMMIT
+prisma:query COMMIT
+
+ 0 pass
+ 1 fail
+ 25 expect() calls
+Ran 1 test across 1 file. [22.72s]

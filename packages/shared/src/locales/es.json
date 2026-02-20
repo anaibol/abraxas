@@ -110,7 +110,14 @@
     "buff_poisoned": "ENVENENADO",
     "buff_buffed": "POTENCIADO",
     "trade_cancelled_by_player": "El jugador canceló el intercambio",
-    "pong": "¡Pong! {{rtt}}ms"
+    "pong": "¡Pong! {{rtt}}ms",
+    "tame_invalid_target": "Objetivo de rastreo inválido",
+    "tame_not_tameable": "¡Esa criatura no puede ser domada!",
+    "tame_too_far": "¡Estás demasiado lejos para domar eso!",
+    "tame_no_lasso": "¡Necesitas un Lazo para domar animales!",
+    "tame_success": "¡Has domado con éxito al {{item}}!",
+    "tame_success_dropped": "¡Domaste al {{item}} pero tus bolsas están llenas. ¡Se ha caído al suelo!",
+    "tame_failed": "¡El animal escapó! Tu lazo ha sido consumido."
   },
   "social": {
     "already_in_group": "El jugador ya está en un grupo",
@@ -221,7 +228,15 @@
     "spider": "Araña",
     "ghost": "Fantasma",
     "lich": "Liche",
-    "banker": "Banquero Real"
+    "banker": "Banquero Real",
+    "zombie": "Zombi",
+    "troll": "Trol",
+    "bat": "Murciélago Vampiro",
+    "dark_knight": "Caballero Oscuro",
+    "horse": "Caballo",
+    "skeleton_archer": "Arquero Esqueleto",
+    "vampire": "Vampiro",
+    "gargoyle": "Gárgola"
   },
   "items": {
     "club": {
@@ -343,6 +358,12 @@
     },
     "great_mana_potion": {
       "name": "Gran Poción de Maná"
+    },
+    "lasso": {
+      "name": "Lazo"
+    },
+    "brown_horse": {
+      "name": "Caballo Marrón"
     }
   },
   "spells": {

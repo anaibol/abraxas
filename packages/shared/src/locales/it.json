@@ -110,7 +110,14 @@
     "buff_poisoned": "AVVELENATO",
     "buff_buffed": "POTENZIATO",
     "trade_cancelled_by_player": "Il giocatore ha annullato lo scambio",
-    "pong": "Pong! {{rtt}}ms"
+    "pong": "Pong! {{rtt}}ms",
+    "tame_invalid_target": "Bersaglio di tracciamento non valido",
+    "tame_not_tameable": "Quella creatura non può essere addomesticata!",
+    "tame_too_far": "Sei troppo lontano per addomesticarlo!",
+    "tame_no_lasso": "Hai bisogno di un Laccio per addomesticare gli animali!",
+    "tame_success": "Hai addomesticato con successo il {{item}}!",
+    "tame_success_dropped": "Hai addomesticato il {{item}} ma le tue borse sono piene. È caduto a terra!",
+    "tame_failed": "L'animale è scappato! Il tuo laccio è stato consumato."
   },
   "social": {
     "already_in_group": "Il giocatore è già in un gruppo",
@@ -221,7 +228,15 @@
     "spider": "Ragno",
     "ghost": "Fantasma",
     "lich": "Lich",
-    "banker": "Banchiere Reale"
+    "banker": "Banchiere Reale",
+    "zombie": "Zombi",
+    "troll": "Troll",
+    "bat": "Pipistrello Vampiro",
+    "dark_knight": "Cavaliere Oscuro",
+    "horse": "Cavallo",
+    "skeleton_archer": "Arciere Scheletro",
+    "vampire": "Vampiro",
+    "gargoyle": "Gargoyle"
   },
   "items": {
     "club": {
@@ -343,6 +358,12 @@
     },
     "great_mana_potion": {
       "name": "Grande Pozione di Mana"
+    },
+    "lasso": {
+      "name": "Laccio"
+    },
+    "brown_horse": {
+      "name": "Cavallo Marrone"
     }
   },
   "spells": {

@@ -3,6 +3,8 @@ export interface Buff {
   stat: string;
   amount: number;
   expiresAt: number;
+  overrideBodyId?: number;
+  overrideHeadId?: number;
 }
 
 export interface DoT {

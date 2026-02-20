@@ -147,7 +147,7 @@ export class TickSystem {
 
   private handleNpcKillRewards(player: Player, killedNpc: Npc) {
     const { systems, state } = this.opts;
-    const stats = NPC_STATS[killedNpc.type];
+    const stats = NPC_STATS[killedNpc.npcType];
     
     if (stats && typeof stats.expReward === "number") {
       // Find all living companions of this player to share EXP
@@ -173,14 +173,14 @@ export class TickSystem {
       }
     }
 
-    void systems.quests.updateProgress(player.dbId, "kill", killedNpc.type, 1).then((updates) => {
+    void systems.quests.updateProgress(player.dbId, "kill", killedNpc.npcType, 1).then((updates) => {
       if (updates.length > 0) {
         const client = this.opts.findClient(player.sessionId);
         if (client) this.opts.sendQuestUpdates(client, updates);
       }
     });
 
-    const dropTable = NPC_DROPS[killedNpc.type];
+    const dropTable = NPC_DROPS[killedNpc.npcType];
     if (dropTable) {
       for (const entry of dropTable) {
         if (Math.random() < entry.chance) {

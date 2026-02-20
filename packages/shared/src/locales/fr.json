@@ -110,7 +110,14 @@
     "buff_poisoned": "EMPOISONNÉ",
     "buff_buffed": "BOOSTÉ",
     "trade_cancelled_by_player": "Le joueur a annulé l'échange",
-    "pong": "Pong ! {{rtt}}ms"
+    "pong": "Pong ! {{rtt}}ms",
+    "tame_invalid_target": "Cible de pistage invalide",
+    "tame_not_tameable": "Cette créature ne peut pas être domptée !",
+    "tame_too_far": "Vous êtes trop loin pour dompter cela !",
+    "tame_no_lasso": "Vous avez besoin d'un Lasso pour dompter des animaux !",
+    "tame_success": "Vous avez dompté avec succès le {{item}} !",
+    "tame_success_dropped": "Vous avez dompté le {{item}} mais vos sacs sont pleins. Il est tombé au sol !",
+    "tame_failed": "L'animal s'est échappé ! Votre lasso a été consommé."
   },
   "social": {
     "already_in_group": "Le joueur est déjà dans un groupe",
@@ -221,7 +228,15 @@
     "spider": "Araignée",
     "ghost": "Fantôme",
     "lich": "Liche",
-    "banker": "Banquier Royal"
+    "banker": "Banquier Royal",
+    "zombie": "Zombie",
+    "troll": "Troll",
+    "bat": "Chauve-souris Vampire",
+    "dark_knight": "Chevalier Noir",
+    "horse": "Cheval",
+    "skeleton_archer": "Archer Squelette",
+    "vampire": "Vampire",
+    "gargoyle": "Gargouille"
   },
   "items": {
     "club": {
@@ -343,6 +358,12 @@
     },
     "great_mana_potion": {
       "name": "Grande Potion de Mana"
+    },
+    "lasso": {
+      "name": "Lasso"
+    },
+    "brown_horse": {
+      "name": "Cheval Brun"
     }
   },
   "spells": {

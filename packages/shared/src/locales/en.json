@@ -59,6 +59,16 @@
       "name": "Paladin",
       "desc": "HP:230 Armor:12",
       "longDesc": "An armored holy warrior who combines devastating melee with divine healing and protection."
+    },
+    "NECROMANCER": {
+      "name": "Necromancer",
+      "desc": "INT:32 Mana:200",
+      "longDesc": "A dark sorcerer who commands the dead and drains the life force of enemies."
+    },
+    "DRUID": {
+      "name": "Druid",
+      "desc": "AGI:20 INT:20",
+      "longDesc": "A versatile guardian of nature capable of shapeshifting and healing."
     }
   },
   "game": {
@@ -490,6 +500,30 @@
     "holy_bolt": {
       "name": "Holy Bolt",
       "desc": "Launch a concentrated bolt of divine light at a distant enemy."
+    },
+    "summon_skeleton": {
+      "name": "Summon Skeleton",
+      "desc": "Raise a loyal skeletal warrior to fight by your side."
+    },
+    "shadow_bolt": {
+      "name": "Shadow Bolt",
+      "desc": "A bolt of dark energy that strikes with necrotic force."
+    },
+    "soul_drain": {
+      "name": "Soul Drain",
+      "desc": "Drain the lifeforce of a target, healing yourself."
+    },
+    "banshee_wail": {
+      "name": "Banshee Wail",
+      "desc": "A terrifying scream that weakens the armor of all nearby foes."
+    },
+    "cleanse_paralysis": {
+      "name": "Cleanse Stun",
+      "desc": "Remove all stun and paralysis effects from an ally."
+    },
+    "detect_invisibility": {
+      "name": "True Sight",
+      "desc": "Briefly reveal all stealthed units in a large area."
     }
   },
   "item_slot": {

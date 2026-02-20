@@ -38,7 +38,7 @@ export class TamingHandlers {
     }
 
     // Only wild animals that have a taming reward can be tamed
-    const rewardItemId = TAME_REWARDS[targetNpc.type];
+    const rewardItemId = TAME_REWARDS[targetNpc.npcType];
     if (!rewardItemId) {
       HandlerUtils.sendError(client, "game.tame_not_tameable");
       return;

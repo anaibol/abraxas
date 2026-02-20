@@ -28,7 +28,6 @@ export class BuffSystem {
   removePlayer(sessionId: string): void {
     this.state.delete(sessionId);
   }
-
   addBuff(
     sessionId: string,
     id: string,
@@ -36,6 +35,8 @@ export class BuffSystem {
     amount: number,
     durationMs: number,
     now: number,
+    overrideBodyId?: number,
+    overrideHeadId?: number,
   ): void {
     const s = this.getState(sessionId);
     const existing = s.buffs.find((b) => b.id === id);
@@ -43,7 +44,14 @@ export class BuffSystem {
       existing.expiresAt = Math.max(existing.expiresAt, now) + durationMs;
       // Optionally update amount if it's stronger? For now just extend.
     } else {
-      s.buffs.push({ id, stat, amount, expiresAt: now + durationMs });
+      s.buffs.push({
+        id,
+        stat,
+        amount,
+        expiresAt: now + durationMs,
+        overrideBodyId,
+        overrideHeadId,
+      });
     }
   }
 
@@ -147,6 +155,18 @@ export class BuffSystem {
 
       // Expire old buffs
       s.buffs = s.buffs.filter((b) => now < b.expiresAt);
+
+      // Apply appearance overrides from active buffs
+      let overrideBodyId = 0;
+      let overrideHeadId = 0;
+      for (const b of s.buffs) {
+        if (b.overrideBodyId) overrideBodyId = b.overrideBodyId;
+        if (b.overrideHeadId) overrideHeadId = b.overrideHeadId;
+      }
+      // @ts-ignore - Char has these fields now
+      entity.overrideBodyId = overrideBodyId;
+      // @ts-ignore - Char has these fields now
+      entity.overrideHeadId = overrideHeadId;
 
       // Process DoTs — expire first, then tick the survivors
       s.dots = s.dots.filter((d) => now < d.expiresAt);

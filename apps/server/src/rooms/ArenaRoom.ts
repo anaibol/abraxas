@@ -4,6 +4,7 @@ import {
   type ClientMessages,
   type ClientMessageType,
   type JoinOptions,
+  EntityType,
   type NpcType,
   ServerMessageType,
   TICK_MS,
@@ -19,6 +20,7 @@ import { MessageHandler } from "../handlers/MessageHandler";
 import { SocialHandlers } from "../handlers/SocialHandlers";
 import { logger } from "../logger";
 import { GameState } from "../schema/GameState";
+import { Npc } from "../schema/Npc";
 import { Player } from "../schema/Player";
 import { ChatService } from "../services/ChatService";
 import { LevelService } from "../services/LevelService";
@@ -253,7 +255,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
           const sx = "x" in spawnLoc ? spawnLoc.x : spawnLoc.tileX;
           const sy = "y" in spawnLoc ? spawnLoc.y : spawnLoc.tileY;
 
-          this.npcSystem.spawnNpcAt(
+          const newNpc = this.npcSystem.spawnNpcAt(
             comp.type as NpcType,
             this.map,
             sx,
@@ -262,14 +264,9 @@ export class ArenaRoom extends Room<{ state: GameState }> {
           );
           
           // Apply saved level and HP
-          // Note: spawnNpcAt operates synchronously and pushes to this.state.npcs,
-          const npcs = Array.from(this.state.npcs.values());
-          const newNpc = npcs[npcs.length - 1];
-          if (newNpc && newNpc.ownerId === player.sessionId) {
-            newNpc.level = comp.level;
-            newNpc.exp = comp.exp;
-            newNpc.hp = Math.min(newNpc.maxHp, comp.hp);
-          }
+          newNpc.level = comp.level;
+          newNpc.exp = comp.exp;
+          newNpc.hp = Math.min(newNpc.maxHp, comp.hp);
         }
         // clear it from memory since they exist in the world now
         player.savedCompanions = [];
@@ -345,7 +342,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       this.state.npcs.forEach((npc) => {
         if (npc.ownerId === player.sessionId && npc.alive) {
           activeCompanions.push({
-            type: npc.type,
+            type: npc.npcType,
             level: npc.level,
             exp: npc.exp,
             hp: npc.hp,
@@ -365,26 +362,34 @@ export class ArenaRoom extends Room<{ state: GameState }> {
   }
 
   private onEntityDeath(entity: Entity, killerSessionId?: string) {
-    if (entity instanceof Player) this.onPlayerDeath(entity, killerSessionId);
-    else this.tickSystem.handleNpcDeath(entity, killerSessionId);
-  }
+    // Soul Harvest Passive: Necromancer nearby
+    this.state.players.forEach((player) => {
+      if (player.classType === "NECROMANCER" && player.alive) {
+        const dx = player.tileX - entity.tileX;
+        const dy = player.tileY - entity.tileY;
+        const distSq = dx * dx + dy * dy;
+        const HARVEST_RANGE = 5;
+        if (distSq <= HARVEST_RANGE * HARVEST_RANGE) {
+          const hpGain = Math.floor(player.maxHp * 0.05);
+          const manaGain = Math.floor((player.maxMana ?? 100) * 0.05);
+          player.hp = Math.min(player.maxHp, player.hp + hpGain);
+          player.mana = Math.min(player.maxMana ?? 100, (player.mana ?? 0) + manaGain);
 
-  private onSummon(_caster: Entity, spellId: string, x: number, y: number) {
-    if (spellId === "summon_skeleton") {
-      if (this.state.npcs.size > 200) return;
-      const skeletons = [...this.state.npcs.values()].filter((n) => n.type === "skeleton").length;
-      if (skeletons > 50) return;
-      const count = 2 + Math.floor(Math.random() * 2);
-      for (let i = 0; i < count; i++) {
-        const rx = x + Math.floor(Math.random() * 3) - 1;
-        const ry = y + Math.floor(Math.random() * 3) - 1;
-        if (rx >= 0 && rx < this.map.width && ry >= 0 && ry < this.map.height) {
-          if (this.map.collision[ry]?.[rx] === 0 && !this.spatial.isTileOccupied(rx, ry, "")) {
-            this.npcSystem.spawnNpcAt("skeleton", this.map, rx, ry);
-          }
+          this.broadcast(ServerMessageType.Heal, {
+            sessionId: player.sessionId,
+            amount: hpGain,
+            hpAfter: player.hp,
+          });
         }
       }
-    }
+    });
+
+    if (entity.type === EntityType.PLAYER) this.onPlayerDeath(entity as Player, killerSessionId);
+    else this.tickSystem.handleNpcDeath(entity as Npc, killerSessionId);
+  }
+
+  private onSummon(caster: Entity, spellId: string, x: number, y: number) {
+    this.npcSystem.spawnSummon(caster, spellId, x, y);
   }
 
   private onPlayerDeath(player: Player, killerSessionId?: string) {

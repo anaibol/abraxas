@@ -11,7 +11,8 @@
     "build": "bun run --cwd apps/client build",
     "test": "bun test --cwd apps/server",
     "lint": "bun x eslint .",
-    "generate:world": "bun run packages/shared/scripts/generate-world.ts"
+    "generate:world": "bun run packages/shared/scripts/generate-world.ts",
+    "check-translations": "node check_translations.js"
   },
   "devDependencies": {
     "@types/express": "^5.0.6"
