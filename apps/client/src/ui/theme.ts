@@ -89,7 +89,7 @@ const customConfig = defineConfig({
           fontSize: "12px",
         },
       },
-      // Tab bar labels (INV / SPELLS / ALL / PARTY…)
+      // Tab bar labels (INV / SPELLS / ALL / GROUP…)
       tabLabel: {
         value: {
           fontFamily: "display",

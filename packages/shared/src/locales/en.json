@@ -617,7 +617,7 @@
   "console": {
     "tab_all": "ALL",
     "tab_global": "GLOBAL",
-    "tab_group": "PARTY",
+    "tab_group": "GROUP",
     "tab_whisper": "WHISPER",
     "tab_system": "SYSTEM",
     "tab_combat": "COMBAT",
