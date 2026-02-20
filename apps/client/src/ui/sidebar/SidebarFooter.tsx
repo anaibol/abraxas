@@ -9,9 +9,10 @@ type SidebarFooterProps = {
   state: PlayerState;
   onSettings?: () => void;
   onLogout?: () => void;
+  onTogglePvP?: () => void;
 };
 
-export function SidebarFooter({ state, onSettings, onLogout }: SidebarFooterProps) {
+export function SidebarFooter({ state, onSettings, onLogout, onTogglePvP }: SidebarFooterProps) {
   const { t } = useTranslation();
   const hpPct = state.maxHp > 0 ? Math.max(0, (state.hp / state.maxHp) * 100) : 0;
   const manaPct = state.maxMana > 0 ? Math.max(0, (state.mana / state.maxMana) * 100) : 0;
@@ -104,6 +105,19 @@ export function SidebarFooter({ state, onSettings, onLogout }: SidebarFooterProp
           </Flex>
         </Box>
       </Box>
+
+      {/* PvP Toggle */}
+      <Flex borderTop="1px solid" borderTopColor={T.border} px="3" py="2" justify="space-between" align="center">
+        <Text textStyle={T.statLabel} color={state.pvpEnabled ? "red.400" : T.goldDark}>
+          {t("sidebar.pvp", { defaultValue: "PvP STATUS" })}
+        </Text>
+        <FooterButton
+          icon={<Box w="8px" h="8px" borderRadius="full" bg={state.pvpEnabled ? "red.500" : "gray.500"} />}
+          label={state.pvpEnabled ? t("sidebar.pvp_on", { defaultValue: "ENABLED" }) : t("sidebar.pvp_off", { defaultValue: "DISABLED" })}
+          onClick={onTogglePvP}
+          danger={state.pvpEnabled}
+        />
+      </Flex>
 
       {/* Settings + Logout row */}
       <Flex borderTop="1px solid" borderTopColor={T.border} px="2" py="2" gap="2">
