@@ -1,19 +1,15 @@
-import Phaser from "phaser";
 import {
-  TILE_SIZE,
-  CLASS_STATS,
-  NPC_STATS,
   CLASS_APPEARANCE,
-  NPC_APPEARANCE,
-  ITEMS,
-  Direction,
+  CLASS_STATS,
   DIRECTION_DELTA,
+  Direction,
+  ITEMS,
+  NPC_APPEARANCE,
+  NPC_STATS,
+  TILE_SIZE,
 } from "@abraxas/shared";
-import {
-  AoGrhResolver,
-  type DirectionEntry,
-  type BodyEntry,
-} from "../assets/AoGrhResolver";
+import Phaser from "phaser";
+import { AoGrhResolver, type BodyEntry, type DirectionEntry } from "../assets/AoGrhResolver";
 import { FONTS } from "../ui/tokens";
 
 const DIR_NAME_MAP: Record<number, "down" | "up" | "left" | "right"> = {
@@ -108,16 +104,14 @@ export class PlayerSprite {
     this.classType = classType;
     this.isLocal = isLocal;
 
-    type ClassKey = keyof typeof CLASS_STATS;
-    type NpcKey = keyof typeof NPC_STATS;
     const isClass = classType in CLASS_STATS;
     const isNpc = classType in NPC_STATS;
 
     const stats = isClass
-      ? CLASS_STATS[classType as ClassKey]
+      ? CLASS_STATS[classType as keyof typeof CLASS_STATS]
       : isNpc
-      ? NPC_STATS[classType as NpcKey]
-      : CLASS_STATS.WARRIOR;
+        ? NPC_STATS[classType as keyof typeof NPC_STATS]
+        : CLASS_STATS.WARRIOR;
 
     if (!isClass && !isNpc) {
       console.warn(`No stats found for class/type: ${classType}, defaulting to warrior`);
@@ -136,13 +130,15 @@ export class PlayerSprite {
     const isNpcApp = classType in NPC_APPEARANCE;
 
     const appearance = isClassApp
-      ? CLASS_APPEARANCE[classType as ClassKey]
+      ? CLASS_APPEARANCE[classType as keyof typeof CLASS_APPEARANCE]
       : isNpcApp
-      ? NPC_APPEARANCE[classType as NpcKey]
-      : CLASS_APPEARANCE.WARRIOR;
+        ? NPC_APPEARANCE[classType as keyof typeof NPC_APPEARANCE]
+        : CLASS_APPEARANCE.WARRIOR;
     const bodyEntryResult = this.resolver.getBodyEntry(appearance.bodyId);
     if (!bodyEntryResult) {
-      throw new Error(`No body entry found for bodyId ${appearance.bodyId} (class/type: ${classType})`);
+      throw new Error(
+        `No body entry found for bodyId ${appearance.bodyId} (class/type: ${classType})`,
+      );
     }
     this.bodyEntry = bodyEntryResult;
     this.headEntry = this.resolver.getHeadEntry(appearance.headId);
@@ -163,14 +159,24 @@ export class PlayerSprite {
     if (!bodyStatic) {
       throw new Error(`No static grh for bodyGrhId ${bodyGrhId} (class/type: ${classType})`);
     }
-    this.bodySprite = scene.add.sprite(0, TILE_SIZE / 2, `ao-${bodyStatic.grafico}`, `grh-${bodyStatic.id}`);
+    this.bodySprite = scene.add.sprite(
+      0,
+      TILE_SIZE / 2,
+      `ao-${bodyStatic.grafico}`,
+      `grh-${bodyStatic.id}`,
+    );
     this.bodySprite.setOrigin(0.5, 1);
 
     if (this.headEntry) {
       const headGrhId = this.headEntry.down;
       const headStatic = this.resolver.resolveStaticGrh(headGrhId);
       if (headStatic) {
-        this.headSprite = scene.add.sprite(0, 0, `ao-${headStatic.grafico}`, `grh-${headStatic.id}`);
+        this.headSprite = scene.add.sprite(
+          0,
+          0,
+          `ao-${headStatic.grafico}`,
+          `grh-${headStatic.id}`,
+        );
         this.headSprite.setOrigin(0.5, 0);
       }
     }
@@ -206,8 +212,12 @@ export class PlayerSprite {
       Phaser.Geom.Rectangle.Contains,
     );
     if (!isLocal) {
-      this.container.on("pointerover", () => { this.hpBarGfx.setVisible(true); });
-      this.container.on("pointerout", () => { this.hpBarGfx.setVisible(false); });
+      this.container.on("pointerover", () => {
+        this.hpBarGfx.setVisible(true);
+      });
+      this.container.on("pointerout", () => {
+        this.hpBarGfx.setVisible(false);
+      });
     }
 
     this.resolver.ensureAnimation(scene, bodyGrhId, "body");
@@ -293,9 +303,15 @@ export class PlayerSprite {
       this.bodySprite.stop();
       this.bodySprite.setTexture(`ao-${bodyStatic.grafico}`, `grh-${bodyStatic.id}`);
     }
-    this.applyStaticEquipmentFrame(this.weaponSprite, this.curWeaponAoId, (id) => this.resolver.getWeaponEntry(id));
-    this.applyStaticEquipmentFrame(this.shieldSprite, this.curShieldAoId, (id) => this.resolver.getShieldEntry(id));
-    this.applyStaticEquipmentFrame(this.helmetSprite, this.curHelmetAoId, (id) => this.resolver.getHelmetEntry(id));
+    this.applyStaticEquipmentFrame(this.weaponSprite, this.curWeaponAoId, (id) =>
+      this.resolver.getWeaponEntry(id),
+    );
+    this.applyStaticEquipmentFrame(this.shieldSprite, this.curShieldAoId, (id) =>
+      this.resolver.getShieldEntry(id),
+    );
+    this.applyStaticEquipmentFrame(this.helmetSprite, this.curHelmetAoId, (id) =>
+      this.resolver.getHelmetEntry(id),
+    );
   }
 
   private playWalkAnims() {
@@ -321,7 +337,9 @@ export class PlayerSprite {
     }
 
     // Helmet has no walk animation — update its directional texture only
-    this.applyStaticEquipmentFrame(this.helmetSprite, this.curHelmetAoId, (id) => this.resolver.getHelmetEntry(id));
+    this.applyStaticEquipmentFrame(this.helmetSprite, this.curHelmetAoId, (id) =>
+      this.resolver.getHelmetEntry(id),
+    );
   }
 
   /** Sets a static (non-animated) frame for a single equipment sprite. */
@@ -394,7 +412,12 @@ export class PlayerSprite {
   }
 
   /** Update equipment visuals based on item IDs from server. Pass empty string for an empty slot. */
-  updateEquipment(weaponItemId: string, shieldItemId: string, helmetItemId: string, mountItemId: string = "") {
+  updateEquipment(
+    weaponItemId: string,
+    shieldItemId: string,
+    helmetItemId: string,
+    mountItemId: string = "",
+  ) {
     const newWeaponAoId = weaponItemId ? (ITEMS[weaponItemId]?.aoWeaponId ?? 0) : 0;
     const newShieldAoId = shieldItemId ? (ITEMS[shieldItemId]?.aoShieldId ?? 0) : 0;
     const newHelmetAoId = helmetItemId ? (ITEMS[helmetItemId]?.aoHelmetId ?? 0) : 0;
@@ -402,27 +425,36 @@ export class PlayerSprite {
     if (newWeaponAoId !== this.curWeaponAoId) {
       this.curWeaponAoId = newWeaponAoId;
       this.weaponSprite = this.replaceEquipmentSprite(
-        this.weaponSprite, newWeaponAoId,
+        this.weaponSprite,
+        newWeaponAoId,
         (id) => this.resolver.getWeaponEntry(id),
-        "weapon", TILE_SIZE / 2, 1,
+        "weapon",
+        TILE_SIZE / 2,
+        1,
       );
     }
 
     if (newShieldAoId !== this.curShieldAoId) {
       this.curShieldAoId = newShieldAoId;
       this.shieldSprite = this.replaceEquipmentSprite(
-        this.shieldSprite, newShieldAoId,
+        this.shieldSprite,
+        newShieldAoId,
         (id) => this.resolver.getShieldEntry(id),
-        "shield", TILE_SIZE / 2, 1,
+        "shield",
+        TILE_SIZE / 2,
+        1,
       );
     }
 
     if (newHelmetAoId !== this.curHelmetAoId) {
       this.curHelmetAoId = newHelmetAoId;
       this.helmetSprite = this.replaceEquipmentSprite(
-        this.helmetSprite, newHelmetAoId,
+        this.helmetSprite,
+        newHelmetAoId,
         (id) => this.resolver.getHelmetEntry(id),
-        null, 0, 0,
+        null,
+        0,
+        0,
       );
       if (newHelmetAoId) this.updateHeadPosition();
     }
@@ -464,7 +496,12 @@ export class PlayerSprite {
     const mountStatic = this.resolver.resolveStaticGrh(mountGrhId);
     if (!mountStatic) return;
 
-    this.mountSprite = scene.add.sprite(0, TILE_SIZE * 0.6, `ao-${mountStatic.grafico}`, `grh-${mountStatic.id}`);
+    this.mountSprite = scene.add.sprite(
+      0,
+      TILE_SIZE * 0.6,
+      `ao-${mountStatic.grafico}`,
+      `grh-${mountStatic.id}`,
+    );
     this.mountSprite.setOrigin(0.5, 1);
     this.mountSprite.setDepth(2);
     this.container.addAt(this.mountSprite, 0);
@@ -484,12 +521,15 @@ export class PlayerSprite {
       const g = scene.add.graphics();
       // Soft glow halo behind the star
       for (let r = 7; r >= 1; r--) {
-        g.fillStyle(0xffffff, Math.pow(1 - r / 7, 1.5) * 0.5);
+        g.fillStyle(0xffffff, (1 - r / 7) ** 1.5 * 0.5);
         g.fillCircle(8, 8, r);
       }
       // Sharp 8-point star on top
       g.fillStyle(0xffffff, 1);
-      const cx = 8, cy = 8, outer = 7, inner = 2.5;
+      const cx = 8,
+        cy = 8,
+        outer = 7,
+        inner = 2.5;
       const pts: Phaser.Math.Vector2[] = [];
       for (let i = 0; i < 8; i++) {
         const angle = (i * Math.PI) / 4 - Math.PI / 2;
@@ -504,7 +544,7 @@ export class PlayerSprite {
       // Soft radial glow instead of a flat solid circle
       const g = scene.add.graphics();
       for (let r = 4; r >= 1; r--) {
-        const a = Math.pow(1 - (r - 1) / 4, 1.8);
+        const a = (1 - (r - 1) / 4) ** 1.8;
         g.fillStyle(0xffffff, a);
         g.fillCircle(4, 4, r);
       }
@@ -597,76 +637,112 @@ export class PlayerSprite {
   // ── applyStun / clearStun ─────────────────────────────────────────────────
 
   applyStun(durationMs: number) {
-    this.applyStatusEffect("stun", "status-star", {
-      tint: [0xffff00, 0xffcc00, 0xffffff, 0xffee44],
-      speed: { min: 20, max: 48 },
-      angle: { min: 0, max: 360 },
-      scale: { start: 0.6, end: 0.12 },
-      alpha: { start: 1, end: 0.3 },
-      lifespan: { min: 700, max: 1100 },
-      quantity: 2,
-      frequency: 80,
-      rotate: { start: 0, end: 720 },
-      x: { min: -TILE_SIZE * 0.5, max: TILE_SIZE * 0.5 },
-    }, -TILE_SIZE * 1.4, 3, durationMs);
+    this.applyStatusEffect(
+      "stun",
+      "status-star",
+      {
+        tint: [0xffff00, 0xffcc00, 0xffffff, 0xffee44],
+        speed: { min: 20, max: 48 },
+        angle: { min: 0, max: 360 },
+        scale: { start: 0.6, end: 0.12 },
+        alpha: { start: 1, end: 0.3 },
+        lifespan: { min: 700, max: 1100 },
+        quantity: 2,
+        frequency: 80,
+        rotate: { start: 0, end: 720 },
+        x: { min: -TILE_SIZE * 0.5, max: TILE_SIZE * 0.5 },
+      },
+      -TILE_SIZE * 1.4,
+      3,
+      durationMs,
+    );
   }
-  clearStun() { this.clearStatusEffect("stun"); }
+  clearStun() {
+    this.clearStatusEffect("stun");
+  }
 
   // ── applyPoison / clearPoison ─────────────────────────────────────────────
 
   applyPoison(durationMs: number) {
-    this.applyStatusEffect("poison", "status-dot", {
-      tint: [0x44ff44, 0x007700, 0x88ff00, 0x33cc00, 0xaaff00],
-      speed: { min: 8, max: 28 },
-      angle: { min: 0, max: 360 },
-      scale: { start: 0.52, end: 0 },
-      alpha: { start: 0.95, end: 0 },
-      lifespan: { min: 700, max: 1300 },
-      quantity: 2,
-      frequency: 60,
-      gravityY: 65,
-      x: { min: -12, max: 12 },
-    }, -TILE_SIZE * 0.2, 2, durationMs);
+    this.applyStatusEffect(
+      "poison",
+      "status-dot",
+      {
+        tint: [0x44ff44, 0x007700, 0x88ff00, 0x33cc00, 0xaaff00],
+        speed: { min: 8, max: 28 },
+        angle: { min: 0, max: 360 },
+        scale: { start: 0.52, end: 0 },
+        alpha: { start: 0.95, end: 0 },
+        lifespan: { min: 700, max: 1300 },
+        quantity: 2,
+        frequency: 60,
+        gravityY: 65,
+        x: { min: -12, max: 12 },
+      },
+      -TILE_SIZE * 0.2,
+      2,
+      durationMs,
+    );
   }
-  clearPoison() { this.clearStatusEffect("poison"); }
+  clearPoison() {
+    this.clearStatusEffect("poison");
+  }
 
   // ── applyBuff / clearBuff ─────────────────────────────────────────────────
 
   applyBuff(durationMs: number) {
-    this.applyStatusEffect("buff", "status-star", {
-      tint: [0xffdd44, 0xffaa00, 0xffffff],
-      speed: { min: 12, max: 32 },
-      angle: { min: 240, max: 300 },
-      scale: { start: 0.38, end: 0 },
-      alpha: { start: 0.85, end: 0 },
-      lifespan: { min: 600, max: 950 },
-      quantity: 1,
-      frequency: 110,
-      gravityY: -45,
-      x: { min: -14, max: 14 },
-      rotate: { start: 0, end: 360 },
-    }, 0, 2, durationMs);
+    this.applyStatusEffect(
+      "buff",
+      "status-star",
+      {
+        tint: [0xffdd44, 0xffaa00, 0xffffff],
+        speed: { min: 12, max: 32 },
+        angle: { min: 240, max: 300 },
+        scale: { start: 0.38, end: 0 },
+        alpha: { start: 0.85, end: 0 },
+        lifespan: { min: 600, max: 950 },
+        quantity: 1,
+        frequency: 110,
+        gravityY: -45,
+        x: { min: -14, max: 14 },
+        rotate: { start: 0, end: 360 },
+      },
+      0,
+      2,
+      durationMs,
+    );
   }
-  clearBuff() { this.clearStatusEffect("buff"); }
+  clearBuff() {
+    this.clearStatusEffect("buff");
+  }
 
   // ── applyDebuff / clearDebuff ─────────────────────────────────────────────
 
   applyDebuff(durationMs: number) {
-    this.applyStatusEffect("debuff", "status-dot", {
-      tint: [0xcc44ff, 0x880088, 0x4400aa],
-      speed: { min: 6, max: 20 },
-      angle: { min: 240, max: 300 },
-      scale: { start: 0.5, end: 0 },
-      alpha: { start: 0.75, end: 0 },
-      lifespan: { min: 600, max: 1100 },
-      quantity: 1,
-      frequency: 100,
-      gravityY: -28,
-      blendMode: Phaser.BlendModes.NORMAL,
-      x: { min: -12, max: 12 },
-    }, 0, 1, durationMs);
+    this.applyStatusEffect(
+      "debuff",
+      "status-dot",
+      {
+        tint: [0xcc44ff, 0x880088, 0x4400aa],
+        speed: { min: 6, max: 20 },
+        angle: { min: 240, max: 300 },
+        scale: { start: 0.5, end: 0 },
+        alpha: { start: 0.75, end: 0 },
+        lifespan: { min: 600, max: 1100 },
+        quantity: 1,
+        frequency: 100,
+        gravityY: -28,
+        blendMode: Phaser.BlendModes.NORMAL,
+        x: { min: -12, max: 12 },
+      },
+      0,
+      1,
+      durationMs,
+    );
   }
-  clearDebuff() { this.clearStatusEffect("debuff"); }
+  clearDebuff() {
+    this.clearStatusEffect("debuff");
+  }
 
   // ── applyInvulnerable / clearInvulnerable ─────────────────────────────────
 
@@ -697,23 +773,19 @@ export class PlayerSprite {
     });
 
     // Orbiting white sparkles (world-space emitter) — more particles, wider spread
-    this.invulnEmitter = scene.add.particles(
-      this.renderX, this.renderY,
-      "status-star",
-      {
-        tint: [0xffffff, 0xeef8ff, 0xffee88, 0x88ccff],
-        speed: { min: 18, max: 45 },
-        angle: { min: 0, max: 360 },
-        scale: { start: 0.45, end: 0 },
-        alpha: { start: 0.95, end: 0 },
-        lifespan: { min: 500, max: 900 },
-        quantity: 2,
-        frequency: 65,
-        gravityY: -20,
-        x: { min: -TILE_SIZE * 0.7, max: TILE_SIZE * 0.7 },
-        rotate: { start: 0, end: 360 },
-      },
-    );
+    this.invulnEmitter = scene.add.particles(this.renderX, this.renderY, "status-star", {
+      tint: [0xffffff, 0xeef8ff, 0xffee88, 0x88ccff],
+      speed: { min: 18, max: 45 },
+      angle: { min: 0, max: 360 },
+      scale: { start: 0.45, end: 0 },
+      alpha: { start: 0.95, end: 0 },
+      lifespan: { min: 500, max: 900 },
+      quantity: 2,
+      frequency: 65,
+      gravityY: -20,
+      x: { min: -TILE_SIZE * 0.7, max: TILE_SIZE * 0.7 },
+      rotate: { start: 0, end: 360 },
+    });
     this.invulnEmitter.setDepth(this.container.depth + 3);
 
     this.activeStatusTints.add("invuln");
@@ -743,7 +815,7 @@ export class PlayerSprite {
     const g = scene.add.graphics();
     for (let r = 8; r >= 1; r--) {
       const t = (r - 1) / 8;
-      const a = Math.pow(1 - t, 1.6);
+      const a = (1 - t) ** 1.6;
       g.fillStyle(0xffffff, a);
       g.fillCircle(8, 8, r);
     }
@@ -758,23 +830,18 @@ export class PlayerSprite {
 
     if (meditating) {
       this.ensureFireTexture(scene);
-      this.meditationEmitter = scene.add.particles(
-        this.renderX,
-        this.renderY,
-        "meditation-fire",
-        {
-          x: { min: -8, max: 8 },
-          y: { min: -TILE_SIZE * 1.1, max: -TILE_SIZE * 0.1 },
-          scale: { start: 0.42, end: 0 }, // slightly smaller to match the larger 16×16 texture
-          alpha: { start: 0.9, end: 0 },
-          tint: [0xff2200, 0xff6600, 0xffaa00, 0xffdd00],
-          speed: { min: 12, max: 30 },
-          angle: { min: 260, max: 280 },
-          lifespan: { min: 450, max: 850 },
-          quantity: 3,
-          frequency: 45,
-        },
-      );
+      this.meditationEmitter = scene.add.particles(this.renderX, this.renderY, "meditation-fire", {
+        x: { min: -8, max: 8 },
+        y: { min: -TILE_SIZE * 1.1, max: -TILE_SIZE * 0.1 },
+        scale: { start: 0.42, end: 0 }, // slightly smaller to match the larger 16×16 texture
+        alpha: { start: 0.9, end: 0 },
+        tint: [0xff2200, 0xff6600, 0xffaa00, 0xffdd00],
+        speed: { min: 12, max: 30 },
+        angle: { min: 260, max: 280 },
+        lifespan: { min: 450, max: 850 },
+        quantity: 3,
+        frequency: 45,
+      });
       this.meditationEmitter.setDepth(this.container.depth + 2);
     } else if (this.meditationEmitter) {
       this.meditationEmitter.destroy();
@@ -802,7 +869,7 @@ export class PlayerSprite {
     if (hpRatio > 0) {
       const fillW = Math.max(1, Math.round(barW * hpRatio));
       const fillColor = hpRatio > 0.5 ? 0x22cc44 : hpRatio > 0.25 ? 0xddcc22 : 0xcc2222;
-      const hlColor   = hpRatio > 0.5 ? 0x44ff77 : hpRatio > 0.25 ? 0xffee55 : 0xff5555;
+      const hlColor = hpRatio > 0.5 ? 0x44ff77 : hpRatio > 0.25 ? 0xffee55 : 0xff5555;
 
       // Main fill
       this.hpBarGfx.fillStyle(fillColor, 1);
