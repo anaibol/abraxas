@@ -58,6 +58,11 @@ export class PreloaderScene extends Phaser.Scene {
     this.load.audio("sfx-spell", "audio/sonidos/3.webm"); // Use old magic placeholder until AI gen
     this.load.audio("sfx-death", "audio/sonidos/14.webm");
     this.load.audio("sfx-heal", "audio/sonidos/42.webm");
+    
+    // New SFX
+    this.load.audio("sfx-levelup", "audio/kenney_ui/Audio/maximize_006.ogg");
+    this.load.audio("sfx-notification", "audio/kenney_ui/Audio/bong_001.ogg");
+    this.load.audio("sfx-mount", "audio/kenney_rpg/Audio/clothBelt.ogg");
 
     // UI Sounds
     this.load.audio("sfx-click", "audio/kenney_ui/Audio/click_002.ogg");

@@ -696,6 +696,12 @@ export function App() {
           }}
           onFriendRequest={(_, name) => networkRef.current?.sendFriendRequest(name)}
           onGroupInvite={(sid) => networkRef.current?.sendGroupInvite(sid)}
+          onGuildInvite={
+            guildData &&
+            guildData.members.find((m) => m.name === playerState.name)?.role !== "MEMBER"
+              ? (name) => networkRef.current?.sendGuildInvite(name)
+              : undefined
+          }
           onTradeRequest={(sid) => networkRef.current?.sendTradeRequest(sid)}
           onClose={() => setPlayerContextMenu(null)}
           onGMTeleportTo={

@@ -1619,4 +1619,145 @@ export class EffectManager {
         return { color: this.spellWindupColor(spellId), texKey: TEX.CIRCLE, size: 6 };
     }
   }
+
+  // ── Realistic Elements ──────────────────────────────────────────────────
+
+  /**
+   * Realistic Campfire / Burning Effect
+   * Creates a lingering fire effect that correctly dissipates at the top
+   */
+  public createCampfire(px: number, py: number) {
+    this.ensureTextures();
+
+    // The Core: Bright, hot, ADD blend mode
+    this.burst(px, py + 4, TEX.CIRCLE, {
+      colors: [0xffffff, 0xffff44, 0xffaa00, 0xff2200],
+      count: 24,
+      speed: { min: 10, max: 25 },
+      scale: { start: 0.8, end: 0 },
+      lifespan: { min: 500, max: 900 },
+      gravityY: -20,
+      radius: 6,
+    });
+
+    // The Flames: Orange/Red, ADD blend mode, larger but faster decay
+    this.burst(px, py, TEX.SMOKE, {
+      colors: [0xff4400, 0xff2200, 0xaa0000],
+      count: 18,
+      speed: { min: 20, max: 40 },
+      scale: { start: 1.0, end: 0.2 },
+      lifespan: { min: 600, max: 1100 },
+      gravityY: -30,
+      radius: 10,
+    });
+
+    // The Embers: Tiny sparks, ADD blend mode, erratic upward movement
+    this.burst(px, py - 4, TEX.SPARK, {
+      colors: [0xffaa00, 0xff4400, 0xffffff],
+      count: 12,
+      speed: { min: 30, max: 70 },
+      scale: { start: 0.4, end: 0 },
+      lifespan: { min: 800, max: 1600 },
+      gravityY: -45,
+      radius: 12,
+      angle: { min: 240, max: 300 }, // mostly up
+    });
+
+    // Tiny bit of dark smoke right at the very top (optional but realistic)
+    this.scene.time.delayedCall(200, () => {
+      this.burst(px, py - 18, TEX.SMOKE, {
+        colors: [0x444444, 0x222222],
+        count: 8,
+        speed: { min: 15, max: 30 },
+        scale: { start: 0.5, end: 1.2 }, // expands as it rises
+        lifespan: { min: 1000, max: 1800 },
+        gravityY: -15,
+        radius: 8,
+        blendMode: Phaser.BlendModes.NORMAL,
+        alpha: { start: 0.4, end: 0 },
+      });
+    });
+  }
+
+  /**
+   * Realistic Volumetric Smoke
+   * Creates thick, opaque smoke that expands outward and upward
+   */
+  public createThickSmoke(px: number, py: number) {
+    this.ensureTextures();
+
+    // The main body of smoke
+    this.burst(px, py, TEX.SMOKE, {
+      colors: [0x888888, 0x666666, 0x444444, 0x222222],
+      count: 45,
+      speed: { min: 10, max: 45 },
+      scale: { start: 0.5, end: 2.8 }, // Huge expansion scale for "volumetric" look
+      lifespan: { min: 1800, max: 3500 },
+      gravityY: -8, // Slow rise
+      radius: 18,
+      blendMode: Phaser.BlendModes.NORMAL, // Essential for thick, obscuring smoke
+      alpha: { start: 0.85, end: 0 },
+    });
+
+    // A tiny bit of initial blast to give it impact
+    this.burst(px, py, TEX.CIRCLE, {
+      colors: [0xaaaaaa, 0x888888],
+      count: 15,
+      speed: { min: 40, max: 80 },
+      scale: { start: 0.6, end: 0 },
+      lifespan: { min: 400, max: 800 },
+      gravityY: 0,
+      radius: 5,
+      blendMode: Phaser.BlendModes.NORMAL,
+    });
+  }
+
+  /**
+   * Realistic Water Splash
+   * Uses strong gravity arcs and trailing mist to look fluid
+   */
+  public createWaterSplash(px: number, py: number) {
+    this.ensureTextures();
+
+    // The Impact Puddle: A brief expanding circle on the floor
+    this.ring(px, py, 0x44aaff, 3, 24, 400, 0.6, 2);
+
+    // The Main Splashes: Drops arcing upwards and falling rapidly back down
+    this.burst(px, py, TEX.CIRCLE, {
+      colors: [0xffffff, 0xccffff, 0x88ddff, 0x44aaff],
+      count: 35,
+      speed: { min: 80, max: 220 },
+      scale: { start: 0.5, end: 0 },
+      lifespan: { min: 400, max: 850 },
+      gravityY: 450, // **Very heavy** downward pull
+      angle: { min: 200, max: 340 }, // Bursting upwards in an arc
+      blendMode: Phaser.BlendModes.ADD,
+    });
+
+    // The Mist: Fine water vapor hanging in the air after the heavy drops fall
+    this.scene.time.delayedCall(50, () => {
+      this.burst(px, py - 10, TEX.SMOKE, {
+        colors: [0xccffff, 0x88ddff, 0xaaffff],
+        count: 12,
+        speed: { min: 10, max: 35 },
+        scale: { start: 0.6, end: 1.5 },
+        lifespan: { min: 600, max: 1200 },
+        gravityY: -5,
+        radius: 16,
+        blendMode: Phaser.BlendModes.NORMAL,
+        alpha: { start: 0.5, end: 0 },
+      });
+    });
+
+    // A few trailing sparkles representing tiny glinting droplets
+    this.burst(px, py, TEX.SPARK, {
+      colors: [0xffffff, 0xccffff],
+      count: 10,
+      speed: { min: 40, max: 120 },
+      scale: { start: 0.3, end: 0 },
+      lifespan: { min: 300, max: 700 },
+      gravityY: 300,
+      angle: { min: 220, max: 320 },
+    });
+  }
 }

@@ -18,6 +18,7 @@ import { Npc } from "../schema/Npc";
 import type { Player } from "../schema/Player";
 import type { Entity, SpatialLookup } from "../utils/SpatialLookup";
 import { findSafeSpawn } from "../utils/spawnUtils";
+import { Pathfinder } from "../utils/Pathfinder";
 import type { BuffSystem } from "./BuffSystem";
 import type { CombatSystem } from "./CombatSystem";
 import type { MovementSystem } from "./MovementSystem";
@@ -355,21 +356,64 @@ export class NpcSystem {
     const dx = tx - npc.tileX;
     const dy = ty - npc.tileY;
 
-    if (dx === 0 && dy === 0) return;
+    if (dx === 0 && dy === 0) {
+      npc.path = [];
+      return;
+    }
 
-    const primaryDir = MathUtils.getDirection(npc.getPosition(), { x: tx, y: ty });
+    // Recalculate if target moved or path is empty
+    if (
+      npc.pathTargetTileX !== tx ||
+      npc.pathTargetTileY !== ty ||
+      npc.path.length === 0
+    ) {
+      npc.pathTargetTileX = tx;
+      npc.pathTargetTileY = ty;
+      npc.path = Pathfinder.findPath(
+        npc.tileX,
+        npc.tileY,
+        tx,
+        ty,
+        map,
+        this.spatial,
+        npc.sessionId,
+      );
+    }
 
-    const result = this.movementSystem.tryMove(npc, primaryDir, map, now, tickCount, roomId);
-    if (!result.success && dx !== 0 && dy !== 0) {
-      const altDir =
-        primaryDir === Direction.LEFT || primaryDir === Direction.RIGHT
-          ? dy > 0
-            ? Direction.DOWN
-            : Direction.UP
-          : dx > 0
-            ? Direction.RIGHT
-            : Direction.LEFT;
-      this.movementSystem.tryMove(npc, altDir, map, now, tickCount, roomId);
+    if (npc.path.length === 0) {
+      // Target is unreachable or path fails.
+      // Fallback to a single naive step rather than freezing entirely.
+      const primaryDir = MathUtils.getDirection(npc.getPosition(), { x: tx, y: ty });
+      this.movementSystem.tryMove(npc, primaryDir, map, now, tickCount, roomId);
+      return;
+    }
+
+    // Peek next step
+    const nextStep = npc.path[0];
+    const dir = MathUtils.getDirection(npc.getPosition(), { x: nextStep.x, y: nextStep.y });
+
+    const result = this.movementSystem.tryMove(npc, dir, map, now, tickCount, roomId);
+    
+    if (result.success) {
+      // Successfully moved, consume the step
+      npc.path.shift();
+    } else {
+      // Path is blocked (e.g. by another newly moved entity)! Clear path to force recalculation next tick.
+      npc.path = [];
+
+      // Try a naive alt-move so we don't just stand still this tick.
+      if (dx !== 0 && dy !== 0) {
+        const primaryDir = MathUtils.getDirection(npc.getPosition(), { x: tx, y: ty });
+        const altDir =
+          primaryDir === Direction.LEFT || primaryDir === Direction.RIGHT
+            ? dy > 0
+              ? Direction.DOWN
+              : Direction.UP
+            : dx > 0
+              ? Direction.RIGHT
+              : Direction.LEFT;
+        this.movementSystem.tryMove(npc, altDir, map, now, tickCount, roomId);
+      }
     }
   }
 

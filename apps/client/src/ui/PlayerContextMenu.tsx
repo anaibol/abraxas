@@ -17,6 +17,7 @@ type PlayerContextMenuProps = {
   onFriendRequest: (sessionId: string, name: string) => void;
   onGroupInvite: (sessionId: string) => void;
   onTradeRequest: (sessionId: string) => void;
+  onGuildInvite?: (name: string) => void;
   onClose: () => void;
   onGMTeleportTo?: (sessionId: string) => void;
 };
@@ -26,6 +27,7 @@ export function PlayerContextMenu({
   onWhisper,
   onFriendRequest,
   onGroupInvite,
+  onGuildInvite,
   onTradeRequest,
   onClose,
   onGMTeleportTo,
@@ -84,6 +86,14 @@ export function PlayerContextMenu({
         onClose();
       },
     },
+    ...(onGuildInvite ? [{
+      label: t("context_menu.guild_invite", "Invite to Guild"),
+      color: T.gold,
+      onClick: () => {
+        onGuildInvite(target.name);
+        onClose();
+      },
+    }] : []),
     {
       label: t("context_menu.trade"),
       color: "#88ffcc",

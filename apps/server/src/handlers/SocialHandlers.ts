@@ -78,7 +78,7 @@ export class SocialHandlers {
     client: Client,
     data: ClientMessages[ClientMessageType.GuildInvite],
   ): void {
-    ctx.systems.guild.handleInvite(client, data.targetSessionId);
+    ctx.systems.guild.handleInvite(client, data.targetName);
   }
 
   static handleGuildAccept(

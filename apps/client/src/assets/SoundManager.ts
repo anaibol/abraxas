@@ -22,6 +22,9 @@ const BASE_SFX: Record<string, number> = {
   "sfx-click-hover": 0.2,
   "sfx-click-open": 0.4,
   "sfx-click-close": 0.4,
+  "sfx-levelup": 0.6,
+  "sfx-notification": 0.7,
+  "sfx-mount": 0.5,
 };
 
 export class SoundManager {
@@ -77,6 +80,15 @@ export class SoundManager {
   }
   playHeal() {
     this.play("sfx-heal");
+  }
+  playLevelUp() {
+    this.play("sfx-levelup");
+  }
+  playNotification() {
+    this.play("sfx-notification");
+  }
+  playMount() {
+    this.play("sfx-mount");
   }
 
   playUIClick() {

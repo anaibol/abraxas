@@ -64,7 +64,12 @@ export class GameEventHandler {
   }
 
   private onChat(data: ServerMessages[ServerMessageType.Chat]) {
-    if (data.channel === ChatChannel.Whisper || data.channel === ChatChannel.System) return;
+    if (data.channel === ChatChannel.Whisper || data.channel === ChatChannel.System) {
+      if (data.channel === ChatChannel.Whisper && !this.isSelf(data.senderId)) {
+        this.soundManager.playNotification();
+      }
+      return;
+    }
     this.spriteManager.showChatBubble(data.senderId, data.message);
   }
 
@@ -207,5 +212,8 @@ export class GameEventHandler {
 
   private onLevelUp(data: ServerMessages["level_up"]) {
     this.effectManager.playLevelUp(data.sessionId);
+    if (this.isSelf(data.sessionId)) {
+      this.soundManager.playLevelUp();
+    }
   }
 }

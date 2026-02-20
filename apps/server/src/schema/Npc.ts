@@ -17,6 +17,12 @@ export class Npc extends Char {
   spawnY: number = 0;
   /** Steps remaining in PATROL wander before returning to IDLE. */
   patrolStepsLeft: number = 0;
+  /** Cached A* path to follow. */
+  path: { x: number; y: number }[] = [];
+  /** X coordinate of the target the cached path goes to. */
+  pathTargetTileX: number = -1;
+  /** Y coordinate of the target the cached path goes to. */
+  pathTargetTileY: number = -1;
 
   getStats(): NpcStats | undefined {
     return NPC_STATS[this.type];
