@@ -106,7 +106,23 @@ export class GameEventHandler {
       if (this.isSelf(data.sessionId))
         this.onConsoleMessage?.(t("game.you_cast_spell"), "#aaaaff", "combat");
     }
-    this.soundManager.playSpell();
+    
+    const ability = ABILITIES[data.abilityId];
+    if (ability) {
+      if (ability.effect === "heal" || ability.effect === "aoe_heal" || ability.effect === "cleanse") {
+        this.soundManager.playHeal();
+      } else if (ability.effect === "buff") {
+        this.soundManager.playBuff();
+      } else if (ability.effect === "stealth") {
+        this.soundManager.playStealth();
+      } else if (ability.effect === "summon") {
+        this.soundManager.playSummon();
+      } else {
+        this.soundManager.playSpell();
+      }
+    } else {
+      this.soundManager.playSpell();
+    }
 
     this.effectManager.maybeLaunchProjectile(
       data.sessionId,
@@ -118,6 +134,11 @@ export class GameEventHandler {
 
   private onCastHit(data: ServerMessages["cast_hit"]) {
     this.effectManager.playSpellEffect(data.abilityId, data.targetTileX, data.targetTileY, data.sessionId);
+    
+    const ability = ABILITIES[data.abilityId];
+    if (ability && ability.damageSchool === "magical" && (ability.effect === "damage" || ability.effect === "aoe" || ability.effect === "debuff" || ability.effect === "leech")) {
+      this.soundManager.playMagicHit();
+    }
   }
 
   private onDamage(data: ServerMessages["damage"]) {

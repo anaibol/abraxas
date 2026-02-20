@@ -55,6 +55,8 @@ export const BASIC_ITEMS_BY_CLASS: Record<ClassType, ReadonlySet<string>> = {
     "ring_of_strength",
     ...BASIC_CONSUMABLES,
   ]),
+  NECROMANCER: new Set([...BASIC_CONSUMABLES]),
+  DRUID: new Set([...BASIC_CONSUMABLES]),
 };
 
 /** Potions every class starts with (3× HP + 3× mana). */
@@ -118,6 +120,14 @@ export const STARTING_EQUIPMENT: Record<ClassType, { items: string[]; gold: numb
       "ring_of_strength",
       ...STARTING_POTIONS,
     ],
+    gold: 100,
+  },
+  NECROMANCER: {
+    items: [...STARTING_POTIONS],
+    gold: 100,
+  },
+  DRUID: {
+    items: [...STARTING_POTIONS],
     gold: 100,
   },
 };

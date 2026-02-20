@@ -117,6 +117,8 @@ model Character {
   inventory  Inventory?
   bank       Bank?
   equipments Equipment[]
+
+  companions Companion[]
   questLog   CharacterQuest[]
 
   @@index([accountId])
@@ -262,4 +264,17 @@ model CharacterQuest {
 
   @@unique([characterId, questId])
   @@index([characterId, status])
+}
+
+model Companion {
+  id          String    @id @default(cuid())
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  type  String // e.g. "wolf", "skeleton", "horse"
+  level Int    @default(1)
+  exp   Int    @default(0)
+  hp    Int    @default(1)
+
+  @@index([characterId])
 }
