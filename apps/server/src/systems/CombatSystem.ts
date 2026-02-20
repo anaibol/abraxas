@@ -452,7 +452,7 @@ export class CombatSystem {
           targetSessionId: target.sessionId,
           amount: result.damage,
           hpAfter: target.hp,
-          type: "physical",
+          type: DamageSchool.PHYSICAL,
         });
 
         if (target.hp <= 0) {
@@ -507,7 +507,7 @@ export class CombatSystem {
         if (!isAlly || !candidate.alive) continue;
         const scalingStat = this.boosted(attacker, ability.scalingStat, now);
         const healAmount = calcHealAmount(ability.baseDamage, scalingStat, ability.scalingRatio);
-        const maxHp = this.boosted(candidate, "hp", now);
+        const maxHp = this.boosted(candidate, StatType.HP, now);
         candidate.hp = Math.min(maxHp, candidate.hp + healAmount);
         broadcast(ServerMessageType.Heal, {
           sessionId: candidate.sessionId,
@@ -680,7 +680,7 @@ export class CombatSystem {
     const isSelfCast = attacker.sessionId === target.sessionId;
     if (!isSelfCast && this.buffSystem.isInvulnerable(target.sessionId, now)) return;
 
-    const scalingStatName = ability.scalingStat || "int";
+    const scalingStatName = ability.scalingStat || StatType.INT;
     const scalingStatValue = this.boosted(attacker, scalingStatName, now);
 
     if (ability.effect === "stealth") {
@@ -719,7 +719,7 @@ export class CombatSystem {
         targetSessionId: target.sessionId,
         amount: damage,
         hpAfter: target.hp,
-        type: ability.damageSchool === "physical" ? "physical" : "magic",
+        type: ability.damageSchool === DamageSchool.PHYSICAL ? DamageSchool.PHYSICAL : "magic",
       });
       if (target.hp <= 0) {
         onDeath(target, attacker.sessionId);
@@ -739,7 +739,7 @@ export class CombatSystem {
         targetSessionId: target.sessionId,
         amount: damage,
         hpAfter: target.hp,
-        type: ability.damageSchool === "physical" ? "physical" : "magic",
+        type: ability.damageSchool === DamageSchool.PHYSICAL ? DamageSchool.PHYSICAL : "magic",
       });
       if (target.hp <= 0) {
         onDeath(target, attacker.sessionId);
@@ -767,7 +767,7 @@ export class CombatSystem {
       }
     } else if (ability.effect === "heal") {
       const heal = calcHealAmount(ability.baseDamage, scalingStatValue, ability.scalingRatio);
-      const maxHp = this.boosted(target, "hp", now);
+      const maxHp = this.boosted(target, StatType.HP, now);
       target.hp = Math.min(maxHp, target.hp + heal);
       broadcast(ServerMessageType.Heal, {
         sessionId: target.sessionId,
@@ -785,7 +785,7 @@ export class CombatSystem {
       this.buffSystem.addBuff(
         target.sessionId,
         ability.id,
-        ability.buffStat ?? "armor",
+        ability.buffStat ?? StatType.ARMOR,
         -(ability.buffAmount ?? 10),
         ability.durationMs ?? 5000,
         now,
@@ -799,7 +799,7 @@ export class CombatSystem {
       this.buffSystem.addBuff(
         target.sessionId,
         ability.id,
-        ability.buffStat ?? "armor",
+        ability.buffStat ?? StatType.ARMOR,
         ability.buffAmount ?? 10,
         ability.durationMs ?? 5000,
         now,
@@ -838,11 +838,11 @@ export class CombatSystem {
     scalingStatValue: number,
     now: number,
   ): number {
-    if (ability.damageSchool === "physical") {
-      const defenderArmor = this.boosted(target, "armor", now);
-      const defenderAgi = this.boosted(target, "agi", now);
+    if (ability.damageSchool === DamageSchool.PHYSICAL) {
+      const defenderArmor = this.boosted(target, StatType.ARMOR, now);
+      const defenderAgi = this.boosted(target, StatType.AGI, now);
       // STR-scaling abilities can be dodged; AGI-scaling (ranged) abilities cannot
-      if (ability.scalingStat !== "agi") {
+      if (ability.scalingStat !== StatType.AGI) {
         const dodgeChance = Math.max(0, (defenderAgi - 10) * 0.01);
         if (Math.random() < dodgeChance) return 0;
       }
@@ -851,7 +851,7 @@ export class CombatSystem {
     }
 
     // magical
-    const defenderInt = this.boosted(target, "int", now);
+    const defenderInt = this.boosted(target, StatType.INT, now);
     return calcSpellDamage(ability.baseDamage, scalingStatValue, ability.scalingRatio, defenderInt);
   }
 

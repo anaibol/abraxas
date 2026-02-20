@@ -5,6 +5,8 @@ import {
   ITEMS,
   LEVEL_UP_STATS,
   MAX_INVENTORY_SLOTS,
+  StatType,
+  ItemRarity,
   type StatBonuses,
 } from "@abraxas/shared";
 import { InventoryItem, ItemAffixSchema } from "../schema/InventoryItem";
@@ -44,7 +46,7 @@ export class InventorySystem {
     player: Player,
     itemId: string,
     quantity: number = 1,
-    instanceData?: { rarity: string; nameOverride?: string; affixes: { type: string; stat: string; value: number }[] },
+    instanceData?: { rarity: ItemRarity; nameOverride?: string; affixes: { type: string; stat: StatType; value: number }[] },
     onError?: (msg: string) => void,
   ): boolean {
     const def = ITEMS[itemId];

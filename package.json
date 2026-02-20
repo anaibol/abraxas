@@ -12,7 +12,10 @@
     "test": "bun test --cwd apps/server",
     "lint": "bun x eslint .",
     "generate:world": "bun run packages/shared/scripts/generate-world.ts",
-    "check-translations": "node check_translations.js"
+    "check-translations": "node check_translations.js",
+    "check:i18n": "node check_i18n.js",
+    "check:assets": "bun check_assets.ts",
+    "cleanup:assets": "bun check_assets.ts --cleanup"
   },
   "devDependencies": {
     "@types/express": "^5.0.6"

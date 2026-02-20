@@ -12,6 +12,10 @@ export class Npc extends Char {
   @type("uint8") level: number = 1;
   @type("uint32") exp: number = 0;
 
+  @type("boolean") isUnique: boolean = false;
+  @type("string") uniqueId?: string;
+  @type("string") dbId?: string;
+
   hp: number = 0;
   maxHp: number = 0;
 

@@ -224,34 +224,34 @@ export type AbilityEffect =
 
 export type Ability = {
   id: string;
-  requiredLevel?: number;
-  rangeTiles: number;
+  key: string;
+  requiredLevel: number;
   manaCost: number;
   baseDamage: number;
   scalingStat: StatType;
   scalingRatio: number;
   cooldownMs: number;
   windupMs: number;
-  effect: AbilityEffect;
+  effect: string | AbilityEffect | StatType;
   /**
    * Determines the damage formula and mitigation used when this ability deals damage.
    * "physical" uses armor reduction (and dodge for melee-range abilities).
    * "magical" uses INT-based magic resistance.
    */
   damageSchool: DamageSchool;
-  key: string;
   fxId: number;
+  rangeTiles?: number;
   durationMs?: number;
   aoeRadius?: number;
   buffStat?: StatType;
   buffAmount?: number;
+  summonType?: string;
   soulCost?: number;
   dotDamage?: number;
   dotIntervalMs?: number;
   dotDurationMs?: number;
   /** Fraction of damage returned as healing to the caster (used by "leech" effect). */
   leechRatio?: number;
-  summonType?: string;
   appearanceOverride?: { bodyId: number; headId: number };
 };
 
@@ -264,6 +264,9 @@ export interface InventoryEntry {
   itemId: string;
   quantity: number;
   slotIndex: number;
+  rarity?: ItemRarity;
+  nameOverride?: string;
+  affixes?: ItemAffix[];
 }
 
 export interface EquipmentData {

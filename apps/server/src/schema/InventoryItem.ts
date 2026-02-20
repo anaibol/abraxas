@@ -12,7 +12,7 @@ export class InventoryItem extends Schema {
   @type("uint8") slotIndex: number = 0;
 
   // Instance data
-  @type("string") rarity: string = "common";
+  @type("string") rarity: string = ItemRarity.COMMON;
   @type("string") nameOverride: string = "";
   @type([ItemAffixSchema]) affixes = new ArraySchema<ItemAffixSchema>();
 }

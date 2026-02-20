@@ -1,4 +1,4 @@
-import { DROP_EXPIRY_MS } from "@abraxas/shared";
+import { DROP_EXPIRY_MS, ItemRarity, StatType } from "@abraxas/shared";
 import type { MapSchema } from "@colyseus/schema";
 import { Drop } from "../schema/Drop";
 import { InventoryItem, ItemAffixSchema } from "../schema/InventoryItem";
@@ -26,9 +26,9 @@ export class DropSystem {
     tileY: number,
     itemId: string,
     quantity: number,
-    instanceData?: { rarity: string; nameOverride?: string; affixes: { type: string; stat: string; value: number }[] }
+    instanceData?: { rarity: ItemRarity; nameOverride?: string; affixes: { type: string; stat: StatType; value: number }[] }
   ): Drop {
-    const drop = this.createDrop(drops, tileX, tileY, "item");
+    const drop = this.createDrop(drops, tileX, tileY, DropType.ITEM);
     drop.itemId = itemId;
     drop.quantity = quantity;
     
@@ -48,7 +48,7 @@ export class DropSystem {
   }
 
   spawnGoldDrop(drops: MapSchema<Drop>, tileX: number, tileY: number, goldAmount: number): Drop {
-    const drop = this.createDrop(drops, tileX, tileY, "gold");
+    const drop = this.createDrop(drops, tileX, tileY, DropType.GOLD);
     drop.goldAmount = goldAmount;
     return drop;
   }
@@ -70,20 +70,24 @@ export class DropSystem {
     }
 
     // Handle gold drops
-    if (drop.itemType === "gold") {
+    if (drop.itemType === DropType.GOLD) {
       player.gold += drop.goldAmount;
       drops.delete(dropId);
       return true;
     }
 
     // Handle item drops
-    if (drop.itemType === "item" && drop.itemId) {
-      const instanceData = {
-          rarity: drop.rarity,
+    if (drop.itemType === DropType.ITEM && drop.itemId) {
+      const data = {
+          rarity: drop.rarity as ItemRarity,
           nameOverride: drop.nameOverride,
-          affixes: drop.affixes.map(a => ({ type: a.type, stat: a.stat, value: a.value }))
+          affixes: Array.from(drop.affixes).map((a: ItemAffixSchema) => ({
+            type: a.type,
+            stat: a.stat as StatType,
+            value: a.value
+          }))
       };
-      if (!this.inventorySystem.addItem(player, drop.itemId, drop.quantity, instanceData)) {
+      if (!this.inventorySystem.addItem(player, drop.itemId, drop.quantity, data)) {
         onError?.("Inventory full");
         return false; // Inventory full
       }

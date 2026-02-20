@@ -67,18 +67,19 @@ export class TickSystem {
     // 0. Update time of day (0.005 per tick = 200 ticks per hour = 20 seconds. 24*20 = 480s = 8 min day cycle)
     // Using 0.0025 for a 16 min day cycle or 0.00166 for 24 min cycle.
     // Let's go with 0.00166 for ~24 min per full cycle.
-    state.timeOfDay += 0.00166;
+    state.timeOfDay += 0.1; // Fast cycle for demo
     if (state.timeOfDay >= 24) {
       state.timeOfDay = 0;
     }
 
-    // Basic weather randomization every 1000 ticks (~1.6 min)
-    if (state.tick % 1000 === 0) {
+    // Fast weather randomization for demo (every 100 ticks)
+    if (state.tick % 100 === 0) {
       const rnd = Math.random();
-      if (rnd < 0.7) state.weather = "clear";
-      else if (rnd < 0.85) state.weather = "rain";
+      if (rnd < 0.3) state.weather = "clear";
+      else if (rnd < 0.6) state.weather = "rain";
       else state.weather = "snow";
     }
+
     // 1. Buffs — resolves DoTs and expires effects for both Players and NPCs
     systems.buff.tick(
       now,
