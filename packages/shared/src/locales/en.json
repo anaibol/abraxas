@@ -384,6 +384,9 @@
     "great_health_potion": {
       "name": "Great Health Potion"
     },
+    "great_mana_potion": {
+      "name": "Great Mana Potion"
+    },
     "lasso": {
       "name": "Lasso"
     },
@@ -694,338 +697,338 @@
       "name": "Ancient Coin"
     }
   },
-"spells": {
-"war_cry": {
-  "name": "War Cry",
-  "desc": "Bellow a battle cry, boosting your STR for 8s."
-},
-"shield_bash": {
-  "name": "Shield Bash",
-  "desc": "Slam your shield into a foe, stunning them for 2s."
-},
-"whirlwind": {
-  "name": "Whirlwind",
-  "desc": "Spin your weapon, damaging all adjacent enemies."
-},
-"battle_shout": {
-  "name": "Battle Shout",
-  "desc": "Shout that reduces armor of all nearby enemies for 6s."
-},
-"fireball": {
-  "name": "Fireball",
-  "desc": "Hurl a blazing bolt at a distant target."
-},
-"ice_bolt": {
-  "name": "Ice Bolt",
-  "desc": "A shard of ice that pierces through magical defenses."
-},
-"thunderstorm": {
-  "name": "Thunderstorm",
-  "desc": "Call down lightning at a location, hitting all nearby enemies."
-},
-"mana_shield": {
-  "name": "Mana Shield",
-  "desc": "Convert mana into a protective arcane shell (+armor for 6s)."
-},
-"frost_nova": {
-  "name": "Frost Nova",
-  "desc": "Explosion of frost that damages all enemies around you."
-},
-"arcane_surge": {
-  "name": "Arcane Surge",
-  "desc": "Channel immense arcane power into a devastating bolt."
-},
-"multi_shot": {
-  "name": "Multi Shot",
-  "desc": "Loose a volley of arrows hitting enemies in a small area."
-},
-"poison_arrow": {
-  "name": "Poison Arrow",
-  "desc": "Arrow coated in toxin that poisons the target over 5s."
-},
-"evasion": {
-  "name": "Evasion",
-  "desc": "Drastically increase AGI and dodge chance for 5s."
-},
-"aimed_shot": {
-  "name": "Aimed Shot",
-  "desc": "A carefully aimed shot from across the entire battlefield."
-},
-"mark_target": {
-  "name": "Mark Target",
-  "desc": "Mark an enemy, reducing their armor for 8s."
-},
-"backstab": {
-  "name": "Backstab",
-  "desc": "A vicious stab dealing massive damage, doubled from stealth."
-},
-"stealth": {
-  "name": "Stealth",
-  "desc": "Vanish from sight, becoming invisible for 6s."
-},
-"envenom": {
-  "name": "Envenom",
-  "desc": "Coat your blade in venom, poisoning the target over 6s."
-},
-"smoke_bomb": {
-  "name": "Smoke Bomb",
-  "desc": "Throw a smoke bomb that stuns nearby enemies for 1.5s."
-},
-"hemorrhage": {
-  "name": "Hemorrhage",
-  "desc": "Drain life from a foe, healing yourself for half the damage."
-},
-"holy_strike": {
-  "name": "Holy Strike",
-  "desc": "A blessed melee blow that smites your enemy with holy light."
-},
-"heal": {
-  "name": "Heal",
-  "desc": "Channel divine energy to restore your own health."
-},
-"divine_shield": {
-  "name": "Divine Shield",
-  "desc": "Surround yourself in holy light, becoming invulnerable for 4s."
-},
-"holy_nova": {
-  "name": "Holy Nova",
-  "desc": "Burst of holy light that heals all nearby allies."
-},
-"bear_form": {
-  "name": "Bear Form",
-  "desc": "Channel the spirit of nature to transform into a bear, massively increasing your HP."
-},
-"cat_form": {
-  "name": "Cat Form",
-  "desc": "Transform into a swift cat, increasing Agility and Movement Speed."
-},
-"tree_form": {
-  "name": "Tree Form",
-  "desc": "Take the form of an ancient tree, boosting Intelligence and Mana regeneration."
-},
-"mimic": {
-  "name": "Mimic",
-  "desc": "Copy the appearance of any creature you can see."
-},
-"summon_zombie": {
-  "name": "Summon Zombie",
-  "desc": "Consume souls to raise a sturdy zombie minion."
-},
-"soul_blast": {
-  "name": "Soul Blast",
-  "desc": "Unleash collected souls in a devastating blast of necrotic energy."
-},
-"curse": {
-  "name": "Curse",
-  "desc": "Afflict an enemy with a dark curse, lowering their INT for 10s."
-},
-"smite": {
-  "name": "Smite",
-  "desc": "Launch a holy bolt at an enemy target."
-},
-"judgment": {
-  "name": "Judgment",
-  "desc": "A consecrated melee blow that sears enemies with divine force."
-},
-"lay_on_hands": {
-  "name": "Lay on Hands",
-  "desc": "Channel the Light to restore a large amount of your health."
-},
-"consecration": {
-  "name": "Consecration",
-  "desc": "Radiate holy fire, scorching all enemies in the area around you."
-},
-"aura_of_protection": {
-  "name": "Aura of Protection",
-  "desc": "Envelop yourself in divine plate, massively boosting armor for 8s."
-},
-"holy_bolt": {
-  "name": "Holy Bolt",
-  "desc": "Launch a concentrated bolt of divine light at a distant enemy."
-},
-"summon_skeleton": {
-  "name": "Summon Skeleton",
-  "desc": "Raise a loyal skeletal warrior to fight by your side."
-},
-"shadow_bolt": {
-  "name": "Shadow Bolt",
-  "desc": "A bolt of dark energy that strikes with necrotic force."
-},
-"soul_drain": {
-  "name": "Soul Drain",
-  "desc": "Drain the lifeforce of a target, healing yourself."
-},
-"banshee_wail": {
-  "name": "Banshee Wail",
-  "desc": "A terrifying scream that weakens the armor of all nearby foes."
-},
-"cleanse_paralysis": {
-  "name": "Cleanse Stun",
-  "desc": "Remove all stun and paralysis effects from an ally."
-},
-"detect_invisibility": {
-  "name": "True Sight",
-  "desc": "Briefly reveal all stealthed units in a large area."
-}
-},
-"item_slot": {
-"weapon": "Weapon",
-"armor": "Armor",
-"shield": "Shield",
-"helmet": "Helmet",
-"ring": "Ring",
-"consumable": "Consumable"
-},
-"item_rarity": {
-"common": "Common",
-"uncommon": "Uncommon",
-"rare": "Rare"
-},
-"ui": {
-"merchant": {
-  "title": "MERCHANT ESTABLISHMENT",
-  "purse": "PURSE",
-  "tab_buy": "ACQUIRE",
-  "tab_sell": "LIQUIDATE",
-  "no_items_sell": "Your coffers contain no tradable wares",
-  "unit_price": "Unit Price",
-  "quantity": "QUANTITY",
-  "total_cost": "TOTAL COST",
-  "confirm_buy": "CONFIRM PURCHASE",
-  "confirm_sell": "LIQUIDATE ASSETS",
-  "value_label": "Value"
-},
-"bank": {
-  "title": "Royal Vault",
-  "subtitle": "Secure Asset Repository",
-  "inventory_label": "PERSONAL INVENTORY",
-  "vault_label": "VAULT STORAGE",
-  "held_in_bags": "Held in bags",
-  "stored_in_vault": "Stored in vault",
-  "quantity": "QUANTITY",
-  "deposit": "DEPOSIT",
-  "withdraw": "WITHDRAW",
-  "empty_selection": "Select an item to manage your assets"
-},
-"quests": {
-  "title": "QUESTS",
-  "no_active": "No active quests",
-  "available": "Available",
-  "see_npc": "See {{name}}",
-  "turn_in_hint": "Talk to {{name}} to turn in",
-  "kill_target": "Kill {{target}}s",
-  "talk_to_target": "Talk to {{target}}",
-  "accepted": "Quest Accepted: {{title}}",
-  "completed": "Quest Completed: {{title}} (+{{exp}} XP, +{{gold}} Gold)"
-},
-"dialogue": {
-  "accept_quest": "Accept Quest",
-  "maybe_later": "Maybe later",
-  "complete_quest": "Complete Quest",
-  "goodbye": "Goodbye",
-  "hello_traveler": "Hello there, traveler!",
-  "accept_prompt": "Do you accept this quest?",
-  "reward_prompt": "Great job on {{title}}! Here is your reward."
-}
-},
-"scoreboard": {
-"title": "Scoreboard",
-"hold_tab_hint": "Hold TAB to view",
-"you": "(you)",
-"top_npc_hunters": "Top NPC Hunters",
-"no_kills": "No kills recorded yet",
-"top_levels": "Top Levels",
-"level_private": "Level is private — only you can see yours",
-"top_pvp": "Top PvP Warriors",
-"no_pvp_kills": "No PvP kills recorded yet",
-"online_players": "Online Players",
-"key_bindings": "Key Bindings",
-"lv_prefix": "Lv.",
-"keybind_categories": {
-  "movement": "Movement",
-  "combat": "Combat",
-  "items": "Items",
-  "social": "Social",
-  "ui": "UI"
-},
-"keybind_labels": {
-  "move": "Move",
-  "melee_attack": "Melee attack",
-  "ranged_attack": "Ranged attack",
-  "cast_spell": "Cast spell",
-  "select_tile": "Select target tile",
-  "pickup": "Pick up item",
-  "drop": "Drop selected item",
-  "open_chat": "Open chat",
-  "close_chat": "Close chat / Cancel",
-  "push_to_talk": "Push to talk (voice)",
-  "scoreboard": "Scoreboard",
-  "meditate": "Meditate (regenerate mana)",
-  "toggle_music": "Toggle music mute"
-}
-},
-"death": {
-"you_died": "YOU DIED",
-"respawning": "Respawning in {{count}}s"
-},
-"context_menu": {
-"whisper": "💬 Whisper",
-"add_friend": "➕ Add Friend",
-"group_invite": "⚔️ Invite to Group",
-"guild_invite": "🏰 Invite to Guild",
-"trade": "🤝 Trade",
-"tame": "🐾 Tame"
-},
-"kill_feed": {
-"killed": "killed"
-},
-"loading": {
-"connecting": "CONNECTING TO ABRAXAS",
-"searching": "Searching for portal...",
-"tips": [
-  "Abraxas was once a floating citadel of the High Magi.",
-  "Ancient runes suggest the Arena was built on a ley line junction.",
-  "Never turn your back on a Rogue in the dark corners of the Arena.",
-  "Warriors favor strength, but a focused mind can pierce any plate.",
-  "Goblins are cowards, but their numbers can overwhelm the unwary.",
-  "The Lich of the Depths has not been seen for centuries... until now.",
-  "Potions are brewed from the essence of fallen elementals."
-]
-},
-"trade": {
-"title": "Trade",
-"confirmed_badge": "✓ CONFIRMED",
-"nothing_offered": "Nothing offered",
-"your_offer": "Your Offer",
-"their_offer": "{{name}}'s Offer",
-"offer_gold": "Offer Gold (you have {{gold}}g)",
-"gold": "gold",
-"add_items_hint": "Add Items (click to add · click offer to remove)",
-"offered_items": "Offered items (click to remove):",
-"waiting_for": "✓ You confirmed. Waiting for {{name}}…",
-"cancel_trade": "Cancel Trade",
-"confirm_trade": "Confirm Trade",
-"cancel": "Cancel"
-},
-"drop_dialog": {
-"title": "Drop Item",
-"quantity": "Quantity (1 – {{max}})",
-"cancel": "Cancel",
-"drop": "Drop"
-},
-"console": {
-"tab_all": "ALL",
-"tab_global": "GLOBAL",
-"tab_group": "GROUP",
-"tab_guild": "GUILD",
-"tab_whisper": "WHISPER",
-"tab_system": "SYSTEM",
-"tab_combat": "COMBAT",
-"placeholder_group": "Message Group...",
-"placeholder_default": "Type message..."
-},
-"quest_status": {
-"IN_PROGRESS": "In Progress",
-"COMPLETED": "Completed"
-}
+  "spells": {
+    "war_cry": {
+      "name": "War Cry",
+      "desc": "Bellow a battle cry, boosting your STR for 8s."
+    },
+    "shield_bash": {
+      "name": "Shield Bash",
+      "desc": "Slam your shield into a foe, stunning them for 2s."
+    },
+    "whirlwind": {
+      "name": "Whirlwind",
+      "desc": "Spin your weapon, damaging all adjacent enemies."
+    },
+    "battle_shout": {
+      "name": "Battle Shout",
+      "desc": "Shout that reduces armor of all nearby enemies for 6s."
+    },
+    "fireball": {
+      "name": "Fireball",
+      "desc": "Hurl a blazing bolt at a distant target."
+    },
+    "ice_bolt": {
+      "name": "Ice Bolt",
+      "desc": "A shard of ice that pierces through magical defenses."
+    },
+    "thunderstorm": {
+      "name": "Thunderstorm",
+      "desc": "Call down lightning at a location, hitting all nearby enemies."
+    },
+    "mana_shield": {
+      "name": "Mana Shield",
+      "desc": "Convert mana into a protective arcane shell (+armor for 6s)."
+    },
+    "frost_nova": {
+      "name": "Frost Nova",
+      "desc": "Explosion of frost that damages all enemies around you."
+    },
+    "arcane_surge": {
+      "name": "Arcane Surge",
+      "desc": "Channel immense arcane power into a devastating bolt."
+    },
+    "multi_shot": {
+      "name": "Multi Shot",
+      "desc": "Loose a volley of arrows hitting enemies in a small area."
+    },
+    "poison_arrow": {
+      "name": "Poison Arrow",
+      "desc": "Arrow coated in toxin that poisons the target over 5s."
+    },
+    "evasion": {
+      "name": "Evasion",
+      "desc": "Drastically increase AGI and dodge chance for 5s."
+    },
+    "aimed_shot": {
+      "name": "Aimed Shot",
+      "desc": "A carefully aimed shot from across the entire battlefield."
+    },
+    "mark_target": {
+      "name": "Mark Target",
+      "desc": "Mark an enemy, reducing their armor for 8s."
+    },
+    "backstab": {
+      "name": "Backstab",
+      "desc": "A vicious stab dealing massive damage, doubled from stealth."
+    },
+    "stealth": {
+      "name": "Stealth",
+      "desc": "Vanish from sight, becoming invisible for 6s."
+    },
+    "envenom": {
+      "name": "Envenom",
+      "desc": "Coat your blade in venom, poisoning the target over 6s."
+    },
+    "smoke_bomb": {
+      "name": "Smoke Bomb",
+      "desc": "Throw a smoke bomb that stuns nearby enemies for 1.5s."
+    },
+    "hemorrhage": {
+      "name": "Hemorrhage",
+      "desc": "Drain life from a foe, healing yourself for half the damage."
+    },
+    "holy_strike": {
+      "name": "Holy Strike",
+      "desc": "A blessed melee blow that smites your enemy with holy light."
+    },
+    "heal": {
+      "name": "Heal",
+      "desc": "Channel divine energy to restore your own health."
+    },
+    "divine_shield": {
+      "name": "Divine Shield",
+      "desc": "Surround yourself in holy light, becoming invulnerable for 4s."
+    },
+    "holy_nova": {
+      "name": "Holy Nova",
+      "desc": "Burst of holy light that heals all nearby allies."
+    },
+    "bear_form": {
+      "name": "Bear Form",
+      "desc": "Channel the spirit of nature to transform into a bear, massively increasing your HP."
+    },
+    "cat_form": {
+      "name": "Cat Form",
+      "desc": "Transform into a swift cat, increasing Agility and Movement Speed."
+    },
+    "tree_form": {
+      "name": "Tree Form",
+      "desc": "Take the form of an ancient tree, boosting Intelligence and Mana regeneration."
+    },
+    "mimic": {
+      "name": "Mimic",
+      "desc": "Copy the appearance of any creature you can see."
+    },
+    "summon_zombie": {
+      "name": "Summon Zombie",
+      "desc": "Consume souls to raise a sturdy zombie minion."
+    },
+    "soul_blast": {
+      "name": "Soul Blast",
+      "desc": "Unleash collected souls in a devastating blast of necrotic energy."
+    },
+    "curse": {
+      "name": "Curse",
+      "desc": "Afflict an enemy with a dark curse, lowering their INT for 10s."
+    },
+    "smite": {
+      "name": "Smite",
+      "desc": "Launch a holy bolt at an enemy target."
+    },
+    "judgment": {
+      "name": "Judgment",
+      "desc": "A consecrated melee blow that sears enemies with divine force."
+    },
+    "lay_on_hands": {
+      "name": "Lay on Hands",
+      "desc": "Channel the Light to restore a large amount of your health."
+    },
+    "consecration": {
+      "name": "Consecration",
+      "desc": "Radiate holy fire, scorching all enemies in the area around you."
+    },
+    "aura_of_protection": {
+      "name": "Aura of Protection",
+      "desc": "Envelop yourself in divine plate, massively boosting armor for 8s."
+    },
+    "holy_bolt": {
+      "name": "Holy Bolt",
+      "desc": "Launch a concentrated bolt of divine light at a distant enemy."
+    },
+    "summon_skeleton": {
+      "name": "Summon Skeleton",
+      "desc": "Raise a loyal skeletal warrior to fight by your side."
+    },
+    "shadow_bolt": {
+      "name": "Shadow Bolt",
+      "desc": "A bolt of dark energy that strikes with necrotic force."
+    },
+    "soul_drain": {
+      "name": "Soul Drain",
+      "desc": "Drain the lifeforce of a target, healing yourself."
+    },
+    "banshee_wail": {
+      "name": "Banshee Wail",
+      "desc": "A terrifying scream that weakens the armor of all nearby foes."
+    },
+    "cleanse_paralysis": {
+      "name": "Cleanse Stun",
+      "desc": "Remove all stun and paralysis effects from an ally."
+    },
+    "detect_invisibility": {
+      "name": "True Sight",
+      "desc": "Briefly reveal all stealthed units in a large area."
+    }
+  },
+  "item_slot": {
+    "weapon": "Weapon",
+    "armor": "Armor",
+    "shield": "Shield",
+    "helmet": "Helmet",
+    "ring": "Ring",
+    "consumable": "Consumable"
+  },
+  "item_rarity": {
+    "common": "Common",
+    "uncommon": "Uncommon",
+    "rare": "Rare"
+  },
+  "ui": {
+    "merchant": {
+      "title": "MERCHANT ESTABLISHMENT",
+      "purse": "PURSE",
+      "tab_buy": "ACQUIRE",
+      "tab_sell": "LIQUIDATE",
+      "no_items_sell": "Your coffers contain no tradable wares",
+      "unit_price": "Unit Price",
+      "quantity": "QUANTITY",
+      "total_cost": "TOTAL COST",
+      "confirm_buy": "CONFIRM PURCHASE",
+      "confirm_sell": "LIQUIDATE ASSETS",
+      "value_label": "Value"
+    },
+    "bank": {
+      "title": "Royal Vault",
+      "subtitle": "Secure Asset Repository",
+      "inventory_label": "PERSONAL INVENTORY",
+      "vault_label": "VAULT STORAGE",
+      "held_in_bags": "Held in bags",
+      "stored_in_vault": "Stored in vault",
+      "quantity": "QUANTITY",
+      "deposit": "DEPOSIT",
+      "withdraw": "WITHDRAW",
+      "empty_selection": "Select an item to manage your assets"
+    },
+    "quests": {
+      "title": "QUESTS",
+      "no_active": "No active quests",
+      "available": "Available",
+      "see_npc": "See {{name}}",
+      "turn_in_hint": "Talk to {{name}} to turn in",
+      "kill_target": "Kill {{target}}s",
+      "talk_to_target": "Talk to {{target}}",
+      "accepted": "Quest Accepted: {{title}}",
+      "completed": "Quest Completed: {{title}} (+{{exp}} XP, +{{gold}} Gold)"
+    },
+    "dialogue": {
+      "accept_quest": "Accept Quest",
+      "maybe_later": "Maybe later",
+      "complete_quest": "Complete Quest",
+      "goodbye": "Goodbye",
+      "hello_traveler": "Hello there, traveler!",
+      "accept_prompt": "Do you accept this quest?",
+      "reward_prompt": "Great job on {{title}}! Here is your reward."
+    }
+  },
+  "scoreboard": {
+    "title": "Scoreboard",
+    "hold_tab_hint": "Hold TAB to view",
+    "you": "(you)",
+    "top_npc_hunters": "Top NPC Hunters",
+    "no_kills": "No kills recorded yet",
+    "top_levels": "Top Levels",
+    "level_private": "Level is private — only you can see yours",
+    "top_pvp": "Top PvP Warriors",
+    "no_pvp_kills": "No PvP kills recorded yet",
+    "online_players": "Online Players",
+    "key_bindings": "Key Bindings",
+    "lv_prefix": "Lv.",
+    "keybind_categories": {
+      "movement": "Movement",
+      "combat": "Combat",
+      "items": "Items",
+      "social": "Social",
+      "ui": "UI"
+    },
+    "keybind_labels": {
+      "move": "Move",
+      "melee_attack": "Melee attack",
+      "ranged_attack": "Ranged attack",
+      "cast_spell": "Cast spell",
+      "select_tile": "Select target tile",
+      "pickup": "Pick up item",
+      "drop": "Drop selected item",
+      "open_chat": "Open chat",
+      "close_chat": "Close chat / Cancel",
+      "push_to_talk": "Push to talk (voice)",
+      "scoreboard": "Scoreboard",
+      "meditate": "Meditate (regenerate mana)",
+      "toggle_music": "Toggle music mute"
+    }
+  },
+  "death": {
+    "you_died": "YOU DIED",
+    "respawning": "Respawning in {{count}}s"
+  },
+  "context_menu": {
+    "whisper": "💬 Whisper",
+    "add_friend": "➕ Add Friend",
+    "group_invite": "⚔️ Invite to Group",
+    "guild_invite": "🏰 Invite to Guild",
+    "trade": "🤝 Trade",
+    "tame": "🐾 Tame"
+  },
+  "kill_feed": {
+    "killed": "killed"
+  },
+  "loading": {
+    "connecting": "CONNECTING TO ABRAXAS",
+    "searching": "Searching for portal...",
+    "tips": [
+      "Abraxas was once a floating citadel of the High Magi.",
+      "Ancient runes suggest the Arena was built on a ley line junction.",
+      "Never turn your back on a Rogue in the dark corners of the Arena.",
+      "Warriors favor strength, but a focused mind can pierce any plate.",
+      "Goblins are cowards, but their numbers can overwhelm the unwary.",
+      "The Lich of the Depths has not been seen for centuries... until now.",
+      "Potions are brewed from the essence of fallen elementals."
+    ]
+  },
+  "trade": {
+    "title": "Trade",
+    "confirmed_badge": "✓ CONFIRMED",
+    "nothing_offered": "Nothing offered",
+    "your_offer": "Your Offer",
+    "their_offer": "{{name}}'s Offer",
+    "offer_gold": "Offer Gold (you have {{gold}}g)",
+    "gold": "gold",
+    "add_items_hint": "Add Items (click to add · click offer to remove)",
+    "offered_items": "Offered items (click to remove):",
+    "waiting_for": "✓ You confirmed. Waiting for {{name}}…",
+    "cancel_trade": "Cancel Trade",
+    "confirm_trade": "Confirm Trade",
+    "cancel": "Cancel"
+  },
+  "drop_dialog": {
+    "title": "Drop Item",
+    "quantity": "Quantity (1 – {{max}})",
+    "cancel": "Cancel",
+    "drop": "Drop"
+  },
+  "console": {
+    "tab_all": "ALL",
+    "tab_global": "GLOBAL",
+    "tab_group": "GROUP",
+    "tab_guild": "GUILD",
+    "tab_whisper": "WHISPER",
+    "tab_system": "SYSTEM",
+    "tab_combat": "COMBAT",
+    "placeholder_group": "Message Group...",
+    "placeholder_default": "Type message..."
+  },
+  "quest_status": {
+    "IN_PROGRESS": "In Progress",
+    "COMPLETED": "Completed"
+  }
 }
