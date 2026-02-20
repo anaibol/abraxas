@@ -3,7 +3,7 @@ import { DIRECTION_DELTA, ITEMS } from "@abraxas/shared";
 import { logger } from "../logger";
 import type { Entity, SpatialLookup } from "../utils/SpatialLookup";
 
-export type MoveResult = {
+type MoveResult = {
   success: boolean;
   warp?: {
     targetMap: string;

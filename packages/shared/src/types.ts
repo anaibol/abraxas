@@ -341,6 +341,7 @@ export type ServerMessages = {
     tileTypes?: number[][];
     warps?: Warp[];
     role?: string;
+    safeZones?: { x: number; y: number; w: number; h: number }[];
   };
   [ServerMessageType.AttackStart]: { sessionId: string; facing: Direction };
   [ServerMessageType.AttackHit]: {

@@ -3,13 +3,13 @@ import { Box, Grid, Text } from "@chakra-ui/react";
 import { useAudio } from "../../contexts/AudioContext";
 import { T } from "../tokens";
 
-export type SlotItem = {
+type SlotItem = {
   itemId: string;
   quantity: number;
   slotIndex: number;
 };
 
-export type ItemGridProps = {
+type ItemGridProps = {
   slots: { itemId: string; quantity: number; slotIndex: number }[];
   selectedSlotIndex: number | null;
   onSelect: (slot: SlotItem) => void;

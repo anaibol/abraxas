@@ -3,7 +3,7 @@ import type { Client } from "@colyseus/core";
 import { logger } from "../logger";
 import type { Player } from "../schema/Player";
 
-export type BroadcastFn = <T extends ServerMessageType>(
+type BroadcastFn = <T extends ServerMessageType>(
   type: T,
   payload: ServerMessages[T],
 ) => void;

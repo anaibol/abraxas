@@ -2,7 +2,7 @@ import { Button as ChakraButton, type ButtonProps as ChakraButtonProps } from "@
 import React from "react";
 import { useAudio } from "../../contexts/AudioContext";
 
-export type ButtonProps = ChakraButtonProps & {
+type ButtonProps = ChakraButtonProps & {
   disableSound?: boolean;
 };
 
