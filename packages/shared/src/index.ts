@@ -5,6 +5,7 @@ export * from "./i18n";
 export * from "./items";
 export * from "./loot";
 export * from "./config/affixes";
+export * from "./config/world_events";
 export * from "./types";
 export * from "./assets";
 export * from "./utils/MathUtils";

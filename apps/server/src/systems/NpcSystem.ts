@@ -59,6 +59,8 @@ export class NpcSystem {
   private respawns: RespawnEntry[] = [];
   /** Cached map reference updated each tick; used by handlers that need map access. */
   private currentMap!: TileMap;
+  /** Broadcast fn set at the top of each tick and reused by bark helpers. */
+  private broadcastFn!: BroadcastFn;
 
   constructor(
     private state: GameState,
@@ -221,8 +223,9 @@ export class NpcSystem {
   }
 
   tick(map: TileMap, now: number, tickCount: number, roomId: string, broadcast: BroadcastFn): void {
-    // Store map reference for use in state handlers
+    // Store references for use in state handlers
     this.currentMap = map;
+    this.broadcastFn = broadcast;
     this.respawns = this.respawns.filter((r) => {
       if (now - r.deadAt < NPC_RESPAWN_TIME_MS) return true;
       const safe = findSafeSpawn(r.spawnX, r.spawnY, map, this.spatial);
@@ -288,6 +291,7 @@ export class NpcSystem {
     if (target) {
       npc.targetId = target.sessionId;
       npc.state = NpcState.CHASE;
+      this.tryBark(npc, "aggro", this.broadcastFn);
       return;
     }
 

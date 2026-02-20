@@ -18,6 +18,7 @@ import type { DropSystem } from "../systems/DropSystem";
 import type { NpcSystem } from "../systems/NpcSystem";
 import type { QuestSystem } from "../systems/QuestSystem";
 import type { RespawnSystem } from "../systems/RespawnSystem";
+import type { WorldEventSystem } from "../systems/WorldEventSystem";
 import type { Entity, SpatialLookup } from "../utils/SpatialLookup";
 import { findSafeSpawn } from "../utils/spawnUtils";
 
@@ -33,6 +34,7 @@ interface TickOptions {
     respawn: RespawnSystem;
     quests: QuestSystem;
     spatial: SpatialLookup;
+    worldEvent: WorldEventSystem;
   };
   broadcast: BroadcastFn;
   onEntityDeath: (entity: Entity, killerSessionId?: string) => void;
@@ -89,6 +91,10 @@ export class TickSystem {
 
     // 2. NPCs
     systems.npc.tick(map, now, state.tick, roomId, broadcast);
+    systems.npc.tickRareSpawns(map, now, broadcast);
+
+    // 2b. World Events
+    systems.worldEvent.tick(map, now, broadcast);
 
     // 3. Combat
     const { onEntityDeath, onSummon, findClient } = this.opts;

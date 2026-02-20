@@ -44,6 +44,7 @@ import { RespawnSystem } from "../systems/RespawnSystem";
 import { SocialSystem } from "../systems/SocialSystem";
 import { TickSystem } from "../systems/TickSystem";
 import { TradeSystem } from "../systems/TradeSystem";
+import { WorldEventSystem } from "../systems/WorldEventSystem";
 import { type Entity, SpatialLookup } from "../utils/SpatialLookup";
 import { findSafeSpawn } from "../utils/spawnUtils";
 
@@ -74,6 +75,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
   private quests = new QuestSystem();
   private trade!: TradeSystem;
   private bankSystem!: BankSystem;
+  private worldEventSystem!: WorldEventSystem;
 
   private broadcastMessage: BroadcastFn = (type, data, options) => {
     const broadcastOpts: { except?: Client | Client[] } = {};
@@ -112,6 +114,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       this.friends = new FriendsSystem(this.state, (sid) => this.findClient(sid));
       this.trade = new TradeSystem(this.inventorySystem);
       this.bankSystem = new BankSystem(this.inventorySystem);
+      this.worldEventSystem = new WorldEventSystem(this.state, this.npcSystem);
 
       this.playerService = new PlayerService(
         this.state,
@@ -190,6 +193,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
           respawn: this.respawnSystem,
           quests: this.quests,
           spatial: this.spatial,
+          worldEvent: this.worldEventSystem,
         },
         broadcast: this.broadcastMessage,
         onEntityDeath: (e, k) => this.onEntityDeath(e, k),
