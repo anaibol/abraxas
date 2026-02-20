@@ -216,6 +216,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 				char,
 				auth.id,
 			);
+			player.role = auth.role;
 			// Assign spawn point — spiral outward if the candidate tile is blocked
 			const spawnIndex = this.state.players.size;
 			const candidate = this.map.spawns[spawnIndex % this.map.spawns.length];
@@ -285,6 +286,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 			tileSize: this.map.tileSize,
 			collision: this.map.collision,
 			tileTypes: this.map.tileTypes,
+			role: player.role,
 		});
 	}
 

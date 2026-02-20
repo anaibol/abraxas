@@ -323,6 +323,7 @@ export type ServerMessages = {
 		tileSize: number;
 		collision: number[][];
 		tileTypes?: number[][];
+		role?: string;
 	};
 	[ServerMessageType.AttackStart]: { sessionId: string; facing: Direction };
 	[ServerMessageType.AttackHit]: {
@@ -489,6 +490,9 @@ export enum ClientMessageType {
 	BankClose = "bank_close",
 
 	Meditate = "meditate",
+
+	// GM commands
+	GMTeleport = "gm_teleport",
 }
 
 export type ClientMessages = {
@@ -546,6 +550,9 @@ export type ClientMessages = {
 	[ClientMessageType.BankClose]: {};
 
 	[ClientMessageType.Meditate]: {};
+
+	// GM commands
+	[ClientMessageType.GMTeleport]: { tileX: number; tileY: number };
 };
 
 export type BroadcastFn = <T extends keyof ServerMessages>(

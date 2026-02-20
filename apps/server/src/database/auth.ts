@@ -8,6 +8,7 @@ const SALT_ROUNDS = 10;
 type AuthPayload = {
   userId: string;
   email: string;
+  role: string;
 };
 
 export function hashPassword(password: string): Promise<string> {

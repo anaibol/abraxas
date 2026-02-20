@@ -11,9 +11,11 @@ type MinimapProps = {
   players: SchemaMap<Player> | undefined;
   npcs: SchemaMap<Npc> | undefined;
   currentPlayerId: string;
+  isGM?: boolean;
+  onGMClick?: (tileX: number, tileY: number) => void;
 };
 
-export const Minimap: FC<MinimapProps> = ({ map, players, npcs, currentPlayerId }) => {
+export const Minimap: FC<MinimapProps> = ({ map, players, npcs, currentPlayerId, isGM, onGMClick }) => {
   const isMobile = useIsMobile();
   const size = isMobile ? 110 : 200;
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -95,6 +97,16 @@ export const Minimap: FC<MinimapProps> = ({ map, players, npcs, currentPlayerId 
     return () => cancelAnimationFrame(rafId);
   }, [map, size]);
 
+  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isGM || !onGMClick) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const relX = e.clientX - rect.left;
+    const relY = e.clientY - rect.top;
+    const tileX = Math.floor((relX / size) * map.width);
+    const tileY = Math.floor((relY / size) * map.height);
+    onGMClick(tileX, tileY);
+  };
+
   return (
     <div
       style={{
@@ -102,16 +114,21 @@ export const Minimap: FC<MinimapProps> = ({ map, players, npcs, currentPlayerId 
         top: isMobile ? "12px" : undefined,
         bottom: isMobile ? undefined : "20px",
         right: isMobile ? "64px" : "20px",
-        border: "2px solid rgba(212, 168, 67, 0.5)",
+        border: isGM ? "2px solid rgba(212, 168, 67, 0.85)" : "2px solid rgba(212, 168, 67, 0.5)",
         backgroundColor: "rgba(10, 8, 20, 0.85)",
         borderRadius: "4px",
         width: `${size}px`,
         height: `${size}px`,
         zIndex: 40,
-        pointerEvents: "none",
+        pointerEvents: isGM ? "auto" : "none",
+        cursor: isGM ? "crosshair" : undefined,
       }}
     >
-      <canvas ref={canvasRef} style={{ display: "block", width: "100%", height: "100%" }} />
+      <canvas
+        ref={canvasRef}
+        onClick={handleCanvasClick}
+        style={{ display: "block", width: "100%", height: "100%" }}
+      />
     </div>
   );
 };

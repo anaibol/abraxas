@@ -111,6 +111,9 @@ export class MessageHandler {
 		register(ClientMessageType.BankClose, this.handleBankClose.bind(this));
 
 		register(ClientMessageType.Meditate, this.handleMeditate.bind(this));
+
+		// GM commands
+		register(ClientMessageType.GMTeleport, this.handleGMTeleport.bind(this));
 	}
 
 	// ── Helpers ─────────────────────────────────────────────────────────────
@@ -814,5 +817,42 @@ export class MessageHandler {
 	private async syncBank(client: Client, player: Player) {
 		const items = await this.ctx.systems.bank.openBank(player);
 		client.send(ServerMessageType.BankSync, { items });
+	}
+
+	// ── GM Commands ──────────────────────────────────────────────────────────
+
+	private handleGMTeleport(
+		client: Client,
+		data: ClientMessages[ClientMessageType.GMTeleport],
+	) {
+		const player = this.ctx.state.players.get(client.sessionId);
+		if (!player) return;
+
+		if (player.role !== "GM" && player.role !== "ADMIN") {
+			this.sendError(client, "gm.unauthorized");
+			return;
+		}
+
+		const { tileX, tileY } = data;
+		const { map } = this.ctx;
+
+		if (
+			tileX < 0 ||
+			tileX >= map.width ||
+			tileY < 0 ||
+			tileY >= map.height ||
+			map.collision[tileY]?.[tileX] === 1
+		) {
+			this.sendError(client, "gm.invalid_tile");
+			return;
+		}
+
+		this.ctx.systems.movement.teleport(player, tileX, tileY);
+
+		logger.info({
+			room: this.ctx.roomId,
+			sessionId: client.sessionId,
+			message: `[GM] ${player.name} teleported to ${tileX},${tileY}`,
+		});
 	}
 }

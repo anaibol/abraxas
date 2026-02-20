@@ -188,6 +188,11 @@ export class NetworkManager {
     return this.room?.sessionId;
   }
 
+  get isGM(): boolean {
+    const role = this.welcomeData?.role;
+    return role === "GM" || role === "ADMIN";
+  }
+
   sendMove(direction: Direction) {
     this._send(ClientMessageType.Move, { direction });
   }
@@ -303,6 +308,11 @@ export class NetworkManager {
 
   sendTradeCancel() {
     this._send(ClientMessageType.TradeCancel, {});
+  }
+
+  // GM commands
+  sendGMTeleport(tileX: number, tileY: number) {
+    this._send(ClientMessageType.GMTeleport, { tileX, tileY });
   }
 
   disconnect() {

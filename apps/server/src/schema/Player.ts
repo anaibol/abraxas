@@ -15,6 +15,7 @@ export class Player extends Char {
 	/** Internal DB references — server-only, never synced to clients */
 	userId: string = "";
 	dbId: string = "";
+	role: string = "USER";
 
 	/** Mana — only the local player's mana bar is rendered */
 	@view() @type("int32") mana: number = 0;

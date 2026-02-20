@@ -21,6 +21,7 @@ type StateCallback = (state: PlayerState) => void;
 type KillFeedCallback = (killer: string, victim: string) => void;
 export type ConsoleCallback = (text: string, color?: string, channel?: "global" | "party" | "whisper" | "system" | "combat") => void;
 export type PlayerRightClickCallback = (sessionId: string, name: string, screenX: number, screenY: number) => void;
+export type GMMapClickCallback = (tileX: number, tileY: number) => void;
 
 export class GameScene extends Phaser.Scene {
 	private network: NetworkManager;
@@ -30,6 +31,7 @@ export class GameScene extends Phaser.Scene {
 	private onReady?: () => void;
 	private onPttChange?: (recording: boolean) => void;
 	private onPlayerRightClick?: PlayerRightClickCallback;
+	private onGMMapClick?: GMMapClickCallback;
 	private room!: Room<GameState>;
 	private welcome!: WelcomeData;
 	private spriteManager!: SpriteManager;
@@ -85,6 +87,7 @@ export class GameScene extends Phaser.Scene {
 		onReady?: () => void,
 		onPttChange?: (recording: boolean) => void,
 		onPlayerRightClick?: PlayerRightClickCallback,
+		onGMMapClick?: GMMapClickCallback,
 	) {
 		super({ key: "GameScene" });
 		this.network = network;
@@ -95,6 +98,7 @@ export class GameScene extends Phaser.Scene {
 		this.onReady = onReady;
 		this.onPttChange = onPttChange;
 		this.onPlayerRightClick = onPlayerRightClick;
+		this.onGMMapClick = onGMMapClick;
 	}
 
 	create() {
@@ -169,6 +173,10 @@ export class GameScene extends Phaser.Scene {
 						this.onPlayerRightClick?.(sessionId, player.name, screenX, screenY);
 						return;
 					}
+				}
+				// No player at this tile — GM teleport if the local player is a GM
+				if (this.network.isGM) {
+					this.onGMMapClick?.(tileX, tileY);
 				}
 			},
 		);

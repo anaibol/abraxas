@@ -16,6 +16,15 @@ export interface MoveResult {
 export class MovementSystem {
 	constructor(private spatial: SpatialLookup) {}
 
+	/** Instantly moves an entity to the target tile, updating the spatial grid. */
+	teleport(entity: Entity, tileX: number, tileY: number): void {
+		const oldX = entity.tileX;
+		const oldY = entity.tileY;
+		entity.tileX = tileX;
+		entity.tileY = tileY;
+		this.spatial.updatePosition(entity, oldX, oldY);
+	}
+
 	/**
 	 * Attempts to move an entity in a direction.
 	 * Handles timing, bounds, collision, and tile occupancy.

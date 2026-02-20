@@ -113,6 +113,7 @@ export function App() {
   const isMobile = useIsMobile();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [isGM, setIsGM] = useState(false);
   const { settings: gameSettingsState } = useGameSettings();
 
   const [room, setRoom] = useState<Room<GameState> | null>(null);
@@ -249,6 +250,7 @@ export function App() {
         });
 
         setPlayerState((prev) => ({ ...prev, classType }));
+        setIsGM(network.isGM);
         setPhase("game");
         if (!mapName) setIsLoading(true); // Initial join also triggers loading
 
@@ -303,6 +305,9 @@ export function App() {
               (recording) => setIsRecording(recording),
               (sessionId, name, screenX, screenY) => {
                 setPlayerContextMenu({ sessionId, name, screenX, screenY });
+              },
+              (tileX, tileY) => {
+                networkRef.current?.sendGMTeleport(tileX, tileY);
               },
             );
 
@@ -459,6 +464,8 @@ export function App() {
                   players={roomRef.current.state?.players}
                   npcs={roomRef.current.state?.npcs}
                   currentPlayerId={roomRef.current.sessionId}
+                  isGM={isGM}
+                  onGMClick={(tileX, tileY) => networkRef.current?.sendGMTeleport(tileX, tileY)}
                 />
               )}
               {/* Mobile sidebar toggle button */}

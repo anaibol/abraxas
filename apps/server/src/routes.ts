@@ -43,6 +43,7 @@ export const registerEndpoint = createEndpoint(
       const token = generateToken({
         userId: user.id,
         email: user.email,
+        role: user.role,
       });
       return ctx.json({ token, characters: [] });
     } catch (e) {
@@ -79,6 +80,7 @@ export const loginEndpoint = createEndpoint(
       const token = generateToken({
         userId: user.id,
         email: user.email,
+        role: user.role,
       });
       return ctx.json({ token, characters });
     } catch (e) {
