@@ -1,5 +1,4 @@
 import { Box, Flex, HStack, Text } from "@chakra-ui/react";
-import React from "react";
 import { useTranslation } from "react-i18next";
 import { HEX, T } from "../tokens";
 import type { PlayerState } from "./types";

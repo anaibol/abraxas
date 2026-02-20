@@ -127,6 +127,8 @@ export class NetworkManager {
     this.room.onMessage(ServerMessageType.StealthApplied, noop);
     this.room.onMessage(ServerMessageType.LevelUp, noop);
     this.room.onMessage(ServerMessageType.NpcBark, noop);
+    this.room.onMessage(ServerMessageType.KillFeed, noop);
+    this.room.onMessage(ServerMessageType.InvalidTarget, noop);
     this.room.onMessage(
       ServerMessageType.WorldEventStart,
       (data: ServerMessages[ServerMessageType.WorldEventStart]) => {

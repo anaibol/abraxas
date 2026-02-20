@@ -1,5 +1,5 @@
 import { ITEMS, type Item } from "@abraxas/shared";
-import { Box, Flex, Grid, Input, Text } from "@chakra-ui/react";
+import { Box, Flex, Input, Text } from "@chakra-ui/react";
 import type React from "react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";

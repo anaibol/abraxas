@@ -1,6 +1,6 @@
 import type { TradeState } from "@abraxas/shared";
 import { ITEMS } from "@abraxas/shared";
-import { Box, Flex, Grid, HStack, Input, Text, VStack } from "@chakra-ui/react";
+import { Box, Flex, HStack, Input, Text, VStack } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAudio } from "../contexts/AudioContext";

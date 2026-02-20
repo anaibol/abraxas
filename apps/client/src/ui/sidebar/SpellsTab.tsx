@@ -1,6 +1,5 @@
 import type { Ability } from "@abraxas/shared";
 import { Box, Flex, Text } from "@chakra-ui/react";
-import React, { type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import { useAudio } from "../../contexts/AudioContext";
 import { T } from "../tokens";

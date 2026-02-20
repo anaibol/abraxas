@@ -4,7 +4,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { useAudio } from "../../contexts/AudioContext";
 import { HEX, T } from "../tokens";
-import type { EquipmentState, PlayerState } from "./types";
+import type { PlayerState } from "./types";
 
 const RARITY_COLORS: Record<string, string> = {
   common: HEX.goldMuted,
