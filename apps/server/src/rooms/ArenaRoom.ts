@@ -234,6 +234,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       }
       const candidate = spawnsArray[spawnIndex % spawnsArray.length];
       if (candidate) {
+        console.error(`[DEBUG_SPAWN] mapName: ${this.roomMapName}, candidate: ${candidate.x},${candidate.y}, spawns length: ${spawnsArray.length}, map width: ${this.map.width}`);
         const safe = findSafeSpawn(candidate.x, candidate.y, this.map, this.spatial);
         player.tileX = safe?.x ?? candidate.x;
         player.tileY = safe?.y ?? candidate.y;

@@ -225,7 +225,11 @@
     "zombie": "Zombie",
     "troll": "Troll",
     "bat": "Vampire Bat",
-    "dark_knight": "Dark Knight"
+    "dark_knight": "Dark Knight",
+    "horse": "Horse",
+    "skeleton_archer": "Skeleton Archer",
+    "vampire": "Vampire",
+    "gargoyle": "Gargoyle"
   },
   "items": {
     "club": {
@@ -347,6 +351,12 @@
     },
     "great_mana_potion": {
       "name": "Great Mana Potion"
+    },
+    "lasso": {
+      "name": "Lasso"
+    },
+    "brown_horse": {
+      "name": "Brown Horse"
     }
   },
   "spells": {

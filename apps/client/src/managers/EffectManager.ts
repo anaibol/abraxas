@@ -1045,6 +1045,138 @@ export class EffectManager {
     });
   }
 
+  // ── New Spells ──────────────────────────────────────────────────────────
+
+  private fx_meteor_strike(px: number, py: number) {
+    // Drop the meteor
+    this.createMeteorFall(px, py, 800);
+    
+    // Slight warning ring before impact
+    this.ring(px, py, 0xff2200, 3, 50, 750, 0.4, 2);
+
+    this.scene.time.delayedCall(800, () => {
+      // Impact effects
+      this.createEarthShatter(px, py);
+      this.createCampfire(px, py);
+      this.createThickSmoke(px, py);
+      
+      this.flash(px, py, 0xffffff, 80, 150);
+      this.ring(px, py, 0xff4400, 8, 120, 600, 0.9, 5);
+      
+      // Massive explosion sparks
+      this.burst(px, py, TEX.SPARK, {
+        colors: [0xffffff, 0xffff44, 0xff6600],
+        count: 50,
+        speed: { min: 150, max: 350 },
+        scale: { start: 1.0, end: 0 },
+        lifespan: { min: 400, max: 1000 },
+        gravityY: 100, // Sparks fall back heavily
+      });
+    });
+  }
+
+  private fx_chain_lightning(casterSessionId: string | undefined, px: number, py: number) {
+    // If we have a caster, draw a bolt from them to the target
+    if (casterSessionId) {
+      const sprite = this.spriteManager.getSprite(casterSessionId);
+      if (sprite) {
+        const sx = sprite.renderX;
+        const sy = sprite.renderY - TILE_SIZE * 0.4;
+        
+        // Custom horizontal/diagonal bolt
+        const gfx = this.scene.add.graphics();
+        gfx.setDepth(16);
+        gfx.setBlendMode(Phaser.BlendModes.ADD);
+
+        const pts: Phaser.Math.Vector2[] = [new Phaser.Math.Vector2(sx, sy)];
+        const segments = 8;
+        for (let i = 1; i < segments; i++) {
+          pts.push(
+            new Phaser.Math.Vector2(
+              sx + ((px - sx) * i) / segments + Phaser.Math.Between(-15, 15),
+              sy + ((py - sy) * i) / segments + Phaser.Math.Between(-15, 15)
+            )
+          );
+        }
+        pts.push(new Phaser.Math.Vector2(px, py));
+
+        gfx.lineStyle(6, 0xffffff, 0.2);
+        gfx.strokePoints(pts, false);
+        gfx.lineStyle(2, 0xaaffff, 0.9);
+        gfx.strokePoints(pts, false);
+
+        this.scene.tweens.add({
+          targets: gfx,
+          alpha: 0,
+          duration: 150,
+          ease: "Power2.In",
+          onComplete: () => gfx.destroy(),
+        });
+      }
+    }
+
+    // Impact blast
+    this.createLightningStrike(px, py);
+    
+    // Horizontal chaining sparks
+    this.burst(px, py, TEX.SHARD, {
+      colors: [0xffffff, 0xaaffff],
+      count: 20,
+      speed: { min: 100, max: 300 },
+      scale: { start: 0.6, end: 0 },
+      lifespan: { min: 200, max: 500 },
+      angle: { min: -20, max: 20 }, // Shoot mostly right
+      gravityY: 0,
+    });
+    this.burst(px, py, TEX.SHARD, {
+      colors: [0xffffff, 0xaaffff],
+      count: 20,
+      speed: { min: 100, max: 300 },
+      scale: { start: 0.6, end: 0 },
+      lifespan: { min: 200, max: 500 },
+      angle: { min: 160, max: 200 }, // Shoot mostly left
+      gravityY: 0,
+    });
+  }
+
+  private fx_entangling_roots(px: number, py: number) {
+    this.createVines(px, py);
+    this.ring(px, py, 0x44aa44, 4, 30, 400, 0.8, 3);
+  }
+
+  private fx_cleansing_rain(px: number, py: number) {
+    this.createRain(px, py, 70); // 70px radius for a nice AoE shower
+    this.flash(px, py - 20, 0x88ffff, 80, 200); // Soft flash in the clouds
+  }
+
+  private fx_acid_splash(px: number, py: number) {
+    this.createAcidSplash(px, py);
+    this.createPoisonCloud(px, py);
+    this.flash(px, py, 0x44ff00, 30, 100);
+  }
+
+  private fx_earthquake(px: number, py: number) {
+    this.createEarthShatter(px, py);
+    
+    // Multiple delayed rings for a shaking effect
+    this.ring(px, py, 0x885522, 10, 80, 500, 0.8, 5);
+    this.scene.time.delayedCall(150, () => this.ring(px, py, 0x663311, 10, 120, 600, 0.7, 4));
+    this.scene.time.delayedCall(300, () => this.ring(px, py, 0x442200, 10, 150, 700, 0.5, 3));
+    
+    // Screen shaking is handled by camera, but we emphasize it with heavy particles
+    this.burst(px, py, TEX.SMOKE, {
+      colors: [0x553311, 0x442200],
+      count: 40,
+      speed: { min: 50, max: 150 },
+      scale: { start: 1.0, end: 0.2 },
+      lifespan: { min: 600, max: 1200 },
+      gravityY: 0,
+      radius: 40,
+      blendMode: Phaser.BlendModes.NORMAL,
+      alpha: { start: 0.6, end: 0 },
+    });
+  }
+
   // ── Paladin ─────────────────────────────────────────────────────────────
 
   private fx_consecration(px: number, py: number) {
@@ -1261,7 +1393,7 @@ export class EffectManager {
   // ── Public API ────────────────────────────────────────────────────────────
 
   /** Plays the full layered visual effect for a spell at a tile position. */
-  playSpellEffect(spellId: string, targetTileX: number, targetTileY: number) {
+  playSpellEffect(spellId: string, targetTileX: number, targetTileY: number, casterSessionId?: string) {
     this.ensureTextures();
     const px = targetTileX * TILE_SIZE + TILE_SIZE / 2;
     const py = targetTileY * TILE_SIZE + TILE_SIZE / 2;
@@ -1344,6 +1476,19 @@ export class EffectManager {
         return this.fx_divine_shield(px, py);
       case "holy_bolt":
         return this.fx_smite(px, py);
+      // ── New Spells ─────────────────────────────────────────────────────────
+      case "meteor_strike":
+        return this.fx_meteor_strike(px, py);
+      case "chain_lightning":
+        return this.fx_chain_lightning(casterSessionId, px, py); // Requires caster position
+      case "entangling_roots":
+        return this.fx_entangling_roots(px, py);
+      case "cleansing_rain":
+        return this.fx_cleansing_rain(px, py);
+      case "acid_splash":
+        return this.fx_acid_splash(px, py);
+      case "earthquake":
+        return this.fx_earthquake(px, py);
       default:
         return this.fx_default(px, py);
     }
@@ -1867,6 +2012,178 @@ export class EffectManager {
       gravityY: 500, // Very heavy rocks
       angle: { min: 200, max: 340 }, // Arcing upwards first
       blendMode: Phaser.BlendModes.NORMAL,
+    });
+  }
+
+  /**
+   * Realistic Meteor Fall
+   * A blazing fireball dropping from the sky to hit the target.
+   */
+  public createMeteorFall(px: number, py: number, durationMs: number = 800) {
+    this.ensureTextures();
+    // Start way off-screen high up
+    const startY = py - 600;
+
+    const orb = this.scene.add.graphics();
+    orb.setDepth(16);
+    orb.setBlendMode(Phaser.BlendModes.ADD);
+
+    const orbSize = 15;
+    const color = 0xff3300;
+
+    // Glowing core
+    for (let r = orbSize; r >= 1; r--) {
+      orb.fillStyle(color, 1 - (r - 1) / orbSize);
+      orb.fillCircle(0, 0, r);
+    }
+    orb.setPosition(px, startY);
+
+    // Thick black/red flaming trail
+    const trail = this.scene.add.particles(px, startY, TEX.SMOKE, {
+      speed: { min: 10, max: 50 },
+      scale: { start: 1.5, end: 0 },
+      lifespan: { min: 400, max: 800 },
+      tint: [0xff4400, 0x221100, 0x441100],
+      blendMode: Phaser.BlendModes.NORMAL,
+      alpha: { start: 0.8, end: 0 },
+      frequency: 20,
+    });
+    trail.setDepth(15);
+
+    const proxy = { t: 0 };
+    this.scene.tweens.add({
+      targets: proxy,
+      t: 1,
+      duration: durationMs,
+      ease: "Cubic.In", // Starts slow and accelerates heavily
+      onUpdate: () => {
+        const currentY = startY + (py - startY) * proxy.t;
+        orb.setPosition(px, currentY);
+        trail.setPosition(px, currentY);
+      },
+      onComplete: () => {
+        orb.destroy();
+        trail.destroy();
+      },
+    });
+  }
+
+  /**
+   * Realistic Vines / Roots
+   * Earth and green spikes jutting upward to root a target.
+   */
+  public createVines(px: number, py: number) {
+    this.ensureTextures();
+
+    // Initial dirt kickup from the roots bursting out
+    this.burst(px, py, TEX.SMOKE, {
+      colors: [0x553311, 0x332211],
+      count: 15,
+      speed: { min: 10, max: 35 },
+      scale: { start: 0.5, end: 1.5 },
+      lifespan: { min: 400, max: 800 },
+      gravityY: -5,
+      blendMode: Phaser.BlendModes.NORMAL,
+      alpha: { start: 0.7, end: 0 },
+    });
+
+    // Spiky green vines shooting upwards around the target
+    this.burst(px, py + 10, TEX.SHARD, {
+      colors: [0x22aa22, 0x116611, 0x448822],
+      count: 25,
+      speed: { min: 60, max: 180 },
+      scale: { start: 0.8, end: 0.2 },
+      lifespan: { min: 800, max: 1600 },
+      angle: { min: 240, max: 300 }, // Shooting strictly upwards
+      gravityY: 150, // They arch and stop, simulating grabbing
+      blendMode: Phaser.BlendModes.NORMAL,
+    });
+  }
+
+  /**
+   * Cleansing Rain
+   * A localized shower falling steadily from above.
+   */
+  public createRain(px: number, py: number, radius: number = 60) {
+    this.ensureTextures();
+    
+    // Glowing holy/water ring on the ground indicating the healing area
+    this.ring(px, py, 0x44ffcc, 5, radius, 1500, 0.5, 3);
+    
+    // Constant rain falling from above the area
+    const emitter = this.scene.add.particles(px, py - 200, TEX.SHARD, {
+      x: { min: -radius, max: radius },
+      tint: [0x44ffcc, 0xccffff, 0xffffff],
+      speed: { min: 250, max: 400 },
+      angle: 90, // Falling straight down
+      scale: { start: 0.4, end: 0.2 },
+      lifespan: 600,
+      frequency: 25,
+      blendMode: Phaser.BlendModes.ADD,
+      alpha: { start: 0.6, end: 0 },
+    });
+    emitter.setDepth(15);
+    
+    // Splash impacts on the ground
+    const splashEmitter = this.scene.add.particles(px, py, TEX.CIRCLE, {
+      x: { min: -radius, max: radius },
+      y: { min: -radius/2, max: radius/2 }, // Elliptical ground area
+      tint: [0x44ffcc, 0xffffff],
+      speed: { min: 10, max: 30 },
+      gravityY: 100,
+      angle: { min: 220, max: 320 }, // Small upward splashes
+      scale: { start: 0.2, end: 0 },
+      lifespan: 300,
+      frequency: 40,
+      blendMode: Phaser.BlendModes.ADD,
+    });
+    splashEmitter.setDepth(14);
+
+    // Stop emitting after duration
+    this.scene.time.delayedCall(1500, () => {
+      emitter.stop();
+      splashEmitter.stop();
+      this.scene.time.delayedCall(1000, () => {
+        emitter.destroy();
+        splashEmitter.destroy();
+      });
+    });
+  }
+
+  /**
+   * Realistic Acid Splash
+   * Bubbling corrosive green liquid impacting and splashing heavily.
+   */
+  public createAcidSplash(px: number, py: number) {
+    this.ensureTextures();
+
+    // The corrosive puddle
+    this.ring(px, py, 0x88ff00, 4, 35, 800, 0.7, 3);
+
+    // Heavy liquid splash, uses gravity to fall back down fast
+    this.burst(px, py, TEX.CIRCLE, {
+      colors: [0x44ff00, 0x88ff44, 0x22cc00],
+      count: 40,
+      speed: { min: 80, max: 200 },
+      scale: { start: 0.6, end: 0 },
+      lifespan: { min: 400, max: 900 },
+      gravityY: 400, // Very heavy
+      angle: { min: 200, max: 340 }, 
+      blendMode: Phaser.BlendModes.NORMAL,
+    });
+
+    // Subtler toxic spray / mist hanging around
+    this.scene.time.delayedCall(50, () => {
+      this.burst(px, py - 10, TEX.SMOKE, {
+        colors: [0x44ff00, 0x88ff44],
+        count: 15,
+        speed: { min: 10, max: 30 },
+        scale: { start: 0.5, end: 1.5 },
+        lifespan: { min: 600, max: 1200 },
+        gravityY: -5,
+        blendMode: Phaser.BlendModes.NORMAL,
+        alpha: { start: 0.6, end: 0 },
+      });
     });
   }
 }

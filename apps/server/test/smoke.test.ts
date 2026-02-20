@@ -252,12 +252,69 @@ describe("Arena multiplayer smoke test", () => {
     await attackHitPromise;
     await wait(150);
 
-    // With stat-based combat, damage varies — just check HP decreased
+    // Because both are at x=3,4 and x=4,4, they are OUTSIDE the safeZone at {x:1, y:1, w:2, h:2}. Both can be attacked.
     const newHpB = expectPlayer(roomA, roomB.sessionId).hp;
     expect(newHpB).toBeLessThan(initialHpB);
 
+    console.log("Step 6.5: Safe Zone protection check...");
+    // ---- Step 6.5: A moves into the safe zone (1,1) -> (2,2). Let's move A to (2,2) ----
+    roomA.send("move", { direction: Direction.UP }); // A to (3,3) - wait, (3,3) is blocked
+    roomA.send("move", { direction: Direction.LEFT }); // A to (2,4)
+    roomA.send("move", { direction: Direction.UP }); // A to (2,3)
+    roomA.send("move", { direction: Direction.UP }); // A to (2,2) - inside safe zone
+    
+    await waitForState(roomA, (state) => {
+      const p = state?.players?.get(roomA.sessionId);
+      return p !== undefined && p.tileY === 2;
+    });
+
+    // B moves towards A to stand next to the safe zone
+    roomB.send("move", { direction: Direction.LEFT }); // B to (3,4)
+    roomB.send("move", { direction: Direction.UP }); // B to (3,3) - blocked
+    roomB.send("move", { direction: Direction.LEFT }); // B to (2,4)
+    roomB.send("move", { direction: Direction.UP }); // B to (2,3) - outside safe zone, facing A
+    await waitForState(roomB, (state) => {
+      const p = state?.players?.get(roomB.sessionId);
+      return p !== undefined && p.tileY === 3;
+    });
+
+    // B attacks A (who is inside safe zone at 2,2) -> should deal 0 damage
+    const safeHpA = expectPlayer(roomA, roomA.sessionId).hp;
+    roomB.send("attack", {});
+    await wait(300); // no attack_hit event should fire; just wait
+
+    const afterSafeHpA = expectPlayer(roomA, roomA.sessionId).hp;
+    expect(afterSafeHpA).toBe(safeHpA); // HP should be unchanged
+
+    console.log("Step 6.8: Toggle PvP protection check...");
+    // ---- Step 6.8: A moves out of safe zone, B toggles PvP off, A attacks B ----
+    roomA.send("move", { direction: Direction.DOWN }); // A back to (2,3)
+    roomA.send("move", { direction: Direction.DOWN }); // A back to (2,4)
+    await waitForState(roomA, (state) => {
+      const p = state?.players?.get(roomA.sessionId);
+      return p !== undefined && p.tileY === 4;
+    });
+
+    // B disables PvP
+    roomB.send("togglePvp", {});
+    await wait(200);
+    expect(expectPlayer(roomA, roomB.sessionId).pvpEnabled).toBe(false);
+
+    // A at (2,4) faces B at (2,3)
+    roomA.send("move", { direction: Direction.UP }); // A faces UP
+    await wait(200);
+
+    const beforePvpOffHpB = expectPlayer(roomA, roomB.sessionId).hp;
+    roomA.send("attack", {});
+    await wait(300); // Should be blocked by B having PvP disabled
+    
+    expect(expectPlayer(roomA, roomB.sessionId).hp).toBe(beforePvpOffHpB); // HP unchanged
+
+    roomB.send("togglePvp", {}); // re-enable PVP for spell test
+    await wait(200);
+
     console.log("Step 7: Spell cast...");
-    // ---- Step 6: Wizard casts fireball at A's tile (3,4) ----
+    // ---- Step 6: Wizard casts fireball at A's tile (2,4) ----
     await wait(500);
 
     const initialHpA = expectPlayer(roomB, roomA.sessionId).hp;
@@ -271,7 +328,7 @@ describe("Arena multiplayer smoke test", () => {
 
     roomB.send("cast", {
       abilityId: "fireball",
-      targetTileX: 3,
+      targetTileX: 2,
       targetTileY: 4,
     });
 
@@ -282,7 +339,6 @@ describe("Arena multiplayer smoke test", () => {
     const newManaB = expectPlayer(roomB, roomB.sessionId).mana;
     expect(newManaB).toBe(initialManaB - 25);
 
-    // A's HP reduced by spell damage (formula-based)
     const newHpA = expectPlayer(roomB, roomA.sessionId).hp;
     expect(newHpA).toBeLessThan(initialHpA);
 

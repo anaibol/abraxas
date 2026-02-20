@@ -109,7 +109,7 @@ export class GameEventHandler {
   }
 
   private onCastHit(data: ServerMessages["cast_hit"]) {
-    this.effectManager.playSpellEffect(data.abilityId, data.targetTileX, data.targetTileY);
+    this.effectManager.playSpellEffect(data.abilityId, data.targetTileX, data.targetTileY, data.sessionId);
   }
 
   private onDamage(data: ServerMessages["damage"]) {

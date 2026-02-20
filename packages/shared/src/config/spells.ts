@@ -48,6 +48,24 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     fxId: 16,
   },
 
+  /** T — Earthquake: Shakes the earth around the warrior, stunning nearby enemies */
+  earthquake: {
+    id: "earthquake",
+    key: "",
+    requiredLevel: 15,
+    fxId: 17,
+    manaCost: 35,
+    baseDamage: 40,
+    scalingStat: "str",
+    scalingRatio: 1.0,
+    cooldownMs: 12000,
+    windupMs: 600,
+    effect: "stun",
+    damageSchool: "physical",
+    aoeRadius: 3,
+    durationMs: 2500,
+  },
+
   // ── MAGE ─────────────────────────────────────────────────────────────────
 
   /** Q — Ranged single-target: fast projectile, full screen range */
@@ -125,6 +143,40 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     fxId: 3,
   },
 
+  /** R — Meteor Strike: Massive AoE fire nuke with long windup */
+  meteor_strike: {
+    id: "meteor_strike",
+    key: "",
+    requiredLevel: 25,
+    fxId: 3,
+    manaCost: 60,
+    baseDamage: 80,
+    scalingStat: "int",
+    scalingRatio: 1.5,
+    cooldownMs: 15000,
+    windupMs: 800,
+    effect: "aoe",
+    damageSchool: "magical",
+    aoeRadius: 4,
+  },
+
+  /** F — Chain Lightning: Instant, wide-reaching electrical discharge */
+  chain_lightning: {
+    id: "chain_lightning",
+    key: "",
+    requiredLevel: 30,
+    fxId: 14,
+    manaCost: 45,
+    baseDamage: 50,
+    scalingStat: "int",
+    scalingRatio: 1.2,
+    cooldownMs: 8000,
+    windupMs: 200,
+    effect: "aoe",
+    damageSchool: "magical",
+    aoeRadius: 3,
+  },
+
   // ── RANGER ───────────────────────────────────────────────────────────────
 
   /** Q — AoE volley: hits all enemies in a small radius at range */
@@ -177,6 +229,27 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     fxId: 19,
   },
 
+  /** Y — Entangling Roots: AoE stun (Root) + minor DoT based in nature */
+  entangling_roots: {
+    id: "entangling_roots",
+    key: "",
+    requiredLevel: 20,
+    fxId: 19,
+    manaCost: 35,
+    baseDamage: 10,
+    scalingStat: "agi",
+    scalingRatio: 0.4,
+    cooldownMs: 12000,
+    windupMs: 400,
+    effect: "stun",
+    damageSchool: "magical",
+    durationMs: 3000,
+    aoeRadius: 2,
+    dotDamage: 5,
+    dotIntervalMs: 1000,
+    dotDurationMs: 4000,
+  },
+
   // ── ROGUE ─────────────────────────────────────────────────────────────────
 
   /** Q — Melee nuke: massive burst from stealth */
@@ -225,6 +298,30 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     requiredLevel: 15,
     leechRatio: 0.5,
     fxId: 2,
+  },
+
+  /** Y — Acid Splash: Ranged AoE bubbling green venom reduces armor and deals DoT */
+  acid_splash: {
+    id: "acid_splash",
+    key: "",
+    requiredLevel: 20,
+    fxId: 19,
+    manaCost: 35,
+    baseDamage: 25,
+    scalingStat: "agi",
+    scalingRatio: 0.8,
+    cooldownMs: 10000,
+    windupMs: 350,
+    effect: "debuff",
+    damageSchool: "magical",
+    rangeTiles: FULL_VIEWPORT_RANGE,
+    aoeRadius: 2,
+    buffStat: "armor",
+    buffAmount: 15,
+    durationMs: 6000,
+    dotDamage: 8,
+    dotIntervalMs: 1500,
+    dotDurationMs: 6000,
   },
 
   // ── CLERIC ────────────────────────────────────────────────────────────────
@@ -282,6 +379,23 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     key: "",
     requiredLevel: 20,
     fxId: 23,
+  },
+
+  /** U — Cleansing Rain: Massive AoE water-based healing shower */
+  cleansing_rain: {
+    id: "cleansing_rain",
+    key: "",
+    requiredLevel: 25,
+    fxId: 1,
+    manaCost: 55,
+    baseDamage: 50, // Serves as the base heal amount
+    scalingStat: "int",
+    scalingRatio: 1.2,
+    cooldownMs: 15000,
+    windupMs: 500,
+    effect: "aoe_heal",
+    damageSchool: "magical",
+    aoeRadius: 4,
   },
 
   // ── PALADIN ───────────────────────────────────────────────────────────────
