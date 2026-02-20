@@ -334,6 +334,10 @@ export class GameScene extends Phaser.Scene {
       }),
     );
 
+    this.weatherManager = new WeatherManager(this);
+    this.lightManager = new LightManager(this);
+    this.lightManager.enable();
+
     this.gameEventHandler = new GameEventHandler(
       this.room,
       this.spriteManager,
@@ -342,16 +346,25 @@ export class GameScene extends Phaser.Scene {
       this.inputHandler,
       this.onConsoleMessage,
       this.onKillFeed,
-      // Camera shake callback — called by GameEventHandler for heavy-impact spells
+      // Item #11-16: Camera shake callback
       (intensity: number, durationMs: number) => {
         this.cameras.main.shake(durationMs, intensity);
+      },
+      // Item #13-14: Camera flash callback
+      (r: number, g: number, b: number, durationMs: number) => {
+        this.cameras.main.flash(durationMs, r, g, b);
+      },
+      // Item #17, #19: Camera zoom callback
+      (zoom: number, durationMs: number) => {
+        this.cameras.main.zoomTo(zoom, durationMs / 2);
+        this.time.delayedCall(durationMs / 2, () => {
+          this.cameras.main.zoomTo(1, durationMs / 2);
+        });
       },
       this.lightManager,
     );
     this.gameEventHandler.setupListeners();
 
-    this.weatherManager = new WeatherManager(this);
-    this.lightManager = new LightManager(this);
     this.ambientOverlay = this.add.graphics();
     this.ambientOverlay.setDepth(2000); // Above everything but UI
     this.ambientOverlay.setScrollFactor(0);

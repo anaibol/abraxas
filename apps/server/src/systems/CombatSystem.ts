@@ -493,6 +493,8 @@ export class CombatSystem {
         );
         target.hp -= result.damage;
         this.interruptCast(target.sessionId, broadcast);
+        // B043: Taking damage breaks stealth
+        this.buffSystem.breakStealth(target.sessionId);
         broadcast(ServerMessageType.AttackHit, {
           sessionId: attacker.sessionId,
           targetSessionId: target.sessionId,

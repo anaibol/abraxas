@@ -158,6 +158,7 @@ export class BuffSystem {
   ): void {
     for (const [sessionId, s] of this.state.entries()) {
       const entity = getEntity(sessionId);
+      // B025: Skip dead/missing entities — avoids one-extra-tick resource leak
       if (!entity || !entity.alive) continue;
 
       // Update stunned/stealthed/spawnProtection flags on the schema
@@ -175,6 +176,15 @@ export class BuffSystem {
       const buffsBefore = s.buffs.length;
       s.buffs = s.buffs.filter((b) => now < b.expiresAt);
 
+      // B005: After expiring buffs that may have boosted maxHP/maxMana, clamp current values.
+      if (s.buffs.length !== buffsBefore) {
+        if (entity.hp > entity.maxHp) entity.hp = entity.maxHp;
+        if ("mana" in entity && "maxMana" in entity) {
+          const e = entity as { mana: number; maxMana: number };
+          if (e.mana > e.maxMana) e.mana = e.maxMana;
+        }
+      }
+
       // Apply appearance overrides from active buffs
       let overrideBodyId = 0;
       let overrideHeadId = 0;
@@ -182,10 +192,9 @@ export class BuffSystem {
         if (b.overrideBodyId) overrideBodyId = b.overrideBodyId;
         if (b.overrideHeadId) overrideHeadId = b.overrideHeadId;
       }
-      // @ts-ignore - Char has these fields now
-      entity.overrideBodyId = overrideBodyId;
-      // @ts-ignore - Char has these fields now
-      entity.overrideHeadId = overrideHeadId;
+      // Apply appearance overrides only if the entity schema supports these fields
+      if ("overrideBodyId" in entity) (entity as unknown as { overrideBodyId: number }).overrideBodyId = overrideBodyId;
+      if ("overrideHeadId" in entity) (entity as unknown as { overrideHeadId: number }).overrideHeadId = overrideHeadId;
 
       // Process DoTs — expire first, then tick the survivors
       s.dots = s.dots.filter((d) => now < d.expiresAt);

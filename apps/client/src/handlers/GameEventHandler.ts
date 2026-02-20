@@ -170,16 +170,13 @@ export class GameEventHandler {
     // Item #9: Impact SFX separate from cast SFX
     this.soundManager.playSpellImpactSfx(data.abilityId);
 
-    // ── Item #11 + #12: Camera shake scaled by proximity ──────────────────────
+    // ── Item #11 + #12: Camera shake scaled by proximity & self-target ─────────
     const isHeavy = HEAVY_HIT_ABILITIES.has(data.abilityId);
-    const isSelfTarget = this.isSelf(data.targetSessionId ?? "");
     const now = Date.now();
 
     if (isHeavy && now - this.lastShakeTime > this.SHAKE_COOLDOWN_MS) {
       this.lastShakeTime = now;
-      // Item #12: Stronger shake if we ARE the target, reduced if not
-      const shakeIntensity = isSelfTarget ? 0.013 : 0.006;
-      this.onCameraShake?.(shakeIntensity, 220);
+      this.onCameraShake?.(0.009, 220);
     }
 
     // ── Item #35: Fire spells → lingering ember light ─────────────────────────

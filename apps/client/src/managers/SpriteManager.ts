@@ -5,9 +5,22 @@ import { PlayerSprite } from "../entities/PlayerSprite";
 import type { GameScene } from "../scenes/GameScene";
 import type { CameraController } from "../systems/CameraController";
 
+// ── Item #45: Per-sprite glow tracking ────────────────────────────────────────
+interface ActiveGlow {
+  glowRef: unknown; // Phaser.FX.Glow as `any` for version compat
+  expireAt: number;
+  color: number;
+}
+
 export class SpriteManager {
   private sprites = new Map<string, PlayerSprite>();
   private spawnProtectionTweens = new Map<string, Phaser.Tweens.Tween>();
+  /** Item #45: Track active glow per session for explicit cancel. */
+  private activeGlows = new Map<string, ActiveGlow[]>();
+  /** Item #50: Track low-HP pulsing tweens */
+  private lowHpGlowTweens = new Map<string, Phaser.Tweens.Tween>();
+  /** Item #48: Currently-targeted session for outline glow */
+  private targetOutlineSession: string | null = null;
 
   constructor(
     private scene: GameScene,
@@ -50,6 +63,21 @@ export class SpriteManager {
     );
     sprite.setMeditating(player.meditating ?? false);
     this.updateAlpha(sprite, player);
+
+    // ── Item #50: Low-HP danger glow on local player ────────────────────────
+    if (sprite.isLocal) {
+      const hpRatio = player.maxHp > 0 ? player.hp / player.maxHp : 1;
+      if (hpRatio < 0.2 && player.alive && !this.lowHpGlowTweens.has(sessionId)) {
+        this.startLowHpGlow(sessionId);
+      } else if (hpRatio >= 0.2 && this.lowHpGlowTweens.has(sessionId)) {
+        this.stopLowHpGlow(sessionId);
+      }
+    }
+
+    // ── Item #49: Mount glow ───────────────────────────────────────────────────
+    if (player.equipMount && player.equipMount !== "") {
+      this.applyGlowFx(sessionId, 0xffe066, 3000, 1.5);
+    }
   }
 
   removePlayer(sessionId: string) {
@@ -203,51 +231,159 @@ export class SpriteManager {
   }
 
   /**
-   * Apply a Phaser Post-FX Glow to a sprite for the duration of a buff.
+   * Apply a Post-FX Glow aura to a sprite for the duration of a buff.
    *
-   * Uses `preFX.addGlow()` (Phaser 3.60+). If the engine doesn't support
-   * preFX on this object type the call is silently skipped.
-   *
-   * @param color   Hex colour, e.g. 0xffdd44 for gold.
-   * @param durationMs  How long the glow lasts (matches buff duration).
+   * Improvements applied:
+   *  #41 — Fade-out on expiry (outerStrength tweens to 0 before clear)
+   *  #42 — Fade-in on apply  (outerStrength tweens from 0 to target)
+   *  #43 — Cancel existing glow before applying a new one
+   *  #44 — outerStrength is parameterised so callers can vary intensity
+   *  #45 — Tracked per session in activeGlows map
    */
-  applyGlowFx(sessionId: string, color: number, durationMs: number) {
+  applyGlowFx(sessionId: string, color: number, durationMs: number, strength = 4) {
     const sprite = this.sprites.get(sessionId);
     if (!sprite?.container) return;
 
-    // preFX.addGlow() is available in Phaser 3.60+ but may not be in older
-    // @types/phaser definitions — use `any` casts to remain forwards-compatible.
-    const addedGlows: unknown[] = [];
+    // ── Item #43: Cancel any existing glow before adding a new one ────────────
+    this.clearGlowFx(sessionId);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const getPreFX = (child: unknown): any => (child as any).preFX;
+
+    const glows: unknown[] = [];
     for (const child of sprite.container.list) {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const preFX = (child as any).preFX;
+        const preFX = getPreFX(child);
         if (!preFX) continue;
-        const glow = preFX.addGlow(
-          color,
-          4,     // outer glow strength
-          0,     // inner glow strength
-          false, // knockout
-          0.1,   // quality
-          16,    // distance
-        );
-        if (glow) addedGlows.push(glow);
-      } catch (_) {
-        // preFX not supported on this child type — skip silently
-      }
+        // ── Item #42: Fade-in — start outerStrength at 0, tween up ────────────
+        const glow = preFX.addGlow(color, 0, 0, false, 0.1, 16);
+        if (!glow) continue;
+        glows.push(glow);
+
+        this.scene.tweens.add({
+          targets: glow,
+          outerStrength: strength,
+          duration: 200,
+          ease: "Quad.Out",
+        });
+      } catch (_) { /* preFX not available on this type */ }
     }
 
-    if (addedGlows.length === 0) return;
+    if (glows.length === 0) return;
+
+    // ── Item #45: Track in map ────────────────────────────────────────────────
+    const activeList = glows.map(g => ({ glowRef: g, expireAt: Date.now() + durationMs, color }));
+    this.activeGlows.set(sessionId, activeList);
+
+    // ── Item #41: Fade-out before expiry ─────────────────────────────────────
+    const FADE_OUT_MS = Math.min(500, durationMs * 0.25);
+    this.scene.time.delayedCall(durationMs - FADE_OUT_MS, () => {
+      if (!sprite.container?.scene) return;
+      for (const g of glows) {
+        try {
+          this.scene.tweens.add({
+            targets: g,
+            outerStrength: 0,
+            duration: FADE_OUT_MS,
+            ease: "Quad.In",
+            onComplete: () => {
+              try { (g as any).destroy?.(); } catch (_) {}
+            },
+          });
+        } catch (_) {}
+      }
+    });
 
     this.scene.time.delayedCall(durationMs, () => {
       if (!sprite.container?.scene) return;
       for (const child of sprite.container.list) {
-        try {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (child as any).preFX?.clear();
-        } catch (_) { /* noop */ }
+        try { (child as any).preFX?.clear(); } catch (_) {}
       }
+      this.activeGlows.delete(sessionId);
     });
+  }
+
+  /**
+   * Item #47 — Immediately clear all active glows on a sprite.
+   * Called on death, target change, etc.
+   */
+  clearGlowFx(sessionId: string) {
+    const sprite = this.sprites.get(sessionId);
+    if (!sprite?.container) {
+      this.activeGlows.delete(sessionId);
+      return;
+    }
+    for (const child of sprite.container.list) {
+      try { (child as any).preFX?.clear(); } catch (_) {}
+    }
+    this.activeGlows.delete(sessionId);
+  }
+
+  /**
+   * Item #48 — Outline glow on the currently targeted enemy.
+   * Clears the previous target's outline before applying a new one.
+   */
+  setTargetOutline(sessionId: string | null) {
+    // Clear previous outline
+    if (this.targetOutlineSession && this.targetOutlineSession !== sessionId) {
+      this.clearTargetOutline(this.targetOutlineSession);
+    }
+    this.targetOutlineSession = sessionId;
+    if (!sessionId) return;
+
+    const sprite = this.sprites.get(sessionId);
+    if (!sprite?.container) return;
+    for (const child of sprite.container.list) {
+      try {
+        const preFX = (child as any).preFX;
+        if (!preFX) continue;
+        preFX.addGlow(0xffffff, 2, 2, false, 0.08, 12);
+      } catch (_) {}
+    }
+  }
+
+  private clearTargetOutline(sessionId: string) {
+    const sprite = this.sprites.get(sessionId);
+    if (!sprite?.container) return;
+    for (const child of sprite.container.list) {
+      try { (child as any).preFX?.clear(); } catch (_) {}
+    }
+  }
+
+  // ── Item #50: Low-HP pulsing red glow on local player ────────────────────────
+  private startLowHpGlow(sessionId: string) {
+    const sprite = this.sprites.get(sessionId);
+    if (!sprite?.container) return;
+
+    const glows: unknown[] = [];
+    for (const child of sprite.container.list) {
+      try {
+        const preFX = (child as any).preFX;
+        if (!preFX) continue;
+        const glow = preFX.addGlow(0xff2200, 0, 0, false, 0.1, 16);
+        if (glow) glows.push(glow);
+      } catch (_) {}
+    }
+    if (glows.length === 0) return;
+
+    const tween = this.scene.tweens.add({
+      targets: glows,
+      outerStrength: { from: 0, to: 8 },
+      duration: 600,
+      yoyo: true,
+      repeat: -1,
+      ease: "Sine.InOut",
+    });
+    this.lowHpGlowTweens.set(sessionId, tween);
+  }
+
+  private stopLowHpGlow(sessionId: string) {
+    const tween = this.lowHpGlowTweens.get(sessionId);
+    if (tween) {
+      tween.stop();
+      this.lowHpGlowTweens.delete(sessionId);
+      this.clearGlowFx(sessionId);
+    }
   }
 
   /** Squash-and-crumple tween played when an entity dies. */
