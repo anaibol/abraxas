@@ -1,12 +1,14 @@
 import type { TileMap } from "@abraxas/shared";
 
-const GLOBAL_MAPS_KEY = "__ABRAXAS_MAPS__";
+declare global {
+  var __ABRAXAS_MAPS__: Map<string, TileMap> | undefined;
+}
 
 function getMaps(): Map<string, TileMap> {
-  if (!(globalThis as any)[GLOBAL_MAPS_KEY]) {
-    (globalThis as any)[GLOBAL_MAPS_KEY] = new Map<string, TileMap>();
+  if (!globalThis.__ABRAXAS_MAPS__) {
+    globalThis.__ABRAXAS_MAPS__ = new Map<string, TileMap>();
   }
-  return (globalThis as any)[GLOBAL_MAPS_KEY];
+  return globalThis.__ABRAXAS_MAPS__;
 }
 
 export function addToRegistry(name: string, data: TileMap) {

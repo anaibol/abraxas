@@ -48,7 +48,10 @@ export class RespawnSystem {
         ? findSpawn(candidate.x, candidate.y)
         : { x: candidate.x, y: candidate.y };
 
-      if (!safe) continue; // No free tile found — retry next tick
+      if (!safe) {
+        remaining.push(entry);
+        continue;
+      }
 
       player.tileX = safe.x;
       player.tileY = safe.y;

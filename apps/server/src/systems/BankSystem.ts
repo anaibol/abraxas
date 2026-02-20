@@ -1,8 +1,10 @@
-import { type InventoryEntry, ITEMS } from "@abraxas/shared";
+import { type InventoryEntry, ITEMS, ItemRarity, StatType } from "@abraxas/shared";
 import { prisma } from "../database/db";
+import { ItemRarity as PrismaItemRarity } from "../generated/prisma";
 import { logger } from "../logger";
 import type { Player } from "../schema/Player";
 import type { InventorySystem } from "./InventorySystem";
+import type { ItemAffix } from "@abraxas/shared";
 
 export class BankSystem {
   private activeBanks = new Map<string, InventoryEntry[]>();
@@ -25,6 +27,8 @@ export class BankSystem {
         itemId: s.item?.itemDef.code || "",
         quantity: s.qty,
         slotIndex: s.idx,
+        rarity: (s.item?.rarity?.toLowerCase() as ItemRarity) || ItemRarity.COMMON,
+        affixes: (s.item?.affixesJson as unknown as ItemAffix[]) || [],
       })) || [];
 
     this.activeBanks.set(player.sessionId, items);
@@ -54,6 +58,24 @@ export class BankSystem {
     const def = ITEMS[itemId];
     if (!def) return false;
 
+    // Capacity Check (Max 50 slots)
+    // For stackable items, it only takes a new slot if it doesn't already exist.
+    // For non-stackable, it takes 'quantity' new slots.
+    const currentSlots = bankItems.length;
+    let neededSlots = 0;
+    if (def.stackable) {
+        if (!bankItems.find(i => i.itemId === itemId)) {
+            neededSlots = 1;
+        }
+    } else {
+        neededSlots = quantity;
+    }
+
+    if (currentSlots + neededSlots > 50) {
+        onError?.("game.bank_full");
+        return false;
+    }
+
     // Move to bank
     if (def.stackable) {
       const existing = bankItems.find((i) => i.itemId === itemId);
@@ -61,13 +83,33 @@ export class BankSystem {
         existing.quantity += quantity;
       } else {
         const nextIdx = this.getNextIndex(bankItems);
-        bankItems.push({ itemId, quantity, slotIndex: nextIdx });
+        bankItems.push({
+          itemId,
+          quantity,
+          slotIndex: nextIdx,
+          rarity: invItem.rarity as ItemRarity,
+          affixes: Array.from(invItem.affixes).map((a) => ({
+            type: a.type,
+            stat: a.stat as StatType,
+            value: a.value,
+          })),
+        });
       }
     } else {
       // Non-stackable: add as separate slots
       for (let i = 0; i < quantity; i++) {
         const nextIdx = this.getNextIndex(bankItems);
-        bankItems.push({ itemId, quantity: 1, slotIndex: nextIdx });
+        bankItems.push({
+          itemId,
+          quantity: 1,
+          slotIndex: nextIdx,
+          rarity: invItem.rarity as ItemRarity,
+          affixes: Array.from(invItem.affixes).map((a) => ({
+            type: a.type,
+            stat: a.stat as StatType,
+            value: a.value,
+          })),
+        });
       }
     }
 
@@ -102,7 +144,12 @@ export class BankSystem {
     }
 
     // Try add to inventory
-    if (this.inventory.addItem(player, itemId, quantity, undefined, onError)) {
+    const instanceData = {
+      rarity: bankItem.rarity as ItemRarity,
+      affixes: bankItem.affixes || [],
+    };
+
+    if (this.inventory.addItem(player, itemId, quantity, instanceData, onError)) {
       // Remove from bank
       if (bankItem.quantity > quantity) {
         bankItem.quantity -= quantity;
@@ -142,6 +189,8 @@ export class BankSystem {
           const instance = await tx.itemInstance.create({
             data: {
               itemDefId: itemDef.id,
+              rarity: (item.rarity?.toUpperCase() as PrismaItemRarity) || PrismaItemRarity.COMMON,
+              affixesJson: item.affixes ? (item.affixes as any) : [],
             },
           });
 

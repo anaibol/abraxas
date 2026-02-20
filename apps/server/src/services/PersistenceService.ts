@@ -1,8 +1,14 @@
-import type { EquipmentData, InventoryEntry } from "@abraxas/shared";
-import { type ClassType, Direction, ItemRarity } from "@abraxas/shared";
+import type { EquipmentData, InventoryEntry, StatType } from "@abraxas/shared";
+import { type ClassType, Direction } from "@abraxas/shared";
 import { prisma } from "../database/db";
-import { EquipSlot, type Prisma } from "../generated/prisma";
+import { Direction as PrismaDirection, DropType, EquipSlot, ItemRarity, type Prisma } from "../generated/prisma";
 import { logger } from "../logger";
+
+interface SavedItemAffix {
+  type: string;
+  stat: StatType;
+  value: number;
+}
 
 /** Maps EquipmentData keys to Prisma EquipSlot enum values. */
 const EQUIPMENT_SLOT_MAP: Record<string, EquipSlot | undefined> = {
@@ -45,10 +51,11 @@ export type FullCharacter = Prisma.CharacterGetPayload<{
 
 export class PersistenceService {
   static async loadChar(id: string): Promise<FullCharacter | null> {
-    return prisma.character.findUnique({
+    const char = await prisma.character.findUnique({
       where: { id },
       include: CHAR_INCLUDE,
-    }) as Promise<FullCharacter | null>;
+    });
+    return char as FullCharacter | null;
   }
 
   static async saveChar(
@@ -76,7 +83,7 @@ export class PersistenceService {
     },
   ) {
     try {
-      const facingStr = (Direction[data.facing] || "DOWN").toUpperCase();
+      const facingStr = Direction[data.facing] || "DOWN";
 
       const char = (await prisma.character.update({
         where: { id },
@@ -87,7 +94,7 @@ export class PersistenceService {
           gold: data.gold,
           level: data.level,
           exp: data.xp,
-          facing: facingStr as any,
+          facing: facingStr,
           stats: {
             update: {
               hp: data.hp,
@@ -143,9 +150,9 @@ export class PersistenceService {
                 data: {
                   itemDefId: itemDef.id,
                   boundToCharacterId: char.id,
-                  rarity: ((item as any).rarity || "common").toUpperCase() as any,
+                  rarity: (item.rarity?.toUpperCase() as ItemRarity) || ItemRarity.COMMON,
                   nameOverride: item.nameOverride,
-                  affixesJson: (item.affixes as any) || [],
+                  affixesJson: (item.affixes as unknown as Prisma.InputJsonValue) || [],
                 },
               });
 
@@ -252,9 +259,9 @@ export class PersistenceService {
         const instance = await prisma.itemInstance.create({
           data: {
             itemDefId: itemDef.id,
-            rarity: data.instanceData.rarity.toUpperCase() as any,
+            rarity: (data.instanceData.rarity.toUpperCase() as ItemRarity),
             nameOverride: data.instanceData.nameOverride,
-            affixesJson: data.instanceData.affixes,
+            affixesJson: data.instanceData.affixes as Prisma.JsonArray,
           },
         });
         itemInstanceId = instance.id;
@@ -267,7 +274,7 @@ export class PersistenceService {
         mapId: data.mapId,
         tileX: data.tileX,
         tileY: data.tileY,
-        itemType: data.itemType.toUpperCase() as any,
+        itemType: (data.itemType.toUpperCase() as DropType),
         itemId: itemInstanceId,
         quantity: data.quantity,
         goldAmount: data.goldAmount,

@@ -54,6 +54,18 @@ export class BuffSystem {
       });
     }
   }
+  
+  hasBuff(sessionId: string, id: string, now: number): boolean {
+    const s = this.state.get(sessionId);
+    return !!s && s.buffs.some((b) => b.id === id && now < b.expiresAt);
+  }
+
+  removeBuff(sessionId: string, id: string): void {
+    const s = this.state.get(sessionId);
+    if (s) {
+      s.buffs = s.buffs.filter((b) => b.id !== id);
+    }
+  }
 
   addDoT(
     targetSessionId: string,
@@ -142,7 +154,7 @@ export class BuffSystem {
     now: number,
     getEntity: (sessionId: string) => Entity | undefined,
     broadcast: BroadcastFn,
-    onDeath: (entity: Entity) => void,
+    onDeath: (entity: Entity, killerSessionId?: string) => void,
   ): void {
     for (const [sessionId, s] of this.state.entries()) {
       const entity = getEntity(sessionId);
@@ -153,7 +165,14 @@ export class BuffSystem {
       entity.stealthed = now < s.stealthedUntil;
       entity.spawnProtection = now < s.spawnProtectedUntil;
 
+      // Polymorph Healing (special case)
+      if (s.buffs.some((b) => b.id === "polymorph")) {
+        const heal = Math.ceil(entity.maxHp * 0.01); // 1% HP per tick
+        entity.hp = Math.min(entity.maxHp, entity.hp + heal);
+      }
+
       // Expire old buffs
+      const buffsBefore = s.buffs.length;
       s.buffs = s.buffs.filter((b) => now < b.expiresAt);
 
       // Apply appearance overrides from active buffs
@@ -185,8 +204,11 @@ export class BuffSystem {
         if (entity.hp <= 0) {
           entity.hp = 0;
           entity.alive = false;
-          broadcast(ServerMessageType.Death, { sessionId });
-          onDeath(entity);
+          broadcast(ServerMessageType.Death, {
+            sessionId,
+            killerSessionId: dot.sourceSessionId,
+          });
+          onDeath(entity, dot.sourceSessionId);
           break;
         }
       }

@@ -12,6 +12,8 @@ import {
   MathUtils,
   ServerMessageType,
   StatType,
+  CLASS_APPEARANCE,
+  NPC_APPEARANCE,
 } from "@abraxas/shared";
 import type { GameState } from "../schema/GameState";
 import { Player } from "../schema/Player";
@@ -45,6 +47,7 @@ export class CombatSystem {
     private spatial: SpatialLookup,
     private buffSystem: BuffSystem,
     private map: TileMap,
+    private roomMapName: string,
   ) {}
 
   removeEntity(sessionId: string) {
@@ -182,6 +185,16 @@ export class CombatSystem {
 
     this.faceToward(attacker, targetTileX, targetTileY);
 
+    if (
+      !this.hasLineOfSight(attacker.getPosition(), {
+        x: targetTileX,
+        y: targetTileY,
+      })
+    ) {
+      sendToClient?.(ServerMessageType.InvalidTarget);
+      return false;
+    }
+
     const isRanged = stats.attackRange > 1;
 
     if (isRanged) {
@@ -195,16 +208,6 @@ export class CombatSystem {
         y: target.tileY,
       });
       if (dist > stats.attackRange) {
-        sendToClient?.(ServerMessageType.InvalidTarget);
-        return false;
-      }
-
-      if (
-        !this.hasLineOfSight(attacker.getPosition(), {
-          x: targetTileX,
-          y: targetTileY,
-        })
-      ) {
         sendToClient?.(ServerMessageType.InvalidTarget);
         return false;
       }
@@ -255,9 +258,8 @@ export class CombatSystem {
     }
 
     // Class restriction: players may only use abilities assigned to their class
-    if (caster.type === EntityType.PLAYER) {
-      const pCaster = caster as Player;
-      const classStats = pCaster.getStats();
+    if (caster instanceof Player) {
+      const classStats = caster.getStats();
       if (classStats && !classStats.abilities.includes(abilityId)) {
         console.log("[tryCast] FAIL class restriction. abilities:", classStats.abilities);
         sendToClient?.(ServerMessageType.Notification, {
@@ -266,9 +268,9 @@ export class CombatSystem {
         return false;
       }
 
-      if (ability.requiredLevel && pCaster.level < ability.requiredLevel) {
+      if (ability.requiredLevel && caster.level < ability.requiredLevel) {
         console.log(
-          `[tryCast] FAIL level requirement. level=${pCaster.level} required=${ability.requiredLevel}`,
+          `[tryCast] FAIL level requirement. level=${caster.level} required=${ability.requiredLevel}`,
         );
         sendToClient?.(ServerMessageType.Notification, {
           message: "game.skill_locked",
@@ -296,33 +298,62 @@ export class CombatSystem {
       return false;
     }
 
-    if ((ability.rangeTiles ?? 0) > 0) this.faceToward(caster, targetTileX, targetTileY);
+    if (ability.rangeTiles > 0) this.faceToward(caster, targetTileX, targetTileY);
 
-    if (caster.type === EntityType.PLAYER) {
-      const pCaster = caster as Player;
-      if (pCaster.mana < ability.manaCost) {
-        console.log(`[tryCast] FAIL mana. has=${pCaster.mana} needs=${ability.manaCost}`);
+    if (caster instanceof Player) {
+      if (caster.mana < ability.manaCost) {
+        console.log(`[tryCast] FAIL mana. has=${caster.mana} needs=${ability.manaCost}`);
         sendToClient?.(ServerMessageType.Notification, {
           message: "game.not_enough_mana",
         });
         return false;
       }
-      if (ability.soulCost && pCaster.souls < ability.soulCost) {
-        console.log(`[tryCast] FAIL souls. has=${pCaster.souls} needs=${ability.soulCost}`);
+      if (ability.soulCost && caster.souls < ability.soulCost) {
+        console.log(`[tryCast] FAIL souls. has=${caster.souls} needs=${ability.soulCost}`);
         sendToClient?.(ServerMessageType.Notification, {
           message: "game.not_enough_souls",
         });
         return false;
       }
+      if (ability.rageCost && caster.rage < ability.rageCost) {
+        console.log(`[tryCast] FAIL rage. has=${caster.rage} needs=${ability.rageCost}`);
+        sendToClient?.(ServerMessageType.Notification, {
+          message: "game.not_enough_rage",
+        });
+        return false;
+      }
+      if (ability.energyCost && caster.energy < ability.energyCost) {
+        console.log(`[tryCast] FAIL energy. has=${caster.energy} needs=${ability.energyCost}`);
+        sendToClient?.(ServerMessageType.Notification, {
+          message: "game.not_enough_energy",
+        });
+        return false;
+      }
+      if (ability.focusCost && caster.focus < ability.focusCost) {
+        console.log(`[tryCast] FAIL focus. has=${caster.focus} needs=${ability.focusCost}`);
+        sendToClient?.(ServerMessageType.Notification, {
+          message: "game.not_enough_focus",
+        });
+        return false;
+      }
+      if (ability.holyPowerCost && caster.holyPower < ability.holyPowerCost) {
+        console.log(
+          `[tryCast] FAIL holyPower. has=${caster.holyPower} needs=${ability.holyPowerCost}`,
+        );
+        sendToClient?.(ServerMessageType.Notification, {
+          message: "game.not_enough_holy_power",
+        });
+        return false;
+      }
     }
 
-    if ((ability.rangeTiles ?? 0) > 0) {
+    if (ability.rangeTiles > 0) {
       const dist = MathUtils.manhattanDist(caster.getPosition(), {
         x: targetTileX,
         y: targetTileY,
       });
-      if (dist > (ability.rangeTiles ?? 0)) {
-        console.log(`[tryCast] FAIL range. dist=${dist} max=${ability.rangeTiles ?? 0}`);
+      if (dist > ability.rangeTiles) {
+        console.log(`[tryCast] FAIL range. dist=${dist} max=${ability.rangeTiles}`);
         sendToClient?.(ServerMessageType.InvalidTarget);
         return false;
       }
@@ -338,11 +369,20 @@ export class CombatSystem {
       }
     }
 
-    if (caster.type === EntityType.PLAYER) {
-      const p = caster as Player;
-      p.mana -= ability.manaCost;
-      if (ability.soulCost) {
-        p.souls -= ability.soulCost;
+    if (caster instanceof Player) {
+      caster.mana -= ability.manaCost;
+      if (ability.soulCost) caster.souls -= ability.soulCost;
+      if (ability.rageCost) caster.rage -= ability.rageCost;
+      if (ability.energyCost) caster.energy -= ability.energyCost;
+      if (ability.focusCost) caster.focus -= ability.focusCost;
+      if (ability.holyPowerCost) caster.holyPower -= ability.holyPowerCost;
+
+      // Handle Combo Points
+      if (ability.comboPointsGain) {
+        caster.comboPoints = Math.min(caster.maxComboPoints, caster.comboPoints + ability.comboPointsGain);
+      }
+      if (ability.comboPointsCost) {
+        caster.comboPoints = Math.max(0, caster.comboPoints - ability.comboPointsCost);
       }
     }
 
@@ -385,6 +425,15 @@ export class CombatSystem {
     if (windup.type === "melee" || windup.type === "ranged") {
       this.resolveAutoAttack(attacker, windup, broadcast, onDeath, now);
     } else {
+      // Spell Echo: Next spell casts twice
+      if (attacker instanceof Player && this.buffSystem.hasBuff(attacker.sessionId, "spell_echo", now)) {
+        this.buffSystem.removeBuff(attacker.sessionId, "spell_echo");
+        // Resolve once
+        this.resolveAbility(attacker, windup, broadcast, onDeath, now, onSummon);
+        // Resolve again (recursive call, but buff is gone so it won't loop)
+        this.resolveAbility(attacker, windup, broadcast, onDeath, now, onSummon);
+        return;
+      }
       this.resolveAbility(attacker, windup, broadcast, onDeath, now, onSummon);
     }
   }
@@ -455,6 +504,14 @@ export class CombatSystem {
           type: DamageSchool.PHYSICAL,
         });
 
+        // Rage Generation
+        if (attacker instanceof Player && attacker.classType === "WARRIOR") {
+          attacker.rage = Math.min(attacker.maxRage, attacker.rage + 5);
+        }
+        if (target instanceof Player && target.classType === "WARRIOR") {
+          target.rage = Math.min(target.maxRage, target.rage + 3);
+        }
+
         if (target.hp <= 0) {
           onDeath(target, attacker.sessionId);
         }
@@ -495,6 +552,7 @@ export class CombatSystem {
     // AoE heal — heals all same-faction entities (including caster) in radius.
     // Handled before the rangeTiles === 0 check so aoeRadius is respected.
     if (ability.effect === "aoe_heal") {
+      const casterLevel = attacker instanceof Player || attacker instanceof Npc ? attacker.level : 1;
       const radius = ability.aoeRadius ?? 3;
       const candidates = this.spatial.findEntitiesInRadius(
         windup.targetTileX,
@@ -527,8 +585,8 @@ export class CombatSystem {
 
     // Self-target abilities (rangeTiles === 0) always target the caster.
     // AoE abilities with rangeTiles === 0 target a radius around the caster.
-    if ((ability.rangeTiles ?? 0) === 0) {
-      const aoeRadius = ability.aoeRadius ?? 0;
+    if (ability.rangeTiles === 0) {
+      const aoeRadius = ability.aoeRadius;
       if (aoeRadius > 0) {
         // Play the main AoE effect once at the caster tile — not once per victim.
         broadcast(ServerMessageType.CastHit, {
@@ -556,7 +614,7 @@ export class CombatSystem {
       return;
     }
 
-    const aoeRadius = ability.aoeRadius ?? 0;
+    const aoeRadius = ability.aoeRadius;
     if (aoeRadius > 0) {
       // Play the main AoE effect once at the intended target tile regardless of hits.
       broadcast(ServerMessageType.CastHit, {
@@ -585,7 +643,16 @@ export class CombatSystem {
         }
 
         // Suppress per-victim CastHit; the main one was already broadcast above.
-        this.applyAbilityToTarget(attacker, victim, ability, broadcast, onDeath, now, true);
+        this.applyAbilityToTarget(
+          attacker,
+          victim,
+          ability,
+          broadcast,
+          onDeath,
+          now,
+          true,
+          onSummon,
+        );
       }
     } else {
       const target = this.spatial.findEntityAtTile(windup.targetTileX, windup.targetTileY);
@@ -596,8 +663,28 @@ export class CombatSystem {
             x: target.tileX,
             y: target.tileY,
           });
-          if (dist > (ability.rangeTiles ?? 0)) return;
-          this.applyAbilityToTarget(attacker, target, ability, broadcast, onDeath, now);
+          if (dist > ability.rangeTiles) return;
+
+          // LOS check at resolution time to prevent wall-piercing curve
+          if (
+            !this.hasLineOfSight(attacker.getPosition(), {
+              x: target.tileX,
+              y: target.tileY,
+            })
+          ) {
+            return;
+          }
+
+          this.applyAbilityToTarget(
+            attacker,
+            target,
+            ability,
+            broadcast,
+            onDeath,
+            now,
+            false,
+            onSummon,
+          );
         }
       }
     }
@@ -605,22 +692,20 @@ export class CombatSystem {
 
   private sameFaction(a: Entity, b: Entity): boolean {
     // Check for owner-pet or pet-pet relation
-    const aOwnerId = (a as any).ownerId;
-    const bOwnerId = (b as any).ownerId;
+    const aOwnerId = a instanceof Npc ? a.ownerId : undefined;
+    const bOwnerId = b instanceof Npc ? b.ownerId : undefined;
 
     if (aOwnerId && aOwnerId === b.sessionId) return true;
     if (bOwnerId && bOwnerId === a.sessionId) return true;
     if (aOwnerId && bOwnerId && aOwnerId === bOwnerId) return true;
 
-    if (a.type === EntityType.PLAYER && b.type === EntityType.PLAYER) {
-      const pA = a as Player;
-      const pB = b as Player;
-      if (pA.groupId && pA.groupId === pB.groupId) return true;
-      if (pA.guildId && pA.guildId === pB.guildId) return true;
+    if (a instanceof Player && b instanceof Player) {
+      if (a.groupId && a.groupId === b.groupId) return true;
+      if (a.guildId && a.guildId === b.guildId) return true;
       return false;
     }
-    if (a.type !== EntityType.PLAYER && b.type !== EntityType.PLAYER) {
-      return a.type === b.type;
+    if (a instanceof Npc && b instanceof Npc) {
+      return a.npcType === b.npcType;
     }
     return false;
   }
@@ -628,10 +713,8 @@ export class CombatSystem {
   private canAttack(attacker: Entity, target: Entity): boolean {
     if (attacker.sessionId === target.sessionId) return false;
     if (this.sameFaction(attacker, target)) return false;
-    if (attacker.type === EntityType.PLAYER && target.type === EntityType.PLAYER) {
-      const pAttacker = attacker as Player;
-      const pTarget = target as Player;
-      if (!pAttacker.pvpEnabled || !pTarget.pvpEnabled) return false;
+    if (attacker instanceof Player && target instanceof Player) {
+      if (!attacker.pvpEnabled || !target.pvpEnabled) return false;
       if (
         this.isInSafeZone(attacker.tileX, attacker.tileY) ||
         this.isInSafeZone(target.tileX, target.tileY)
@@ -674,8 +757,9 @@ export class CombatSystem {
     now: number,
     /** When true, skips the CastHit broadcast (AoE callers broadcast it once themselves). */
     suppressCastHit = false,
+    onSummon?: (caster: Entity, abilityId: string, x: number, y: number) => void,
   ) {
-    if (target.type === EntityType.NPC && (target as Npc).npcType === "merchant") return;
+    if (target instanceof Npc && target.npcType === "merchant") return;
 
     const isSelfCast = attacker.sessionId === target.sessionId;
     if (!isSelfCast && this.buffSystem.isInvulnerable(target.sessionId, now)) return;
@@ -724,7 +808,16 @@ export class CombatSystem {
       if (target.hp <= 0) {
         onDeath(target, attacker.sessionId);
       }
-      const healBack = Math.max(1, Math.round(damage * (ability.leechRatio ?? 0.5)));
+
+      // Rage Generation
+      if (attacker instanceof Player && attacker.classType === "WARRIOR") {
+        attacker.rage = Math.min(attacker.maxRage, attacker.rage + 5);
+      }
+      if (target instanceof Player && target.classType === "WARRIOR") {
+        target.rage = Math.min(target.maxRage, target.rage + 3);
+      }
+
+      const healBack = Math.max(1, Math.round(damage * ability.leechRatio));
       attacker.hp = Math.min(attacker.maxHp, attacker.hp + healBack);
       broadcast(ServerMessageType.Heal, {
         sessionId: attacker.sessionId,
@@ -744,6 +837,15 @@ export class CombatSystem {
       if (target.hp <= 0) {
         onDeath(target, attacker.sessionId);
       }
+
+      // Rage Generation
+      if (attacker instanceof Player && attacker.classType === "WARRIOR") {
+        attacker.rage = Math.min(attacker.maxRage, attacker.rage + 5);
+      }
+      if (target instanceof Player && target.classType === "WARRIOR") {
+        target.rage = Math.min(target.maxRage, target.rage + 3);
+      }
+
       // Apply secondary stat modifier (e.g. ice_bolt AGI slow) if defined alongside damage
       if (
         !isSelfCast &&
@@ -796,21 +898,101 @@ export class CombatSystem {
         durationMs: ability.durationMs ?? 5000,
       });
     } else if (ability.effect === "buff" || ability.buffStat) {
-      this.buffSystem.addBuff(
-        target.sessionId,
-        ability.id,
-        ability.buffStat ?? StatType.ARMOR,
-        ability.buffAmount ?? 10,
-        ability.durationMs ?? 5000,
-        now,
-        ability.appearanceOverride?.bodyId,
-        ability.appearanceOverride?.headId,
-      );
+      const buffStat = ability.buffStat ?? StatType.ARMOR;
+      const buffAmount = ability.buffAmount ?? 10;
+
+      // Special Case: Resource Buffs (e.g. Berserker Rage gives 30 Rage)
+      if (
+        [StatType.RAGE, StatType.ENERGY, StatType.FOCUS, StatType.HOLY_POWER].includes(buffStat) &&
+        target instanceof Player
+      ) {
+        if (buffStat === StatType.RAGE) target.rage = Math.min(target.maxRage, target.rage + buffAmount);
+        if (buffStat === StatType.ENERGY)
+          target.energy = Math.min(target.maxEnergy, target.energy + buffAmount);
+        if (buffStat === StatType.FOCUS)
+          target.focus = Math.min(target.maxFocus, target.focus + buffAmount);
+        if (buffStat === StatType.HOLY_POWER)
+          target.holyPower = Math.min(target.maxHolyPower, target.holyPower + buffAmount);
+      } else {
+        this.buffSystem.addBuff(
+          target.sessionId,
+          ability.id,
+          buffStat,
+          buffAmount,
+          ability.durationMs ?? 5000,
+          now,
+          ability.appearanceOverride?.bodyId,
+          ability.appearanceOverride?.headId,
+        );
+      }
+
       broadcast(ServerMessageType.BuffApplied, {
         sessionId: target.sessionId,
         abilityId: ability.id,
         durationMs: ability.durationMs ?? 5000,
       });
+    } else if (ability.effect === "mirror_shape") {
+      // Logic for Mimic: Copy the target's visual appearance
+      // If target is an NPC, use its bodyId. If Player, use its current bodyId/overrides.
+      let bodyId = 0;
+      let headId = 0;
+
+      if (target instanceof Player) {
+        const appearance = CLASS_APPEARANCE[target.classType];
+        bodyId = appearance?.bodyId || 0;
+        headId = appearance?.headId || 0;
+      } else if (target instanceof Npc) {
+        const appearance = NPC_APPEARANCE[target.npcType];
+        bodyId = appearance?.bodyId || 0;
+        headId = appearance?.headId || 0;
+      }
+
+      this.buffSystem.addBuff(
+        attacker.sessionId,
+        ability.id,
+        StatType.HP, // Mimic doesn't necessarily buff stats, but we can give it 0 amount
+        0,
+        ability.durationMs ?? 30000,
+        now,
+        bodyId,
+        headId,
+      );
+
+      broadcast(ServerMessageType.BuffApplied, {
+        sessionId: attacker.sessionId,
+        abilityId: ability.id,
+        durationMs: ability.durationMs ?? 30000,
+      });
+    } else if (ability.effect === "teleport") {
+      // Logic for Leap, Blink, etc.
+      // 1. Move the caster
+      this.spatial.removeFromGrid(attacker);
+      attacker.tileX = target.tileX;
+      attacker.tileY = target.tileY;
+      this.spatial.addToGrid(attacker);
+
+      // 2. Broadcast Warp to tell clients to instantly move the sprite
+      broadcast(ServerMessageType.Warp, {
+        targetMap: this.roomMapName,
+        targetX: attacker.tileX,
+        targetY: attacker.tileY,
+      });
+
+      // 3. If there's damage/AOE attached (like Leap), it will be handled by the parent caller
+      // since teleport abilities usually target a tile and apply effects in a radius.
+    } else if (ability.effect === "pickpocket") {
+      // Logic for Pickpocket: Gain gold from an NPC target
+      if (attacker instanceof Player && target instanceof Npc && target.alive) {
+        const goldGain = Math.floor(Math.random() * 40) + 10; // 10-50 gold
+        attacker.gold += goldGain;
+        broadcast(ServerMessageType.Notification, {
+          message: "game.pickpocket_success",
+          templateData: { amount: goldGain, target: target.name },
+        });
+      }
+    } else if (ability.effect === "summon" && ability.summonType && onSummon) {
+      // Logic for Summons: Trigger the onSummon callback
+      onSummon(attacker, ability.id, target.tileX, target.tileY);
     }
 
     // Broadcast CastHit so clients play the ability visual effect.
@@ -852,7 +1034,22 @@ export class CombatSystem {
 
     // magical
     const defenderInt = this.boosted(target, StatType.INT, now);
-    return calcSpellDamage(ability.baseDamage, scalingStatValue, ability.scalingRatio, defenderInt);
+    let damage = calcSpellDamage(
+      ability.baseDamage,
+      scalingStatValue,
+      ability.scalingRatio,
+      defenderInt,
+    );
+
+    // Special Case: Execute (Deals 3x damage to targets below 20% HP)
+    if (ability.id === "execute") {
+      const hpRatio = target.hp / this.boosted(target, StatType.HP, now);
+      if (hpRatio < 0.2) {
+        damage *= 3;
+      }
+    }
+
+    return damage;
   }
 
   private boosted(entity: Entity, stat: StatType, now: number): number {

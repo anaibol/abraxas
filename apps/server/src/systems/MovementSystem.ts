@@ -1,4 +1,4 @@
-import type { Direction, TileMap } from "@abraxas/shared";
+import { type Direction, type TileMap, EntityType } from "@abraxas/shared";
 import { DIRECTION_DELTA, ITEMS } from "@abraxas/shared";
 import { logger } from "../logger";
 import type { Entity, SpatialLookup } from "../utils/SpatialLookup";
@@ -86,6 +86,7 @@ export class MovementSystem {
       newY < 0 ||
       newY >= map.height ||
       map.collision[newY]?.[newX] === 1 ||
+      (entity.type !== EntityType.PLAYER && map.warps?.some((w) => w.x === newX && w.y === newY)) ||
       this.spatial.isTileOccupied(newX, newY, entity.sessionId)
     ) {
       return { success: false };

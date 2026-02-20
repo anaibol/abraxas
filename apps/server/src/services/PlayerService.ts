@@ -1,10 +1,10 @@
-import type {
-  ClassType,
-  EquipmentData,
-  InventoryEntry,
-  NpcType,
-} from "@abraxas/shared";
 import {
+  type ClassType,
+  type EquipmentData,
+  type InventoryEntry,
+  type NpcType,
+  ItemRarity,
+  StatType,
   Direction,
   EXP_TABLE,
   ITEMS,

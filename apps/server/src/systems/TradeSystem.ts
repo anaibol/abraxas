@@ -4,6 +4,8 @@ import {
   ServerMessageType,
   type TradeOffer,
   type TradeState,
+  ItemRarity,
+  StatType,
 } from "@abraxas/shared";
 import { logger } from "../logger";
 import type { Player } from "../schema/Player";
@@ -70,18 +72,46 @@ export class TradeSystem {
   }
 
   updateOffer(
-    sessionId: string,
+    player: Player,
     offer: { gold: number; items: { itemId: string; quantity: number }[] },
   ) {
-    const trade = this.activeTrades.get(sessionId);
+    const trade = this.activeTrades.get(player.sessionId);
     if (!trade) return null;
 
-    const isAlice = trade.alice.sessionId === sessionId;
+    const isAlice = trade.alice.sessionId === player.sessionId;
     const participant = isAlice ? trade.alice : trade.bob;
     const other = isAlice ? trade.bob : trade.alice;
 
     participant.offer.gold = Math.max(0, offer.gold);
-    participant.offer.items = offer.items;
+
+    // Validate each item against the actual inventory to get metadata
+    const validatedItems: TradeOffer["items"] = [];
+    for (const off of offer.items) {
+      const invItem = player.inventory.find((i) => i.itemId === off.itemId);
+      if (!invItem || invItem.quantity < off.quantity) {
+        logger.warn({
+          message: "Invalid trade offer item",
+          sessionId: player.sessionId,
+          item: off,
+        });
+        return null; // Reject the whole update if any item is invalid
+      }
+
+      validatedItems.push({
+        itemId: off.itemId,
+        quantity: off.quantity,
+        slotIndex: invItem.slotIndex,
+        rarity: invItem.rarity as ItemRarity,
+        nameOverride: invItem.nameOverride,
+        affixes: Array.from(invItem.affixes).map((a) => ({
+          type: a.type,
+          stat: a.stat as StatType,
+          value: a.value,
+        })),
+      });
+    }
+
+    participant.offer.items = validatedItems;
     participant.offer.confirmed = false;
     other.offer.confirmed = false; // Reset other if offer changes
 
@@ -134,32 +164,43 @@ export class TradeSystem {
     givingOffer: TradeOffer,
     receivingOffer: TradeOffer,
   ): boolean {
-    const MAX_SLOTS = MAX_INVENTORY_SLOTS;
-
-    // Count current items
-    const currentCount = player.inventory.length;
-
-    // Items removed (unique ones, because removeItem is called for each)
-    let itemsRemoved = 0;
+    // Count how many unique slots will be freed.
+    // We assume giving items are removed first.
+    let slotsFreed = 0;
     for (const off of givingOffer.items) {
       const slot = player.inventory.find((i) => i.itemId === off.itemId);
       if (slot && slot.quantity === off.quantity) {
-        itemsRemoved++;
+        slotsFreed++;
       }
     }
 
-    // Items added
-    let itemsAdded = 0;
+    // Count how many new slots are needed.
+    let slotsNeeded = 0;
     for (const off of receivingOffer.items) {
       const def = ITEMS[off.itemId];
       if (def?.stackable) {
         const existing = player.inventory.find((i) => i.itemId === off.itemId);
-        if (existing) continue; // Already exists, will stack
+        // If it exists and we're NOT giving it ALL away, it will stack.
+        // If we ARE giving it all away, it will take the freed slot (net 0).
+        if (existing) {
+          const givingThisItem = givingOffer.items.find((i) => i.itemId === off.itemId);
+          if (givingThisItem && givingThisItem.quantity === existing.quantity) {
+            // We are giving the whole stack away. The incoming stack will take a slot.
+            slotsNeeded++;
+          } else {
+            // Stacks into existing.
+            continue;
+          }
+        } else {
+          slotsNeeded++;
+        }
+      } else {
+        // Non-stackable always needs a slot per unit.
+        slotsNeeded += off.quantity;
       }
-      itemsAdded++;
     }
 
-    return currentCount - itemsRemoved + itemsAdded <= MAX_SLOTS;
+    return player.inventory.length - slotsFreed + slotsNeeded <= MAX_INVENTORY_SLOTS;
   }
 
   private validateOffer(player: Player, offer: TradeOffer): boolean {
@@ -177,9 +218,12 @@ export class TradeSystem {
       to.gold += offer.gold;
     }
     for (const item of offer.items) {
-      const slot = from.inventory.find((s) => s.itemId === item.itemId);
-      if (slot && this.inventorySystem.removeItem(from, slot.slotIndex, item.quantity)) {
-        this.inventorySystem.addItem(to, item.itemId, item.quantity);
+      if (this.inventorySystem.removeItem(from, item.itemId, item.quantity)) {
+        this.inventorySystem.addItem(to, item.itemId, item.quantity, {
+          rarity: item.rarity!,
+          nameOverride: item.nameOverride,
+          affixes: item.affixes || [],
+        });
       }
     }
   }
