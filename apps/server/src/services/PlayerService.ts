@@ -65,7 +65,8 @@ export class PlayerService {
       }
     }
 
-    player.facing = Direction[char.facing.toUpperCase() as keyof typeof Direction] ?? Direction.DOWN;
+    const facingStr = char.facing.toUpperCase();
+    player.facing = facingStr === "UP" ? Direction.UP : facingStr === "LEFT" ? Direction.LEFT : facingStr === "RIGHT" ? Direction.RIGHT : Direction.DOWN;
     player.alive = player.hp > 0;
 
     // Starting gear logic
