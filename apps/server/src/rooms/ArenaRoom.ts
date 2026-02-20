@@ -33,6 +33,7 @@ import { NpcSystem } from "../systems/NpcSystem";
 import { QuestSystem } from "../systems/QuestSystem";
 import { RespawnSystem } from "../systems/RespawnSystem";
 import { SocialSystem } from "../systems/SocialSystem";
+import { GuildSystem } from "../systems/GuildSystem";
 import { TickSystem } from "../systems/TickSystem";
 import { BankSystem } from "../systems/BankSystem";
 import { TradeSystem } from "../systems/TradeSystem";
@@ -121,6 +122,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 				findClientByName,
 				(sid) => this.findClient(sid),
 				this.social.broadcastToGroup.bind(this.social),
+				this.guild.broadcastToGuild.bind(this.guild),
 			);
 
 			this.messageHandler = new MessageHandler({

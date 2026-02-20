@@ -157,6 +157,7 @@ export class CombatSystem {
 		now: number,
 		sendToClient?: SendToClientFn,
 	): boolean {
+		console.log(`[tryAttack] START attacker=${attacker.sessionId} target=${targetTileX},${targetTileY}`);
 		if (this.buffSystem.isStunned(attacker.sessionId, now)) return false;
 
 		const stats = attacker.getStats()!;
@@ -166,6 +167,7 @@ export class CombatSystem {
 		const gcdReady = now >= attacker.lastGcdMs + GCD_MS;
 
 		if (!meleeReady || !gcdReady || this.activeWindups.has(attacker.sessionId)) {
+			console.log(`[tryAttack] BUFFERING: melee=${meleeReady} gcd=${gcdReady} windup=${this.activeWindups.has(attacker.sessionId)}`);
 			return this.bufferAction(attacker, {
 				type: "attack",
 				targetTileX,
@@ -215,6 +217,7 @@ export class CombatSystem {
 		attacker.lastGcdMs = now;
 		this.lastMeleeMs.set(attacker.sessionId, now);
 		this.activeWindups.set(attacker.sessionId, windup);
+		console.log(`[tryAttack] SUCCESS broadcasting AttackStart for ${attacker.sessionId}`);
 		broadcast(ServerMessageType.AttackStart, {
 			sessionId: attacker.sessionId,
 			facing: attacker.facing,
@@ -408,12 +411,14 @@ export class CombatSystem {
 					: calcMeleeDamage(attackerStr, defenderArmor, defenderAgi);
 
 			if (result.dodged) {
+				console.log("[resolveAutoAttack] target dodged!");
 				broadcast(ServerMessageType.AttackHit, {
 					sessionId: attacker.sessionId,
 					targetSessionId: target.sessionId,
 					dodged: true,
 				});
 			} else {
+				console.log(`[resolveAutoAttack] HIT! damage=${result.damage}. hpBefore=${target.hp + result.damage}`);
 				target.hp -= result.damage;
 				broadcast(ServerMessageType.AttackHit, {
 					sessionId: attacker.sessionId,
@@ -431,6 +436,7 @@ export class CombatSystem {
 				}
 			}
 		} else {
+			console.log(`[resolveAutoAttack] Miss! Target not found or dead.`);
 			broadcast(ServerMessageType.AttackHit, {
 				sessionId: attacker.sessionId,
 				targetSessionId: null,
