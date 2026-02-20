@@ -1,4 +1,4 @@
-import { DROP_EXPIRY_MS, ItemRarity, StatType } from "@abraxas/shared";
+import { DROP_EXPIRY_MS, DropType, ItemRarity, StatType } from "@abraxas/shared";
 import type { MapSchema } from "@colyseus/schema";
 import { Drop } from "../schema/Drop";
 import { InventoryItem, ItemAffixSchema } from "../schema/InventoryItem";

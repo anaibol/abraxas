@@ -19,6 +19,11 @@ export const DIRECTION_DELTA: Record<Direction, { dx: number; dy: number }> = {
 export const EQUIPMENT_SLOTS = ["weapon", "armor", "shield", "helmet", "ring", "mount"] as const;
 export type EquipmentSlot = (typeof EQUIPMENT_SLOTS)[number];
 
+export enum DropType {
+  ITEM = "item",
+  GOLD = "gold",
+}
+
 export enum ItemRarity {
   COMMON = "common",
   UNCOMMON = "uncommon",

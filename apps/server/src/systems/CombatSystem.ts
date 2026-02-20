@@ -296,7 +296,7 @@ export class CombatSystem {
       return false;
     }
 
-    if (ability.rangeTiles > 0) this.faceToward(caster, targetTileX, targetTileY);
+    if ((ability.rangeTiles ?? 0) > 0) this.faceToward(caster, targetTileX, targetTileY);
 
     if (caster.type === EntityType.PLAYER) {
       const pCaster = caster as Player;
@@ -316,13 +316,13 @@ export class CombatSystem {
       }
     }
 
-    if (ability.rangeTiles > 0) {
+    if ((ability.rangeTiles ?? 0) > 0) {
       const dist = MathUtils.manhattanDist(caster.getPosition(), {
         x: targetTileX,
         y: targetTileY,
       });
-      if (dist > ability.rangeTiles) {
-        console.log(`[tryCast] FAIL range. dist=${dist} max=${ability.rangeTiles}`);
+      if (dist > (ability.rangeTiles ?? 0)) {
+        console.log(`[tryCast] FAIL range. dist=${dist} max=${ability.rangeTiles ?? 0}`);
         sendToClient?.(ServerMessageType.InvalidTarget);
         return false;
       }
@@ -527,7 +527,7 @@ export class CombatSystem {
 
     // Self-target abilities (rangeTiles === 0) always target the caster.
     // AoE abilities with rangeTiles === 0 target a radius around the caster.
-    if (ability.rangeTiles === 0) {
+    if ((ability.rangeTiles ?? 0) === 0) {
       const aoeRadius = ability.aoeRadius ?? 0;
       if (aoeRadius > 0) {
         // Play the main AoE effect once at the caster tile — not once per victim.
@@ -596,7 +596,7 @@ export class CombatSystem {
             x: target.tileX,
             y: target.tileY,
           });
-          if (dist > ability.rangeTiles) return;
+          if (dist > (ability.rangeTiles ?? 0)) return;
           this.applyAbilityToTarget(attacker, target, ability, broadcast, onDeath, now);
         }
       }

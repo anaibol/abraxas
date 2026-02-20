@@ -4,8 +4,8 @@ import { BunWebSockets } from "@colyseus/bun-websockets";
 import { createRouter, defineRoom, defineServer, type Router, type Server } from "@colyseus/core";
 import type { ServerWebSocket } from "bun";
 import { logger } from "./logger";
-import { ArenaRoom } from "./rooms/ArenaRoom";
 import { GameTransport } from "./GameTransport";
+import { ArenaRoom } from "./rooms/ArenaRoom";
 import {
   createCharacterEndpoint,
   healthEndpoint,

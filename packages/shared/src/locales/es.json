@@ -57,8 +57,18 @@
     },
     "PALADIN": {
       "name": "Paladín",
-      "desc": "HP:230 Armadura:12",
+      "desc": "HP:200 STR:22",
       "longDesc": "Un guerrero sagrado blindado que combina un devastador combate cuerpo a cuerpo con curación y protección divina."
+    },
+    "NECROMANCER": {
+      "name": "Nigromante",
+      "desc": "INT:32 Mana:200",
+      "longDesc": "Un hechicero oscuro que comanda a los muertos y drena la fuerza vital de sus enemigos."
+    },
+    "DRUID": {
+      "name": "Druida",
+      "desc": "AGI:20 INT:20",
+      "longDesc": "Un guardián de la naturaleza versátil capaz de cambiar de forma y curar."
     }
   },
   "game": {
@@ -71,7 +81,9 @@
     "gold_picked_up": "{{name}} recogió {{amount}} de oro",
     "gold_picked": "{{name}} recogió {{amount}} de oro",
     "class_restricted": "Clase restringida",
-    "not_enough_mana": "No hay suficiente maná",
+    "not_enough_mana": "¡No hay suficiente maná!",
+    "not_enough_souls": "¡No hay suficientes almas!",
+    "target_out_of_range": "¡Objetivo fuera de rango!",
     "not_enough_mana_cost": "Maná insuficiente (se requieren {{cost}})",
     "inventory_full": "Inventario lleno",
     "item_picked_up": "{{name}} recogió {{item}}",
@@ -131,9 +143,6 @@
     "kicked_from_group": "Has sido expulsado del grupo",
     "new_leader": "{{name}} es ahora el líder del grupo",
     "friend_request": "{{targetName}} quiere ser tu amigo",
-    "trade_requested": "{{name}} quiere comerciar contigo"
-  },
-  "settings": {
     "title": "Ajustes",
     "section": {
       "audio": "Audio",
@@ -494,6 +503,46 @@
     "bear_form": {
       "name": "Forma de Oso",
       "desc": "Canaliza el espíritu de la naturaleza para transformarte en un oso, aumentando masivamente tus HP."
+    },
+    "cat_form": {
+      "name": "Forma de Gato",
+      "desc": "Transfórmate en un gato veloz, aumentando la Agilidad y la Velocidad de Movimiento."
+    },
+    "tree_form": {
+      "name": "Forma de Árbol",
+      "desc": "Toma la forma de un árbol anciano, aumentando la Inteligencia y la regeneración de Maná."
+    },
+    "summon_zombie": {
+      "name": "Invocar Zombi",
+      "desc": "Consume almas para levantar a un resistente esbirro zombi."
+    },
+    "soul_blast": {
+      "name": "Explosión de Almas",
+      "desc": "Libera las almas recolectadas en una devastadora ráfaga de energía necrótica."
+    },
+    "summon_skeleton": {
+      "name": "Invocar Esqueleto",
+      "desc": "Levanta a un leal guerrero esquelético para que luche a tu lado."
+    },
+    "shadow_bolt": {
+      "name": "Descarga de Sombras",
+      "desc": "Una descarga de energía oscura que golpea con fuerza necrótica."
+    },
+    "soul_drain": {
+      "name": "Drenar Alma",
+      "desc": "Drena la fuerza vital de un objetivo, sanándote."
+    },
+    "banshee_wail": {
+      "name": "Lamento de Banshee",
+      "desc": "Un grito aterrador que debilita la armadura de todos los enemigos cercanos."
+    },
+    "cleanse_paralysis": {
+      "name": "Limpiar Aturdimiento",
+      "desc": "Elimina todos los efectos de aturdimiento y parálisis de un aliado."
+    },
+    "detect_invisibility": {
+      "name": "Visión Verdadera",
+      "desc": "Revela brevemente todas las unidades ocultas en un área amplia."
     }
   },
   "item_slot": {

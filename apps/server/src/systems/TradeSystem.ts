@@ -177,7 +177,8 @@ export class TradeSystem {
       to.gold += offer.gold;
     }
     for (const item of offer.items) {
-      if (this.inventorySystem.removeItem(from, item.itemId, item.quantity)) {
+      const slot = from.inventory.find((s) => s.itemId === item.itemId);
+      if (slot && this.inventorySystem.removeItem(from, slot.slotIndex, item.quantity)) {
         this.inventorySystem.addItem(to, item.itemId, item.quantity);
       }
     }
