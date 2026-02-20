@@ -42,14 +42,14 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		agi: 15,
 		int: 10,
 		speedTilesPerSecond: 6,
-		attackRange: 1,
+		// Ranged mage unit — stays at mid-range and kites; attackRange > 1 also
+		// makes auto-attacks use the AGI-scaling ranged formula.
+		attackRange: 6,
 		attackCooldownMs: 600,
 		attackWindupMs: 150,
 		armor: 10,
-		// Skeleton mage variant: fires shadow bolts at range
 		abilities: ["shadow_bolt"],
-		expReward: 40,
-		// Regularly uses shadow bolt but still mixes in melee
+		expReward: 45,
 		abilityCastChance: 0.55,
 	},
 	goblin: {
@@ -62,12 +62,12 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		attackCooldownMs: 700,
 		attackWindupMs: 120,
 		armor: 5,
-		// Throws a small fire splash
+		// Throws a small fire splash around itself
 		abilities: ["fire_breath"],
-		expReward: 20,
+		expReward: 30,
 		fleesWhenLow: true,
-		// Fire breath is an occasional trick, not a primary attack
-		abilityCastChance: 0.45,
+		// Fire breath is a situational trick — rely mostly on quick melee
+		abilityCastChance: 0.3,
 	},
 	wolf: {
 		hp: 80,
@@ -80,7 +80,7 @@ export const NPC_STATS: Record<NpcType, NpcStats> = {
 		attackWindupMs: 120,
 		armor: 8,
 		abilities: [],
-		expReward: 60,
+		expReward: 55,
 		fleesWhenLow: true,
 	},
 	merchant: {
