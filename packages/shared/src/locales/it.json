@@ -392,6 +392,309 @@
     },
     "brown_horse": {
       "name": "Cavallo Marrone"
+    },
+    "battle_axe": {
+      "name": "Ascia da Battaglia"
+    },
+    "great_axe": {
+      "name": "Grande Ascia"
+    },
+    "berserker_blade": {
+      "name": "Lama Berserker"
+    },
+    "titan_axe": {
+      "name": "Ascia Titano"
+    },
+    "bone_sword": {
+      "name": "Spada d'Osso"
+    },
+    "war_hammer": {
+      "name": "Martello da Guerra"
+    },
+    "crusader_sword": {
+      "name": "Spada da Crociato"
+    },
+    "divine_blade": {
+      "name": "Lama Divina"
+    },
+    "holy_avenger": {
+      "name": "Vendicatore Sacro"
+    },
+    "healing_rod": {
+      "name": "Bastone di Guarigione"
+    },
+    "bishop_staff": {
+      "name": "Bastone del Vescovo"
+    },
+    "scepter_of_faith": {
+      "name": "Scettro della Fede"
+    },
+    "divine_scepter": {
+      "name": "Scettro Divino"
+    },
+    "crystal_wand": {
+      "name": "Bacchetta di Cristallo"
+    },
+    "staff_of_ice": {
+      "name": "Bastone di Ghiaccio"
+    },
+    "void_orb": {
+      "name": "Orbe del Vuoto"
+    },
+    "arcane_tome": {
+      "name": "Tomo Arcano"
+    },
+    "composite_bow": {
+      "name": "Arco Composito"
+    },
+    "war_bow": {
+      "name": "Arco da Guerra"
+    },
+    "crossbow": {
+      "name": "Balestra"
+    },
+    "siege_crossbow": {
+      "name": "Balestra d'Assedio"
+    },
+    "sap": {
+      "name": "Manganello"
+    },
+    "poisoned_shiv": {
+      "name": "Stiletto Avvelenato"
+    },
+    "skull_dagger": {
+      "name": "Pugnale del Teschio"
+    },
+    "void_knife": {
+      "name": "Coltello del Vuoto"
+    },
+    "bone_wand": {
+      "name": "Bacchetta d'Osso"
+    },
+    "death_scepter": {
+      "name": "Scettro della Morte"
+    },
+    "void_staff": {
+      "name": "Bastone del Vuoto"
+    },
+    "soul_reaper": {
+      "name": "Mietitrice di Anime"
+    },
+    "wooden_club": {
+      "name": "Clava di Legno"
+    },
+    "gnarled_staff": {
+      "name": "Bastone Nodoso"
+    },
+    "nature_wand": {
+      "name": "Bacchetta della Natura"
+    },
+    "staff_of_the_wild": {
+      "name": "Bastone della Natura Selvaggia"
+    },
+    "moon_staff": {
+      "name": "Bastone della Luna"
+    },
+    "studded_armor": {
+      "name": "Armatura Borchiata"
+    },
+    "scale_armor": {
+      "name": "Armatura di Scaglie"
+    },
+    "battle_plate": {
+      "name": "Piastra da Battaglia"
+    },
+    "knight_plate": {
+      "name": "Piastra del Cavaliere"
+    },
+    "elven_cloak": {
+      "name": "Mantello Elfico"
+    },
+    "shadow_shroud": {
+      "name": "Sudario delle Ombre"
+    },
+    "silk_robes": {
+      "name": "Abiti di Seta"
+    },
+    "arcane_robes": {
+      "name": "Abiti Arcani"
+    },
+    "druid_robes": {
+      "name": "Abiti da Druido"
+    },
+    "necro_shroud": {
+      "name": "Sudario Necrotico"
+    },
+    "vampire_cape": {
+      "name": "Cappa da Vampiro"
+    },
+    "buckler": {
+      "name": "Rotella"
+    },
+    "knight_shield": {
+      "name": "Scudo del Cavaliere"
+    },
+    "tower_shield": {
+      "name": "Scudo Torre"
+    },
+    "mage_ward": {
+      "name": "Barriera del Mago"
+    },
+    "leather_cap": {
+      "name": "Berretto di Cuoio"
+    },
+    "chainmail_hood": {
+      "name": "Cappuccio di Cotta di Maglia"
+    },
+    "plate_helm": {
+      "name": "Elmo di Piastre"
+    },
+    "arcane_circlet": {
+      "name": "Cerchietto Arcano"
+    },
+    "ranger_hood": {
+      "name": "Cappuccio da Ranger"
+    },
+    "wolf_mask": {
+      "name": "Maschera da Lupo"
+    },
+    "bone_crown": {
+      "name": "Corona d'Ossa"
+    },
+    "light_crown": {
+      "name": "Corona di Luce"
+    },
+    "ring_of_power": {
+      "name": "Anello del Potere"
+    },
+    "ring_of_shadows": {
+      "name": "Anello delle Ombre"
+    },
+    "ring_of_healing": {
+      "name": "Anello di Guarigione"
+    },
+    "ring_of_fortune": {
+      "name": "Anello della Fortuna"
+    },
+    "blood_amulet": {
+      "name": "Amuleto del Sangue"
+    },
+    "amulet_of_life": {
+      "name": "Amuleto della Vita"
+    },
+    "amulet_of_mana": {
+      "name": "Amuleto del Mana"
+    },
+    "amulet_of_speed": {
+      "name": "Amuleto della Velocità"
+    },
+    "cursed_ring": {
+      "name": "Anello Maledetto"
+    },
+    "elixir_of_life": {
+      "name": "Elisir di Vita"
+    },
+    "full_restore": {
+      "name": "Ripristino Completo"
+    },
+    "antidote": {
+      "name": "Antidoto"
+    },
+    "greater_antidote": {
+      "name": "Antidoto Superiore"
+    },
+    "elixir_of_strength": {
+      "name": "Elisir di Forza"
+    },
+    "elixir_of_agility": {
+      "name": "Elisir di Agilità"
+    },
+    "elixir_of_intellect": {
+      "name": "Elisir di Intelletto"
+    },
+    "elixir_of_fortitude": {
+      "name": "Elisir di Robustezza"
+    },
+    "scroll_of_fireball": {
+      "name": "Pergamena di Palla di Fuoco"
+    },
+    "scroll_of_healing": {
+      "name": "Pergamena di Guarigione"
+    },
+    "smoke_bomb_item": {
+      "name": "Bomba Fumogena"
+    },
+    "wolf_mount": {
+      "name": "Cavalcatura Lupo"
+    },
+    "elephant_mount": {
+      "name": "Cavalcatura Elefante"
+    },
+    "dragon_mount": {
+      "name": "Cavalcatura Drago"
+    },
+    "bear_mount": {
+      "name": "Cavalcatura Orso"
+    },
+    "wolf_pelt": {
+      "name": "Pelliccia di Lupo"
+    },
+    "bat_wing": {
+      "name": "Ala di Pipistrello"
+    },
+    "orc_tusk": {
+      "name": "Zanna d'Orco"
+    },
+    "spider_silk": {
+      "name": "Seta di Ragno"
+    },
+    "troll_hide": {
+      "name": "Pelle di Troll"
+    },
+    "bone_fragment": {
+      "name": "Frammento d'Osso"
+    },
+    "ghost_essence": {
+      "name": "Essenza Fantasmatica"
+    },
+    "dragon_scale": {
+      "name": "Scaglia di Drago"
+    },
+    "void_crystal": {
+      "name": "Cristallo del Vuoto"
+    },
+    "dark_gem": {
+      "name": "Gemma Oscura"
+    },
+    "iron_ore": {
+      "name": "Minerale di Ferro"
+    },
+    "coal": {
+      "name": "Carbone"
+    },
+    "moonstone": {
+      "name": "Pietra di Luna"
+    },
+    "enchant_dust": {
+      "name": "Polvere d'Incanto"
+    },
+    "blank_scroll": {
+      "name": "Pergamena Vuota"
+    },
+    "lucky_coin": {
+      "name": "Moneta Fortunata"
+    },
+    "strange_gem": {
+      "name": "Gemma Strana"
+    },
+    "treasure_map": {
+      "name": "Mappa del Tesoro"
+    },
+    "shiny_bead": {
+      "name": "Perla Lucente"
+    },
+    "ancient_coin": {
+      "name": "Moneta Antica"
     }
   },
   "spells": {

@@ -392,6 +392,309 @@
     },
     "brown_horse": {
       "name": "Cheval Brun"
+    },
+    "battle_axe": {
+      "name": "Hache de Bataille"
+    },
+    "great_axe": {
+      "name": "Grande Hache"
+    },
+    "berserker_blade": {
+      "name": "Lame Berserker"
+    },
+    "titan_axe": {
+      "name": "Hache Titan"
+    },
+    "bone_sword": {
+      "name": "Épée en Os"
+    },
+    "war_hammer": {
+      "name": "Marteau de Guerre"
+    },
+    "crusader_sword": {
+      "name": "Épée de Croisé"
+    },
+    "divine_blade": {
+      "name": "Lame Divine"
+    },
+    "holy_avenger": {
+      "name": "Vengeur Sacré"
+    },
+    "healing_rod": {
+      "name": "Bâton de Soin"
+    },
+    "bishop_staff": {
+      "name": "Bâton d'Évêque"
+    },
+    "scepter_of_faith": {
+      "name": "Sceptre de la Foi"
+    },
+    "divine_scepter": {
+      "name": "Sceptre Divin"
+    },
+    "crystal_wand": {
+      "name": "Baguette de Cristal"
+    },
+    "staff_of_ice": {
+      "name": "Bâton de Glace"
+    },
+    "void_orb": {
+      "name": "Orbe du Vide"
+    },
+    "arcane_tome": {
+      "name": "Tome Arcane"
+    },
+    "composite_bow": {
+      "name": "Arc Composite"
+    },
+    "war_bow": {
+      "name": "Arc de Guerre"
+    },
+    "crossbow": {
+      "name": "Arbalète"
+    },
+    "siege_crossbow": {
+      "name": "Arbalète de Siège"
+    },
+    "sap": {
+      "name": "Matraque"
+    },
+    "poisoned_shiv": {
+      "name": "Stylet Empoisonné"
+    },
+    "skull_dagger": {
+      "name": "Dague Crânienne"
+    },
+    "void_knife": {
+      "name": "Couteau du Vide"
+    },
+    "bone_wand": {
+      "name": "Baguette en Os"
+    },
+    "death_scepter": {
+      "name": "Sceptre de la Mort"
+    },
+    "void_staff": {
+      "name": "Bâton du Vide"
+    },
+    "soul_reaper": {
+      "name": "Faucheuse d'Âmes"
+    },
+    "wooden_club": {
+      "name": "Massue en Bois"
+    },
+    "gnarled_staff": {
+      "name": "Bâton Noueux"
+    },
+    "nature_wand": {
+      "name": "Baguette de la Nature"
+    },
+    "staff_of_the_wild": {
+      "name": "Bâton des Terres Sauvages"
+    },
+    "moon_staff": {
+      "name": "Bâton de Lune"
+    },
+    "studded_armor": {
+      "name": "Armure Cloutée"
+    },
+    "scale_armor": {
+      "name": "Armure d'Écailles"
+    },
+    "battle_plate": {
+      "name": "Plaque de Bataille"
+    },
+    "knight_plate": {
+      "name": "Plaque de Chevalier"
+    },
+    "elven_cloak": {
+      "name": "Cape Elfique"
+    },
+    "shadow_shroud": {
+      "name": "Suaire des Ombres"
+    },
+    "silk_robes": {
+      "name": "Robes de Soie"
+    },
+    "arcane_robes": {
+      "name": "Robes Arcaniques"
+    },
+    "druid_robes": {
+      "name": "Robes de Druide"
+    },
+    "necro_shroud": {
+      "name": "Suaire Nécrotique"
+    },
+    "vampire_cape": {
+      "name": "Cape de Vampire"
+    },
+    "buckler": {
+      "name": "Bocle"
+    },
+    "knight_shield": {
+      "name": "Bouclier de Chevalier"
+    },
+    "tower_shield": {
+      "name": "Bouclier-Tour"
+    },
+    "mage_ward": {
+      "name": "Garde du Mage"
+    },
+    "leather_cap": {
+      "name": "Bonnet en Cuir"
+    },
+    "chainmail_hood": {
+      "name": "Cagoule de Cotte de Mailles"
+    },
+    "plate_helm": {
+      "name": "Heaume de Plaques"
+    },
+    "arcane_circlet": {
+      "name": "Cercle Arcanique"
+    },
+    "ranger_hood": {
+      "name": "Capuchon de Rôdeur"
+    },
+    "wolf_mask": {
+      "name": "Masque de Loup"
+    },
+    "bone_crown": {
+      "name": "Couronne d'Os"
+    },
+    "light_crown": {
+      "name": "Couronne de Lumière"
+    },
+    "ring_of_power": {
+      "name": "Anneau de Pouvoir"
+    },
+    "ring_of_shadows": {
+      "name": "Anneau des Ombres"
+    },
+    "ring_of_healing": {
+      "name": "Anneau de Soin"
+    },
+    "ring_of_fortune": {
+      "name": "Anneau de Fortune"
+    },
+    "blood_amulet": {
+      "name": "Amulette de Sang"
+    },
+    "amulet_of_life": {
+      "name": "Amulette de Vie"
+    },
+    "amulet_of_mana": {
+      "name": "Amulette de Mana"
+    },
+    "amulet_of_speed": {
+      "name": "Amulette de Vitesse"
+    },
+    "cursed_ring": {
+      "name": "Anneau Maudit"
+    },
+    "elixir_of_life": {
+      "name": "Élixir de Vie"
+    },
+    "full_restore": {
+      "name": "Restauration Complète"
+    },
+    "antidote": {
+      "name": "Antidote"
+    },
+    "greater_antidote": {
+      "name": "Antidote Supérieur"
+    },
+    "elixir_of_strength": {
+      "name": "Élixir de Force"
+    },
+    "elixir_of_agility": {
+      "name": "Élixir d'Agilité"
+    },
+    "elixir_of_intellect": {
+      "name": "Élixir d'Intelligence"
+    },
+    "elixir_of_fortitude": {
+      "name": "Élixir de Robustesse"
+    },
+    "scroll_of_fireball": {
+      "name": "Parchemin de Boule de Feu"
+    },
+    "scroll_of_healing": {
+      "name": "Parchemin de Soin"
+    },
+    "smoke_bomb_item": {
+      "name": "Bombe Fumigène"
+    },
+    "wolf_mount": {
+      "name": "Monture Loup"
+    },
+    "elephant_mount": {
+      "name": "Monture Éléphant"
+    },
+    "dragon_mount": {
+      "name": "Monture Dragon"
+    },
+    "bear_mount": {
+      "name": "Monture Ours"
+    },
+    "wolf_pelt": {
+      "name": "Peau de Loup"
+    },
+    "bat_wing": {
+      "name": "Aile de Chauve-souris"
+    },
+    "orc_tusk": {
+      "name": "Défense d'Orc"
+    },
+    "spider_silk": {
+      "name": "Soie d'Araignée"
+    },
+    "troll_hide": {
+      "name": "Peau de Troll"
+    },
+    "bone_fragment": {
+      "name": "Fragment d'Os"
+    },
+    "ghost_essence": {
+      "name": "Essence Fantomatique"
+    },
+    "dragon_scale": {
+      "name": "Écaille de Dragon"
+    },
+    "void_crystal": {
+      "name": "Cristal du Vide"
+    },
+    "dark_gem": {
+      "name": "Pierre Sombre"
+    },
+    "iron_ore": {
+      "name": "Minerai de Fer"
+    },
+    "coal": {
+      "name": "Charbon"
+    },
+    "moonstone": {
+      "name": "Pierre de Lune"
+    },
+    "enchant_dust": {
+      "name": "Poussière d'Enchantement"
+    },
+    "blank_scroll": {
+      "name": "Parchemin Vierge"
+    },
+    "lucky_coin": {
+      "name": "Pièce Chanceuse"
+    },
+    "strange_gem": {
+      "name": "Pierre Étrange"
+    },
+    "treasure_map": {
+      "name": "Carte au Trésor"
+    },
+    "shiny_bead": {
+      "name": "Perle Brillante"
+    },
+    "ancient_coin": {
+      "name": "Pièce Ancienne"
     }
   },
   "spells": {
