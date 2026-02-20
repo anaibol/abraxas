@@ -81,6 +81,14 @@ export class GameEventHandler {
         this.onConsoleMessage?.(t("game.you_attacked"), "#cccccc", "combat");
     }
     this.soundManager.playAttack();
+
+    if (data.targetTileX !== undefined && data.targetTileY !== undefined) {
+      this.effectManager.maybeLaunchAttackProjectile(
+        data.sessionId,
+        data.targetTileX,
+        data.targetTileY,
+      );
+    }
   }
 
   private onAttackHit(data: ServerMessages["attack_hit"]) {

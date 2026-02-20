@@ -29,6 +29,7 @@ const TEX = {
   SPARK: "fx-spark", // bright plus/cross — electricity, embers (8×8)
   RING: "fx-ring", // thin circle outline — orbiting rings  (16×16)
   CROSS: "fx-cross", // larger plus/cross — holy, heal, divine  (12×12)
+  ARROW: "fx-arrow", // sharp arrow texture for physical projectiles (16×16)
 } as const;
 
 // ── EffectManager ─────────────────────────────────────────────────────────────
@@ -172,9 +173,28 @@ export class EffectManager {
       }
       // Sharp cross arms
       g.fillStyle(0xffffff, 1);
-      g.fillRect(4, 0, 4, 12); // vertical
       g.fillRect(0, 4, 12, 4); // horizontal
       g.generateTexture(TEX.CROSS, 12, 12);
+      g.destroy();
+    }
+
+    // fx-arrow — A sharp triangle attached to a thin line for physical projectiles (arrows/bolts)
+    if (!this.scene.textures.exists(TEX.ARROW)) {
+      const g = this.scene.add.graphics();
+      // Draw flying right by default
+      g.fillStyle(0xffffff, 1);
+      g.fillPoints(
+        [
+          new Phaser.Math.Vector2(14, 8),  // Tip
+          new Phaser.Math.Vector2(6, 4),   // Upper barb
+          new Phaser.Math.Vector2(6, 12),  // Lower barb
+        ],
+        true
+      );
+      // Shaft
+      g.fillStyle(0xdddddd, 0.8);
+      g.fillRect(0, 7, 6, 2);
+      g.generateTexture(TEX.ARROW, 16, 16);
       g.destroy();
     }
   }
@@ -1643,6 +1663,84 @@ export class EffectManager {
   }
 
   /**
+   * Evaluates an attacker and targets, launching a generic attack projectile if it's a ranged auto-attack.
+   */
+  maybeLaunchAttackProjectile(
+    attackerSessionId: string,
+    targetTileX: number,
+    targetTileY: number,
+  ) {
+    const sprite = this.spriteManager.getSprite(attackerSessionId);
+    if (!sprite) return;
+
+    const casterTileX = Math.round(sprite.renderX / TILE_SIZE);
+    const casterTileY = Math.round(sprite.renderY / TILE_SIZE);
+    const dx = targetTileX - casterTileX;
+    const dy = targetTileY - casterTileY;
+    if (Math.sqrt(dx * dx + dy * dy) < 1.5) return;
+
+    // Ranged auto-attacks generally have faster windups.
+    // Determine the projectile style. Physical attackers get an arrow, magical attackers get a magic bolt.
+    let isMagic = false;
+    let color = 0xdddddd;
+    
+    // Quick heuristic: if they have a staff equip or are a wand user, shoot magic bolts.
+    // We don't have direct access to their stats here, so we'll look at the sessionId or equipment if needed in the future,
+    // but for now, we'll provide a generic physical-looking projectile.
+    if (sprite.getData("classType") === "MAGE" || sprite.getData("classType") === "CLERIC") {
+      isMagic = true;
+      color = sprite.getData("classType") === "MAGE" ? 0x88bbff : 0xffffaa;
+    }
+
+    if (isMagic) {
+      this.playProjectile(attackerSessionId, "magic_dart", targetTileX, targetTileY, 200); 
+    } else {
+      this.playArrowProjectile(attackerSessionId, targetTileX, targetTileY, 200);
+    }
+  }
+
+  /**
+   * Animates a physical arrow projectile traveling from a caster sprite to a target tile.
+   */
+  private playArrowProjectile(
+    casterSessionId: string,
+    targetTileX: number,
+    targetTileY: number,
+    durationMs: number,
+  ) {
+    const sprite = this.spriteManager.getSprite(casterSessionId);
+    if (!sprite) return;
+    this.ensureTextures();
+
+    const sx = sprite.renderX;
+    const sy = sprite.renderY - TILE_SIZE * 0.4;
+    const tx = targetTileX * TILE_SIZE + TILE_SIZE / 2;
+    const ty = targetTileY * TILE_SIZE + TILE_SIZE / 2;
+
+    const angle = Phaser.Math.Angle.Between(sx, sy, tx, ty);
+    
+    const arrow = this.scene.add.image(sx, sy, TEX.ARROW);
+    arrow.setDepth(16);
+    arrow.setRotation(angle);
+
+    const proxy = { t: 0 };
+    this.scene.tweens.add({
+      targets: proxy,
+      t: 1,
+      duration: durationMs,
+      ease: "Linear",
+      onUpdate: () => {
+        const px = sx + (tx - sx) * proxy.t;
+        const py = sy + (ty - sy) * proxy.t;
+        arrow.setPosition(px, py);
+      },
+      onComplete: () => {
+        arrow.destroy();
+      },
+    });
+  }
+
+  /**
    * Animates a projectile particle traveling from a caster sprite to a target
    * tile over `durationMs` milliseconds. Prefer `maybeLaunchProjectile` for
    * spell casts — this lower-level method skips range/distance guards.
@@ -1719,7 +1817,9 @@ export class EffectManager {
   private projectileStyle(spellId: string): { color: number; texKey: string; size: number } {
     switch (spellId) {
       case "shadow_bolt":
-        return { color: 0x8800ff, texKey: TEX.CIRCLE, size: 7 };
+        return { color: 0x228800, texKey: TEX.CIRCLE, size: 6 };
+      case "magic_dart":
+        return { color: 0x88bbff, texKey: TEX.CIRCLE, size: 4 };
       case "fireball":
         return { color: 0xff5500, texKey: TEX.CIRCLE, size: 8 };
       case "ice_bolt":
