@@ -50,7 +50,11 @@ export class DamageCalculator {
     return (bases[stat] ?? 0) + this.buffSystem.getBuffBonus(entity.sessionId, stat, now);
   }
 
-  /** Derives secondary combat stats (crit, dodge, parry, etc.) from base stats + buffs. */
+  /** Derives secondary combat stats (crit, dodge, parry, etc.) from base stats + buffs.
+   *  Bug #18: Buff bonuses are stored as whole-number percentages (e.g., 10 = 10%).
+   *  They are divided by 100 here to convert to decimal form (0.10).
+   *  Base stats are already stored as decimals (e.g., 0.05 = 5%).
+   */
   getSecondaryStats(entity: Entity, now: number): SecondaryStats {
     const stats = entity.getStats();
     if (!stats) {

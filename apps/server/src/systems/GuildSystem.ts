@@ -225,7 +225,8 @@ export class GuildSystem {
 
     const guildId = player.guildId;
     const members = await GuildService.getGuildMembers(guildId);
-    const targetMember = members.find((m) => m.character.name === targetName);
+    // Bug #82: Case-insensitive match (consistent with invite fix #81)
+    const targetMember = members.find((m) => m.character.name.toLowerCase() === targetName.toLowerCase());
 
     if (!targetMember) {
       HandlerUtils.sendError(client, "Player not found in guild.");

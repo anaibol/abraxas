@@ -21,6 +21,10 @@
     "sign_in": "Identificarse",
     "sign_out": "Cerrar Sesión",
     "connecting": "Conectando...",
+    "delete_confirm": "¿Eliminar a {{name}} para siempre?",
+    "delete_yes": "Sí",
+    "delete_no": "Cancelar",
+    "delete_failed": "Error al eliminar personaje",
     "error": {
       "char_name_required": "El nombre del personaje es obligatorio",
       "char_name_invalid": "Cada palabra debe comenzar con mayúscula y contener solo letras (ej. Caballero Oscuro)",

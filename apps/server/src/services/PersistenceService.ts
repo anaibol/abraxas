@@ -286,7 +286,8 @@ export class PersistenceService {
         const instance = await prisma.itemInstance.create({
           data: {
             itemDefId: itemDef.id,
-            rarity: (data.instanceData.rarity?.toUpperCase() || "COMMON") as PrismaItemRarity,
+            // Bug #61: ItemRarity values are already uppercase by contract ("COMMON", etc.)
+            rarity: (data.instanceData.rarity || "COMMON") as PrismaItemRarity,
             nameOverride: data.instanceData.nameOverride,
             affixesJson: data.instanceData.affixes ?? [],
           },

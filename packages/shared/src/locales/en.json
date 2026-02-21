@@ -21,6 +21,10 @@
     "sign_in": "Sign In",
     "sign_out": "Sign Out",
     "connecting": "Connecting...",
+    "delete_confirm": "Delete {{name}} forever?",
+    "delete_yes": "Yes",
+    "delete_no": "Cancel",
+    "delete_failed": "Failed to delete character",
     "error": {
       "char_name_required": "Character name is required",
       "char_name_invalid": "Each word must start with a capital letter and contain only letters (e.g. Dark Knight)",

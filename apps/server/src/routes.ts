@@ -119,13 +119,16 @@ export const meEndpoint = createEndpoint("/api/me", { method: "GET" }, async (ct
   if (!auth.payload) return ctx.json(auth.response!.body, { status: auth.response!.status });
   const { payload } = auth;
 
-  const characters = await prisma.character.findMany({
-    where: { accountId: payload.userId },
-    select: { id: true, name: true, class: true, level: true },
-    orderBy: { lastLoginAt: "desc" },
-  });
+  const [account, characters] = await Promise.all([
+    prisma.account.findUnique({ where: { id: payload.userId }, select: { role: true } }),
+    prisma.character.findMany({
+      where: { accountId: payload.userId },
+      select: { id: true, name: true, class: true, level: true },
+      orderBy: { lastLoginAt: "desc" },
+    }),
+  ]);
 
-  return ctx.json({ characters, role: payload.role });
+  return ctx.json({ characters, role: account?.role ?? payload.role });
 });
 
 export const createCharacterEndpoint: ReturnType<typeof createEndpoint> = createEndpoint(
@@ -190,6 +193,46 @@ export const createCharacterEndpoint: ReturnType<typeof createEndpoint> = create
     } catch (e) {
       logger.error({ message: "Character creation error", error: String(e) });
       return ctx.json({ error: "Character creation failed" }, { status: 500 });
+    }
+  },
+);
+
+export const deleteCharacterEndpoint: ReturnType<typeof createEndpoint> = createEndpoint(
+  "/api/characters",
+  {
+    method: "DELETE",
+    body: z.object({
+      charId: z.string().min(1),
+    }),
+  },
+  async (ctx) => {
+    if (!ctx.request) return ctx.json({ error: "Missing request" }, { status: 400 });
+    const auth = requireAuth(ctx);
+    if (!auth.payload) return ctx.json(auth.response!.body, { status: auth.response!.status });
+    const { payload } = auth;
+
+    const { charId } = ctx.body;
+
+    try {
+      const character = await prisma.character.findUnique({
+        where: { id: charId },
+        select: { accountId: true },
+      });
+
+      if (!character) {
+        return ctx.json({ error: "Character not found" }, { status: 404 });
+      }
+
+      if (character.accountId !== payload.userId) {
+        return ctx.json({ error: "Forbidden" }, { status: 403 });
+      }
+
+      await prisma.character.delete({ where: { id: charId } });
+
+      return ctx.json({ ok: true });
+    } catch (e) {
+      logger.error({ message: "Character deletion error", error: String(e) });
+      return ctx.json({ error: "Character deletion failed" }, { status: 500 });
     }
   },
 );

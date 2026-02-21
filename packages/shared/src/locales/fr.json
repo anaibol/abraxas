@@ -21,6 +21,10 @@
     "sign_in": "S'identifier",
     "sign_out": "Déconnexion",
     "connecting": "Connexion...",
+    "delete_confirm": "Supprimer {{name}} définitivement ?",
+    "delete_yes": "Oui",
+    "delete_no": "Annuler",
+    "delete_failed": "Échec de la suppression du personnage",
     "error": {
       "char_name_required": "Le nombre du personnage est requis",
       "char_name_invalid": "Chaque mot doit commencer par une majuscule et ne contenir que des lettres (ex: Chevalier Noir)",

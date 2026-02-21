@@ -69,6 +69,20 @@ export class FriendsSystem {
     }
 
     try {
+      // Bug #91: Check if friendship already exists in either direction
+      const existing = await prisma.requesterFriend.findFirst({
+        where: {
+          OR: [
+            { requesterId: player.userId, recipientId: targetUser.id },
+            { requesterId: targetUser.id, recipientId: player.userId },
+          ],
+        },
+      });
+      if (existing) {
+        HandlerUtils.sendError(client, existing.status === "PENDING" ? "Friend request already sent" : "Already friends");
+        return;
+      }
+
       await prisma.requesterFriend.upsert({
         where: {
           requesterId_recipientId: {

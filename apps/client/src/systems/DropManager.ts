@@ -2,6 +2,7 @@ import { ITEMS, i18n, TILE_SIZE } from "@abraxas/shared";
 import Phaser from "phaser";
 import type { Drop } from "../../../server/src/schema/Drop";
 import type { EffectManager } from "../managers/EffectManager";
+import { FONTS } from "../ui/tokens";
 
 // ─── Texture keys ────────────────────────────────────────────────────────────
 const TEX_COIN_GLOW = "drop-coin-glow";

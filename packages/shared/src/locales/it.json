@@ -21,6 +21,10 @@
     "sign_in": "Accedi",
     "sign_out": "Esci",
     "connecting": "Connessione...",
+    "delete_confirm": "Eliminare {{name}} per sempre?",
+    "delete_yes": "Sì",
+    "delete_no": "Annulla",
+    "delete_failed": "Impossibile eliminare il personaggio",
     "error": {
       "char_name_required": "Il nome del personaggio è obbligatorio",
       "char_name_invalid": "Ogni parola deve iniziare con una lettera maiuscola e contenere solo lettere (es. Cavaliere Oscuro)",

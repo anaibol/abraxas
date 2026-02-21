@@ -651,15 +651,16 @@ export class NpcSystem {
    * Attempts to broadcast an NPC bark to all nearby clients.
    * Rate-limited by BARK_COOLDOWN_MS per NPC.
    */
-  tryBark(npc: Npc, trigger: import("@abraxas/shared").BarkTrigger, broadcast: BroadcastFn): void {
+  tryBark(npc: Npc, trigger: import("@abraxas/shared").BarkTrigger, broadcast: BroadcastFn, now?: number): void {
     const stats = NPC_STATS[npc.npcType];
     const lines = stats.barks?.[trigger];
     if (!lines || lines.length === 0) return;
 
-    const now = Date.now();
-    if (now - npc.lastBarkAt < BARK_COOLDOWN_MS) return;
+    // Bug #30: Use authoritative `now` when available, fall back to Date.now() for non-tick callers
+    const currentTime = now ?? Date.now();
+    if (currentTime - npc.lastBarkAt < BARK_COOLDOWN_MS) return;
 
-    npc.lastBarkAt = now;
+    npc.lastBarkAt = currentTime;
     const text = lines[Math.floor(Math.random() * lines.length)];
     broadcast(ServerMessageType.NpcBark, { npcId: npc.sessionId, text });
   }

@@ -1,7 +1,7 @@
 import { type ClassType, getRandomName } from "@abraxas/shared";
 import { Badge, Box, Button, Flex, Grid, IconButton, Input, Spinner, Text } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
-import { Search } from "lucide-react";
+import { Search, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { HEX, T } from "./tokens";
@@ -129,6 +129,8 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminCharacters, setAdminCharacters] = useState<AdminCharacterSummary[]>([]);
   const [charSearch, setCharSearch] = useState("");
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deletingCharId, setDeletingCharId] = useState<string | null>(null);
 
   const [token, setToken] = useState("");
   const [characters, setCharacters] = useState<CharacterSummary[]>([]);
@@ -262,6 +264,32 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
       setError(t("lobby.error.network_error"));
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleDeleteCharacter = async (charId: string) => {
+    setDeletingCharId(charId);
+    setError("");
+    try {
+      const res = await fetch("/api/characters", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ charId }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || t("lobby.delete_failed"));
+        return;
+      }
+      setCharacters((prev) => prev.filter((c) => c.id !== charId));
+      setConfirmDeleteId(null);
+    } catch {
+      setError(t("lobby.delete_failed"));
+    } finally {
+      setDeletingCharId(null);
     }
   };
 
@@ -571,23 +599,74 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                   {(isAdmin ? filteredAdminChars : characters).map((char) => {
                     const info = CLASS_INFO[char.class];
                     const adminChar = char as AdminCharacterSummary;
+                    const isConfirming = confirmDeleteId === char.id;
+                    const isDeleting = deletingCharId === char.id;
                     return (
                       <Box
                         key={char.id}
                         p="3"
-                        bg="rgba(8, 8, 12, 0.4)"
+                        bg={isConfirming ? "rgba(180, 40, 40, 0.12)" : "rgba(8, 8, 12, 0.4)"}
                         border="1px solid"
-                        borderColor={T.border}
+                        borderColor={isConfirming ? "rgba(180, 40, 40, 0.4)" : T.border}
                         borderRadius="8px"
-                        cursor="pointer"
+                        cursor={isConfirming ? "default" : "pointer"}
                         transition="all 0.2s"
-                        onClick={() => onJoin(char.id, char.class, token)}
-                        _hover={{
-                          bg: `${info.color}11`,
-                          borderColor: info.color,
-                          transform: "translateX(4px)",
-                        }}
+                        onClick={() => !isConfirming && onJoin(char.id, char.class, token)}
+                        _hover={
+                          isConfirming
+                            ? {}
+                            : {
+                                bg: `${info.color}11`,
+                                borderColor: info.color,
+                                transform: "translateX(4px)",
+                              }
+                        }
                       >
+                        {isConfirming ? (
+                          <Flex align="center" justify="space-between" gap="3">
+                            <Text fontSize="13px" color={T.goldText} fontWeight="600">
+                              {t("lobby.delete_confirm", { name: char.name })}
+                            </Text>
+                            <Flex gap="2" flexShrink={0}>
+                              <Button
+                                size="xs"
+                                bg="rgba(180, 40, 40, 0.6)"
+                                color="white"
+                                fontFamily={T.display}
+                                fontWeight="700"
+                                fontSize="11px"
+                                letterSpacing="1px"
+                                loading={isDeleting}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteCharacter(char.id);
+                                }}
+                                _hover={{ bg: "rgba(200, 40, 40, 0.8)" }}
+                              >
+                                {t("lobby.delete_yes")}
+                              </Button>
+                              <Button
+                                size="xs"
+                                bg="transparent"
+                                border="1px solid"
+                                borderColor={T.border}
+                                color={T.goldMuted}
+                                fontFamily={T.display}
+                                fontWeight="700"
+                                fontSize="11px"
+                                letterSpacing="1px"
+                                disabled={isDeleting}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setConfirmDeleteId(null);
+                                }}
+                                _hover={{ borderColor: T.goldDim, color: T.goldText }}
+                              >
+                                {t("lobby.delete_no")}
+                              </Button>
+                            </Flex>
+                          </Flex>
+                        ) : (
                         <Flex align="center" gap="3">
                           <Box fontSize="22px" w="32px" textAlign="center" flexShrink={0}>
                             {info.icon}
@@ -650,7 +729,24 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                           >
                             {t("sidebar.inventory.level")} {char.level}
                           </Badge>
+                          {!isAdmin && (
+                            <Box
+                              flexShrink={0}
+                              color={T.goldDark}
+                              opacity={0.4}
+                              cursor="pointer"
+                              transition="all 0.2s"
+                              _hover={{ opacity: 1, color: "#e63946" }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setConfirmDeleteId(char.id);
+                              }}
+                            >
+                              <Trash2 size={14} />
+                            </Box>
+                          )}
                         </Flex>
+                        )}
                       </Box>
                     );
                   })}

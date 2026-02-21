@@ -6,6 +6,7 @@ import { ArenaRoom } from "./rooms/ArenaRoom";
 import {
   adminCharactersEndpoint,
   createCharacterEndpoint,
+  deleteCharacterEndpoint,
   healthEndpoint,
   leaderboardEndpoint,
   loginEndpoint,
@@ -43,6 +44,7 @@ export async function createGameServer(options: {
       loginEndpoint,
       meEndpoint,
       createCharacterEndpoint,
+      deleteCharacterEndpoint,
       leaderboardEndpoint,
       adminCharactersEndpoint,
     }),
