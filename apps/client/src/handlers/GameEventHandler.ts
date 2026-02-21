@@ -16,6 +16,7 @@ import type { ConsoleCallback } from "../scenes/GameScene";
 import type { InputHandler } from "../systems/InputHandler";
 import { gameSettings } from "../settings/gameSettings";
 
+// ── Lookup tables ─────────────────────────────────────────────────────────────
 const t = (key: string, opts?: Record<string, unknown>) => i18n.t(key, opts);
 
 export class GameEventHandler {
