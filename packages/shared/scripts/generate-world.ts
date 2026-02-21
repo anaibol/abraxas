@@ -1,7 +1,7 @@
 import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-function saveMap(name: string, data: any) {
+function saveMap(name: string, data: Record<string, unknown>) {
   const path = resolve(__dirname, `../src/maps/${name}.json`);
   writeFileSync(path, JSON.stringify(data, null, 2));
   console.log(`Generated ${name}.json`);
@@ -152,7 +152,7 @@ function generateCatacombs() {
     }
   }
 
-  const npcs: any[] = [];
+  const npcs: { type: string; x: number; y: number }[] = [];
   const validCaveTiles: { x: number; y: number }[] = [];
   for (let y = 10; y < height - 10; y++) {
     for (let x = 10; x < width - 10; x++) {
