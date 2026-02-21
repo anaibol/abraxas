@@ -8,6 +8,7 @@ import {
   calcSpellDamage,
   CLASS_APPEARANCE,
   DamageSchool,
+  EntityType,
   GCD_MS,
   MathUtils,
   NPC_APPEARANCE,
@@ -421,7 +422,7 @@ export class CombatSystem {
       this.resolveAutoAttack(attacker, windup, broadcast, onDeath, now);
     } else {
       // Spell Echo: Next spell casts twice
-      if (attacker instanceof Player && this.buffSystem.hasBuff(attacker.sessionId, "spell_echo", now)) {
+      if (attacker.entityType === EntityType.PLAYER && this.buffSystem.hasBuff(attacker.sessionId, "spell_echo", now)) {
         this.buffSystem.removeBuff(attacker.sessionId, "spell_echo");
         // Resolve once
         this.resolveAbility(attacker, windup, broadcast, onDeath, now, onSummon);
@@ -485,8 +486,8 @@ export class CombatSystem {
       const aSec = this.getSecondaryStats(attacker, now);
       const dSec = this.getSecondaryStats(target, now);
       
-      const aLvl = attacker instanceof Player || attacker instanceof Npc ? attacker.level : 1;
-      const dLvl = target instanceof Player || target instanceof Npc ? target.level : 1;
+      const aLvl = attacker.level;
+      const dLvl = target.level;
 
       const result =
         windup.type === "ranged"
@@ -525,11 +526,11 @@ export class CombatSystem {
         });
 
         // Rage Generation
-        if (attacker instanceof Player && attacker.classType === "WARRIOR") {
-          attacker.rage = Math.min(attacker.maxRage, attacker.rage + 5);
+        if (attacker.entityType === EntityType.PLAYER && (attacker as Player).classType === "WARRIOR") {
+          (attacker as Player).rage = Math.min((attacker as Player).maxRage, (attacker as Player).rage + 5);
         }
-        if (target instanceof Player && target.classType === "WARRIOR") {
-          target.rage = Math.min(target.maxRage, target.rage + 3);
+        if (target.entityType === EntityType.PLAYER && (target as Player).classType === "WARRIOR") {
+          (target as Player).rage = Math.min((target as Player).maxRage, (target as Player).rage + 3);
         }
 
         if (target.hp <= 0) {
@@ -714,30 +715,31 @@ export class CombatSystem {
 
   /** Shared Rage generation logic applied to both attacker and defender on any hit. */
   private applyRageOnHit(attacker: Entity, target: Entity): void {
-    if (attacker instanceof Player && attacker.classType === "WARRIOR") {
-      attacker.rage = Math.min(attacker.maxRage, attacker.rage + 5);
+    if (attacker.entityType === EntityType.PLAYER && (attacker as Player).classType === "WARRIOR") {
+      (attacker as Player).rage = Math.min((attacker as Player).maxRage, (attacker as Player).rage + 5);
     }
-    if (target instanceof Player && target.classType === "WARRIOR") {
-      target.rage = Math.min(target.maxRage, target.rage + 3);
+    if (target.entityType === EntityType.PLAYER && (target as Player).classType === "WARRIOR") {
+      (target as Player).rage = Math.min((target as Player).maxRage, (target as Player).rage + 3);
     }
   }
 
   private sameFaction(a: Entity, b: Entity): boolean {
     // Check for owner-pet or pet-pet relation
-    const aOwnerId = a instanceof Npc ? a.ownerId : undefined;
-    const bOwnerId = b instanceof Npc ? b.ownerId : undefined;
+    const aOwnerId = a.entityType === EntityType.NPC ? (a as Npc).ownerId : undefined;
+    const bOwnerId = b.entityType === EntityType.NPC ? (b as Npc).ownerId : undefined;
 
     if (aOwnerId && aOwnerId === b.sessionId) return true;
     if (bOwnerId && bOwnerId === a.sessionId) return true;
     if (aOwnerId && bOwnerId && aOwnerId === bOwnerId) return true;
 
-    if (a instanceof Player && b instanceof Player) {
-      if (a.groupId && a.groupId === b.groupId) return true;
-      if (a.guildId && a.guildId === b.guildId) return true;
+    if (a.entityType === EntityType.PLAYER && b.entityType === EntityType.PLAYER) {
+      const pa = a as Player, pb = b as Player;
+      if (pa.groupId && pa.groupId === pb.groupId) return true;
+      if (pa.guildId && pa.guildId === pb.guildId) return true;
       return false;
     }
-    if (a instanceof Npc && b instanceof Npc) {
-      return a.npcType === b.npcType;
+    if (a.entityType === EntityType.NPC && b.entityType === EntityType.NPC) {
+      return (a as Npc).npcType === (b as Npc).npcType;
     }
     return false;
   }
@@ -745,13 +747,15 @@ export class CombatSystem {
   private canAttack(attacker: Entity, target: Entity): boolean {
     if (attacker.sessionId === target.sessionId) return false;
     if (this.sameFaction(attacker, target)) return false;
-    if (attacker instanceof Player && target instanceof Player) {
-      if (!attacker.pvpEnabled || !target.pvpEnabled) return false;
-      if (
-        this.isInSafeZone(attacker.tileX, attacker.tileY) ||
-        this.isInSafeZone(target.tileX, target.tileY)
-      )
-        return false;
+    // Safe zones protect everyone — no entity can attack or be attacked inside one.
+    if (
+      this.isInSafeZone(attacker.tileX, attacker.tileY) ||
+      this.isInSafeZone(target.tileX, target.tileY)
+    )
+      return false;
+    if (attacker.entityType === EntityType.PLAYER && target.entityType === EntityType.PLAYER) {
+      const pa = attacker as Player, pt = target as Player;
+      if (!pa.pvpEnabled || !pt.pvpEnabled) return false;
     }
     return true;
   }
@@ -792,7 +796,7 @@ export class CombatSystem {
     suppressCastHit = false,
     onSummon?: (caster: Entity, abilityId: string, x: number, y: number) => void,
   ) {
-    if (target instanceof Npc && target.npcType === "merchant") return;
+    if (target.entityType === EntityType.NPC && (target as Npc).npcType === "merchant") return;
 
     const isSelfCast = attacker.sessionId === target.sessionId;
     if (!isSelfCast && this.buffSystem.isInvulnerable(target.sessionId, now)) return;
@@ -942,15 +946,16 @@ export class CombatSystem {
       // Special Case: Resource Buffs (e.g. Berserker Rage gives 30 Rage)
       if (
         [StatType.RAGE, StatType.ENERGY, StatType.FOCUS, StatType.HOLY_POWER].includes(buffStat) &&
-        target instanceof Player
+        target.entityType === EntityType.PLAYER
       ) {
-        if (buffStat === StatType.RAGE) target.rage = Math.min(target.maxRage, target.rage + buffAmount);
+        const pt = target as Player;
+        if (buffStat === StatType.RAGE) pt.rage = Math.min(pt.maxRage, pt.rage + buffAmount);
         if (buffStat === StatType.ENERGY)
-          target.energy = Math.min(target.maxEnergy, target.energy + buffAmount);
+          pt.energy = Math.min(pt.maxEnergy, pt.energy + buffAmount);
         if (buffStat === StatType.FOCUS)
-          target.focus = Math.min(target.maxFocus, target.focus + buffAmount);
+          pt.focus = Math.min(pt.maxFocus, pt.focus + buffAmount);
         if (buffStat === StatType.HOLY_POWER)
-          target.holyPower = Math.min(target.maxHolyPower, target.holyPower + buffAmount);
+          pt.holyPower = Math.min(pt.maxHolyPower, pt.holyPower + buffAmount);
       } else {
         this.buffSystem.addBuff(
           target.sessionId,
@@ -975,12 +980,12 @@ export class CombatSystem {
       let bodyId = 0;
       let headId = 0;
 
-      if (target instanceof Player) {
-        const appearance = CLASS_APPEARANCE[target.classType];
+      if (target.entityType === EntityType.PLAYER) {
+        const appearance = CLASS_APPEARANCE[(target as Player).classType];
         bodyId = appearance?.bodyId || 0;
         headId = appearance?.headId || 0;
-      } else if (target instanceof Npc) {
-        const appearance = NPC_APPEARANCE[target.npcType];
+      } else if (target.entityType === EntityType.NPC) {
+        const appearance = NPC_APPEARANCE[(target as Npc).npcType];
         bodyId = appearance?.bodyId || 0;
         headId = appearance?.headId || 0;
       }
@@ -1020,9 +1025,9 @@ export class CombatSystem {
       // since teleport abilities usually target a tile and apply effects in a radius.
     } else if (ability.effect === "pickpocket") {
       // Logic for Pickpocket: Gain gold from an NPC target
-      if (attacker instanceof Player && target instanceof Npc && target.alive) {
+      if (attacker.entityType === EntityType.PLAYER && target.entityType === EntityType.NPC && target.alive) {
         const goldGain = Math.floor(Math.random() * 40) + 10; // 10-50 gold
-        attacker.gold += goldGain;
+        (attacker as Player).gold += goldGain;
         broadcast(ServerMessageType.Notification, {
           message: "game.pickpocket_success",
           templateData: { amount: goldGain, target: target.name },
@@ -1062,8 +1067,8 @@ export class CombatSystem {
     let result = { damage: 0, crit: false, glancing: false, blocked: false, parried: false, dodged: false };
     const aSec = this.getSecondaryStats(attacker, now);
     const dSec = this.getSecondaryStats(target, now);
-    const aLvl = attacker instanceof Player || attacker instanceof Npc ? attacker.level : 1;
-    const dLvl = target instanceof Player || target instanceof Npc ? target.level : 1;
+    const aLvl = attacker.level;
+    const dLvl = target.level;
     
     if (ability.damageSchool === DamageSchool.PHYSICAL) {
       const defenderArmor = this.boosted(target, StatType.ARMOR, now);
