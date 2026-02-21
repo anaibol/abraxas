@@ -190,7 +190,7 @@ export class BankSystem {
             data: {
               itemDefId: itemDef.id,
               rarity: (item.rarity?.toUpperCase() as PrismaItemRarity) || PrismaItemRarity.COMMON,
-              affixesJson: item.affixes ? (item.affixes as any) : [],
+              affixesJson: item.affixes ? (item.affixes as unknown as import("../generated/prisma").Prisma.InputJsonValue) : [],
             },
           });
 

@@ -431,7 +431,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       return;
     }
     try {
-      await this.allowReconnection(client, 30);
+      await this.allowReconnection(client, 10);
     } catch {
       await this.removePlayer(client);
     }

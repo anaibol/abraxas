@@ -86,6 +86,7 @@ export class CombatSystem {
   removeEntity(sessionId: string) {
     this.activeWindups.delete(sessionId);
     this.lastMeleeMs.delete(sessionId);
+    this.entitiesWithBufferedAction.delete(sessionId);
   }
 
   /** Turns an entity to face a target tile (no-op when attacker is on the target tile). */

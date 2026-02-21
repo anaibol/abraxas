@@ -10,6 +10,12 @@ import { ClientMessageType, ServerMessageType } from "@abraxas/shared";
 import { Client, type Room } from "@colyseus/sdk";
 import type { GameState } from "../../../server/src/schema/GameState";
 
+declare global {
+  interface Window {
+    __room?: Room<unknown, GameState>;
+  }
+}
+
 /**
  * Room type as seen from the client side.
  *
@@ -185,7 +191,7 @@ export class NetworkManager {
         }
         console.groupEnd();
         // Expose the room on window for quick console inspection
-        (window as any).__room = this.room;
+        window.__room = this.room;
         console.log("%c[Abraxas] window.__room exposed for console inspection", "color:#aaffaa");
       }
     });
