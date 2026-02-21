@@ -1266,5 +1266,15 @@
     "use_effect": "Effetto d'Uso",
     "cures_debuffs": "Cura Debuff",
     "class_required": "Classe Richiesta"
+  },
+  "quest": {
+    "slime_slayer": {
+      "title": "Cacciatore di Slime",
+      "description": "Il mercante locale ha bisogno di aiuto per sbarazzarsi di alcuni fastidiosi slime fuori città. Sconfiggi 5 slime e torna da lui."
+    },
+    "tutorial_talk": {
+      "title": "L'Avventura Inizia",
+      "description": "Benvenuto nel mondo di Abraxas! Parla con il mercante in città per imparare le basi."
+    }
   }
 }

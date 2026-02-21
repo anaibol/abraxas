@@ -753,35 +753,35 @@ export class EffectManager {
   // ── Spell-specific effect functions ──────────────────────────────────────
 
   private fx_fireball(px: number, py: number) {
-    this.flash(px, py, 0xffffff, 40, 80);
-    this.ring(px, py, 0xff4400, 5, 58, 400, 0.9, 4);
+    this.flash(px, py, 0xffffff, 40, 48);
+    this.ring(px, py, 0xff4400, 5, 46, 240, 0.9, 3);
     // Delayed shockwave ring at larger radius
-    this.scene.time.delayedCall(50, () => this.ring(px, py, 0xff8800, 10, 85, 580, 0.5, 3));
+    this.scene.time.delayedCall(30, () => this.ring(px, py, 0xff8800, 10, 68, 348, 0.5, 2));
     
     // Massive fireball burst
     this.burst(px, py, TEX.CIRCLE, {
       colors: [0xff2200, 0xff7700, 0xffcc00, 0xffee88],
-      count: 25,
+      count: 17,
       speed: { min: 80, max: 240 },
-      scale: { start: 0.65, end: 0.0 },
-      lifespan: { min: 240, max: 540 },
+      scale: { start: 0.52, end: 0.0 },
+      lifespan: { min: 144, max: 324 },
       gravityY: -40,
-      drag: 0.05,
+      drag: 0.1,
       radius: 6,
     });
     
     // Add realistic thick smoke for the subsequent explosion
-    this.drawDecal(px, py, "fx-scorch", 6000, 1.2, 0.7);
+    this.drawDecal(px, py, "fx-scorch", 3600, 1.0, 0.7);
     this.createThickSmoke(px, py);
     
-    this.scene.time.delayedCall(80, () => {
+    this.scene.time.delayedCall(48, () => {
       // Hot embers scattered outward
       this.burst(px, py, TEX.SPARK, {
         colors: [0xff6600, 0xffaa00, 0xffff44],
-        count: 17,
+        count: 11,
         speed: { min: 50, max: 150 },
-        scale: { start: 0.39, end: 0.0 },
-        lifespan: { min: 360, max: 720 },
+        scale: { start: 0.31, end: 0.0 },
+        lifespan: { min: 216, max: 432 },
         gravityY: -60,
         radius: 13,
       });
@@ -795,7 +795,7 @@ export class EffectManager {
     this.createLightningStrike(px, py);
 
     // Two secondary strikes (reduced from 4 for perf)
-    this.scene.time.delayedCall(60, () => {
+    this.scene.time.delayedCall(36, () => {
       this.lightning(px - 38, py, 0xddddff, 108, 7);
       this.lightning(px + 32, py, 0xddddff, 118, 8);
     });
@@ -803,10 +803,10 @@ export class EffectManager {
     // Horizontal electric sparks
     this.burst(px, py, TEX.SPARK, {
       colors: [0xffffff, 0xffffaa],
-      count: 11,
+      count: 7,
       speed: { min: 80, max: 220 },
-      scale: { start: 0.33, end: 0.0 },
-      lifespan: { min: 60, max: 180 },
+      scale: { start: 0.26, end: 0.0 },
+      lifespan: { min: 36, max: 108 },
       angle: { min: 160, max: 200 },
       radius: 19,
     });
@@ -814,21 +814,22 @@ export class EffectManager {
 
   private fx_frost_nova(px: number, py: number) {
     // Utilize the realistic frost explosion
-    this.drawDecal(px, py, "fx-frost-patch", 8000, 1.8, 0.8);
+    this.drawDecal(px, py, "fx-frost-patch", 4800, 1.4, 0.8);
     this.createFrostExplosion(px, py);
 
     // Initial shockwave
-    this.ring(px, py, 0x44ccff, 5, 90, 600, 0.9, 5);
-    this.scene.time.delayedCall(90, () => this.ring(px, py, 0xffffff, 5, 72, 500, 0.6, 2));
+    this.ring(px, py, 0x44ccff, 5, 72, 360, 0.9, 4);
+    this.scene.time.delayedCall(54, () => this.ring(px, py, 0xffffff, 5, 57, 300, 0.6, 2));
     
     // Lingering deep cold particles
     this.burst(px, py, TEX.CIRCLE, {
       colors: [0x88ddff, 0xffffff],
-      count: 12,
+      count: 8,
       speed: { min: 10, max: 40 },
-      scale: { start: 0.33, end: 0.0 },
-      lifespan: { min: 480, max: 900 },
+      scale: { start: 0.26, end: 0.0 },
+      lifespan: { min: 288, max: 540 },
       gravityY: 15, // Falling snow
+      drag: 0.05,
       radius: 35,
     });
   }
@@ -836,28 +837,28 @@ export class EffectManager {
 
 
   private fx_shield_bash(px: number, py: number) {
-    this.flash(px, py, 0xaaccff, 24, 80);
+    this.flash(px, py, 0xaaccff, 19, 48);
     
     // Add realistic earth shatter from the heavy impact
-    this.drawDecal(px, py, "fx-crater", 5000, 1.0, 0.85);
+    this.drawDecal(px, py, "fx-crater", 3000, 0.8, 0.85);
     this.createEarthShatter(px, py);
 
     this.burst(px, py, TEX.SPARK, {
       colors: [0xffffff, 0xaaccff, 0x6688cc],
-      count: 15,
+      count: 10,
       speed: { min: 100, max: 220 },
-      scale: { start: 0.39, end: 0.0 },
-      lifespan: { min: 120, max: 300 },
+      scale: { start: 0.31, end: 0.0 },
+      lifespan: { min: 72, max: 180 },
       angle: { min: -55, max: 55 },
     });
     // Stun stars pop up above the impact
-    this.scene.time.delayedCall(90, () => {
+    this.scene.time.delayedCall(54, () => {
       this.burst(px, py - TILE_SIZE, TEX.STAR, {
         colors: [0xffff00, 0xffcc00, 0xffffff],
-        count: 3,
+        count: 2,
         speed: { min: 20, max: 55 },
-        scale: { start: 0.39, end: 0.13 },
-        lifespan: { min: 420, max: 600 },
+        scale: { start: 0.31, end: 0.1 },
+        lifespan: { min: 252, max: 360 },
         rotate: { start: 0, end: 720 },
         gravityY: -15,
         radius: 10,
@@ -870,7 +871,7 @@ export class EffectManager {
 
 
   private fx_poison(px: number, py: number) {
-    this.ring(px, py, 0x44cc00, 4, 32, 370, 0.8, 3);
+    this.ring(px, py, 0x44cc00, 4, 32, 222, 0.8, 2);
     
     // Utilize the realistic poison cloud
     this.createPoisonCloud(px, py);
@@ -878,11 +879,12 @@ export class EffectManager {
     // An extra squirt of venom
     this.burst(px, py, TEX.CIRCLE, {
       colors: [0x44ff44, 0x00aa00, 0x88ff00],
-      count: 7,
+      count: 4,
       speed: { min: 50, max: 120 },
-      scale: { start: 0.39, end: 0.0 },
-      lifespan: { min: 180, max: 420 },
-      gravityY: 120,
+      scale: { start: 0.31, end: 0.0 },
+      lifespan: { min: 108, max: 252 },
+      gravityY: 150,
+      drag: 0.05,
     });
   }
 
@@ -890,13 +892,13 @@ export class EffectManager {
 
   private fx_smite(px: number, py: number) {
     this.lightning(px, py, 0xffff88, 105, 6);
-    this.ring(px, py, 0xffee44, 5, 38, 330, 0.85, 3);
+    this.ring(px, py, 0xffee44, 5, 30, 198, 0.85, 2);
     this.burst(px, py, TEX.STAR, {
       colors: [0xffff44, 0xffcc00, 0xffffff],
-      count: 11,
+      count: 7,
       speed: { min: 90, max: 210 },
-      scale: { start: 0.36, end: 0.0 },
-      lifespan: { min: 150, max: 336 },
+      scale: { start: 0.28, end: 0.0 },
+      lifespan: { min: 90, max: 201 },
       angle: { min: 50, max: 130 },
       rotate: { start: 0, end: 360 },
     });
@@ -908,29 +910,29 @@ export class EffectManager {
 
   private fx_meteor_strike(px: number, py: number) {
     // Drop the meteor
-    this.createMeteorFall(px, py, 800);
+    this.createMeteorFall(px, py, 480);
     
     // Slight warning ring before impact
-    this.ring(px, py, 0xff2200, 3, 50, 750, 0.4, 2);
+    this.ring(px, py, 0xff2200, 3, 50, 450, 0.4, 2);
 
-    this.scene.time.delayedCall(800, () => {
+    this.scene.time.delayedCall(480, () => {
       // Impact effects
-      this.drawDecal(px, py, "fx-crater", 5000, 1.0, 0.85);
+      this.drawDecal(px, py, "fx-crater", 3000, 1.0, 0.85);
     this.createEarthShatter(px, py);
       this.createCampfire(px, py);
-      this.drawDecal(px, py, "fx-scorch", 6000, 1.2, 0.7);
+      this.drawDecal(px, py, "fx-scorch", 3600, 1.2, 0.7);
     this.createThickSmoke(px, py);
       
-      this.flash(px, py, 0xffffff, 80, 150);
-      this.ring(px, py, 0xff4400, 8, 120, 600, 0.9, 5);
+      this.flash(px, py, 0xffffff, 64, 90);
+      this.ring(px, py, 0xff4400, 8, 96, 360, 0.9, 4);
       
       // Massive explosion sparks
       this.burst(px, py, TEX.SPARK, {
         colors: [0xffffff, 0xffff44, 0xff6600],
-        count: 25,
+        count: 17,
         speed: { min: 150, max: 350 },
-        scale: { start: 0.65, end: 0.0 },
-        lifespan: { min: 240, max: 600 },
+        scale: { start: 0.52, end: 0.0 },
+        lifespan: { min: 144, max: 360 },
         gravityY: 100, // Sparks fall back heavily
       });
     });
@@ -969,7 +971,7 @@ export class EffectManager {
         this.scene.tweens.add({
           targets: gfx,
           alpha: 0,
-          duration: 90,
+          duration: 54,
           ease: "Power2.In",
           onComplete: () => gfx.destroy(),
         });
@@ -982,19 +984,19 @@ export class EffectManager {
     // Horizontal chaining sparks
     this.burst(px, py, TEX.SHARD, {
       colors: [0xffffff, 0xaaffff],
-      count: 10,
+      count: 7,
       speed: { min: 100, max: 300 },
-      scale: { start: 0.39, end: 0.0 },
-      lifespan: { min: 120, max: 300 },
+      scale: { start: 0.31, end: 0.0 },
+      lifespan: { min: 72, max: 180 },
       angle: { min: -20, max: 20 }, // Shoot mostly right
       gravityY: 0,
     });
     this.burst(px, py, TEX.SHARD, {
       colors: [0xffffff, 0xaaffff],
-      count: 10,
+      count: 7,
       speed: { min: 100, max: 300 },
-      scale: { start: 0.39, end: 0.0 },
-      lifespan: { min: 120, max: 300 },
+      scale: { start: 0.31, end: 0.0 },
+      lifespan: { min: 72, max: 180 },
       angle: { min: 160, max: 200 }, // Shoot mostly left
       gravityY: 0,
     });
@@ -1002,36 +1004,36 @@ export class EffectManager {
 
   private fx_entangling_roots(px: number, py: number) {
     this.createVines(px, py);
-    this.ring(px, py, 0x44aa44, 4, 30, 400, 0.8, 3);
+    this.ring(px, py, 0x44aa44, 4, 30, 240, 0.8, 2);
   }
 
   private fx_cleansing_rain(px: number, py: number) {
     this.createRain(px, py, 70); // 70px radius for a nice AoE shower
-    this.flash(px, py - 20, 0x88ffff, 80, 200); // Soft flash in the clouds
+    this.flash(px, py - 20, 0x88ffff, 64, 120); // Soft flash in the clouds
   }
 
   private fx_acid_splash(px: number, py: number) {
     this.createAcidSplash(px, py);
     this.createPoisonCloud(px, py);
-    this.flash(px, py, 0x44ff00, 30, 100);
+    this.flash(px, py, 0x44ff00, 24, 60);
   }
 
   private fx_earthquake(px: number, py: number) {
-    this.drawDecal(px, py, "fx-crater", 5000, 1.0, 0.85);
+    this.drawDecal(px, py, "fx-crater", 3000, 0.8, 0.85);
     this.createEarthShatter(px, py);
     
     // Multiple delayed rings for a shaking effect
-    this.ring(px, py, 0x885522, 10, 80, 500, 0.8, 5);
-    this.scene.time.delayedCall(150, () => this.ring(px, py, 0x663311, 10, 120, 600, 0.7, 4));
-    this.scene.time.delayedCall(300, () => this.ring(px, py, 0x442200, 10, 150, 700, 0.5, 3));
+    this.ring(px, py, 0x885522, 10, 64, 300, 0.8, 4);
+    this.scene.time.delayedCall(90, () => this.ring(px, py, 0x663311, 10, 96, 360, 0.7, 3));
+    this.scene.time.delayedCall(180, () => this.ring(px, py, 0x442200, 10, 120, 420, 0.5, 2));
     
     // Screen shaking is handled by camera, but we emphasize it with heavy particles
     this.burst(px, py, TEX.SMOKE, {
       colors: [0x553311, 0x442200],
-      count: 20,
+      count: 14,
       speed: { min: 50, max: 150 },
-      scale: { start: 0.65, end: 0.13 },
-      lifespan: { min: 360, max: 720 },
+      scale: { start: 0.52, end: 0.1 },
+      lifespan: { min: 216, max: 432 },
       gravityY: 0,
       radius: 26,
       blendMode: Phaser.BlendModes.NORMAL,
@@ -1042,14 +1044,14 @@ export class EffectManager {
 
   private fx_tree_form(px: number, py: number) {
     // Rooted transformation — rising green nature mist
-    this.ring(px, py, 0x228822, 5, 46, 520, 0.85, 4);
+    this.ring(px, py, 0x228822, 5, 36, 312, 0.85, 3);
     this.createVines(px, py);
     this.burst(px, py, TEX.SMOKE, {
       colors: [0x228822, 0x44AA44, 0x66CC66],
-      count: 11,
+      count: 7,
       speed: { min: 15, max: 50 },
-      scale: { start: 0.59, end: 0.07 },
-      lifespan: { min: 360, max: 780 },
+      scale: { start: 0.47, end: 0.05 },
+      lifespan: { min: 216, max: 468 },
       gravityY: -30,
       radius: 18,
       blendMode: Phaser.BlendModes.NORMAL,
@@ -1057,10 +1059,10 @@ export class EffectManager {
     });
     this.burst(px, py, TEX.STAR, {
       colors: [0x88FF88, 0x44FF88, 0xFFFFFF],
-      count: 6,
+      count: 4,
       speed: { min: 20, max: 65 },
-      scale: { start: 0.33, end: 0.0 },
-      lifespan: { min: 360, max: 660 },
+      scale: { start: 0.26, end: 0.0 },
+      lifespan: { min: 216, max: 396 },
       rotate: { start: 0, end: 360 },
       gravityY: -55,
       radius: 15,

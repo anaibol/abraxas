@@ -1265,5 +1265,15 @@
     "use_effect": "Effet d'Utilisation",
     "cures_debuffs": "Soigne les malus",
     "class_required": "Classe Requise"
+  },
+  "quest": {
+    "slime_slayer": {
+      "title": "Tueur de Slimes",
+      "description": "Le marchand local a besoin d'aide pour s'occuper de quelques slimes ennuyeux à l'extérieur de la ville. Battez 5 slimes et retournez le voir."
+    },
+    "tutorial_talk": {
+      "title": "L'aventure Commence",
+      "description": "Bienvenue dans le monde d'Abraxas ! Parlez au marchand en ville pour apprendre les bases."
+    }
   }
 }

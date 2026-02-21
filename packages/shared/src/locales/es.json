@@ -1267,5 +1267,15 @@
     "use_effect": "Efecto de Uso",
     "cures_debuffs": "Cura Estados Negativos",
     "class_required": "Clase Requerida"
+  },
+  "quest": {
+    "slime_slayer": {
+      "title": "Cazador de Slimes",
+      "description": "El mercader local necesita ayuda para lidiar con unos molestos slimes a las afueras del pueblo. Derrota a 5 slimes y vuelve con él."
+    },
+    "tutorial_talk": {
+      "title": "La Aventura Comienza",
+      "description": "¡Bienvenido al mundo de Abraxas! Habla con el mercader del pueblo para aprender lo básico."
+    }
   }
 }

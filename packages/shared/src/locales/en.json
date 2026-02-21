@@ -1267,5 +1267,15 @@
     "use_effect": "Use Effect",
     "cures_debuffs": "Cures Debuffs",
     "class_required": "Class Required"
+  },
+  "quest": {
+    "slime_slayer": {
+      "title": "Slime Slayer",
+      "description": "The local merchant needs help dealing with some pesky slimes outside of town. Defeat 5 slimes and return to him."
+    },
+    "tutorial_talk": {
+      "title": "The Adventure Begins",
+      "description": "Welcome to the world of Abraxas! Talk to the merchant in town to learn the ropes."
+    }
   }
 }
