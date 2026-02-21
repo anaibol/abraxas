@@ -18,6 +18,7 @@ import { MapBaker } from "../systems/MapBaker";
 import { WeatherManager } from "../managers/WeatherManager";
 import type { WeatherType } from "../managers/WeatherManager";
 import { LightManager } from "../managers/LightManager";
+import { gameSettings } from "../settings/gameSettings";
 import type { PlayerState } from "../ui/sidebar/types";
 
 type StateCallback = (state: PlayerState) => void;
@@ -77,7 +78,9 @@ export class GameScene extends Phaser.Scene {
   private lastOverlayCenterY = -1;
 
   private muteKey?: Phaser.Input.Keyboard.Key;
+  private debugKey?: Phaser.Input.Keyboard.Key;
   private debugText?: Phaser.GameObjects.Text;
+  private settingsUnsub?: () => void;
   private handleVisibilityChange = () => {
     if (document.visibilityState === "visible") {
       const sm = this.sound as unknown as Record<string, unknown>;
@@ -402,17 +405,27 @@ export class GameScene extends Phaser.Scene {
     this.updateAmbientLighting(this.room.state.timeOfDay);
     this.weatherManager.updateWeather(this.room.state.weather as WeatherType);
 
-    if (import.meta.env.DEV) {
-      this.debugText = this.add.text(10, 10, "", {
-        fontSize: "16px",
-        color: "#ffffff",
-        stroke: "#000000",
-        strokeThickness: 4,
-        fontFamily: "'Courier New', Courier, monospace",
-      });
-      this.debugText.setScrollFactor(0);
-      this.debugText.setDepth(100);
-    }
+    // Debug overlay — always created, visibility driven by settings + F3 key
+    this.debugText = this.add.text(10, 10, "", {
+      fontSize: "16px",
+      color: "#ffffff",
+      stroke: "#000000",
+      strokeThickness: 4,
+      fontFamily: "'Courier New', Courier, monospace",
+    });
+    this.debugText.setScrollFactor(0);
+    this.debugText.setDepth(100);
+    this.debugText.setVisible(gameSettings.get().showDebugOverlay);
+
+    this.settingsUnsub = gameSettings.subscribe((s) => {
+      this.debugText?.setVisible(s.showDebugOverlay);
+    });
+
+    this.debugKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.F3);
+    this.debugKey?.on("down", () => {
+      const current = gameSettings.get().showDebugOverlay;
+      gameSettings.set({ showDebugOverlay: !current });
+    });
 
     document.addEventListener("visibilitychange", this.handleVisibilityChange);
 
@@ -490,7 +503,7 @@ export class GameScene extends Phaser.Scene {
       this.dropManager.updateLabels(localSprite.predictedTileX, localSprite.predictedTileY);
     }
 
-    if (this.debugText && localSprite) {
+    if (this.debugText?.visible && localSprite) {
       // Count particle emitters (persistent + transient)
       const allObjs = this.children.list;
       const emitterCount = allObjs.filter(
@@ -526,6 +539,8 @@ export class GameScene extends Phaser.Scene {
     this.stateUnsubscribers = [];
     this.inputHandler.destroy();
     if (this.muteKey) this.input.keyboard?.removeKey(this.muteKey);
+    if (this.debugKey) this.input.keyboard?.removeKey(this.debugKey);
+    this.settingsUnsub?.();
     this.soundManager.stopMusic();
   }
 

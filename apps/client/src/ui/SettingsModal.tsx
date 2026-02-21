@@ -1,5 +1,5 @@
 import { Box, Flex, Text } from "@chakra-ui/react";
-import { Camera, Languages, Map as MapIcon, Music, Sparkles, Volume2, Waves, Wind, X } from "lucide-react";
+import { Bug, Camera, Languages, Map as MapIcon, Music, Sparkles, Volume2, Waves, Wind, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useGameSettings } from "../hooks/useGameSettings";
 import type { ParticleQuality } from "../settings/gameSettings";
@@ -277,6 +277,14 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
                   label={t("settings.show_minimap")}
                   value={settings.showMinimap}
                   onChange={(v) => updateSettings({ showMinimap: v })}
+                />
+
+                {/* Debug overlay (FPS, object counts, etc.) — toggle with F3 */}
+                <ToggleSetting
+                  icon={<Bug size={15} />}
+                  label={t("settings.show_debug_overlay", "Debug Overlay (F3)")}
+                  value={settings.showDebugOverlay}
+                  onChange={(v) => updateSettings({ showDebugOverlay: v })}
                 />
               </Flex>
             </Box>

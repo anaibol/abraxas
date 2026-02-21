@@ -11,6 +11,7 @@ export type GameSettings = {
   particleQuality: ParticleQuality; // (item 81)
   bloomEnabled: boolean; // (item 83)
   showMinimap: boolean;
+  showDebugOverlay: boolean;
 };
 
 const DEFAULTS: GameSettings = {
@@ -24,6 +25,7 @@ const DEFAULTS: GameSettings = {
   particleQuality: "high",
   bloomEnabled: true,
   showMinimap: true,
+  showDebugOverlay: false,
 };
 
 const STORAGE_KEY = "abraxas-settings";

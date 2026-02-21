@@ -76,6 +76,7 @@ export class PersistenceService {
       companions: { type: string; level: number; exp: number; hp: number }[];
       pvpKills: number;
       npcKills: number;
+      pvpEnabled: boolean;
     },
   ) {
     try {
@@ -93,6 +94,7 @@ export class PersistenceService {
           facing: facingStr,
           pvpKills: data.pvpKills,
           npcKills: data.npcKills,
+          pvpEnabled: data.pvpEnabled,
           stats: {
             update: {
               hp: data.hp,

@@ -98,13 +98,21 @@ export class NpcSpawner {
     return npc;
   }
 
-  /** D3: Shared NPC stat scaling formula — called from spawnNpcAt and levelUp. */
-  recalcNpcStats(npc: Npc): void {
+  /** D3: Shared NPC stat scaling formula — called from spawnNpcAt and levelUp.
+   * @param resetHp When true (default for new spawns), set HP to maxHp. When false
+   *                (level-up mid-combat), scale HP proportionally to the new max. */
+  recalcNpcStats(npc: Npc, resetHp = true): void {
     const stats = NPC_STATS[npc.npcType];
     if (!stats) return;
     const scale = 1 + (npc.level - 1) * 0.1;
+    const prevMax = npc.maxHp || 1;
     npc.maxHp = Math.ceil(stats.hp * scale);
-    npc.hp = npc.maxHp;
+    if (resetHp) {
+      npc.hp = npc.maxHp;
+    } else {
+      // Bug #36: Proportionally scale HP so level-up doesn't grant a full heal
+      npc.hp = Math.min(npc.maxHp, Math.ceil((npc.hp / prevMax) * npc.maxHp));
+    }
     npc.str = Math.ceil(stats.str * scale);
     npc.agi = Math.ceil(stats.agi * scale);
     npc.intStat = Math.ceil(stats.int * scale);

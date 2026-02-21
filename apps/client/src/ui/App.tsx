@@ -175,6 +175,10 @@ export function App() {
   const audioManagerRef = useRef<AudioManager | null>(null);
   const wasAliveRef = useRef(true);
 
+  // Auto-reconnect state
+  const lastSessionRef = useRef<{ charId: string; classType: ClassType; token: string } | null>(null);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useRoomListeners(room, networkRef.current, {
     t,
     addConsoleMessage,
@@ -290,6 +294,11 @@ export function App() {
 
   const handleJoin = useCallback(
     async (charId: string, classType: ClassType, token: string, mapName?: string) => {
+      // Cancel any pending reconnect timer when a new join starts
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
       setConnecting(true);
       if (mapName) setIsLoading(true); // If warping, show loading
 
@@ -335,6 +344,9 @@ export function App() {
         setPhase("game");
         if (!mapName) setIsLoading(true); // Initial join also triggers loading
 
+        // Store credentials for auto-reconnect
+        lastSessionRef.current = { charId, classType, token };
+
         // Consume messages buffered during connect() (sent before Welcome)
         const initialQuestList = network.getInitialQuestList();
         if (initialQuestList) setQuests(initialQuestList.quests);
@@ -363,18 +375,55 @@ export function App() {
         };
         network.onDisconnect = () => {
           setConnectionLost(true);
-          // Auto-redirect to lobby after a brief overlay
-          setTimeout(() => {
-            networkRef.current = null;
-            phaserGameRef.current?.destroy(true);
-            phaserGameRef.current = null;
-            roomRef.current = null;
-            setRoom(null);
+
+          // Clean up current session state
+          networkRef.current = null;
+          phaserGameRef.current?.destroy(true);
+          phaserGameRef.current = null;
+          roomRef.current = null;
+          setRoom(null);
+
+          const session = lastSessionRef.current;
+          if (!session) {
+            // No credentials to reconnect with — go to lobby
             setPhase("lobby");
             setConnectionLost(false);
             setConnecting(false);
             setIsLoading(false);
-          }, 2000);
+            return;
+          }
+
+          // Auto-reconnect with exponential backoff
+          const MAX_RETRIES = 5;
+          let attempt = 0;
+
+          const tryReconnect = () => {
+            attempt++;
+            console.log(`[Abraxas] Reconnect attempt ${attempt}/${MAX_RETRIES}...`);
+            handleJoin(session.charId, session.classType, session.token)
+              .then(() => {
+                // Success — clear the overlay
+                setConnectionLost(false);
+              })
+              .catch((err) => {
+                console.warn(`[Abraxas] Reconnect attempt ${attempt} failed:`, err);
+                if (attempt < MAX_RETRIES) {
+                  const delay = Math.min(2000 * Math.pow(2, attempt - 1), 32000);
+                  reconnectTimerRef.current = setTimeout(tryReconnect, delay);
+                } else {
+                  // Exhausted retries — fall back to lobby
+                  console.error("[Abraxas] All reconnect attempts failed, returning to lobby.");
+                  lastSessionRef.current = null;
+                  setPhase("lobby");
+                  setConnectionLost(false);
+                  setConnecting(false);
+                  setIsLoading(false);
+                }
+              });
+          };
+
+          // Start first attempt after a brief delay
+          reconnectTimerRef.current = setTimeout(tryReconnect, 2000);
         };
 
         network.onWorldEventProgress = (data) => {
@@ -462,12 +511,18 @@ export function App() {
   );
 
   const handleLogout = useCallback(() => {
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
+    lastSessionRef.current = null;
     networkRef.current?.disconnect();
     networkRef.current = null;
     phaserGameRef.current?.destroy(true);
     phaserGameRef.current = null;
     roomRef.current = null;
     setRoom(null);
+    setConnectionLost(false);
     localStorage.removeItem("abraxas_token");
     setPhase("lobby");
     setIsSidebarOpen(false);
@@ -549,6 +604,9 @@ export function App() {
 
   useEffect(() => {
     return () => {
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+      }
       phaserGameRef.current?.destroy(true);
     };
   }, []);
@@ -585,8 +643,8 @@ export function App() {
           <Box fontSize="2xl" fontWeight="bold" color="#ff6655">
             {t("game.connection_lost", "Connection Lost")}
           </Box>
-          <Box fontSize="md" color="whiteAlpha.700">
-            {t("game.reconnecting", "Returning to lobby...")}
+          <Box fontSize="md" color="whiteAlpha.700" textAlign="center">
+            {t("game.reconnecting", "Reconnecting...")}
           </Box>
         </Flex>
       )}

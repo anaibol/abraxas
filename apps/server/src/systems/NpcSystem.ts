@@ -500,8 +500,8 @@ export class NpcSystem {
 
   private levelUp(npc: Npc, roomId: string, broadcast: BroadcastFn): void {
     npc.level++;
-    // D3: Use shared stat recalculation
-    this.spawner.recalcNpcStats(npc);
+    // D3: Use shared stat recalculation (resetHp=false to avoid full heal mid-combat)
+    this.spawner.recalcNpcStats(npc, false);
 
     broadcast(ServerMessageType.LevelUp, {
       sessionId: npc.sessionId,
@@ -622,7 +622,7 @@ export class NpcSystem {
       npc.lastPhaseChangeAt = now;
       // Announce the transition
       broadcast(ServerMessageType.Notification, {
-        message: `${npc.npcType.replace("_", " ").toUpperCase()} enrages! The battle intensifies!`,
+        message: `${npc.npcType.replaceAll("_", " ").toUpperCase()} enrages! The battle intensifies!`,
       });
       this.tryBark(npc, "low_hp", broadcast);
       logger.info({ intent: "boss_phase_2", npcId: npc.sessionId, type: npc.npcType });
@@ -699,7 +699,7 @@ export class NpcSystem {
       const spawnTile = safe ?? { x: entry.spawnX, y: entry.spawnY };
       this.spawner.spawnNpcAt(entry.npcType, map, spawnTile.x, spawnTile.y);
       broadcast(ServerMessageType.Notification, {
-        message: `A ${entry.npcType.replace("_", " ")} has been spotted in the world!`,
+        message: `A ${entry.npcType.replaceAll("_", " ")} has been spotted in the world!`,
       });
       logger.info({ intent: "rare_npc_respawn", type: entry.npcType });
     }

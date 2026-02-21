@@ -149,10 +149,11 @@ export class EffectResolver {
           blocked: damageRes.blocked,
           glancing: damageRes.glancing,
         });
+        // Bug #9: Apply rage BEFORE death check so we don't touch a cleaned-up entity
+        this.applyRageOnHit(attacker, target);
         if (target.hp <= 0) {
           onDeath(target, attacker.sessionId);
         }
-        this.applyRageOnHit(attacker, target);
       }
 
       // Apply secondary stat modifier (e.g. ice_bolt AGI slow) if defined alongside damage
@@ -284,7 +285,8 @@ export class EffectResolver {
         tx >= this.map.width ||
         ty < 0 ||
         ty >= this.map.height ||
-        this.map.collision[ty]?.[tx] === 1
+        this.map.collision[ty]?.[tx] === 1 ||
+        this.spatial.isTileOccupied(tx, ty)  // Bug #11: prevent teleporting onto occupied tiles
       ) {
         return;
       }
@@ -305,8 +307,13 @@ export class EffectResolver {
         target.entityType === EntityType.NPC &&
         target.alive
       ) {
-        // B18: Cap pickpocket gold gain and scale with level
-        const goldGain = Math.floor(Math.random() * 20) + 5 + Math.floor(attacker.level * 0.5);
+        // Bug #12: Per-target cooldown to prevent infinite gold farming
+        const ppKey = `pp_${target.sessionId}`;
+        const lastPp = (attacker as unknown as Record<string, number>)[ppKey] ?? 0;
+        if (now - lastPp < 10_000) return; // 10s cooldown per target
+        (attacker as unknown as Record<string, number>)[ppKey] = now;
+
+        const goldGain = Math.floor(Math.random() * 40) + 10;
         attacker.gold += goldGain;
         broadcast(ServerMessageType.Notification, {
           message: "game.pickpocket_success",
