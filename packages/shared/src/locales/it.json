@@ -76,6 +76,11 @@
     }
   },
   "game": {
+    "status": {
+      "stun_prevent_cast": "Impossibile lanciare incantesimi se storditi!"
+    },
+    "connection_lost": "Connessione Persa",
+    "reconnecting": "Riconnessione...",
     "restricted_to": "Limitato a {{classes}}",
     "item_not_found": "Oggetto non trovato",
     "invalid_item": "Oggetto non valido",
@@ -157,12 +162,20 @@
     "invited_to_guild": "{{name}} invitato alla gilda"
   },
   "settings": {
-    "title": "Impostazioni",
+    "ambiance_volume": "Volume Ambiente",
+    "ui_volume": "Volume Interfaccia",
     "section": {
+      "visual": "Visivo",
       "audio": "Audio",
       "language": "Lingua",
       "interface": "Interfaccia"
     },
+    "screen_shake": "Scossa dello Schermo",
+    "shake_intensity": "Intensità Scossa",
+    "bloom": "Effetto Bloom",
+    "show_debug_overlay": "Mostra Debug Overlay",
+    "particle_quality": "Qualità Particelle",
+    "title": "Impostazioni",
     "music_volume": "Volume Musica",
     "sfx_volume": "Effetti Sonori",
     "show_minimap": "Mostra Minimappa"
@@ -238,6 +251,10 @@
     }
   },
   "status": {
+    "spawn_protected": "Protezione Generazione",
+    "safe_zone": "Zona Sicura",
+    "pvp_off": "PvP Disabilitato",
+    "pvp_on": "PvP Abilitato",
     "dead": "MORTO",
     "stunned": "STORDITO",
     "stealthed": "OCCULTATO",
@@ -992,17 +1009,17 @@
     "killed": "ha ucciso"
   },
   "loading": {
-    "connecting": "CONNESSIONE AD ABRAXAS",
-    "searching": "Ricerca del portale...",
     "tips": [
-      "Abraxas era un tempo una cittadella fluttuante degli Alti Maghi.",
-      "Antiche rune suggeriscono che l'Arena fu costruita su un nodo di linee ley.",
+      "L'avventura ti aspetta...",
+      "Resta vigile.",
       "Non voltare mai le spalle a un Ladro negli angoli bui dell'Arena.",
       "I guerrieri preferiscono la forza, ma una mente concentrata può trapassare qualsiasi armatura.",
       "I goblin sono codardi, ma i loro numeri possono sopraffare i disattenti.",
       "Il Lich delle Profondità non è stato visto da secoli... fino ad ora.",
       "Le pozioni sono preparate con l'essenza di elementali caduti."
-    ]
+    ],
+    "connecting": "CONNESSIONE AD ABRAXAS",
+    "searching": "Ricerca del portale..."
   },
   "trade": {
     "title": "Scambio",
@@ -1052,5 +1069,15 @@
     "try_again": "Riprova",
     "empty": "Nessuna voce ancora",
     "hint": "Top 10 giocatori per categoria — aggiornato alla disconnessione"
+  },
+  "fast_travel": {
+    "title": "Viaggio Rapido",
+    "no_waypoints": "Nessun punto di viaggio scoperto.",
+    "esc_hint": "Premi ESC per chiudere"
+  },
+  "tooltip": {
+    "use_effect": "Effetto d'uso",
+    "cures_debuffs": "Cura Malus",
+    "class_required": "Classe Richiesta"
   }
 }

@@ -76,6 +76,11 @@
     }
   },
   "game": {
+    "status": {
+      "stun_prevent_cast": "¡No puedes lanzar hechizos mientras estás aturdido!"
+    },
+    "connection_lost": "Conexión perdida",
+    "reconnecting": "Reconectando...",
     "item_not_found": "Objeto no encontrado",
     "invalid_item": "Objeto inválido",
     "cannot_equip_consumable": "No se puede equipar un consumible",
@@ -157,12 +162,20 @@
     "invited_to_guild": "{{name}} invitado al clan"
   },
   "settings": {
-    "title": "Ajustes",
+    "ambiance_volume": "Volumen de Ambiente",
+    "ui_volume": "Volumen de Interfaz",
     "section": {
+      "visual": "Visual",
       "audio": "Audio",
       "language": "Idioma",
       "interface": "Interfaz"
     },
+    "screen_shake": "Agitación de Pantalla",
+    "shake_intensity": "Intensidad de Agitación",
+    "bloom": "Efecto Bloom",
+    "show_debug_overlay": "Mostrar Info de Depuración",
+    "particle_quality": "Calidad de Partículas",
+    "title": "Ajustes",
     "music_volume": "Volumen de Música",
     "sfx_volume": "Efectos de Sonido",
     "show_minimap": "Mostrar Minimapa"
@@ -238,6 +251,10 @@
     }
   },
   "status": {
+    "spawn_protected": "Protección de Aparición",
+    "safe_zone": "Zona Segura",
+    "pvp_off": "PvP Desactivado",
+    "pvp_on": "PvP Activado",
     "dead": "MUERTO",
     "stunned": "ATURDIDO",
     "stealthed": "SIGILO",
@@ -992,17 +1009,17 @@
     "killed": "mató a"
   },
   "loading": {
-    "connecting": "CONECTANDO A ABRAXAS",
-    "searching": "Buscando portal...",
     "tips": [
-      "Abraxas fue en su día una ciudadela flotante de los Altos Magos.",
-      "Las runas antiguas sugieren que la Arena se construyó sobre un nudo de líneas ley.",
+      "La aventura te espera...",
+      "Mantente alerta.",
       "Nunca le des la espalda a un Pícaro en los rincones oscuros de la Arena.",
       "Los guerreros prefieren la fuerza, pero una mente concentrada puede atravesar cualquier armadura.",
       "Los goblins son cobardes, pero sus números pueden abrumar al desprevenido.",
       "El Liche de las Profundidades no se ha visto en siglos... hasta ahora.",
       "Las pociones se elaboran con la esencia de elementales caídos."
-    ]
+    ],
+    "connecting": "CONECTANDO A ABRAXAS",
+    "searching": "Buscando portal..."
   },
   "trade": {
     "title": "Intercambio",
@@ -1052,5 +1069,15 @@
     "try_again": "Intentar de nuevo",
     "empty": "Sin registros aún",
     "hint": "Top 10 jugadores por categoría — actualizado al desconectarse"
+  },
+  "fast_travel": {
+    "title": "Viaje Rápido",
+    "no_waypoints": "No se descubrieron puntos de viaje.",
+    "esc_hint": "Presiona ESC para cerrar"
+  },
+  "tooltip": {
+    "use_effect": "Efecto de Uso",
+    "cures_debuffs": "Cura Estados Negativos",
+    "class_required": "Clase Requerida"
   }
 }

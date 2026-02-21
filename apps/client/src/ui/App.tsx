@@ -495,6 +495,7 @@ export function App() {
                 autoCenter: Phaser.Scale.CENTER_BOTH,
               },
               roundPixels: true,
+              resolution: window.devicePixelRatio,
             });
           });
         });

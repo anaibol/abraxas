@@ -113,7 +113,15 @@ export class CombatSystem {
     for (let i = 1; i < line.length; i++) {
       const tile = line[i];
       if (this.map.collision[tile.y]?.[tile.x] === 1) {
-        return false;
+        // If tileTypes data is available, only walls (1) block Line of Sight. Trees (2) and Water (3) do not.
+        if (this.map.tileTypes) {
+          if (this.map.tileTypes[tile.y]?.[tile.x] === 1) {
+            return false;
+          }
+        } else {
+          // Fallback if no tileTypes are available (e.g. old map format)
+          return false;
+        }
       }
     }
     return true;

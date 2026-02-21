@@ -1,3 +1,5 @@
+import { TILE_SIZE, VIEWPORT_TILES_X } from "@abraxas/shared";
+
 /**
  * Design system token names and raw hex values.
  *
@@ -74,3 +76,17 @@ export const HEX = {
   bloodBright: "#c41e3a",
   arcane: "#1e3a8a",
 } as const;
+
+/**
+ * Calculates the required Phaser Text resolution multiplier based on the user's
+ * monitor size and the game's strict tile viewport. The camera zooms by
+ * (screenWidth / (VIEWPORT_TILES_X * TILE_SIZE)). This ensures the text has
+ * enough internal pixel density to not look blurry at maximum (fullscreen) zoom.
+ */
+export function getGameTextResolution(): number {
+  if (typeof window === "undefined") return 4;
+  const baseWidth = VIEWPORT_TILES_X * TILE_SIZE;
+  // Use maximum screen width so the text stays crisp even if the window is resized to fullscreen
+  const maxZoom = Math.ceil(Math.max(window.screen.width, window.screen.height) / baseWidth);
+  return Math.min(4, Math.max(window.devicePixelRatio || 1, maxZoom));
+}

@@ -1,7 +1,7 @@
 import { AudioAssets, CLASS_APPEARANCE, ITEMS, NPC_APPEARANCE } from "@abraxas/shared";
 import Phaser from "phaser";
 import { AoGrhResolver } from "../assets/AoGrhResolver";
-import { FONTS } from "../ui/tokens";
+import { FONTS, getGameTextResolution } from "../ui/tokens";
 
 export class PreloaderScene extends Phaser.Scene {
   private label!: Phaser.GameObjects.Text;
@@ -26,7 +26,7 @@ export class PreloaderScene extends Phaser.Scene {
       fontSize: "14px",
       color: "#cccccc",
       fontFamily: FONTS.display,
-      resolution: 4,
+      resolution: getGameTextResolution(),
     });
     this.label.setOrigin(0.5);
 

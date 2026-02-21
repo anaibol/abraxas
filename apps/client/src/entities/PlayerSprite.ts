@@ -10,7 +10,7 @@ import {
 } from "@abraxas/shared";
 import Phaser from "phaser";
 import { AoGrhResolver, type BodyEntry, type DirectionEntry } from "../assets/AoGrhResolver";
-import { FONTS } from "../ui/tokens";
+import { FONTS, getGameTextResolution } from "../ui/tokens";
 
 const DIR_NAME_MAP: Record<number, "down" | "up" | "left" | "right"> = {
   [Direction.DOWN]: "down",
@@ -22,7 +22,7 @@ const DIR_NAME_MAP: Record<number, "down" | "up" | "left" | "right"> = {
 const GAME_TEXT_STYLE = {
   fontFamily: FONTS.display,
   fontSize: "13px",
-  resolution: 4,
+  resolution: getGameTextResolution(),
   shadow: { offsetX: 1, offsetY: 1, color: "#000000", blur: 3, fill: true },
 };
 
@@ -211,7 +211,7 @@ export class PlayerSprite {
     this.hpBarGfx.setVisible(false);
     this.drawHpBar(1.0);
 
-    this.speakingIcon = scene.add.text(0, -45, "🎤", { fontSize: "16px", resolution: 4 });
+    this.speakingIcon = scene.add.text(0, -45, "🎤", { fontSize: "16px", resolution: getGameTextResolution() });
     this.speakingIcon.setOrigin(0.5, 1);
     this.speakingIcon.setVisible(false);
 

@@ -2,7 +2,7 @@ import { ITEMS, i18n, TILE_SIZE } from "@abraxas/shared";
 import Phaser from "phaser";
 import type { Drop } from "../../../server/src/schema/Drop";
 import type { EffectManager } from "../managers/EffectManager";
-import { FONTS } from "../ui/tokens";
+import { FONTS, getGameTextResolution } from "../ui/tokens";
 
 // ─── Texture keys ────────────────────────────────────────────────────────────
 const TEX_COIN_GLOW = "drop-coin-glow";
@@ -142,7 +142,7 @@ export class DropManager {
         strokeThickness: 3,
         fontFamily: FONTS.mono,
         fontStyle: "normal",
-        resolution: 4,
+        resolution: getGameTextResolution(),
       })
       .setOrigin(0.5, 0)
       .setDepth(7)

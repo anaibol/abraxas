@@ -1,6 +1,6 @@
 import { ABILITIES, TILE_SIZE } from "@abraxas/shared";
 import Phaser from "phaser";
-import { FONTS } from "../ui/tokens";
+import { FONTS, getGameTextResolution } from "../ui/tokens";
 import type { SpriteManager } from "./SpriteManager";
 import { gameSettings } from "../settings/gameSettings";
 
@@ -1363,7 +1363,7 @@ export class EffectManager {
         fontStyle: "bold",
         stroke: "#000000",
         strokeThickness: 3,
-        resolution: 4,
+        resolution: getGameTextResolution(),
       })
       .setOrigin(0.5)
       .setDepth(20);

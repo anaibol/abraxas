@@ -76,6 +76,11 @@
     }
   },
   "game": {
+    "status": {
+      "stun_prevent_cast": "Cannot cast while stunned!"
+    },
+    "connection_lost": "Connection Lost",
+    "reconnecting": "Reconnecting...",
     "item_not_found": "Item not found",
     "invalid_item": "Invalid item",
     "cannot_equip_consumable": "Cannot equip consumable",
@@ -157,12 +162,20 @@
     "invited_to_guild": "{{name}} invited to guild"
   },
   "settings": {
-    "title": "Settings",
+    "ambiance_volume": "Ambiance Volume",
+    "ui_volume": "UI Volume",
     "section": {
+      "visual": "Visual",
       "audio": "Audio",
       "language": "Language",
       "interface": "Interface"
     },
+    "screen_shake": "Screen Shake",
+    "shake_intensity": "Shake Intensity",
+    "bloom": "Bloom Effect",
+    "show_debug_overlay": "Show Debug Overlay",
+    "particle_quality": "Particle Quality",
+    "title": "Settings",
     "music_volume": "Music Volume",
     "sfx_volume": "Sound Effects",
     "show_minimap": "Show Minimap"
@@ -238,6 +251,10 @@
     }
   },
   "status": {
+    "spawn_protected": "Spawn Protected",
+    "safe_zone": "Safe Zone",
+    "pvp_off": "PvP Disabled",
+    "pvp_on": "PvP Enabled",
     "dead": "DEAD",
     "stunned": "STUNNED",
     "stealthed": "STEALTHED",
@@ -992,17 +1009,17 @@
     "killed": "killed"
   },
   "loading": {
-    "connecting": "CONNECTING TO ABRAXAS",
-    "searching": "Searching for portal...",
     "tips": [
-      "Abraxas was once a floating citadel of the High Magi.",
-      "Ancient runes suggest the Arena was built on a ley line junction.",
+      "Adventure awaits...",
+      "Stay vigilant.",
       "Never turn your back on a Rogue in the dark corners of the Arena.",
       "Warriors favor strength, but a focused mind can pierce any plate.",
       "Goblins are cowards, but their numbers can overwhelm the unwary.",
       "The Lich of the Depths has not been seen for centuries... until now.",
       "Potions are brewed from the essence of fallen elementals."
-    ]
+    ],
+    "connecting": "CONNECTING TO ABRAXAS",
+    "searching": "Searching for portal..."
   },
   "trade": {
     "title": "Trade",
@@ -1052,5 +1069,15 @@
     "try_again": "Try again",
     "empty": "No entries yet",
     "hint": "Top 10 players per category — updated on disconnect"
+  },
+  "fast_travel": {
+    "title": "Fast Travel",
+    "no_waypoints": "No waypoints discovered.",
+    "esc_hint": "Press ESC to close"
+  },
+  "tooltip": {
+    "use_effect": "Use Effect",
+    "cures_debuffs": "Cures Debuffs",
+    "class_required": "Class Required"
   }
 }

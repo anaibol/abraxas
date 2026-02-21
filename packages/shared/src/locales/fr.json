@@ -76,6 +76,11 @@
     }
   },
   "game": {
+    "status": {
+      "stun_prevent_cast": "Impossible d'incanter pendant un étourdissement !"
+    },
+    "connection_lost": "Connexion Perdue",
+    "reconnecting": "Reconnexion...",
     "restricted_to": "Restreint à {{classes}}",
     "item_not_found": "Objet non trouvé",
     "invalid_item": "Objet invalide",
@@ -157,12 +162,20 @@
     "invited_to_guild": "{{name}} invité à la guilde"
   },
   "settings": {
-    "title": "Paramètres",
+    "ambiance_volume": "Volume d'Ambiance",
+    "ui_volume": "Volume de l'Interface",
     "section": {
+      "visual": "Visuel",
       "audio": "Audio",
       "language": "Langue",
       "interface": "Interface"
     },
+    "screen_shake": "Secousse de l'écran",
+    "shake_intensity": "Intensité de secousse",
+    "bloom": "Effet Bloom",
+    "show_debug_overlay": "Afficher le Débogage",
+    "particle_quality": "Qualité des Particules",
+    "title": "Paramètres",
     "music_volume": "Volume de la Musique",
     "sfx_volume": "Effets Sonores",
     "show_minimap": "Afficher la Minicarte"
@@ -238,6 +251,10 @@
     }
   },
   "status": {
+    "spawn_protected": "Protection d'apparition",
+    "safe_zone": "Zone Sûre",
+    "pvp_off": "JcJ Désactivé",
+    "pvp_on": "JcJ Activé",
     "dead": "MORT",
     "stunned": "ÉTOURDI",
     "stealthed": "CAMOUFLÉ",
@@ -992,17 +1009,17 @@
     "killed": "a tué"
   },
   "loading": {
-    "connecting": "CONNEXION À ABRAXAS",
-    "searching": "Recherche du portail...",
     "tips": [
-      "Abraxas était autrefois une citadelle flottante des Hauts Mages.",
-      "Des runes anciennes suggèrent que l'Arène a été construite sur un nœud de lignes ley.",
+      "L'aventure vous attend...",
+      "Restez vigilant.",
       "Ne tournez jamais le dos à un Voleur dans les coins sombres de l'Arène.",
       "Les guerriers favorisent la force, mais un esprit concentré peut percer n'importe quelle armure.",
       "Les gobelins sont des lâches, mais leur nombre peut submerger les imprudents.",
       "Le Liche des Profondeurs n'a pas été vu depuis des siècles... jusqu'à maintenant.",
       "Les potions sont brassées à partir de l'essence d'élémentaires tombés."
-    ]
+    ],
+    "connecting": "CONNEXION À ABRAXAS",
+    "searching": "Recherche du portail..."
   },
   "trade": {
     "title": "Échange",
@@ -1052,5 +1069,15 @@
     "try_again": "Réessayer",
     "empty": "Aucune entrée pour l'instant",
     "hint": "Top 10 joueurs par catégorie — mis à jour à la déconnexion"
+  },
+  "fast_travel": {
+    "title": "Voyage Rapide",
+    "no_waypoints": "Aucun point de passage découvert.",
+    "esc_hint": "Appuyez sur ESC pour fermer"
+  },
+  "tooltip": {
+    "use_effect": "Effet à l'utilisation",
+    "cures_debuffs": "Guérit les malus",
+    "class_required": "Classe Requise"
   }
 }
