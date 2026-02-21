@@ -11,6 +11,7 @@ import {
 import Phaser from "phaser";
 import { AoGrhResolver, type BodyEntry, type DirectionEntry } from "../assets/AoGrhResolver";
 import { FONTS, getGameTextResolution } from "../ui/tokens";
+import { RENDER_LAYERS } from "../utils/depth";
 
 const DIR_NAME_MAP: Record<number, "down" | "up" | "left" | "right"> = {
   [Direction.DOWN]: "down",
@@ -260,7 +261,7 @@ export class PlayerSprite {
       this.speakingIcon,
     ];
     this.uiContainer = scene.add.container(px, py, uiChildren);
-    this.uiContainer.setDepth(2005); // Ensure UI is always on top of players
+    this.uiContainer.setDepth(RENDER_LAYERS.UI_OVERLAYS); // Ensure UI is always on top of players
 
     this.container.setInteractive(
       new Phaser.Geom.Rectangle(-TILE_SIZE / 2, -TILE_SIZE, TILE_SIZE, TILE_SIZE * 2),

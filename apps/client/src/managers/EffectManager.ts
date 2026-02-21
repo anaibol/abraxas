@@ -3,6 +3,7 @@ import Phaser from "phaser";
 import { FONTS, getGameTextResolution } from "../ui/tokens";
 import type { SpriteManager } from "./SpriteManager";
 import { gameSettings } from "../settings/gameSettings";
+import { RENDER_LAYERS } from "../utils/depth";
 
 // ── Particle burst configuration ─────────────────────────────────────────────
 
