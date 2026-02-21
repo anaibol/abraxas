@@ -205,7 +205,7 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     // Summon ability creates skeleton minions
     summonType: "skeleton",
     minLevel: 30,
-    aggroRange: 8,
+    aggroRange: 7,
     barks: {
       aggro: [
         "Foolish mortal! Your bones will serve me!",
@@ -450,7 +450,7 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     abilityCastChance: 0.6,
     minLevel: 40,
     maxLevel: 50,
-    aggroRange: 8,
+    aggroRange: 7,
     rareSpawn: true,
     barks: {
       aggro: ["You dare challenge a DRAGON?!", "Insolent creature... BURN!", "*ROOOAAAAR*"],
