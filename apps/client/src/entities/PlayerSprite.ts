@@ -83,6 +83,7 @@ export class PlayerSprite {
 
   private meditationEmitter: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
   private isMeditating: boolean = false;
+  private meditationManaTier: number = -1;
 
   // ── Status-effect persistent visuals ───────────────────────────────────────
   /** Active particle emitters keyed by status name (stun / poison / buff / debuff). */
@@ -930,29 +931,54 @@ export class PlayerSprite {
     g.destroy();
   }
 
-  setMeditating(meditating: boolean) {
+  setMeditating(meditating: boolean, manaRatio: number = 0.5) {
     const scene = this.container.scene;
-    if (!scene || meditating === this.isMeditating) return;
+    if (!scene) return;
+
+    // Compute mana tier: 0 = low (<33%), 1 = mid (33-66%), 2 = high (>66%)
+    const tier = manaRatio < 0.33 ? 0 : manaRatio < 0.66 ? 1 : 2;
+
+    // If nothing changed, skip
+    if (meditating === this.isMeditating && (!meditating || tier === this.meditationManaTier)) return;
+
     this.isMeditating = meditating;
+    this.meditationManaTier = tier;
+
+    // Always destroy the old emitter first
+    if (this.meditationEmitter) {
+      this.meditationEmitter.destroy();
+      this.meditationEmitter = null;
+    }
 
     if (meditating) {
       this.ensureFireTexture(scene);
+
+      // Scale visual properties by mana tier
+      const tints = [
+        [0xff2200, 0xff4400, 0xff6600],               // low:  dim embers
+        [0xff6600, 0xffaa00, 0xffdd00, 0xffee44],      // mid:  warm flames
+        [0xffdd00, 0xffee88, 0xffffff, 0x88ccff],       // high: bright white-blue fire
+      ][tier];
+      const scaleStart = [0.28, 0.42, 0.58][tier];
+      const quantity = [2, 3, 5][tier];
+      const frequency = [65, 45, 30][tier];
+      const xSpread = [6, 8, 12][tier];
+      const speedMax = [22, 30, 42][tier];
+      const lifespanMax = [650, 850, 1100][tier];
+
       this.meditationEmitter = scene.add.particles(this.renderX, this.renderY, "meditation-fire", {
-        x: { min: -8, max: 8 },
+        x: { min: -xSpread, max: xSpread },
         y: { min: -TILE_SIZE * 1.1, max: -TILE_SIZE * 0.1 },
-        scale: { start: 0.42, end: 0 }, // slightly smaller to match the larger 16×16 texture
+        scale: { start: scaleStart, end: 0 },
         alpha: { start: 0.9, end: 0 },
-        tint: [0xff2200, 0xff6600, 0xffaa00, 0xffdd00],
-        speed: { min: 12, max: 30 },
+        tint: tints,
+        speed: { min: 12, max: speedMax },
         angle: { min: 260, max: 280 },
-        lifespan: { min: 450, max: 850 },
-        quantity: 3,
-        frequency: 45,
+        lifespan: { min: 450, max: lifespanMax },
+        quantity,
+        frequency,
       });
       this.meditationEmitter.setDepth(this.container.depth + 2);
-    } else if (this.meditationEmitter) {
-      this.meditationEmitter.destroy();
-      this.meditationEmitter = null;
     }
   }
 

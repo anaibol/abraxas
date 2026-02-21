@@ -333,6 +333,7 @@ export function App() {
           tileSize: welcome.tileSize,
           collision: welcome.collision,
           tileTypes: welcome.tileTypes,
+          npcCount: 0,
           spawns: [],
           newbieSpawns: [],
           safeZones: [],
@@ -622,7 +623,7 @@ export function App() {
             p="4"
             borderRadius="md"
           >
-            <ToastTitle color="white" fontWeight="bold">
+            <ToastTitle color="white" fontWeight="700">
               {toast.title}
             </ToastTitle>
             <ToastDescription color="whiteAlpha.900">{toast.description}</ToastDescription>
@@ -641,7 +642,7 @@ export function App() {
           direction="column"
           gap="4"
         >
-          <Box fontSize="2xl" fontWeight="bold" color="#ff6655">
+          <Box fontSize="2xl" fontWeight="700" color="#ff6655">
             {t("game.connection_lost", "Connection Lost")}
           </Box>
           <Box fontSize="md" color="whiteAlpha.700" textAlign="center">

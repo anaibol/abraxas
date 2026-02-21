@@ -31,7 +31,13 @@ export class GuildSystem {
   }
 
   /** Call on player leave to remove them from the O(1) lookup. */
-  unregisterPlayer(dbId: string): void {
+  unregisterPlayer(dbId: string, sessionId?: string): void {
+    // Bug #83: Only delete if the mapping still points to this session
+    // (prevents removing a newer session's mapping on stale cleanup)
+    if (sessionId) {
+      const current = this.dbIdToSessionId.get(dbId);
+      if (current !== sessionId) return; // Newer session already registered
+    }
     this.dbIdToSessionId.delete(dbId);
   }
 

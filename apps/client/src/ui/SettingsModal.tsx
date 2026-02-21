@@ -301,7 +301,7 @@ function VolumeSetting({ icon, label, value, onChange }: VolumeSettingProps) {
           </Text>
         </Flex>
         <Text
-          fontFamily="mono"
+          fontFamily={T.mono}
           fontSize="11px"
           color={isMuted ? T.goldDark : T.gold}
           fontWeight="700"

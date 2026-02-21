@@ -63,6 +63,7 @@ export class FriendsSystem {
       return;
     }
 
+    // Bug #90: userId comparison covers alt characters — same account can't friend itself
     if (targetUser.id === player.userId) {
       HandlerUtils.sendError(client, "You cannot friend yourself");
       return;

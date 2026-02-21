@@ -1,6 +1,7 @@
 import { Box } from "@chakra-ui/react";
 import { useEffect, useRef } from "react";
 import { useGameSettings } from "../hooks/useGameSettings";
+import { T } from "./tokens";
 
 export function DebugOverlay() {
   const { settings } = useGameSettings();
@@ -29,9 +30,9 @@ export function DebugOverlay() {
       left="10px"
       zIndex={3000}
       color="white"
-      fontFamily="'Courier New', Courier, monospace"
+      fontFamily={T.mono}
       fontSize="sm"
-      fontWeight="bold"
+      fontWeight="700"
       textShadow="-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000"
       pointerEvents="none"
       ref={textRef}

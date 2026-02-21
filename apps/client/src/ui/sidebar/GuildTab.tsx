@@ -150,7 +150,7 @@ export function GuildTab({
                   >
                     {member.name}
                   </Text>
-                  <Text fontSize="9px" color={T.goldDark} textTransform="uppercase">
+                  <Text fontSize="10px" color={T.goldDark} textTransform="uppercase">
                     {member.role}
                   </Text>
                 </VStack>

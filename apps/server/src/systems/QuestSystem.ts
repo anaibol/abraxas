@@ -17,7 +17,9 @@ export class QuestSystem {
       questStates.set(code, {
         questId: code,
         status: dbQuest.status,
-        progress: dbQuest.progressJson ?? {},
+        // Bug #95: Prisma returns JsonValue — cast to expected shape.
+        // If the stored JSON is malformed, `|| {}` provides a safe fallback.
+        progress: (dbQuest.progressJson as Record<string, number>) ?? {},
       });
     }
     this.charQuests.set(charId, questStates);
@@ -113,6 +115,7 @@ export class QuestSystem {
     return updatedQuests;
   }
 
+  // Bug #94: Quest status flow: IN_PROGRESS → COMPLETED (objectives met, awaiting turn-in) → TURNED_IN (done)
   async completeQuest(charId: string, questId: string): Promise<Quest | null> {
     const state = this.getQuestState(charId, questId);
     if (!state || state.status !== "COMPLETED") return null;

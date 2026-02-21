@@ -94,9 +94,9 @@ export const WorldEventBanner: FC<WorldEventBannerProps> = ({
           <span
             style={{
               color: "#ff4444",
-              fontWeight: "bold",
+              fontWeight: "700",
               fontSize: "15px",
-              fontFamily: "serif",
+              fontFamily: "'Friz Quadrata', Georgia, serif",
               letterSpacing: "2px",
               textShadow: "0 0 8px rgba(255,68,68,0.6)",
             }}

@@ -223,7 +223,7 @@ export const deleteCharacterEndpoint: ReturnType<typeof createEndpoint> = create
         return ctx.json({ error: "Character not found" }, { status: 404 });
       }
 
-      if (character.accountId !== payload.userId) {
+      if (character.accountId !== payload.userId && payload.role !== "ADMIN") {
         return ctx.json({ error: "Forbidden" }, { status: 403 });
       }
 

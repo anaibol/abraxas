@@ -69,7 +69,7 @@ export function MerchantShop({
         border="1px solid"
         borderColor={T.border}
       >
-        <Text color={T.goldDim} fontSize="14px" fontWeight="bold">
+        <Text color={T.goldDim} fontSize="14px" fontWeight="700">
           {t("ui.merchant.purse")}:{" "}
           <Text as="span" color={T.gold} fontSize="16px" ml="2">
             {playerGold.toLocaleString()} GP
@@ -82,7 +82,7 @@ export function MerchantShop({
           px="8"
           py="3"
           cursor="pointer"
-          fontWeight="bold"
+          fontWeight="700"
           letterSpacing="1px"
           transition="all 0.3s"
           color={tab === "buy" ? T.gold : T.goldDark}
@@ -105,7 +105,7 @@ export function MerchantShop({
           px="8"
           py="3"
           cursor="pointer"
-          fontWeight="bold"
+          fontWeight="700"
           letterSpacing="1px"
           transition="all 0.3s"
           color={tab === "sell" ? T.gold : T.goldDark}
@@ -183,7 +183,7 @@ export function MerchantShop({
         >
           <Flex justify="space-between" align="start" mb="4">
             <Box>
-              <Text color={T.gold} fontSize="18px" fontWeight="bold" mb="1">
+              <Text color={T.gold} fontSize="18px" fontWeight="700" mb="1">
                 {t(selectedItem.name)}
               </Text>
               <Text color="whiteAlpha.600" fontSize="12px" letterSpacing="1px">
@@ -195,7 +195,7 @@ export function MerchantShop({
               <Text color="#fff" fontSize="12px" mb="1">
                 {t("ui.merchant.unit_price")}
               </Text>
-              <Text color={T.gold} fontSize="16px" fontWeight="bold">
+              <Text color={T.gold} fontSize="16px" fontWeight="700">
                 {tab === "buy" ? selectedItem.goldValue : Math.floor(selectedItem.goldValue * 0.5)}{" "}
                 GP
               </Text>
@@ -255,7 +255,7 @@ export function MerchantShop({
               <Text color="whiteAlpha.600" fontSize="11px">
                 {t("ui.merchant.total_cost")}
               </Text>
-              <Text color={T.gold} fontSize="20px" fontWeight="bold">
+              <Text color={T.gold} fontSize="20px" fontWeight="700">
                 {(tab === "buy"
                   ? selectedItem.goldValue * quantity
                   : Math.floor(selectedItem.goldValue * 0.5) * quantity
@@ -271,7 +271,7 @@ export function MerchantShop({
             bg={T.goldDim}
             color="#000"
             fontSize="16px"
-            fontWeight="bold"
+            fontWeight="700"
             letterSpacing="2px"
             _hover={{ bg: T.gold, transform: "scale(1.02)" }}
             _active={{ bg: T.goldDark, transform: "scale(0.98)" }}

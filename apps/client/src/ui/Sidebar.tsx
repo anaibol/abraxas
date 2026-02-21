@@ -172,7 +172,7 @@ export function Sidebar({
             </Box>
             <Box
               fontFamily={T.display}
-              fontSize="9px"
+              fontSize="10px"
               fontWeight="700"
               letterSpacing="0.5px"
               textTransform="uppercase"

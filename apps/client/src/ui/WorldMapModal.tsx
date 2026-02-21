@@ -1,4 +1,5 @@
 import { type FC } from "react";
+import { FONTS } from "./tokens";
 
 interface ZoneInfo {
   id: string;
@@ -87,11 +88,11 @@ export const WorldMapModal: FC<WorldMapModalProps> = ({ currentMapName, onClose 
           <div
             style={{
               color: "rgba(212,168,67,0.95)",
-              fontWeight: "bold",
+              fontWeight: "700",
               fontSize: "18px",
               letterSpacing: "3px",
               textShadow: "0 0 10px rgba(212,168,67,0.4)",
-              fontFamily: "'Friz Quadrata', Georgia, serif",
+              fontFamily: FONTS.display,
             }}
           >
             🗺 WORLD MAP
@@ -176,8 +177,8 @@ export const WorldMapModal: FC<WorldMapModalProps> = ({ currentMapName, onClose 
                         right: "12px",
                         background: zone.color,
                         color: "#000",
-                        fontSize: "9px",
-                        fontWeight: "bold",
+                        fontSize: "10px",
+                        fontWeight: "700",
                         padding: "2px 8px",
                         borderRadius: "4px",
                         letterSpacing: "1px",
@@ -203,7 +204,7 @@ export const WorldMapModal: FC<WorldMapModalProps> = ({ currentMapName, onClose 
                     <div
                       style={{
                         color: isCurrent ? zone.color : "rgba(200,180,120,0.7)",
-                        fontWeight: "bold",
+                        fontWeight: "700",
                         fontSize: "15px",
                         letterSpacing: "1px",
                         marginBottom: "3px",

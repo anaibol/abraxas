@@ -41,7 +41,7 @@ export function QuestDialogue({ npcId: _npcId, npcType, text, options, onAction,
         <Box bg={T.surface} px="4" py="2" borderBottom="2px solid" borderColor={T.border}>
           <Text
             color={T.gold}
-            fontWeight="bold"
+            fontWeight="700"
             fontSize="18px"
             textTransform="uppercase"
             letterSpacing="2px"

@@ -254,7 +254,7 @@ export function LeaderboardModal({ myName, onClose }: LeaderboardModalProps) {
               <Box fontSize="14px" lineHeight="1">{icon}</Box>
               <Box
                 fontFamily={FONT}
-                fontSize="9px"
+                fontSize="10px"
                 fontWeight="700"
                 letterSpacing="0.5px"
                 textTransform="uppercase"
@@ -317,7 +317,7 @@ export function LeaderboardModal({ myName, onClose }: LeaderboardModalProps) {
           bg={T.darkest}
           flexShrink={0}
         >
-          <Box fontSize="10px" color="#4a3e2a" fontFamily={FONT} letterSpacing="1px" textAlign="center">
+          <Box fontSize="11px" color="#4a3e2a" fontFamily={FONT} letterSpacing="1px" textAlign="center">
             {t("leaderboard.hint")}
           </Box>
         </Box>

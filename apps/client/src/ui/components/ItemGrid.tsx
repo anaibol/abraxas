@@ -66,7 +66,7 @@ export function ItemGrid({ slots, selectedSlotIndex, onSelect, maxSlots = 24 }: 
                 right="2px"
                 fontSize="10px"
                 color="#fff"
-                fontWeight="bold"
+                fontWeight="700"
               >
                 {slot.quantity}
               </Text>

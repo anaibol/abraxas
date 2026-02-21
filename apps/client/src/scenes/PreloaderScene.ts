@@ -1,6 +1,7 @@
 import { AudioAssets, CLASS_APPEARANCE, ITEMS, NPC_APPEARANCE } from "@abraxas/shared";
 import Phaser from "phaser";
 import { AoGrhResolver } from "../assets/AoGrhResolver";
+import { FONTS } from "../ui/tokens";
 
 export class PreloaderScene extends Phaser.Scene {
   private label!: Phaser.GameObjects.Text;
@@ -24,7 +25,7 @@ export class PreloaderScene extends Phaser.Scene {
     this.label = this.add.text(width / 2, barY - 24, "Loading indices...", {
       fontSize: "14px",
       color: "#cccccc",
-      fontFamily: "Georgia, serif",
+      fontFamily: FONTS.display,
     });
     this.label.setOrigin(0.5);
 

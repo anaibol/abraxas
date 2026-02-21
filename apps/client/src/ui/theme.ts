@@ -102,6 +102,24 @@ const customConfig = defineConfig({
           fontSize: "12px",
         },
       },
+      // Panel / dialog titles (item names, NPC names)
+      heading: {
+        value: {
+          fontFamily: "display",
+          fontSize: "16px",
+          fontWeight: "700",
+          letterSpacing: "2px",
+        },
+      },
+      // Larger headings (page titles, hero text)
+      headingLg: {
+        value: {
+          fontFamily: "display",
+          fontSize: "20px",
+          fontWeight: "700",
+          letterSpacing: "3px",
+        },
+      },
       // Tab bar labels (INV / SPELLS / ALL / GROUP…)
       tabLabel: {
         value: {

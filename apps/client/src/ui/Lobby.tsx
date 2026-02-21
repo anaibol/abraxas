@@ -285,6 +285,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
         return;
       }
       setCharacters((prev) => prev.filter((c) => c.id !== charId));
+      setAdminCharacters((prev) => prev.filter((c) => c.id !== charId));
       setConfirmDeleteId(null);
     } catch {
       setError(t("lobby.delete_failed"));
@@ -387,7 +388,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
         <Text
           textAlign="center"
           fontSize={{ base: "28px", md: "40px" }}
-          fontWeight="900"
+          fontWeight="700"
           color={T.gold}
           letterSpacing={{ base: "6px", md: "10px" }}
           textTransform="uppercase"
@@ -480,7 +481,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
               color={T.darkest}
               type="submit"
               fontFamily={T.display}
-              fontWeight="900"
+              fontWeight="700"
               fontSize="16px"
               letterSpacing="4px"
               textTransform="uppercase"
@@ -675,7 +676,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                             <Flex align="center" gap="2">
                             <Text
                               fontSize="14px"
-                              fontWeight="900"
+                              fontWeight="700"
                               color={isAdmin ? "#4ade80" : T.goldText}
                               letterSpacing="1px"
                             >
@@ -729,22 +730,20 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                           >
                             {t("sidebar.inventory.level")} {char.level}
                           </Badge>
-                          {!isAdmin && (
-                            <Box
-                              flexShrink={0}
-                              color={T.goldDark}
-                              opacity={0.4}
-                              cursor="pointer"
-                              transition="all 0.2s"
-                              _hover={{ opacity: 1, color: "#e63946" }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setConfirmDeleteId(char.id);
-                              }}
-                            >
-                              <Trash2 size={14} />
-                            </Box>
-                          )}
+                          <Box
+                            flexShrink={0}
+                            color={T.goldDark}
+                            opacity={0.4}
+                            cursor="pointer"
+                            transition="all 0.2s"
+                            _hover={{ opacity: 1, color: "#e63946" }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setConfirmDeleteId(char.id);
+                            }}
+                          >
+                            <Trash2 size={14} />
+                          </Box>
                         </Flex>
                         )}
                       </Box>
@@ -878,7 +877,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                       <Box flex="1">
                         <Text
                           fontSize="13px"
-                          fontWeight="900"
+                          fontWeight="700"
                           color={sel ? T.goldText : T.goldMuted}
                           letterSpacing="2px"
                           textTransform="uppercase"
@@ -930,7 +929,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
               loading={creating}
               onClick={handleCreateCharacter}
               fontFamily={T.display}
-              fontWeight="900"
+              fontWeight="700"
               fontSize="16px"
               letterSpacing="4px"
               textTransform="uppercase"

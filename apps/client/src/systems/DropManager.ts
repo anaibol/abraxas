@@ -136,12 +136,12 @@ export class DropManager {
     const labelColor = this.dropLabelColor(drop);
     const label = this.scene.add
       .text(px, py + 12, labelStr, {
-        fontSize: isGold ? "9px" : (isRare ? "9px" : "8px"),
+        fontSize: "10px",
         color: labelColor,
         stroke: "#000000",
         strokeThickness: 3,
-        fontFamily: "'Courier New', Courier, monospace",
-        fontStyle: isGold || isRare ? "bold" : "normal",
+        fontFamily: FONTS.mono,
+        fontStyle: "normal",
       })
       .setOrigin(0.5, 0)
       .setDepth(7)

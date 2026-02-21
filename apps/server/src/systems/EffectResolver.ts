@@ -258,6 +258,7 @@ export class EffectResolver {
         durationMs: ability.durationMs ?? 5000,
       });
     } else if (ability.effect === "mirror_shape") {
+      // Bug #16: bodyId/headId 0 = "no override" (reserved sentinel, not a valid sprite ID)
       let bodyId = 0;
       let headId = 0;
 

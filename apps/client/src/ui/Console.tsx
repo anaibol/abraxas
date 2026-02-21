@@ -173,7 +173,7 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
             py="1"
             cursor="pointer"
             fontSize={{ base: "10px", md: "12px" }}
-            fontWeight="bold"
+            fontWeight="700"
             letterSpacing={{ base: "0", md: "1px" }}
             bg={activeChannel === tab.id ? "rgba(255,255,255,0.1)" : "transparent"}
             color={activeChannel === tab.id ? tab.color : "#666"}

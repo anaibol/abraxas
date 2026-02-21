@@ -31,13 +31,13 @@ export function QuestLog({ quests }: QuestLogProps) {
                 borderRadius="2px"
               >
                 <Flex justify="space-between" align="center" mb="1">
-                  <Text fontSize="13px" fontWeight="bold" color={T.gold}>
+                  <Text fontSize="13px" fontWeight="700" color={T.gold}>
                     {t(def.title)}
                   </Text>
                   <Text
                     fontSize="11px"
                     color={q.status === "COMPLETED" ? "#00ff00" : T.goldMuted}
-                    fontWeight="bold"
+                    fontWeight="700"
                     textTransform="uppercase"
                   >
                     {t(`quest_status.${q.status}`, { defaultValue: q.status })}
@@ -75,7 +75,7 @@ export function QuestLog({ quests }: QuestLogProps) {
                   })}
                 </VStack>
                 {q.status === "COMPLETED" && (
-                  <Text fontSize="11px" color="#00ff00" mt="2" textAlign="center" fontWeight="bold">
+                  <Text fontSize="11px" color="#00ff00" mt="2" textAlign="center" fontWeight="700">
                     {t("ui.quests.turn_in_hint", { name: t(`npcs.${def.npcId}`) })}
                   </Text>
                 )}
@@ -112,7 +112,7 @@ export function QuestLog({ quests }: QuestLogProps) {
                 opacity="0.75"
               >
                 <Flex justify="space-between" align="center" mb="1">
-                  <Text fontSize="13px" fontWeight="bold" color={T.goldMuted}>
+                  <Text fontSize="13px" fontWeight="700" color={T.goldMuted}>
                     {t(def.title)}
                   </Text>
                   <Text

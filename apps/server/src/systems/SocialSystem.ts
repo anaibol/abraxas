@@ -167,6 +167,7 @@ export class SocialSystem {
     if (group.memberIds.length === 0) {
       this.state.groups.delete(group.id);
     } else if (group.leaderSessionId === sessionId) {
+      // Bug #85: First remaining member becomes leader (ArraySchema preserves insertion order)
       const newLeaderId = group.memberIds[0];
       if (newLeaderId) {
         group.leaderSessionId = newLeaderId;

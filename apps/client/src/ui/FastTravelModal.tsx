@@ -43,7 +43,7 @@ export const FastTravelModal: FC<FastTravelModalProps> = ({
           <Box>
             <Text
               color={T.gold}
-              fontWeight="bold"
+              fontWeight="700"
               fontSize="15px"
               letterSpacing="3px"
               textTransform="uppercase"
