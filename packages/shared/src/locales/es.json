@@ -144,7 +144,9 @@
     "tame_success": "¡Has domado con éxito al {{item}}!",
     "tame_success_dropped": "¡Has domado al {{item}} pero tus mochilas están llenas. ¡Se ha caido al suelo!",
     "tame_failed": "¡El animal se escapó! Tu lazo ha sido consumido.",
-    "safe_zone": "Zona Segura"
+    "safe_zone": "Zona Segura",
+    "dodged": "Esquivado",
+    "parried": "Parado"
   },
   "social": {
     "already_in_group": "El jugador ya está en un grupo",

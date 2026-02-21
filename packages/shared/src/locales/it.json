@@ -144,7 +144,9 @@
     "tame_success": "Hai addomesticato con successo il {{item}}!",
     "tame_success_dropped": "Hai addomesticato il {{item}} ma le tue borse sono piene. È caduto a terra!",
     "tame_failed": "L'animale è scappato! Il tuo laccio è stato consumato.",
-    "safe_zone": "Zona Sicura"
+    "safe_zone": "Zona Sicura",
+    "dodged": "Schivato",
+    "parried": "Parato"
   },
   "social": {
     "already_in_group": "Il giocatore è già in un gruppo",

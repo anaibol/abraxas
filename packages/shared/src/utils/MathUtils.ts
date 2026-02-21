@@ -12,6 +12,10 @@ export const MathUtils = {
     return Math.sqrt(dx * dx + dy * dy);
   },
 
+  chebyshevDist(p1: Point, p2: Point): number {
+    return Math.max(Math.abs(p1.x - p2.x), Math.abs(p1.y - p2.y));
+  },
+
   manhattanDist(p1: Point, p2: Point): number {
     return Math.abs(p1.x - p2.x) + Math.abs(p1.y - p2.y);
   },

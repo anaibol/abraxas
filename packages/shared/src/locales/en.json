@@ -144,7 +144,9 @@
     "tame_success": "You successfully tamed the {{item}}!",
     "tame_success_dropped": "You tamed the {{item}} but your bags are full. It dropped to the ground!",
     "tame_failed": "The animal broke free! Your lasso was consumed.",
-    "safe_zone": "Safe Zone"
+    "safe_zone": "Safe Zone",
+    "dodged": "Dodged",
+    "parried": "Parried"
   },
   "social": {
     "already_in_group": "Player is already in a group",
