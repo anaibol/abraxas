@@ -752,23 +752,67 @@
     },
     "thunderstorm": {
       "name": "Thunderstorm",
-      "desc": "Call down lightning at a location, hitting all nearby enemies."
-    },
-    "mana_shield": {
-      "name": "Mana Shield",
-      "desc": "Convert mana into a protective arcane shell (+armor for 6s)."
-    },
-    "frost_nova": {
-      "name": "Frost Nova",
-      "desc": "Explosion of frost that damages all enemies around you."
-    },
-    "arcane_surge": {
-      "name": "Arcane Surge",
-      "desc": "Channel immense arcane power into a devastating bolt."
-    },
-    "multi_shot": {
-      "name": "Multi Shot",
-      "desc": "Loose a volley of arrows hitting enemies in a small area."
+      "desc": "Call down lightning at a location,# Add Missing Translations and Localize UI
+
+Verify and add missing translations for spells, world events, and map zones, and localize hardcoded strings in UI components.
+
+## Proposed Changes
+
+### Locales
+
+#### [MODIFY
+      ] [en.json
+      ](file: ///Users/anaibol/Workspace/polypoll/abraxas/packages/shared/src/locales/en.json)
+- Add `events` object with translations for all world events (Goblin Raid, Undead Surge, etc.).
+- Add `maps` object with translations for zone labels and descriptions.
+- Add `ui.summon` and `ui.map` namespaces for UI-specific strings.
+
+#### [MODIFY
+      ] [es.json
+      ](file: ///Users/anaibol/Workspace/polypoll/abraxas/packages/shared/src/locales/es.json)
+- Mirror changes from `en.json` with Spanish translations.
+
+#### [MODIFY
+      ] [fr.json
+      ](file: ///Users/anaibol/Workspace/polypoll/abraxas/packages/shared/src/locales/fr.json)
+- Mirror changes from `en.json` with French translations.
+
+#### [MODIFY
+      ] [it.json
+      ](file: ///Users/anaibol/Workspace/polypoll/abraxas/packages/shared/src/locales/it.json)
+- Mirror changes from `en.json` with Italian translations.
+
+### UI Components
+
+#### [MODIFY
+      ] [WorldEventBanner.tsx
+      ](file: ///Users/anaibol/Workspace/polypoll/abraxas/apps/client/src/ui/WorldEventBanner.tsx)
+- Localize "Enemies slain" and use translation keys for `eventName` and `description`.
+
+#### [MODIFY
+      ] [SummonOverlay.tsx
+      ](file: ///Users/anaibol/Workspace/polypoll/abraxas/apps/client/src/ui/SummonOverlay.tsx)
+- Localize "Summon Creature",
+      "Search creatures...", and "No creatures found."
+- Localize NPC types in the grid.
+
+#### [MODIFY
+      ] [WorldMapModal.tsx
+      ](file: ///Users/anaibol/Workspace/polypoll/abraxas/apps/client/src/ui/WorldMapModal.tsx)
+- Localize "WORLD MAP",
+      "YOU ARE HERE", and the help text at the bottom.
+- Update `ZONES` to use translation keys for labels and descriptions.
+
+## Verification Plan
+
+### Automated Tests
+- Run `node check_i18n.js` to ensure no new missing keys are introduced.
+- Run `verify_all_data.py` (custom script) to verify data-driven IDs.
+
+### Manual Verification
+- Trigger a world event (if possible) to check the banner localization.
+- Open the Summon overlay and World Map to verify localized text in different languages.
+"
     },
     "poison_arrow": {
       "name": "Poison Arrow",
