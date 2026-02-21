@@ -62,6 +62,7 @@ export function Sidebar({
   onSelectItem,
   onTogglePvP,
   onSpellClick,
+  onHoverSpell,
   pendingSpellId,
   onClose,
   onSettings,
@@ -204,6 +205,7 @@ export function Sidebar({
             playerLevel={state.level}
             pendingSpellId={pendingSpellId}
             onSpellClick={onSpellClick}
+            onHoverSpell={onHoverSpell}
           />
         )}
         {tab === "quests" && <QuestLog quests={quests ?? []} />}

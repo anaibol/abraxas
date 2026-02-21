@@ -73,6 +73,7 @@ export interface SidebarProps {
   selectedItemId?: string | null;
   onSelectItem?: (itemId: string | null) => void;
   onSpellClick?: (spellId: string, rangeTiles: number) => void;
+  onHoverSpell?: (spellId: string | null, rangeTiles: number) => void;
   pendingSpellId?: string | null;
   onTogglePvP?: () => void;
   onClose?: () => void;

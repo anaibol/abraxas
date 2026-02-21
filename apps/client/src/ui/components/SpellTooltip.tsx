@@ -1,5 +1,5 @@
 import type { Ability } from "@abraxas/shared";
-import { Box, Flex, Text, Divider } from "@chakra-ui/react";
+import { Box, Flex, Text } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 import { HEX, T } from "../tokens";
 
@@ -93,7 +93,7 @@ export function SpellTooltip({ spell, playerLevel, currentMana, x, y }: SpellToo
           {t(`spells.${spell.id}.desc`)}
         </Text>
 
-        <Divider borderColor={`${HEX.border}44`} mb="2" />
+        <Box h="1px" bg={`${HEX.border}44`} mb="2" />
 
         {/* Stats Grid */}
         <Flex direction="column" gap="1">
