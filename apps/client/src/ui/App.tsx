@@ -46,6 +46,7 @@ import { DeathOverlay } from "./DeathOverlay";
 import { DebugOverlay } from "./DebugOverlay";
 import { DropQuantityDialog } from "./DropQuantityDialog";
 import { FastTravelModal } from "./FastTravelModal";
+import { HealthOrbs } from "./HealthOrbs";
 import { KillFeed, type KillFeedEntry } from "./KillFeed";
 import { LoadingScreen } from "./LoadingScreen";
 import { Lobby } from "./Lobby";
@@ -53,6 +54,7 @@ import { MerchantShop } from "./MerchantShop";
 import { Minimap } from "./Minimap";
 import { MobileControls } from "./MobileControls";
 import { NpcContextMenu, type NpcContextTarget } from "./NpcContextMenu";
+import { CharacterPortrait } from "./CharacterPortrait";
 import { PlayerContextMenu, type PlayerContextTarget } from "./PlayerContextMenu";
 import { QuestDialogue } from "./QuestDialogue";
 import { LeaderboardModal } from "./LeaderboardModal";
@@ -63,6 +65,7 @@ import { TradeWindow } from "./TradeWindow";
 import { SummonOverlay } from "./SummonOverlay";
 import { WorldEventBanner } from "./WorldEventBanner";
 import { WorldMapModal } from "./WorldMapModal";
+import { XPBar } from "./XPBar";
 import { system } from "./theme";
 import { toaster } from "./toaster";
 import { HEX, T } from "./tokens";
@@ -130,7 +133,6 @@ function AppContent() {
   >([]);
   const [quests, setQuests] = useState<PlayerQuestState[]>([]);
   const [dialogueData, setDialogueData] = useState<{
-    npcId: string;
     npcId: string;
     text: string;
     options: { text: string; action: string; data?: unknown }[];
@@ -704,6 +706,30 @@ function AppContent() {
 
               <DebugOverlay />
 
+              {/* D2/WC3-style HUD overlays */}
+              <CharacterPortrait
+                classType={playerState.classType}
+                hp={playerState.hp}
+                maxHp={playerState.maxHp}
+                alive={playerState.alive}
+                stunned={playerState.stunned}
+                stealthed={playerState.stealthed}
+                meditating={playerState.meditating}
+                level={playerState.level}
+              />
+              <HealthOrbs
+                hp={playerState.hp}
+                maxHp={playerState.maxHp}
+                mana={playerState.mana}
+                maxMana={playerState.maxMana}
+                alive={playerState.alive}
+              />
+              <XPBar
+                xp={playerState.xp}
+                maxXp={playerState.maxXp}
+                level={playerState.level}
+              />
+
               {/* Mobile sidebar toggle button */}
               {isMobile && (
                 <Box
@@ -791,7 +817,6 @@ function AppContent() {
             )}
             {dialogueData && (
               <QuestDialogue
-                npcId={dialogueData.npcId}
                 npcId={dialogueData.npcId}
                 text={dialogueData.text}
                 options={dialogueData.options}

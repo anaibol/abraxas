@@ -1287,6 +1287,39 @@
     "banker": {
       "greet_1": "Your gold is safe with us. How may I assist you?",
       "greet_2": "Welcome to the Royal Vault. Deposits or withdrawals?"
+    },
+    "orc": {
+      "greet_1": "You strong. Orc respect that. What you want?",
+      "greet_2": "Speak fast, human. Orc patience thin.",
+      "greet_3": "Hmph. You not look like enemy. Talk."
+    },
+    "goblin": {
+      "greet_1": "Hehehe! You want deal? Goblin make BEST deals!",
+      "greet_2": "Psst! Hey you! Got something shiny to trade?",
+      "greet_3": "You no hurt goblin, right? RIGHT? Good, good..."
+    },
+    "ghost": {
+      "greet_1": "Do not fear me... I was once like you...",
+      "greet_2": "The living still wander here? How... curious..."
+    },
+    "lich": {
+      "greet_1": "You dare disturb me, mortal? Speak before I lose patience.",
+      "greet_2": "Interesting... you approach without trembling. Bold or foolish?",
+      "greet_3": "I have endured centuries. You have seconds. Choose your words."
+    },
+    "troll": {
+      "greet_1": "Hmm? You small. What you want with troll?",
+      "greet_2": "Troll not hungry... yet. What you need?"
+    },
+    "dark_knight": {
+      "greet_1": "You dare approach me? State your business or die.",
+      "greet_2": "Another foolish adventurer. Speak quickly.",
+      "greet_3": "My blade grows restless. What do you want?"
+    },
+    "vampire": {
+      "greet_1": "Ah, a visitor... how delightful. Do come closer.",
+      "greet_2": "You smell... exquisite. But I shall restrain myself. For now.",
+      "greet_3": "The night is young, and so are you. What brings you here?"
     }
   }
 }

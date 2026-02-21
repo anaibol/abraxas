@@ -1,7 +1,8 @@
-import { ITEMS, TILE_SIZE } from "@abraxas/shared";
+import { ITEMS, TILE_SIZE, i18n } from "@abraxas/shared";
 import Phaser from "phaser";
 import type { Drop } from "../../../server/src/schema/Drop";
 import type { EffectManager } from "../managers/EffectManager";
+import { FONTS, getGameTextResolution } from "../ui/tokens";
 
 
 // ─── Texture keys ────────────────────────────────────────────────────────────
@@ -14,7 +15,7 @@ interface DropVisual {
   tweens: Phaser.Tweens.Tween[];
   emitter: Phaser.GameObjects.Particles.ParticleEmitter;
   glowEmitter?: Phaser.GameObjects.Particles.ParticleEmitter;
-
+  label: Phaser.GameObjects.Text;
   color: number;
   tileX: number;
   tileY: number;
@@ -33,7 +34,19 @@ export class DropManager {
     return this.visuals.size;
   }
 
+  private labelsVisible = false;
 
+  /** Show all drop labels (D2 Alt-key style) */
+  showLabels() {
+    this.labelsVisible = true;
+    for (const [, v] of this.visuals) v.label.setVisible(true);
+  }
+
+  /** Hide all drop labels */
+  hideLabels() {
+    this.labelsVisible = false;
+    for (const [, v] of this.visuals) v.label.setVisible(false);
+  }
 
   addDrop(drop: Drop, id: string) {
     const px = drop.tileX * TILE_SIZE + TILE_SIZE / 2;
@@ -133,11 +146,29 @@ export class DropManager {
       this.effectManager.playDropLanded(drop.tileX, drop.tileY, color, isGold);
     }
 
+    // ── Loot label (hidden until Alt-toggled) ──────────────────────────────
+    const labelStr = this._dropLabelText(drop);
+    const labelColor = this._dropLabelColor(drop);
+    const label = this.scene.add
+      .text(px, py + 12, labelStr, {
+        fontSize: "10px",
+        color: labelColor,
+        stroke: "#000000",
+        strokeThickness: 3,
+        fontFamily: FONTS.mono,
+        fontStyle: "normal",
+        resolution: getGameTextResolution(),
+      })
+      .setOrigin(0.5, 0)
+      .setDepth(7)
+      .setVisible(this.labelsVisible);
+
     this.visuals.set(id, {
       container,
       tweens,
       emitter,
       glowEmitter,
+      label,
       color,
       tileX: drop.tileX,
       tileY: drop.tileY,
@@ -149,7 +180,7 @@ export class DropManager {
     const visual = this.visuals.get(id);
     if (!visual) return;
 
-    const { container, tweens, emitter, glowEmitter, color, isGold } = visual;
+    const { container, tweens, emitter, glowEmitter, label, color, isGold } = visual;
 
     // ── Pickup burst ──────────────────────────────────────────────────────────
     const px = container.x;
@@ -207,7 +238,7 @@ export class DropManager {
     tweens.forEach((t) => t.stop());
     emitter.destroy();
     glowEmitter?.destroy();
-
+    label.destroy();
     container.destroy(true); // destroys children
     this.visuals.delete(id);
   }
@@ -298,5 +329,45 @@ export class DropManager {
     }
   }
 
+  /** CSS color string for a drop label, matching D2 rarity conventions. */
+  private _dropLabelColor(drop: Drop): string {
+    if (drop.itemType === "gold") return "#ffcc00";
+    const item = ITEMS[drop.itemId];
+    if (!item) return "#ffffff";
+    if (item.slot === "consumable") {
+      const e = item.consumeEffect;
+      if (e?.healHp && !e?.healMana) return "#ff6666";
+      if (e?.healMana && !e?.healHp) return "#6699ff";
+      return "#aaffaa";
+    }
+    switch (item.rarity) {
+      case "COMMON": return "#dddddd";
+      case "UNCOMMON": return "#6699ff";
+      case "RARE": return "#ffbb44";
+      case "EPIC": return "#bb66ff";
+      case "LEGENDARY": return "#ff8800";
+      default: return "#ffffff";
+    }
+  }
 
+  /** Human-readable label for a drop. */
+  private _dropLabelText(drop: Drop): string {
+    if (drop.itemType === "gold") return `${drop.goldAmount} Gold`;
+    const item = ITEMS[drop.itemId];
+    if (!item) return drop.itemId;
+    let name: string;
+    try {
+      const translated = i18n.t(item.name);
+      name = translated !== item.name ? translated : "";
+    } catch {
+      name = "";
+    }
+    if (!name) {
+      name = drop.itemId
+        .split("_")
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" ");
+    }
+    return drop.quantity > 1 ? `${name} (${drop.quantity})` : name;
+  }
 }

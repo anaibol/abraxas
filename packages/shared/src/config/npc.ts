@@ -51,6 +51,13 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
       low_hp: ["You'll pay for this!", "ARGH!", "Not done yet!"],
       kill: ["ORC STRONG!", "Next!", "Too easy."],
     },
+    dialogue: {
+      greetings: [
+        "npc.orc.greet_1",
+        "npc.orc.greet_2",
+        "npc.orc.greet_3",
+      ],
+    },
   },
   skeleton: {
     hp: 60,
@@ -98,6 +105,13 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
       aggro: ["Hehehe!", "Kill kill kill!", "Goblins ATTACK!"],
       low_hp: ["Retreat!", "Help meee!", "Too strong!"],
       idle: ["Mine mine mine...", "Shiny things..."],
+    },
+    dialogue: {
+      greetings: [
+        "npc.goblin.greet_1",
+        "npc.goblin.greet_2",
+        "npc.goblin.greet_3",
+      ],
     },
   },
   wolf: {
@@ -189,6 +203,12 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
       aggro: ["*wailing*", "You cannot escape death...", "Join the void..."],
       low_hp: ["Not yet!", "*screech*"],
     },
+    dialogue: {
+      greetings: [
+        "npc.ghost.greet_1",
+        "npc.ghost.greet_2",
+      ],
+    },
   },
   lich: {
     hp: 500,
@@ -230,6 +250,13 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     bossPhaseThreshold: 0.5,
     phaseAbilities: ["banshee_wail", "summon_skeleton"],
     rareSpawnIntervalMs: 300_000, // 5 minutes
+    dialogue: {
+      greetings: [
+        "npc.lich.greet_1",
+        "npc.lich.greet_2",
+        "npc.lich.greet_3",
+      ],
+    },
   },
   zombie: {
     hp: 90,
@@ -274,6 +301,12 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     barks: {
       aggro: ["TROLL SMASH!", "You small, me hungry.", "CRUSH!"],
       low_hp: ["TROLL HEAL!", "You no win!", "GRAAAH!"],
+    },
+    dialogue: {
+      greetings: [
+        "npc.troll.greet_1",
+        "npc.troll.greet_2",
+      ],
     },
   },
   bat: {
@@ -326,6 +359,13 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     bossPhaseThreshold: 0.4,
     phaseAbilities: ["shadow_bolt"],
     rareSpawnIntervalMs: 180_000, // 3 minutes
+    dialogue: {
+      greetings: [
+        "npc.dark_knight.greet_1",
+        "npc.dark_knight.greet_2",
+        "npc.dark_knight.greet_3",
+      ],
+    },
   },
   banker: {
     hp: 100,
@@ -406,6 +446,13 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     barks: {
       aggro: ["I hunger...", "Your blood calls to me.", "Come, let me taste you."],
       low_hp: ["Impossible... I cannot die!", "This wounds me deeply."],
+    },
+    dialogue: {
+      greetings: [
+        "npc.vampire.greet_1",
+        "npc.vampire.greet_2",
+        "npc.vampire.greet_3",
+      ],
     },
   },
   gargoyle: {

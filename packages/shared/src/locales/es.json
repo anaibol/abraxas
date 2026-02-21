@@ -1287,6 +1287,39 @@
     "banker": {
       "greet_1": "Tu oro está seguro con nosotros. ¿En qué puedo ayudarte?",
       "greet_2": "Bienvenido a la Bóveda Real. ¿Depósitos o retiros?"
+    },
+    "orc": {
+      "greet_1": "Tú fuerte. Orco respetar eso. ¿Qué querer?",
+      "greet_2": "Habla rápido, humano. Paciencia de orco poca.",
+      "greet_3": "Hmph. Tú no parecer enemigo. Habla."
+    },
+    "goblin": {
+      "greet_1": "¡Jejeje! ¿Quieres trato? ¡Goblin hacer MEJORES tratos!",
+      "greet_2": "¡Psst! ¡Oye tú! ¿Tienes algo brillante para cambiar?",
+      "greet_3": "Tú no pegar a goblin, ¿verdad? ¿VERDAD? Bien, bien..."
+    },
+    "ghost": {
+      "greet_1": "No me temas... Yo fui como tú una vez...",
+      "greet_2": "¿Los vivos aún deambulan aquí? Qué... curioso..."
+    },
+    "lich": {
+      "greet_1": "¿Te atreves a perturbarme, mortal? Habla antes de que pierda la paciencia.",
+      "greet_2": "Interesante... te acercas sin temblar. ¿Valiente o insensato?",
+      "greet_3": "He resistido siglos. Tú tienes segundos. Elige tus palabras."
+    },
+    "troll": {
+      "greet_1": "¿Hmm? Tú pequeño. ¿Qué querer con troll?",
+      "greet_2": "Troll no hambriento... todavía. ¿Qué necesitar?"
+    },
+    "dark_knight": {
+      "greet_1": "¿Te atreves a acercarte? Declara tus asuntos o muere.",
+      "greet_2": "Otro aventurero imprudente. Habla rápido.",
+      "greet_3": "Mi espada se inquieta. ¿Qué quieres?"
+    },
+    "vampire": {
+      "greet_1": "Ah, un visitante... qué encantador. Acércate más.",
+      "greet_2": "Hueles... exquisito. Pero me contendré. Por ahora.",
+      "greet_3": "La noche es joven, y tú también. ¿Qué te trae aquí?"
     }
   }
 }

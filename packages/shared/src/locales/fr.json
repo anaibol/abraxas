@@ -1285,6 +1285,39 @@
     "banker": {
       "greet_1": "Votre or est en sécurité chez nous. Comment puis-je vous aider ?",
       "greet_2": "Bienvenue à la Chambre Forte Royale. Dépôts ou retraits ?"
+    },
+    "orc": {
+      "greet_1": "Toi costaud. Orc respecter ça. Que vouloir ?",
+      "greet_2": "Parle vite, humain. Patience d'orc fine.",
+      "greet_3": "Hmph. Toi pas ressembler ennemi. Parle."
+    },
+    "goblin": {
+      "greet_1": "Hihihi ! Tu veux un marché ? Goblin fait les MEILLEURS marchés !",
+      "greet_2": "Psst ! Hé toi ! T'as quelque chose de brillant à échanger ?",
+      "greet_3": "Toi pas faire mal au goblin, hein ? HEIN ? Bien, bien..."
+    },
+    "ghost": {
+      "greet_1": "N'aie pas peur... J'étais comme toi, jadis...",
+      "greet_2": "Les vivants errent encore ici ? Comme c'est... curieux..."
+    },
+    "lich": {
+      "greet_1": "Tu oses me déranger, mortel ? Parle avant que je perde patience.",
+      "greet_2": "Intéressant... tu approches sans trembler. Brave ou insensé ?",
+      "greet_3": "J'ai enduré des siècles. Tu as quelques secondes. Choisis tes mots."
+    },
+    "troll": {
+      "greet_1": "Hmm ? Toi petit. Que vouloir avec troll ?",
+      "greet_2": "Troll pas faim... pas encore. Quoi besoin ?"
+    },
+    "dark_knight": {
+      "greet_1": "Tu oses m'approcher ? Déclare tes intentions ou meurs.",
+      "greet_2": "Encore un aventurier téméraire. Parle vite.",
+      "greet_3": "Ma lame s'impatiente. Que veux-tu ?"
+    },
+    "vampire": {
+      "greet_1": "Ah, un visiteur... quel délice. Approchez-vous.",
+      "greet_2": "Vous sentez... exquis. Mais je me retiendrai. Pour l'instant.",
+      "greet_3": "La nuit est jeune, tout comme vous. Qu'est-ce qui vous amène ?"
     }
   }
 }

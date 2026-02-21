@@ -22,7 +22,6 @@ export type RoomListenerCallbacks = {
   setDialogueData: (
     data: {
       npcId: string;
-      npcId: string;
       text: string;
       options: { text: string; action: string; data?: unknown }[];
     } | null,

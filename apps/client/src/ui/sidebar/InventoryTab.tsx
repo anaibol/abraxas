@@ -11,6 +11,8 @@ const RARITY_COLORS: Record<string, string> = {
   COMMON: HEX.goldMuted,
   UNCOMMON: "#33aa44",
   RARE: "#3355cc",
+  EPIC: "#bb44ff",
+  LEGENDARY: "#ff8800",
 };
 
 interface InventoryTabProps {
@@ -67,7 +69,7 @@ export function InventoryTab({
                 justifyContent="center"
                 cursor={def ? "pointer" : "default"}
                 onClick={() => def && onUnequip?.(slot)}
-                _hover={def ? { borderColor: T.gold } : {}}
+                _hover={def ? { borderColor: T.gold, boxShadow: `0 0 8px ${RARITY_COLORS[def.rarity] || HEX.gold}66, 0 0 16px ${RARITY_COLORS[def.rarity] || HEX.gold}22` } : {}}
                 position="relative"
                 onMouseEnter={() => {
                   if (def && equipped) {
@@ -105,7 +107,7 @@ export function InventoryTab({
               borderRadius="2px"
               transition="all 0.1s"
               cursor={def ? "pointer" : "default"}
-              _hover={def ? { borderColor: T.gold, bg: T.surface } : {}}
+              _hover={def ? { borderColor: T.gold, bg: T.surface, boxShadow: `0 0 10px ${RARITY_COLORS[def.rarity] || HEX.gold}55, 0 0 20px ${RARITY_COLORS[def.rarity] || HEX.gold}22` } : {}}
               display="flex"
               alignItems="center"
               justifyContent="center"
@@ -162,14 +164,23 @@ export function InventoryTab({
       </Grid>
 
       {/* Hover tooltip */}
-      {hoveredItem && (
-        <ItemTooltip
-          item={hoveredItem}
-          quantity={hoveredQty}
-          x={mousePos.x}
-          y={mousePos.y}
-        />
-      )}
+      {hoveredItem && (() => {
+        // Find the equipped item in the same slot for stat comparison
+        const equippedId = hoveredItem.slot !== "consumable" && state.equipment
+          ? state.equipment[hoveredItem.slot as keyof typeof state.equipment]
+          : undefined;
+        const equippedItem = equippedId && equippedId !== hoveredItemId ? ITEMS[equippedId] : null;
+
+        return (
+          <ItemTooltip
+            item={hoveredItem}
+            quantity={hoveredQty}
+            equippedItem={equippedItem}
+            x={mousePos.x}
+            y={mousePos.y}
+          />
+        );
+      })()}
     </Box>
   );
 }

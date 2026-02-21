@@ -143,21 +143,21 @@ export class LightManager {
    * Add a light for a summon NPC (mana_spring, explosive_trap, etc.).
    * Item #36: frost variants get icy-blue, fire get orange, etc.
    */
-  addNpcLight(npcId: string, tileX: number, tileY: number, npcId = "summon") {
+  addNpcLight(npcId: string, tileX: number, tileY: number, npcType = "summon") {
     const px = tileX * TILE_SIZE + TILE_SIZE / 2;
     const py = tileY * TILE_SIZE + TILE_SIZE / 2;
 
     let preset = LightPreset.SUMMON;
     let pulseMax: number | undefined;
 
-    if (npcId === "mana_spring") {
+    if (npcType === "mana_spring") {
       preset = LightPreset.HEAL;
       pulseMax = 140; // item #29: Mana Spring pulses radius
-    } else if (npcId.includes("fire") || npcId.includes("trap")) {
+    } else if (npcType.includes("fire") || npcType.includes("trap")) {
       preset = LightPreset.CAMPFIRE;
-    } else if (npcId.includes("frost") || npcId.includes("ice")) {
+    } else if (npcType.includes("frost") || npcType.includes("ice")) {
       preset = LightPreset.FROST;
-    } else if (npcId.includes("shadow") || npcId.includes("undead") || npcId.includes("skeleton")) {
+    } else if (npcType.includes("shadow") || npcType.includes("undead") || npcType.includes("skeleton")) {
       preset = LightPreset.SHADOW;
     }
 

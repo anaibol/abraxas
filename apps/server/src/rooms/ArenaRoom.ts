@@ -288,7 +288,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       } else {
         // Fresh boot — spawn from authoritative map sources, then persist.
         for (const n of this.map.npcs ?? []) {
-          this.npcSystem.spawnNpcAt(n.type, this.map, n.x, n.y);
+          this.npcSystem.spawnNpcAt(n.id, this.map, n.x, n.y);
         }
         const npcCount = this.map.npcCount;
         if (npcCount > 0) {

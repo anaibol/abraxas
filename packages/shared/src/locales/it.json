@@ -1286,6 +1286,39 @@
     "banker": {
       "greet_1": "Il tuo oro è al sicuro con noi. Come posso aiutarti?",
       "greet_2": "Benvenuto al Caveau Reale. Depositi o prelievi?"
+    },
+    "orc": {
+      "greet_1": "Tu forte. Orco rispettare. Che volere?",
+      "greet_2": "Parla in fretta, umano. Pazienza di orco poca.",
+      "greet_3": "Hmph. Tu non sembrare nemico. Parla."
+    },
+    "goblin": {
+      "greet_1": "Eheheh! Vuoi affare? Goblin fare MIGLIORI affari!",
+      "greet_2": "Psst! Ehi tu! Hai qualcosa di luccicante da scambiare?",
+      "greet_3": "Tu non fare male a goblin, vero? VERO? Bene, bene..."
+    },
+    "ghost": {
+      "greet_1": "Non temermi... Anch'io ero come te, un tempo...",
+      "greet_2": "I vivi vagano ancora qui? Come... curioso..."
+    },
+    "lich": {
+      "greet_1": "Osi disturbarmi, mortale? Parla prima che perda la pazienza.",
+      "greet_2": "Interessante... ti avvicini senza tremare. Coraggioso o sciocco?",
+      "greet_3": "Ho resistito secoli. Tu hai secondi. Scegli le tue parole."
+    },
+    "troll": {
+      "greet_1": "Hmm? Tu piccolo. Che volere con troll?",
+      "greet_2": "Troll non affamato... ancora. Che servire?"
+    },
+    "dark_knight": {
+      "greet_1": "Osi avvicinarti? Dichiara i tuoi affari o muori.",
+      "greet_2": "Un altro avventuriero imprudente. Parla in fretta.",
+      "greet_3": "La mia lama si agita. Cosa vuoi?"
+    },
+    "vampire": {
+      "greet_1": "Ah, un visitatore... che delizia. Avvicinati pure.",
+      "greet_2": "Profumi... squisitamente. Ma mi tratterrò. Per ora.",
+      "greet_3": "La notte è giovane, e anche tu. Cosa ti porta qui?"
     }
   }
 }

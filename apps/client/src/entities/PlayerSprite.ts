@@ -197,7 +197,7 @@ export class PlayerSprite {
           `ao-${headStatic.grafico}`,
           `grh-${headStatic.id}`,
         );
-        this.headSprite.setOrigin(0.5, 0);
+        this.headSprite.setOrigin(0.5, 1);
       }
     }
     this.updateHeadPosition();
@@ -308,13 +308,12 @@ export class PlayerSprite {
   }
 
   private updateHeadPosition() {
-    const bodyStatic = this.resolver.resolveStaticGrh(this.bodyEntry[this.dirName]);
-    const bodyH = bodyStatic ? bodyStatic.height : 45;
-    const bodyTopY = TILE_SIZE / 2 - bodyH;
     const offX = this.bodyEntry.offHeadX ?? 0;
     const offY = this.bodyEntry.offHeadY ?? 0;
-    this.headSprite?.setPosition(offX, bodyTopY + offY);
-    this.helmetSprite?.setPosition(offX, bodyTopY + offY);
+    // AO convention: offHeadY is offset from feet line to head bottom (negative = up)
+    const headY = TILE_SIZE / 2 + offY;
+    this.headSprite?.setPosition(offX, headY);
+    this.helmetSprite?.setPosition(offX, headY);
   }
 
   updateAppearance(bodyId: number, headId: number) {
@@ -599,7 +598,7 @@ export class PlayerSprite {
         (id) => this.resolver.getHelmetEntry(id),
         null,
         0,
-        0,
+        1,
       );
       if (newHelmetAoId) this.updateHeadPosition();
     }

@@ -34,12 +34,14 @@ interface ItemTooltipProps {
   item: Item;
   /** Quantity if stacked */
   quantity?: number;
+  /** Currently equipped item for the same slot — enables stat comparison */
+  equippedItem?: Item | null;
   /** Screen position */
   x: number;
   y: number;
 }
 
-export function ItemTooltip({ item, quantity, x, y }: ItemTooltipProps) {
+export function ItemTooltip({ item, quantity, equippedItem, x, y }: ItemTooltipProps) {
   const { t } = useTranslation();
   const rarityColor = RARITY_COLORS[item.rarity] || "#aaa";
   const rarityBg = RARITY_BG[item.rarity] || "transparent";
@@ -131,19 +133,36 @@ export function ItemTooltip({ item, quantity, x, y }: ItemTooltipProps) {
             if (!info) return null;
             const sign = value > 0 ? "+" : "";
             return (
-              <Flex key={key} justify="space-between" align="center" py="0.5">
+              <Flex key={key} justify="space-between" align="center" py="0.5" gap="2">
                 <Text textStyle={T.statLabel} color={HEX.goldText}>
                   {info.label}
                 </Text>
-                <Text
-                  textStyle={T.statLabel}
-                  fontWeight="700"
-                  fontFamily={T.mono}
-                  color={value > 0 ? info.color : "#ff4444"}
-                >
-                  {sign}
-                  {value}
-                </Text>
+                <Flex align="center" gap="1">
+                  <Text
+                    textStyle={T.statLabel}
+                    fontWeight="700"
+                    fontFamily={T.mono}
+                    color={value > 0 ? info.color : "#ff4444"}
+                  >
+                    {sign}
+                    {value}
+                  </Text>
+                  {equippedItem && (() => {
+                    const eqVal = (equippedItem.stats as Record<string, number>)[key] || 0;
+                    const delta = value - eqVal;
+                    if (delta === 0) return null;
+                    return (
+                      <Text
+                        textStyle={T.badgeText}
+                        fontWeight="800"
+                        fontFamily={T.mono}
+                        color={delta > 0 ? "#33ff66" : "#ff4444"}
+                      >
+                        {delta > 0 ? `▲${delta}` : `▼${Math.abs(delta)}`}
+                      </Text>
+                    );
+                  })()}
+                </Flex>
               </Flex>
             );
           })}

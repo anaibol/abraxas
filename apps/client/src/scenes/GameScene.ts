@@ -434,6 +434,11 @@ export class GameScene extends Phaser.Scene {
       gameSettings.set({ showDebugOverlay: !current });
     });
 
+    // D2-style Alt key: hold to show loot labels on ground drops
+    const altKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ALT);
+    altKey?.on("down", () => this.dropManager.showLabels());
+    altKey?.on("up", () => this.dropManager.hideLabels());
+
     document.addEventListener("visibilitychange", this.handleVisibilityChange);
   }
 

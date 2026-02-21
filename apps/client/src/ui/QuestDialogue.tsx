@@ -13,14 +13,13 @@ interface DialogueOption {
 
 interface QuestDialogueProps {
   npcId: string;
-  npcId: string;
   text: string;
   options: DialogueOption[];
   onAction: (action: string, data?: unknown) => void;
   onClose: () => void;
 }
 
-export function QuestDialogue({ npcId: _npcId, npcId, text, options, onAction, onClose }: QuestDialogueProps) {
+export function QuestDialogue({ npcId, text, options, onAction, onClose }: QuestDialogueProps) {
   const { t } = useTranslation();
   const { playQuestAccept, playQuestComplete, playUIClick, playUIHover } = useAudio();
   return (

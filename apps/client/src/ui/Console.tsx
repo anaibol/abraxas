@@ -42,6 +42,23 @@ const TABS: { id: Channel; labelKey: string; color: string }[] = [
   { id: "combat", labelKey: "console.tab_combat", color: "#f84" },
 ];
 
+const CHANNEL_COLORS: Record<string, string> = {
+  global: "#ddd",
+  group: "#7799ff",
+  guild: "#a78bfa",
+  whisper: "#ff77ff",
+  system: "#ffff77",
+  combat: "#ff8844",
+};
+
+const CHANNEL_PREFIXES: Record<string, string> = {
+  group: "Party",
+  guild: "Guild",
+  whisper: "Whisper",
+  system: "System",
+  combat: "Combat",
+};
+
 export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM }: ConsoleProps) {
   const { t } = useTranslation();
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -196,10 +213,13 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
           "&::-webkit-scrollbar-thumb": { background: "rgba(255,255,255,0.2)" },
         }}
       >
-        {filteredMessages.map((msg) => (
+        {filteredMessages.map((msg) => {
+          const channelColor = msg.channel ? CHANNEL_COLORS[msg.channel] : undefined;
+          const prefix = msg.channel ? CHANNEL_PREFIXES[msg.channel] : undefined;
+          return (
           <Text
             key={msg.id}
-            color={msg.color || "white"}
+            color={msg.color || channelColor || "white"}
             textStyle={T.bodyText}
             mb={0.5}
             lineHeight="1.2"
@@ -213,9 +233,15 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
               })}
               ]
             </span>{" "}
+            {prefix && (
+              <span style={{ color: channelColor, opacity: 0.7, fontSize: "11px", fontWeight: 700 }}>
+                [{prefix}]{" "}
+              </span>
+            )}
             {msg.text}
           </Text>
-        ))}
+          );
+        })}
         <div ref={bottomRef} />
       </Box>
 
