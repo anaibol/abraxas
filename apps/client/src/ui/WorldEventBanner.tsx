@@ -73,7 +73,7 @@ export const WorldEventBanner: FC<WorldEventBannerProps> = ({
         style={{
           background: "linear-gradient(135deg, rgba(30,8,8,0.96) 0%, rgba(60,12,12,0.94) 100%)",
           border: "1px solid rgba(200, 50, 50, 0.7)",
-          borderRadius: "10px",
+          borderRadius: "4px",
           padding: "10px 20px",
           minWidth: "320px",
           textAlign: "center",

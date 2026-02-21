@@ -68,7 +68,7 @@ export const WorldMapModal: FC<WorldMapModalProps> = ({ currentMapName, onClose 
         style={{
           background: "linear-gradient(160deg, rgba(6,8,20,0.99) 0%, rgba(12,14,30,0.98) 100%)",
           border: "1px solid rgba(212,168,67,0.4)",
-          borderRadius: "16px",
+          borderRadius: "4px",
           padding: "32px",
           minWidth: "520px",
           maxWidth: "640px",
@@ -91,7 +91,7 @@ export const WorldMapModal: FC<WorldMapModalProps> = ({ currentMapName, onClose 
               fontSize: "18px",
               letterSpacing: "3px",
               textShadow: "0 0 10px rgba(212,168,67,0.4)",
-              fontFamily: "serif",
+              fontFamily: "'Friz Quadrata', Georgia, serif",
             }}
           >
             🗺 WORLD MAP
@@ -155,7 +155,7 @@ export const WorldMapModal: FC<WorldMapModalProps> = ({ currentMapName, onClose 
                       ? `linear-gradient(135deg, rgba(20,16,8,0.97) 0%, rgba(${hexToRgb(zone.color)},0.15) 100%)`
                       : "rgba(14,12,24,0.8)",
                     border: `1px solid ${isCurrent ? zone.color : "rgba(60,50,80,0.5)"}`,
-                    borderRadius: "12px",
+                    borderRadius: "4px",
                     padding: "18px 24px",
                     display: "flex",
                     alignItems: "center",
@@ -179,7 +179,7 @@ export const WorldMapModal: FC<WorldMapModalProps> = ({ currentMapName, onClose 
                         fontSize: "9px",
                         fontWeight: "bold",
                         padding: "2px 8px",
-                        borderRadius: "10px",
+                        borderRadius: "4px",
                         letterSpacing: "1px",
                       }}
                     >
