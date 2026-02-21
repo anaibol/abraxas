@@ -880,9 +880,9 @@
     "consumable": "Consumible"
   },
   "item_rarity": {
-    "common": "Común",
-    "uncommon": "Poco común",
-    "rare": "Raro"
+    "COMMON": "Común",
+    "UNCOMMON": "Poco común",
+    "RARE": "Raro"
   },
   "ui": {
     "merchant": {

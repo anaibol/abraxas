@@ -4,6 +4,7 @@ import {
   type ItemAffix,
   ItemRarity,
   type JoinOptions,
+  NPC_STATS,
   NPC_VIEW_RADIUS,
   type NpcType,
   PLAYER_RESPAWN_TIME_MS,
@@ -193,8 +194,13 @@ export class ArenaRoom extends Room<{ state: GameState }> {
           logger.warn({ intent: "gm_spawn", result: "rejected", role: player.role });
           return;
         }
-        this.npcSystem.spawnNpc(message.type as NpcType, this.map);
-        logger.debug({ intent: "gm_spawn", result: "success", type: message.type });
+        const npcType = message.type as NpcType;
+        if (!NPC_STATS[npcType]) {
+          logger.warn({ intent: "gm_spawn", result: "invalid_type", type: message.type });
+          return;
+        }
+        this.npcSystem.spawnNpc(npcType, this.map);
+        logger.debug({ intent: "gm_spawn", result: "success", type: npcType });
       });
 
       this.tickSystem = new TickSystem({
@@ -554,6 +560,8 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     player.hp = 0;
     player.alive = false;
     this.spatial.removeFromGrid(player);
+    // B4: Clear buff/DoT state on death — prevents memory leak for connected-but-dead players
+    this.buffSystem.removePlayer(player.sessionId);
     const dropped = this.inventorySystem.dropAllItems(player);
     for (const d of dropped)
       this.drops.spawnItemDrop(this.state.drops, player.tileX, player.tileY, d.itemId, d.quantity);

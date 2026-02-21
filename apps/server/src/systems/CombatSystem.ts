@@ -936,11 +936,9 @@ export class CombatSystem {
         parried: damageRes.parried,
         glancing: damageRes.glancing,
       });
-      if (target.hp <= 0) {
-        onDeath(target, attacker.sessionId);
-      }
-      this.applyRageOnHit(attacker, target);
 
+      // B19: Apply rage + leech heal BEFORE death check — onDeath cleans up the entity
+      this.applyRageOnHit(attacker, target);
       const healBack = Math.max(1, Math.round(damageRes.damage * (ability.leechRatio ?? 0)));
       attacker.hp = Math.min(attacker.maxHp, attacker.hp + healBack);
       broadcast(ServerMessageType.Heal, {
@@ -948,6 +946,10 @@ export class CombatSystem {
         amount: healBack,
         hpAfter: attacker.hp,
       });
+
+      if (target.hp <= 0) {
+        onDeath(target, attacker.sessionId);
+      }
     } else if (ability.effect === "damage" || ability.baseDamage > 0) {
       const damageRes = this.calcAbilityDamage(
         attacker,
