@@ -46,7 +46,6 @@ import { DeathOverlay } from "./DeathOverlay";
 import { DebugOverlay } from "./DebugOverlay";
 import { DropQuantityDialog } from "./DropQuantityDialog";
 import { FastTravelModal } from "./FastTravelModal";
-import { HealthOrbs } from "./HealthOrbs";
 import { KillFeed, type KillFeedEntry } from "./KillFeed";
 import { LoadingScreen } from "./LoadingScreen";
 import { Lobby } from "./Lobby";
@@ -65,7 +64,6 @@ import { TradeWindow } from "./TradeWindow";
 import { SummonOverlay } from "./SummonOverlay";
 import { WorldEventBanner } from "./WorldEventBanner";
 import { WorldMapModal } from "./WorldMapModal";
-import { XPBar } from "./XPBar";
 import { system } from "./theme";
 import { toaster } from "./toaster";
 import { HEX, T } from "./tokens";
@@ -715,18 +713,6 @@ function AppContent() {
                 stunned={playerState.stunned}
                 stealthed={playerState.stealthed}
                 meditating={playerState.meditating}
-                level={playerState.level}
-              />
-              <HealthOrbs
-                hp={playerState.hp}
-                maxHp={playerState.maxHp}
-                mana={playerState.mana}
-                maxMana={playerState.maxMana}
-                alive={playerState.alive}
-              />
-              <XPBar
-                xp={playerState.xp}
-                maxXp={playerState.maxXp}
                 level={playerState.level}
               />
 

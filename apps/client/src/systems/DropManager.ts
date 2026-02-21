@@ -58,7 +58,15 @@ export class DropManager {
     this._ensureTextures();
 
     // ── Build the visual for this drop ────────────────────────────────────────
-    const container = this.scene.add.container(px, py).setDepth(5);
+    const hitRadius = isGold ? 12 : (isRare ? 10 : 9);
+    const container = this.scene.add
+      .container(px, py)
+      .setDepth(5)
+      .setSize(hitRadius * 2, hitRadius * 2)
+      .setInteractive(
+        new Phaser.Geom.Circle(0, 0, hitRadius),
+        Phaser.Geom.Circle.Contains,
+      );
     const tweens: Phaser.Tweens.Tween[] = [];
 
     if (isGold) {
@@ -162,6 +170,14 @@ export class DropManager {
       .setOrigin(0.5, 0)
       .setDepth(7)
       .setVisible(this.labelsVisible);
+
+    // ── Hover tooltip ─────────────────────────────────────────────────────────
+    container.on("pointerover", () => {
+      label.setVisible(true);
+    });
+    container.on("pointerout", () => {
+      if (!this.labelsVisible) label.setVisible(false);
+    });
 
     this.visuals.set(id, {
       container,

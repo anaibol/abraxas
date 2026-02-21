@@ -593,11 +593,11 @@ export function Lobby({ onJoin, connecting, error: joinError }: LobbyProps) {
                   <Search size={14} />
                 </Box>
                 <Input
+                  {...inputStyle}
                   pl="32px"
                   value={charSearch}
                   onChange={(e) => setCharSearch(e.target.value)}
                   placeholder="Search by name or email…"
-                  {...inputStyle}
                 />
               </Box>
             )}

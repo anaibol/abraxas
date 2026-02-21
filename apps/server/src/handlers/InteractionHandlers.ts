@@ -58,7 +58,7 @@ export class InteractionHandlers {
 
   static openDialogue(ctx: RoomContext, client: Client, player: Player, npc: Npc) {
     const dialogue = ctx.systems.quests.getDialogueOptions(player.dbId, npc.sessionId, npc.npcId);
-    client.send(ServerMessageType.OpenDialogue, { npcId: npc.sessionId, npcId: npc.npcId, ...dialogue });
+    client.send(ServerMessageType.OpenDialogue, { npcId: npc.npcId, ...dialogue });
   }
 
   static handleQuestAccept(

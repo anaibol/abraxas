@@ -1280,44 +1280,74 @@
     "merchant": {
       "greet_1": "Bienvenue ! Admirez mes plus belles marchandises.",
       "greet_2": "Ah, un client ! Qu'est-ce qui attire votre regard ?",
-      "greet_3": "Approchez ! Tout a un prix."
+      "greet_3": "Approchez ! Tout a un prix.",
+      "ask_news": "Des rumeurs récentes ?",
+      "news_response": "On dit que d'étranges lumières ont été vues dans les catacombes. Trésor... ou ennuis. Mieux vaut y aller préparé."
     },
     "banker": {
       "greet_1": "Votre or est en sécurité chez nous. Comment puis-je vous aider ?",
-      "greet_2": "Bienvenue à la Chambre Forte Royale. Dépôts ou retraits ?"
+      "greet_2": "Bienvenue à la Chambre Forte Royale. Dépôts ou retraits ?",
+      "ask_rates": "Cette chambre forte est-elle vraiment sûre ?",
+      "rates_response": "Nos coffres sont protégés par une magie ancienne et gardés jour et nuit. Pas une seule pièce n'a été perdue en trois cents ans."
     },
     "orc": {
       "greet_1": "Toi costaud. Orc respecter ça. Que vouloir ?",
       "greet_2": "Parle vite, humain. Patience d'orc fine.",
-      "greet_3": "Hmph. Toi pas ressembler ennemi. Parle."
+      "greet_3": "Hmph. Toi pas ressembler ennemi. Parle.",
+      "ask_clan": "Parle-moi de ton clan.",
+      "clan_response": "Clan Croc-de-Sang plus fort de tous. Nous combattre, nous conquérir. C'est la voie de l'orc. Vouloir en savoir plus ? Prouve ta valeur au combat.",
+      "ask_fight": "Où trouver le meilleur combat ?",
+      "fight_response": "Trolls au nord. Grands, bêtes, frappent fort. Bon combat. Aussi entendu parler d'êtres sombres dans les ruines. Dangereux, même pour orc."
     },
     "goblin": {
       "greet_1": "Hihihi ! Tu veux un marché ? Goblin fait les MEILLEURS marchés !",
       "greet_2": "Psst ! Hé toi ! T'as quelque chose de brillant à échanger ?",
-      "greet_3": "Toi pas faire mal au goblin, hein ? HEIN ? Bien, bien..."
+      "greet_3": "Toi pas faire mal au goblin, hein ? HEIN ? Bien, bien...",
+      "ask_secret": "T'as un secret pour moi ?",
+      "secret_response": "Goblin entendre des choses, oui oui ! Araignées dans forêt garder vieille grotte au trésor. Beaucoup de toiles, beaucoup de danger. Mais choses brillantes dedans... TRÈS brillantes !",
+      "ask_shiny": "C'est quoi le truc le plus brillant que t'as vu ?",
+      "shiny_response": "Une fois goblin voir écaille de dragon ! Brillant doré au clair de lune ! Dragon pas content quand goblin essayer prendre... goblin courir TRÈS vite ce jour-là."
     },
     "ghost": {
       "greet_1": "N'aie pas peur... J'étais comme toi, jadis...",
-      "greet_2": "Les vivants errent encore ici ? Comme c'est... curieux..."
+      "greet_2": "Les vivants errent encore ici ? Comme c'est... curieux...",
+      "ask_death": "Comment es-tu mort ?",
+      "death_response": "J'étais un chevalier, jadis... j'avais juré de protéger ce lieu. Quand le Liche s'est levé, nous avons combattu... et nous sommes tombés. Je suis prisonnier ici, entre les mondes. À jamais.",
+      "ask_help": "Peux-tu m'aider ?",
+      "help_response": "Je ne peux pas toucher le monde des vivants, mais je vois des choses que d'autres ne voient pas. Méfie-toi des ombres qui bougent contre le vent. Elles servent le Liche."
     },
     "lich": {
       "greet_1": "Tu oses me déranger, mortel ? Parle avant que je perde patience.",
       "greet_2": "Intéressant... tu approches sans trembler. Brave ou insensé ?",
-      "greet_3": "J'ai enduré des siècles. Tu as quelques secondes. Choisis tes mots."
+      "greet_3": "J'ai enduré des siècles. Tu as quelques secondes. Choisis tes mots.",
+      "ask_power": "Quelle est la source de ton pouvoir ?",
+      "power_response": "La mort elle-même me nourrit. Chaque âme qui périt ici renforce mon emprise. Tu pourrais me servir volontairement... ou je pourrais simplement prendre ce dont j'ai besoin.",
+      "ask_ruins": "Que s'est-il passé dans ces ruines ?",
+      "ruins_response": "C'était autrefois une grande cité. Son peuple est devenu arrogant. Ils ont cherché à maîtriser la mort. Ils ont réussi... mais pas comme ils l'espéraient. Je suis leur héritage."
     },
     "troll": {
       "greet_1": "Hmm ? Toi petit. Que vouloir avec troll ?",
-      "greet_2": "Troll pas faim... pas encore. Quoi besoin ?"
+      "greet_2": "Troll pas faim... pas encore. Quoi besoin ?",
+      "ask_food": "Que mangent les trolls ?",
+      "food_response": "Troll manger tout ! Goblin avoir mauvais goût par contre. Trop croquant. Viande d'ours meilleure. Toi apporter viande d'ours à troll, troll peut-être pas te manger. Hé hé."
     },
     "dark_knight": {
       "greet_1": "Tu oses m'approcher ? Déclare tes intentions ou meurs.",
       "greet_2": "Encore un aventurier téméraire. Parle vite.",
-      "greet_3": "Ma lame s'impatiente. Que veux-tu ?"
+      "greet_3": "Ma lame s'impatiente. Que veux-tu ?",
+      "ask_master": "Qui sers-tu ?",
+      "master_response": "Je sers les ténèbres qui demeurent en dessous. Celui dont les vivants n'osent prononcer le nom. Il m'a promis un pouvoir au-delà de la mort, et il a tenu parole.",
+      "ask_darkness": "Quelles sont ces ténèbres dont tu parles ?",
+      "darkness_response": "C'est l'ombre entre les étoiles. Le silence avant la création. Elle murmure à tous ceux qui écoutent. Bientôt, elle engloutira ce monde entier."
     },
     "vampire": {
       "greet_1": "Ah, un visiteur... quel délice. Approchez-vous.",
       "greet_2": "Vous sentez... exquis. Mais je me retiendrai. Pour l'instant.",
-      "greet_3": "La nuit est jeune, tout comme vous. Qu'est-ce qui vous amène ?"
+      "greet_3": "La nuit est jeune, tout comme vous. Qu'est-ce qui vous amène ?",
+      "ask_nature": "Qu'êtes-vous exactement ?",
+      "nature_response": "Je suis ce qui reste quand la mortalité s'efface. Une créature aux goûts raffinés et... aux appétits éternels. J'ai vu des empires s'élever et s'écrouler.",
+      "ask_exit": "Comment sortir d'ici en sécurité ?",
+      "exit_response": "En sécurité ? Comme c'est ennuyeux. Mais si vous insistez — suivez les torches qui brûlent encore. Elles marquent les anciens chemins. Évitez les couloirs sans lumière. Des choses y rôdent que même moi je respecte."
     }
   }
 }

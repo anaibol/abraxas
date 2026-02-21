@@ -402,7 +402,7 @@ export class CombatSystem {
           return false;
         }
       } else if (ability.effect !== "summon") { // Summon abilities can target empty tiles
-        sendToClient?.(ServerMessageType.InvalidTarget, { reason: "invalid" });
+        // No entity at targeted tile — silently ignore instead of showing an error
         return false;
       }
     }

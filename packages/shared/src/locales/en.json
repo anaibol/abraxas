@@ -1282,44 +1282,74 @@
     "merchant": {
       "greet_1": "Welcome! Browse my finest wares.",
       "greet_2": "Ah, a customer! What catches your eye?",
-      "greet_3": "Step right up! Everything has a price."
+      "greet_3": "Step right up! Everything has a price.",
+      "ask_news": "Heard any rumors lately?",
+      "news_response": "They say strange lights have been seen in the catacombs lately. Could be treasure... or trouble. Best go prepared."
     },
     "banker": {
       "greet_1": "Your gold is safe with us. How may I assist you?",
-      "greet_2": "Welcome to the Royal Vault. Deposits or withdrawals?"
+      "greet_2": "Welcome to the Royal Vault. Deposits or withdrawals?",
+      "ask_rates": "How secure is this vault, really?",
+      "rates_response": "Our vaults are warded by ancient magic and guarded day and night. Not a single coin has been lost in three hundred years."
     },
     "orc": {
       "greet_1": "You strong. Orc respect that. What you want?",
       "greet_2": "Speak fast, human. Orc patience thin.",
-      "greet_3": "Hmph. You not look like enemy. Talk."
+      "greet_3": "Hmph. You not look like enemy. Talk.",
+      "ask_clan": "Tell me about your clan.",
+      "clan_response": "Bloodfang Clan strongest in all lands. We fight, we conquer. That is orc way. You want know more? Prove yourself in battle.",
+      "ask_fight": "Where's the best fight around here?",
+      "fight_response": "Trolls to the north. Big, dumb, hit hard. Good fight. Also heard dark ones lurking in ruins. Dangerous, even for orc."
     },
     "goblin": {
       "greet_1": "Hehehe! You want deal? Goblin make BEST deals!",
       "greet_2": "Psst! Hey you! Got something shiny to trade?",
-      "greet_3": "You no hurt goblin, right? RIGHT? Good, good..."
+      "greet_3": "You no hurt goblin, right? RIGHT? Good, good...",
+      "ask_secret": "Got any secrets for me?",
+      "secret_response": "Goblin hear things, yes yes! Spiders in forest guard old treasure cave. Many webs, much danger. But shiny things inside... VERY shiny!",
+      "ask_shiny": "What's the shiniest thing you've ever seen?",
+      "shiny_response": "Once goblin see dragon scale! Glowing gold in moonlight! Dragon not happy when goblin try to take... goblin run VERY fast that day."
     },
     "ghost": {
       "greet_1": "Do not fear me... I was once like you...",
-      "greet_2": "The living still wander here? How... curious..."
+      "greet_2": "The living still wander here? How... curious...",
+      "ask_death": "How did you die?",
+      "death_response": "I was a knight, once... sworn to protect this place. When the Lich rose, we fought... and fell. Now I am bound here, between worlds. Forever watching.",
+      "ask_help": "Can you help me?",
+      "help_response": "I cannot touch the world of the living, but I can see things others cannot. Beware the shadows that move against the wind. They serve the Lich."
     },
     "lich": {
       "greet_1": "You dare disturb me, mortal? Speak before I lose patience.",
       "greet_2": "Interesting... you approach without trembling. Bold or foolish?",
-      "greet_3": "I have endured centuries. You have seconds. Choose your words."
+      "greet_3": "I have endured centuries. You have seconds. Choose your words.",
+      "ask_power": "What is the source of your power?",
+      "power_response": "Death itself fuels me. Every soul that perishes here strengthens my dominion. You could serve me willingly... or I could simply take what I need.",
+      "ask_ruins": "What happened to these ruins?",
+      "ruins_response": "This was once a great city. Its people grew arrogant. They sought to master death. They succeeded... but not in the way they hoped. I am their legacy."
     },
     "troll": {
       "greet_1": "Hmm? You small. What you want with troll?",
-      "greet_2": "Troll not hungry... yet. What you need?"
+      "greet_2": "Troll not hungry... yet. What you need?",
+      "ask_food": "What do trolls eat?",
+      "food_response": "Troll eat everything! Goblin taste bad though. Too crunchy. Bear meat best. You bring troll bear meat, troll maybe not eat you. Heh heh."
     },
     "dark_knight": {
       "greet_1": "You dare approach me? State your business or die.",
       "greet_2": "Another foolish adventurer. Speak quickly.",
-      "greet_3": "My blade grows restless. What do you want?"
+      "greet_3": "My blade grows restless. What do you want?",
+      "ask_master": "Who do you serve?",
+      "master_response": "I serve the darkness that dwells beneath. The one whose name the living dare not speak. He promised me power beyond death, and he delivered.",
+      "ask_darkness": "What is this darkness you speak of?",
+      "darkness_response": "It is the shadow between the stars. The silence before creation. It whispers to all who listen. Soon, it will swallow this world whole."
     },
     "vampire": {
       "greet_1": "Ah, a visitor... how delightful. Do come closer.",
       "greet_2": "You smell... exquisite. But I shall restrain myself. For now.",
-      "greet_3": "The night is young, and so are you. What brings you here?"
+      "greet_3": "The night is young, and so are you. What brings you here?",
+      "ask_nature": "What are you, exactly?",
+      "nature_response": "I am what remains when mortality falls away. A creature of refined tastes and... eternal appetites. I have watched empires rise and crumble to dust.",
+      "ask_exit": "How do I get out of here safely?",
+      "exit_response": "Safely? How dull. But if you insist — follow the torches that still burn. They mark the old paths. Avoid the corridors without light. Things lurk there that even I respect."
     }
   }
 }

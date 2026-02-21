@@ -57,6 +57,10 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
         "npc.orc.greet_2",
         "npc.orc.greet_3",
       ],
+      options: [
+        { text: "npc.orc.ask_clan", action: "hint", response: "npc.orc.clan_response" },
+        { text: "npc.orc.ask_fight", action: "hint", response: "npc.orc.fight_response" },
+      ],
     },
   },
   skeleton: {
@@ -112,6 +116,10 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
         "npc.goblin.greet_2",
         "npc.goblin.greet_3",
       ],
+      options: [
+        { text: "npc.goblin.ask_secret", action: "hint", response: "npc.goblin.secret_response" },
+        { text: "npc.goblin.ask_shiny", action: "hint", response: "npc.goblin.shiny_response" },
+      ],
     },
   },
   wolf: {
@@ -152,6 +160,9 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
         "npc.merchant.greet_1",
         "npc.merchant.greet_2",
         "npc.merchant.greet_3",
+      ],
+      options: [
+        { text: "npc.merchant.ask_news", action: "hint", response: "npc.merchant.news_response" },
       ],
     },
     barks: {
@@ -208,6 +219,10 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
         "npc.ghost.greet_1",
         "npc.ghost.greet_2",
       ],
+      options: [
+        { text: "npc.ghost.ask_death", action: "hint", response: "npc.ghost.death_response" },
+        { text: "npc.ghost.ask_help", action: "hint", response: "npc.ghost.help_response" },
+      ],
     },
   },
   lich: {
@@ -255,6 +270,10 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
         "npc.lich.greet_1",
         "npc.lich.greet_2",
         "npc.lich.greet_3",
+      ],
+      options: [
+        { text: "npc.lich.ask_power", action: "hint", response: "npc.lich.power_response" },
+        { text: "npc.lich.ask_ruins", action: "hint", response: "npc.lich.ruins_response" },
       ],
     },
   },
@@ -306,6 +325,9 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
       greetings: [
         "npc.troll.greet_1",
         "npc.troll.greet_2",
+      ],
+      options: [
+        { text: "npc.troll.ask_food", action: "hint", response: "npc.troll.food_response" },
       ],
     },
   },
@@ -365,6 +387,10 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
         "npc.dark_knight.greet_2",
         "npc.dark_knight.greet_3",
       ],
+      options: [
+        { text: "npc.dark_knight.ask_master", action: "hint", response: "npc.dark_knight.master_response" },
+        { text: "npc.dark_knight.ask_darkness", action: "hint", response: "npc.dark_knight.darkness_response" },
+      ],
     },
   },
   banker: {
@@ -383,6 +409,9 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
       greetings: [
         "npc.banker.greet_1",
         "npc.banker.greet_2",
+      ],
+      options: [
+        { text: "npc.banker.ask_rates", action: "hint", response: "npc.banker.rates_response" },
       ],
     },
     barks: {
@@ -452,6 +481,10 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
         "npc.vampire.greet_1",
         "npc.vampire.greet_2",
         "npc.vampire.greet_3",
+      ],
+      options: [
+        { text: "npc.vampire.ask_nature", action: "hint", response: "npc.vampire.nature_response" },
+        { text: "npc.vampire.ask_exit", action: "hint", response: "npc.vampire.exit_response" },
       ],
     },
   },
@@ -617,10 +650,10 @@ export const NPC_STATS: Record<NpcId, NpcStats> = Object.fromEntries(
 
 export const NPC_IDS: NpcId[] = Object.keys(_NPC_STATS) as NpcId[];
 
-/** NPC IDs that support dialogue interaction (click to talk). Derived from `dialogue` config. */
+/** NPC IDs that support click-to-talk interaction. Requires BOTH passive + dialogue. */
 export const FRIENDLY_NPC_IDS: ReadonlySet<string> = new Set<string>(
   Object.entries(_NPC_STATS)
-    .filter(([, v]) => v?.dialogue)
+    .filter(([, v]) => v?.passive && v?.dialogue)
     .map(([k]) => k),
 );
 

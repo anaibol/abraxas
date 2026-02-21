@@ -1282,44 +1282,74 @@
     "merchant": {
       "greet_1": "¡Bienvenido! Echa un vistazo a mis mejores productos.",
       "greet_2": "¡Ah, un cliente! ¿Qué te llama la atención?",
-      "greet_3": "¡Acércate! Todo tiene su precio."
+      "greet_3": "¡Acércate! Todo tiene su precio.",
+      "ask_news": "¿Has oído algún rumor últimamente?",
+      "news_response": "Dicen que se han visto luces extrañas en las catacumbas. Podría ser tesoro... o problemas. Mejor ir preparado."
     },
     "banker": {
       "greet_1": "Tu oro está seguro con nosotros. ¿En qué puedo ayudarte?",
-      "greet_2": "Bienvenido a la Bóveda Real. ¿Depósitos o retiros?"
+      "greet_2": "Bienvenido a la Bóveda Real. ¿Depósitos o retiros?",
+      "ask_rates": "¿Qué tan segura es esta bóveda realmente?",
+      "rates_response": "Nuestras bóvedas están protegidas por magia antigua y custodiadas día y noche. Ni una sola moneda se ha perdido en trescientos años."
     },
     "orc": {
       "greet_1": "Tú fuerte. Orco respetar eso. ¿Qué querer?",
       "greet_2": "Habla rápido, humano. Paciencia de orco poca.",
-      "greet_3": "Hmph. Tú no parecer enemigo. Habla."
+      "greet_3": "Hmph. Tú no parecer enemigo. Habla.",
+      "ask_clan": "Cuéntame sobre tu clan.",
+      "clan_response": "Clan Colmillo Sangriento ser el más fuerte. Luchar, conquistar. Eso ser camino de orco. ¿Querer saber más? Demuestra tu valor en batalla.",
+      "ask_fight": "¿Dónde está la mejor pelea por aquí?",
+      "fight_response": "Trolls al norte. Grandes, tontos, pegan duro. Buena pelea. También hay oscuros en las ruinas. Peligroso, incluso para orco."
     },
     "goblin": {
       "greet_1": "¡Jejeje! ¿Quieres trato? ¡Goblin hacer MEJORES tratos!",
       "greet_2": "¡Psst! ¡Oye tú! ¿Tienes algo brillante para cambiar?",
-      "greet_3": "Tú no pegar a goblin, ¿verdad? ¿VERDAD? Bien, bien..."
+      "greet_3": "Tú no pegar a goblin, ¿verdad? ¿VERDAD? Bien, bien...",
+      "ask_secret": "¿Tienes algún secreto para mí?",
+      "secret_response": "¡Goblin escuchar cosas, sí sí! Arañas en bosque guardar cueva de tesoro. Muchas telarañas, mucho peligro. ¡Pero cosas brillantes dentro... MUY brillantes!",
+      "ask_shiny": "¿Qué es lo más brillante que has visto?",
+      "shiny_response": "¡Una vez goblin ver escama de dragón! ¡Brillando dorada a la luz de la luna! Dragón no contento cuando goblin intentar tomar... goblin correr MUY rápido ese día."
     },
     "ghost": {
       "greet_1": "No me temas... Yo fui como tú una vez...",
-      "greet_2": "¿Los vivos aún deambulan aquí? Qué... curioso..."
+      "greet_2": "¿Los vivos aún deambulan aquí? Qué... curioso...",
+      "ask_death": "¿Cómo moriste?",
+      "death_response": "Fui un caballero, hace tiempo... juré proteger este lugar. Cuando el Liche se alzó, luchamos... y caímos. Ahora estoy atrapado aquí, entre mundos. Observando para siempre.",
+      "ask_help": "¿Puedes ayudarme?",
+      "help_response": "No puedo tocar el mundo de los vivos, pero puedo ver cosas que otros no. Cuidado con las sombras que se mueven contra el viento. Sirven al Liche."
     },
     "lich": {
       "greet_1": "¿Te atreves a perturbarme, mortal? Habla antes de que pierda la paciencia.",
       "greet_2": "Interesante... te acercas sin temblar. ¿Valiente o insensato?",
-      "greet_3": "He resistido siglos. Tú tienes segundos. Elige tus palabras."
+      "greet_3": "He resistido siglos. Tú tienes segundos. Elige tus palabras.",
+      "ask_power": "¿Cuál es la fuente de tu poder?",
+      "power_response": "La muerte misma me alimenta. Cada alma que perece aquí fortalece mi dominio. Podrías servirme voluntariamente... o simplemente podría tomar lo que necesito.",
+      "ask_ruins": "¿Qué pasó con estas ruinas?",
+      "ruins_response": "Esto fue una gran ciudad. Su pueblo se volvió arrogante. Buscaron dominar la muerte. Lo lograron... pero no como esperaban. Yo soy su legado."
     },
     "troll": {
       "greet_1": "¿Hmm? Tú pequeño. ¿Qué querer con troll?",
-      "greet_2": "Troll no hambriento... todavía. ¿Qué necesitar?"
+      "greet_2": "Troll no hambriento... todavía. ¿Qué necesitar?",
+      "ask_food": "¿Qué comen los trolls?",
+      "food_response": "¡Troll comer todo! Goblin saber mal. Muy crujiente. Carne de oso mejor. Tú traer carne de oso a troll, troll quizás no comerte. Je je."
     },
     "dark_knight": {
       "greet_1": "¿Te atreves a acercarte? Declara tus asuntos o muere.",
       "greet_2": "Otro aventurero imprudente. Habla rápido.",
-      "greet_3": "Mi espada se inquieta. ¿Qué quieres?"
+      "greet_3": "Mi espada se inquieta. ¿Qué quieres?",
+      "ask_master": "¿A quién sirves?",
+      "master_response": "Sirvo a la oscuridad que habita bajo tierra. Aquel cuyo nombre los vivos no se atreven a pronunciar. Me prometió poder más allá de la muerte, y cumplió.",
+      "ask_darkness": "¿Qué es esta oscuridad de la que hablas?",
+      "darkness_response": "Es la sombra entre las estrellas. El silencio antes de la creación. Susurra a todos los que escuchan. Pronto, engullirá este mundo entero."
     },
     "vampire": {
       "greet_1": "Ah, un visitante... qué encantador. Acércate más.",
       "greet_2": "Hueles... exquisito. Pero me contendré. Por ahora.",
-      "greet_3": "La noche es joven, y tú también. ¿Qué te trae aquí?"
+      "greet_3": "La noche es joven, y tú también. ¿Qué te trae aquí?",
+      "ask_nature": "¿Qué eres exactamente?",
+      "nature_response": "Soy lo que queda cuando la mortalidad se desvanece. Una criatura de gustos refinados y... apetitos eternos. He visto imperios levantarse y desmoronarse.",
+      "ask_exit": "¿Cómo salgo de aquí a salvo?",
+      "exit_response": "¿A salvo? Qué aburrido. Pero si insistes — sigue las antorchas que aún arden. Marcan los caminos antiguos. Evita los pasillos sin luz. Cosas acechan allí que incluso yo respeto."
     }
   }
 }

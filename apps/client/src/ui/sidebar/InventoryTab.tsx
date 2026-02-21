@@ -51,15 +51,14 @@ export function InventoryTab({
     <Box p="2.5" ref={containerRef} onMouseMove={handleMouseMove}>
       {/* Equipment slots */}
       {state.equipment && (
-        <Flex gap="1" mb="2" justify="center">
+        <Grid templateColumns={`repeat(${EQUIPMENT_SLOTS.length}, 1fr)`} gap="1" mb="2">
           {EQUIPMENT_SLOTS.map((slot) => {
             const equipped = state.equipment?.[slot];
             const def = equipped ? ITEMS[equipped] : null;
             return (
               <Box
                 key={slot}
-                w="42px"
-                h="42px"
+                aspectRatio="1"
                 bg={T.darkest}
                 border="1px solid"
                 borderColor={def ? RARITY_COLORS[def.rarity] || T.border : T.border}
@@ -79,16 +78,16 @@ export function InventoryTab({
                 }}
                 onMouseLeave={() => setHoveredItemId(null)}
               >
-                <Text fontSize="16px">{def ? getItemEmoji(equipped!) : ""}</Text>
+                <Text fontSize="24px">{def ? getItemEmoji(equipped!) : ""}</Text>
                 {!def && (
-                  <Text textStyle={T.badgeText} color={T.goldDark} position="absolute" bottom="1px">
-                    {slot.slice(0, 3).toUpperCase()}
+                  <Text fontSize="24px" opacity={0.25} lineHeight="1" userSelect="none">
+                    {slot === "helmet" ? "🪖" : slot === "armor" ? "👕" : slot === "weapon" ? "⚔️" : slot === "shield" ? "🛡️" : slot === "ring" ? "💍" : slot === "mount" ? "🐎" : "•"}
                   </Text>
                 )}
               </Box>
             );
           })}
-        </Flex>
+        </Grid>
       )}
       <Grid templateColumns="repeat(5, 1fr)" gap="1">
         {Array.from({ length: 20 }, (_, i) => {

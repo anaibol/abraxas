@@ -44,7 +44,9 @@ export class PlayerSprite {
   private nameText: Phaser.GameObjects.Text;
   private hpBarGfx: Phaser.GameObjects.Graphics;
   private speakingIcon: Phaser.GameObjects.Text;
-  private shadowGfx!: Phaser.GameObjects.Graphics;
+  private shadowSprite!: Phaser.GameObjects.Sprite;
+  private shadowAlpha = 0.35;
+  private shadowOffsetX = 0;
   private chatBubbleText: Phaser.GameObjects.Text | null = null;
 
   public targetX: number;
@@ -223,13 +225,25 @@ export class PlayerSprite {
     this.speakingIcon.setOrigin(0.5, 1);
     this.speakingIcon.setVisible(false);
 
-    // ── Drop shadow ellipse beneath the entity ──
-    this.shadowGfx = scene.add.graphics();
-    this.shadowGfx.setDepth(0);
-    this.drawShadow(0.35, 0);
+    // ── Drop shadow: flattened silhouette of the body sprite ──
+    this.shadowSprite = scene.add.sprite(
+      0,
+      TILE_SIZE / 2,
+      this.bodySprite.texture.key,
+      this.bodySprite.frame.name,
+    );
+    this.shadowSprite.setOrigin(0.5, 0.5);
+    this.shadowSprite.setTint(0x000000);
+    this.shadowSprite.setAlpha(this.shadowAlpha);
+    this.shadowSprite.setScale(1, 0.3); // flatten vertically
+
+    // Keep shadow frame in sync with body animation
+    this.bodySprite.on(Phaser.Animations.Events.ANIMATION_UPDATE, () =>
+      this.syncShadowFrame(),
+    );
 
     const containerChildren: Phaser.GameObjects.GameObject[] = [
-      this.shadowGfx,
+      this.shadowSprite,
       this.bodySprite,
       this.nameText,
       this.hpBarGfx,
@@ -253,15 +267,13 @@ export class PlayerSprite {
     this.resolver.ensureAnimation(scene, bodyGrhId, "body");
   }
 
-  /**
-   * Redraws the shadow ellipse with the given opacity and X offset.
-   * Called once at construction and then per-frame via updateShadow().
-   */
-  private drawShadow(alpha: number, offsetX: number) {
-    this.shadowGfx.clear();
-    this.shadowGfx.fillStyle(0x000000, alpha);
-    // Ellipse at the character's feet
-    this.shadowGfx.fillEllipse(offsetX, TILE_SIZE / 2, this.bodyWidth * 0.7, 8);
+  /** Sync the shadow sprite's frame with the body sprite's current frame. */
+  private syncShadowFrame() {
+    if (!this.shadowSprite?.active || !this.bodySprite?.active) return;
+    const f = this.bodySprite.frame;
+    if (this.shadowSprite.frame.name !== f.name) {
+      this.shadowSprite.setTexture(f.texture.key, f.name);
+    }
   }
 
   /**
@@ -275,36 +287,35 @@ export class PlayerSprite {
     let offsetX: number;
 
     if (timeOfDay < 5 || timeOfDay > 20) {
-      // Night — very faint diffuse shadow
       alpha = 0.1;
       offsetX = 0;
     } else if (timeOfDay >= 5 && timeOfDay < 8) {
-      // Dawn — sun rising in the east, shadow cast to the west (left)
-      const t = (timeOfDay - 5) / 3; // 0→1
+      const t = (timeOfDay - 5) / 3;
       alpha = 0.1 + t * 0.25;
       offsetX = -6 * (1 - t);
     } else if (timeOfDay >= 8 && timeOfDay < 12) {
-      // Morning — shadow shortens toward noon
-      const t = (timeOfDay - 8) / 4; // 0→1
+      const t = (timeOfDay - 8) / 4;
       alpha = 0.35 + t * 0.1;
       offsetX = -3 * (1 - t);
     } else if (timeOfDay >= 12 && timeOfDay < 14) {
-      // Midday — sun overhead, strong centred shadow
       alpha = 0.45;
       offsetX = 0;
     } else if (timeOfDay >= 14 && timeOfDay < 17) {
-      // Afternoon — shadow lengthens to the east (right)
-      const t = (timeOfDay - 14) / 3; // 0→1
+      const t = (timeOfDay - 14) / 3;
       alpha = 0.45 - t * 0.1;
       offsetX = 3 * t;
     } else {
-      // Dusk (17-20) — long shadow to the east, fading
-      const t = (timeOfDay - 17) / 3; // 0→1
+      const t = (timeOfDay - 17) / 3;
       alpha = 0.35 - t * 0.25;
       offsetX = 6 * (1 - t);
     }
 
-    this.drawShadow(alpha, offsetX);
+    this.shadowAlpha = alpha;
+    this.shadowOffsetX = offsetX;
+    if (this.shadowSprite?.active) {
+      this.shadowSprite.setAlpha(alpha);
+      this.shadowSprite.setX(offsetX);
+    }
   }
 
   private updateHeadPosition() {
@@ -412,6 +423,7 @@ export class PlayerSprite {
     if (bodyStatic && this.bodySprite.active) {
       this.bodySprite.stop();
       this.bodySprite.setTexture(`ao-${bodyStatic.grafico}`, `grh-${bodyStatic.id}`);
+      this.syncShadowFrame();
     }
     this.applyStaticEquipmentFrame(this.weaponSprite, this.curWeaponAoId, (id) =>
       this.resolver.getWeaponEntry(id),
