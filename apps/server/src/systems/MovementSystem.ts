@@ -90,8 +90,8 @@ export class MovementSystem {
       newY < 0 ||
       newY >= map.height ||
       map.collision[newY]?.[newX] === 1 ||
-      (!entity.isPlayer() &&
-        map.warps?.some((w) => w.x === newX && w.y === newY)) ||
+      // Bug #69: Removed NPC warp blocking — it could permanently trap NPCs
+      // if a warp tile was on the only path between two areas
       this.spatial.isTileOccupied(newX, newY, entity.sessionId)
     ) {
       return { success: false };

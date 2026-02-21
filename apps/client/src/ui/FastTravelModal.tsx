@@ -3,6 +3,7 @@ import type { FastTravelWaypoint } from "@abraxas/shared";
 import { Box, Flex, Text, VStack } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 import { useAudio } from "../contexts/AudioContext";
+import { ModalOverlay } from "./components/ModalOverlay";
 import { HEX, T } from "./tokens";
 
 interface FastTravelModalProps {
@@ -22,30 +23,21 @@ export const FastTravelModal: FC<FastTravelModalProps> = ({
   const { playUIClick, playUIHover } = useAudio();
 
   return (
-    <Flex
-      pos="fixed"
-      inset="0"
+    <ModalOverlay
       zIndex={70}
-      align="center"
-      justify="center"
-      bg="rgba(0,0,0,0.65)"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+      onClose={onClose}
+      panelProps={{
+        bg: T.bg,
+        border: "1px solid",
+        borderColor: T.border,
+        borderRadius: "4px",
+        p: "7",
+        minW: "320px",
+        maxW: "420px",
+        boxShadow: "0 8px 48px rgba(0,0,0,0.85)",
+        layerStyle: undefined,
       }}
     >
-      <Box
-        bg={T.bg}
-        border="1px solid"
-        borderColor={T.border}
-        borderRadius="4px"
-        p="7"
-        minW="320px"
-        maxW="420px"
-        boxShadow="0 8px 48px rgba(0,0,0,0.85)"
-        fontFamily={T.display}
-        animation="popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards"
-        onClick={(e) => e.stopPropagation()}
-      >
         {/* Header */}
         <Flex align="center" justify="space-between" mb="5">
           <Box>
@@ -142,7 +134,6 @@ export const FastTravelModal: FC<FastTravelModalProps> = ({
         >
           {t("fast_travel.esc_hint", "Press ESC to close")}
         </Text>
-      </Box>
-    </Flex>
+    </ModalOverlay>
   );
 };

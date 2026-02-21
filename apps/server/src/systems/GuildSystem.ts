@@ -154,6 +154,14 @@ export class GuildSystem {
     }
 
     try {
+      // Bug #84: Enforce guild size cap
+      const members = await GuildService.getGuildMembers(guildId);
+      if (members.length >= 50) {
+        HandlerUtils.sendError(client, "Guild is full (max 50 members).");
+        this.clearInvitation(client.sessionId);
+        return;
+      }
+
       await GuildService.addMember(guildId, player.dbId);
       player.guildId = guildId;
       this.clearInvitation(client.sessionId);

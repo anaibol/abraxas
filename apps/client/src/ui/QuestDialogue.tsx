@@ -1,7 +1,8 @@
-import { Box, Flex, Text, VStack } from "@chakra-ui/react";
+import { Box, Text, VStack } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 import { useAudio } from "../contexts/AudioContext";
 import { Button } from "./components/Button";
+import { ModalOverlay } from "./components/ModalOverlay";
 import { T } from "./tokens";
 
 interface DialogueOption {
@@ -23,24 +24,19 @@ export function QuestDialogue({ npcId: _npcId, npcType, text, options, onAction,
   const { t } = useTranslation();
   const { playQuestAccept, playQuestComplete, playUIClick, playUIHover } = useAudio();
   return (
-    <Flex
-      pos="fixed"
-      inset="0"
-      align="center"
-      justify="center"
-      bg="rgba(0,0,0,0.7)"
-      zIndex={200}
-      fontFamily={T.display}
+    <ModalOverlay
+      onClose={onClose}
+      panelProps={{
+        w: { base: "calc(100vw - 32px)", md: "450px" },
+        bg: T.bg,
+        border: "1px solid",
+        borderColor: T.border,
+        boxShadow: "0 0 30px rgba(0,0,0,0.8)",
+        borderRadius: "4px",
+        overflow: "hidden",
+        layerStyle: undefined,
+      }}
     >
-      <Box
-        w={{ base: "calc(100vw - 32px)", md: "450px" }}
-        bg={T.bg}
-        border="1px solid"
-        borderColor={T.border}
-        boxShadow="0 0 30px rgba(0,0,0,0.8)"
-        borderRadius="4px"
-        overflow="hidden"
-      >
         {/* Header */}
         <Box bg={T.surface} px="4" py="2" borderBottom="2px solid" borderColor={T.border}>
           <Text
@@ -99,7 +95,6 @@ export function QuestDialogue({ npcId: _npcId, npcType, text, options, onAction,
             ))}
           </VStack>
         </Box>
-      </Box>
-    </Flex>
+    </ModalOverlay>
   );
 }

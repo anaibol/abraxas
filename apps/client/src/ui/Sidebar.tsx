@@ -14,6 +14,7 @@ import { InventoryTab } from "./sidebar/InventoryTab";
 import { SidebarFooter } from "./sidebar/SidebarFooter";
 import { SpellsTab } from "./sidebar/SpellsTab";
 import type { SidebarProps } from "./sidebar/types";
+import { GoldDivider } from "./components/PanelHeader";
 import { HEX, T } from "./tokens";
 
 const SIDEBAR_TABS: readonly {
@@ -119,7 +120,7 @@ export function Sidebar({
       {/* Header */}
       <CharacterHeader state={state} isRecording={isRecording} />
 
-      <Box h="1px" bg={`linear-gradient(90deg, transparent, ${HEX.gold}, transparent)`} />
+      <GoldDivider />
 
       {/* Gold display */}
       <Flex

@@ -77,8 +77,14 @@ export class PlayerService {
             ? Direction.RIGHT
             : Direction.DOWN;
 
-    // Starting gear logic
-    if (this.isPlayerTotallyNew(player)) {
+    // Grant starting gear to brand-new characters (empty inventory + no equipment)
+    const isTotallyNew =
+      player.inventory.length === 0 &&
+      !player.equipWeapon &&
+      !player.equipArmor &&
+      !player.equipShield &&
+      !player.equipHelmet;
+    if (isTotallyNew) {
       this.giveStartingGear(player);
     }
 
@@ -156,17 +162,6 @@ export class PlayerService {
     return item;
   }
 
-  public isPlayerTotallyNew(player: Player): boolean {
-    // Bug #64: Removed gold check — a player receiving gold from another system
-    // shouldn't prevent them from getting starting gear
-    return (
-      player.inventory.length === 0 &&
-      !player.equipWeapon &&
-      !player.equipArmor &&
-      !player.equipShield &&
-      !player.equipHelmet
-    );
-  }
 
   private giveStartingGear(player: Player) {
     const startingGear = STARTING_EQUIPMENT[player.classType];

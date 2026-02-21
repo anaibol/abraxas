@@ -1,7 +1,8 @@
 import { Box, Flex, Grid, Spinner, Text } from "@chakra-ui/react";
-import { Trophy, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ModalOverlay } from "./components/ModalOverlay";
+import { PanelHeader } from "./components/PanelHeader";
 import { HEX, T } from "./tokens";
 
 const FONT = T.display;
@@ -206,72 +207,24 @@ export function LeaderboardModal({ myName, onClose }: LeaderboardModalProps) {
     : [];
 
   return (
-    <Flex
-      pos="fixed"
-      inset="0"
-      align="center"
-      justify="center"
+    <ModalOverlay
       zIndex={90}
-      bg="rgba(0,0,0,0.7)"
-      onClick={onClose}
+      onClose={onClose}
+      panelProps={{
+        bg: T.bg,
+        border: `1px solid ${HEX.border}`,
+        borderRadius: "4px",
+        w: { base: "95vw", md: "520px" },
+        maxH: "80dvh",
+        overflow: "hidden",
+        boxShadow: "0 12px 64px rgba(0,0,0,0.9)",
+        display: "flex",
+        flexDirection: "column",
+        layerStyle: undefined,
+      }}
     >
-      <Box
-        onClick={(e) => e.stopPropagation()}
-        bg={T.bg}
-        border={`1px solid ${HEX.border}`}
-        borderRadius="4px"
-        w={{ base: "95vw", md: "520px" }}
-        maxH="80dvh"
-        overflow="hidden"
-        boxShadow="0 12px 64px rgba(0,0,0,0.9)"
-        display="flex"
-        flexDirection="column"
-      >
         {/* Header */}
-        <Flex
-          align="center"
-          justify="space-between"
-          px="5"
-          py="3"
-          bg={T.surface}
-          borderBottom={`1px solid ${HEX.border}`}
-          flexShrink={0}
-        >
-          <Flex align="center" gap="2">
-            <Trophy size={16} color={HEX.gold} />
-            <Box
-              fontSize="13px"
-              letterSpacing="5px"
-              textTransform="uppercase"
-              color={T.gold}
-              fontWeight="700"
-              fontFamily={FONT}
-            >
-              {t("leaderboard.title")}
-            </Box>
-          </Flex>
-          <Flex align="center" gap="3">
-            <Box
-              fontSize="10px"
-              color="#4a3e2a"
-              letterSpacing="1px"
-              fontFamily={FONT}
-              cursor="pointer"
-              _hover={{ color: T.goldDim }}
-              onClick={fetchData}
-            >
-              ↻ {t("leaderboard.refresh")}
-            </Box>
-            <Box
-              color="#4a3e2a"
-              _hover={{ color: T.gold }}
-              cursor="pointer"
-              onClick={onClose}
-            >
-              <X size={16} />
-            </Box>
-          </Flex>
-        </Flex>
+        <PanelHeader title={t("leaderboard.title")} onClose={onClose} />
 
         {/* Tabs */}
         <Grid
@@ -368,7 +321,6 @@ export function LeaderboardModal({ myName, onClose }: LeaderboardModalProps) {
             {t("leaderboard.hint")}
           </Box>
         </Box>
-      </Box>
-    </Flex>
+    </ModalOverlay>
   );
 }

@@ -1,6 +1,7 @@
 import { Box, Flex } from "@chakra-ui/react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ModalOverlay } from "./components/ModalOverlay";
 import { HEX, T } from "./tokens";
 
 interface DropQuantityDialogProps {
@@ -22,26 +23,18 @@ export function DropQuantityDialog({
   const confirm = () => onConfirm(clamp(qty));
 
   return (
-    <Box
-      position="fixed"
-      inset="0"
-      zIndex={200}
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      bg="rgba(0,0,0,0.65)"
-      onClick={onCancel}
+    <ModalOverlay
+      onClose={onCancel}
+      panelProps={{
+        bg: T.bg,
+        border: "1px solid",
+        borderColor: T.border,
+        borderRadius: "4px",
+        p: "5",
+        w: "260px",
+        layerStyle: undefined,
+      }}
     >
-      <Box
-        bg={T.bg}
-        border="1px solid"
-        borderColor={T.border}
-        borderRadius="4px"
-        p="5"
-        w="260px"
-        fontFamily={T.display}
-        onClick={(e) => e.stopPropagation()}
-      >
         <Box textStyle={T.sectionLabel} color={T.gold} mb="1" textAlign="center" fontSize="18px">
           {t("drop_dialog.title")}
         </Box>
@@ -132,7 +125,6 @@ export function DropQuantityDialog({
             {t("drop_dialog.drop")}
           </Box>
         </Flex>
-      </Box>
-    </Box>
+    </ModalOverlay>
   );
 }

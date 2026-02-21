@@ -197,6 +197,18 @@ export class EffectResolver {
         targetSessionId: target.sessionId,
         durationMs: ability.durationMs ?? 1000,
       });
+      // Compound effect: stun abilities can also apply a DoT (e.g. entangling_roots)
+      if (ability.dotDamage && ability.dotDurationMs) {
+        this.buffSystem.addDoT(
+          target.sessionId,
+          attacker.sessionId,
+          ability.id,
+          ability.dotDamage,
+          ability.dotIntervalMs ?? 1000,
+          ability.dotDurationMs,
+          now,
+        );
+      }
     } else if (ability.effect === "debuff") {
       this.buffSystem.addBuff(
         target.sessionId,
@@ -299,6 +311,40 @@ export class EffectResolver {
         targetX: attacker.tileX,
         targetY: attacker.tileY,
       });
+      // Compound effect: teleport abilities can deal AoE damage at the landing tile (e.g. leap)
+      if ((ability.aoeRadius ?? 0) > 0 && ability.baseDamage > 0) {
+        const victims = this.spatial.findEntitiesInRadius(
+          attacker.tileX,
+          attacker.tileY,
+          ability.aoeRadius,
+        );
+        const scalingStatValue = this.dmg.boosted(attacker, ability.scalingStat || StatType.STR, now);
+        for (const victim of victims) {
+          if (victim.sessionId === attacker.sessionId) continue;
+          if (!victim.alive) continue;
+          const damageRes = this.dmg.calcAbilityDamage(
+            attacker,
+            victim,
+            ability,
+            windup,
+            scalingStatValue,
+            now,
+          );
+          if (damageRes.dodged || damageRes.parried) continue;
+          victim.hp -= damageRes.damage;
+          this.buffSystem.breakStealth(victim.sessionId);
+          broadcast(ServerMessageType.Damage, {
+            targetSessionId: victim.sessionId,
+            amount: damageRes.damage,
+            hpAfter: victim.hp,
+            type: ability.damageSchool === DamageSchool.PHYSICAL ? DamageSchool.PHYSICAL : "magic",
+            crit: damageRes.crit,
+          });
+          if (victim.hp <= 0) {
+            onDeath(victim, attacker.sessionId);
+          }
+        }
+      }
     } else if (ability.effect === "pickpocket") {
       if (
         attacker.isPlayer() &&
@@ -323,7 +369,10 @@ export class EffectResolver {
 
     // Broadcast CastHit so clients play the ability visual effect.
     // AoE callers already broadcast this once at the target tile; skip per-victim duplicates.
-    if (!suppressCastHit) {
+    // Bug #14: Skip CastHit for non-damaging self-cast effects to avoid spurious VFX
+    const isSelfBuff = attacker.sessionId === target.sessionId &&
+      (ability.effect === "buff" || ability.effect === "stealth" || ability.effect === "cleanse");
+    if (!suppressCastHit && !isSelfBuff) {
       broadcast(ServerMessageType.CastHit, {
         sessionId: attacker.sessionId,
         abilityId: ability.id,

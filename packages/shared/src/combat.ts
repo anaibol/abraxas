@@ -96,7 +96,7 @@ export function calcMeleeDamage(
   }
 
   // Base damage scales with attacker STR
-  let raw = attackerStr * 1.5;
+  let raw = attackerStr * 1.0;
 
   // 3. Glancing blows
   let glancing = false;
@@ -118,7 +118,7 @@ export function calcMeleeDamage(
 
   // 5. Armor reduction & Armor Pen
   const effectiveArmor = Math.max(0, defenderArmor * (1 - attackerArmorPen));
-  const reductionMult = 1 - effectiveArmor / (effectiveArmor + 50);
+  const reductionMult = 1 - effectiveArmor / (effectiveArmor + 100);
   let damage = raw * reductionMult;
 
   // 6. Block (Flat damage reduction or %)
@@ -167,7 +167,7 @@ export function calcRangedDamage(
     };
   }
 
-  let raw = attackerAgi * 1.3;
+  let raw = attackerAgi * 0.9;
 
   let glancing = false;
   if (defenderLvl > attackerLvl + 2) {
@@ -186,7 +186,7 @@ export function calcRangedDamage(
   }
 
   const effectiveArmor = Math.max(0, defenderArmor * (1 - attackerArmorPen));
-  const reductionMult = 1 - effectiveArmor / (effectiveArmor + 60);
+  const reductionMult = 1 - effectiveArmor / (effectiveArmor + 100);
   let damage = raw * reductionMult;
 
   let blocked = false;
@@ -235,7 +235,7 @@ export function calcSpellDamage(
     crit = true;
   }
 
-  const resistMult = Math.max(0.3, 1 - defenderInt * 0.005);
+  const resistMult = Math.max(0.3, 1 - defenderInt * 0.01);
   const damage = Math.max(1, Math.round(raw * resistMult));
 
   return { damage, crit, glancing };
