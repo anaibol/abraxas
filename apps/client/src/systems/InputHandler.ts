@@ -39,6 +39,7 @@ export class InputHandler {
   ) => void;
   private onPttStart?: () => void;
   private onPttEnd?: () => void;
+  private onTargetingCancelled?: () => void;
   private pttKey!: Phaser.Input.Keyboard.Key;
 
   targeting: TargetingState | null = null;
@@ -69,6 +70,7 @@ export class InputHandler {
     onPttStart?: () => void,
     onPttEnd?: () => void,
     onRightClickTile?: (tileX: number, tileY: number, screenX: number, screenY: number) => void,
+    onTargetingCancelled?: () => void,
   ) {
     this.scene = scene;
     this.network = network;
@@ -79,6 +81,7 @@ export class InputHandler {
     this.onPttStart = onPttStart;
     this.onPttEnd = onPttEnd;
     this.onRightClickTile = onRightClickTile;
+    this.onTargetingCancelled = onTargetingCancelled;
 
     const stats = CLASS_STATS[classType];
     const speed = stats.speedTilesPerSecond;
@@ -145,7 +148,10 @@ export class InputHandler {
     }
 
     if (!canAct) {
-      if (this.targeting) this.cancelTargeting();
+      if (this.targeting) {
+        this.cancelTargeting();
+        this.onTargetingCancelled?.();
+      }
       if (rightClicked) {
         const tile = getMouseTile();
         this.onRightClickTile?.(

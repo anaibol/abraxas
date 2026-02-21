@@ -26,6 +26,7 @@ export class PreloaderScene extends Phaser.Scene {
       fontSize: "14px",
       color: "#cccccc",
       fontFamily: FONTS.display,
+      resolution: window.devicePixelRatio,
     });
     this.label.setOrigin(0.5);
 

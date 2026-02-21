@@ -236,6 +236,7 @@ export class BuffSystem {
 
         broadcast(ServerMessageType.Damage, {
           targetSessionId: sessionId,
+          attackerSessionId: dot.sourceSessionId,
           amount: dot.damage,
           hpAfter: entity.hp,
           type: "dot",

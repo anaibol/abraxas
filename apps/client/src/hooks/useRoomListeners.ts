@@ -212,8 +212,9 @@ export function useRoomListeners(
       }
     });
 
-    on(ServerMessageType.InvalidTarget, () => {
-      addConsoleMessage(t("game.invalid_target"), "#ff8888", "combat");
+    on(ServerMessageType.InvalidTarget, (data) => {
+      const msg = data?.reason ? t(`game.invalid_target_${data.reason}`) : t("game.invalid_target");
+      addConsoleMessage(msg, "#ff8888", "combat");
     });
 
     return () => {

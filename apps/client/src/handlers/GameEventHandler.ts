@@ -69,7 +69,7 @@ export class GameEventHandler {
     on(ServerMessageType.StunApplied, (data) => this.onStunApplied(data));
     on(ServerMessageType.Respawn, (data) => this.onRespawn(data));
     on(ServerMessageType.KillFeed, (data) => this.onKillFeedMessage(data));
-    on(ServerMessageType.InvalidTarget, () => this.onInvalidTarget());
+    on(ServerMessageType.InvalidTarget, (data) => this.onInvalidTarget(data));
     on(ServerMessageType.StealthApplied, (data) => this.onStealthApplied(data));
     on(ServerMessageType.NpcBark, (data) => this.onNpcBark(data));
     on(ServerMessageType.WorldEventStart, (data) => this.onWorldEventStart(data));
@@ -195,6 +195,9 @@ export class GameEventHandler {
       this.onConsoleMessage?.(t("game.you_took_damage", { amount: data.amount }), "#ff4444", "combat");
     } else {
       this.soundManager.playHit(opts);
+      if (data.attackerSessionId && this.isSelf(data.attackerSessionId)) {
+        this.onConsoleMessage?.(t("game.you_dealt_damage", { amount: data.amount }), "#ff8800", "combat");
+      }
     }
   }
 
@@ -305,8 +308,9 @@ export class GameEventHandler {
     this.onKillFeed?.(data.killerName, data.victimName);
   }
 
-  private onInvalidTarget() {
-    this.effectManager.showFloatingText(this.room.sessionId, t("game.invalid_target"), "#ff8800");
+  private onInvalidTarget(data?: ServerMessages["invalid_target"]) {
+    const msg = data?.reason ? t(`game.invalid_target_${data.reason}`) : t("game.invalid_target");
+    this.effectManager.showFloatingText(this.room.sessionId, msg, "#ff8800");
   }
 
   private onLevelUp(data: ServerMessages["level_up"]) {

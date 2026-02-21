@@ -1,4 +1,5 @@
 import { type FC, useEffect, useRef, useState } from "react";
+import { FONTS } from "./tokens";
 
 interface WorldEventBannerProps {
   eventName: string;
@@ -96,7 +97,7 @@ export const WorldEventBanner: FC<WorldEventBannerProps> = ({
               color: "#ff4444",
               fontWeight: "700",
               fontSize: "15px",
-              fontFamily: "'Friz Quadrata', Georgia, serif",
+              fontFamily: FONTS.display,
               letterSpacing: "2px",
               textShadow: "0 0 8px rgba(255,68,68,0.6)",
             }}

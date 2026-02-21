@@ -105,6 +105,7 @@ export class EffectResolver {
       this.buffSystem.breakStealth(target.sessionId);
       broadcast(ServerMessageType.Damage, {
         targetSessionId: target.sessionId,
+        attackerSessionId: attacker.sessionId,
         amount: damageRes.damage,
         hpAfter: target.hp,
         type: ability.damageSchool === DamageSchool.PHYSICAL ? DamageSchool.PHYSICAL : "magic",
@@ -144,6 +145,7 @@ export class EffectResolver {
         this.buffSystem.breakStealth(target.sessionId);
         broadcast(ServerMessageType.Damage, {
           targetSessionId: target.sessionId,
+          attackerSessionId: attacker.sessionId,
           amount: damageRes.damage,
           hpAfter: target.hp,
           type: ability.damageSchool === DamageSchool.PHYSICAL ? DamageSchool.PHYSICAL : "magic",
@@ -340,6 +342,7 @@ export class EffectResolver {
           this.buffSystem.breakStealth(victim.sessionId);
           broadcast(ServerMessageType.Damage, {
             targetSessionId: victim.sessionId,
+            attackerSessionId: attacker.sessionId,
             amount: damageRes.damage,
             hpAfter: victim.hp,
             type: ability.damageSchool === DamageSchool.PHYSICAL ? DamageSchool.PHYSICAL : "magic",

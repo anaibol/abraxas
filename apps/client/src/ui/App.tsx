@@ -494,7 +494,7 @@ export function App() {
                 mode: Phaser.Scale.RESIZE,
                 autoCenter: Phaser.Scale.CENTER_BOTH,
               },
-              pixelArt: true,
+              roundPixels: true,
             });
           });
         });
@@ -536,9 +536,8 @@ export function App() {
     if (!game) return;
     const scene = game.scene.getScene("GameScene");
     if (!(scene instanceof GameScene)) return;
-    if (!scene) return;
-    scene.startSpellTargeting(spellId, rangeTiles);
-    if (rangeTiles > 0) {
+    const ok = scene.startSpellTargeting(spellId, rangeTiles);
+    if (ok && rangeTiles > 0) {
       setPendingSpellId(spellId);
       const canvas = game.canvas;
       const cleanup = () => {
@@ -546,6 +545,7 @@ export function App() {
         canvas.removeEventListener("pointerdown", cleanup);
         canvas.removeEventListener("contextmenu", cleanup);
         window.removeEventListener("keydown", onEsc);
+        scene.onTargetingCancelled = undefined;
       };
       const onEsc = (e: KeyboardEvent) => {
         if (e.key === "Escape") cleanup();
@@ -553,6 +553,7 @@ export function App() {
       canvas.addEventListener("pointerdown", cleanup);
       canvas.addEventListener("contextmenu", cleanup);
       window.addEventListener("keydown", onEsc);
+      scene.onTargetingCancelled = cleanup;
     }
   }, []);
 

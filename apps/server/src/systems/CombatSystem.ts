@@ -231,7 +231,7 @@ export class CombatSystem {
         y: targetTileY,
       })
     ) {
-      sendToClient?.(ServerMessageType.InvalidTarget);
+      sendToClient?.(ServerMessageType.InvalidTarget, { reason: "los" });
       return false;
     }
 
@@ -240,7 +240,7 @@ export class CombatSystem {
     if (isRanged) {
       const target = this.spatial.findEntityAtTile(targetTileX, targetTileY);
       if (!target || !target.alive || !this.canAttack(attacker, target)) {
-        sendToClient?.(ServerMessageType.InvalidTarget);
+        sendToClient?.(ServerMessageType.InvalidTarget, { reason: "dead_or_invalid" });
         return false;
       }
       const dist = MathUtils.manhattanDist(attacker.getPosition(), {
@@ -248,7 +248,7 @@ export class CombatSystem {
         y: target.tileY,
       });
       if (dist > stats.attackRange) {
-        sendToClient?.(ServerMessageType.InvalidTarget);
+        sendToClient?.(ServerMessageType.InvalidTarget, { reason: "out_of_range" });
         return false;
       }
     }
@@ -381,7 +381,7 @@ export class CombatSystem {
           dist,
           max: ability.rangeTiles,
         });
-        sendToClient?.(ServerMessageType.InvalidTarget);
+        sendToClient?.(ServerMessageType.InvalidTarget, { reason: "out_of_range" });
         return false;
       }
       if (
@@ -391,7 +391,7 @@ export class CombatSystem {
         })
       ) {
         logger.debug({ intent: "try_cast", result: "fail", reason: "los" });
-        sendToClient?.(ServerMessageType.InvalidTarget);
+        sendToClient?.(ServerMessageType.InvalidTarget, { reason: "los" });
         return false;
       }
     }
@@ -597,6 +597,7 @@ export class CombatSystem {
         });
         broadcast(ServerMessageType.Damage, {
           targetSessionId: target.sessionId,
+          attackerSessionId: attacker.sessionId,
           amount: result.damage,
           hpAfter: target.hp,
           type: DamageSchool.PHYSICAL,

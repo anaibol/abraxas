@@ -534,6 +534,7 @@ export type ServerMessages = {
   };
   [ServerMessageType.Damage]: {
     targetSessionId: string;
+    attackerSessionId?: string;
     amount: number;
     hpAfter: number;
     type: "physical" | "magic" | "dot";
@@ -581,7 +582,7 @@ export type ServerMessages = {
     templateData?: Record<string, unknown>;
   };
   [ServerMessageType.ItemUsed]: { sessionId: string; itemId: string };
-  [ServerMessageType.InvalidTarget]: undefined;
+  [ServerMessageType.InvalidTarget]: { reason?: "los" | "out_of_range" | "dead_or_invalid" };
   [ServerMessageType.LevelUp]: { sessionId: string; level: number };
   [ServerMessageType.OpenShop]: { npcId: string; inventory: string[] };
   [ServerMessageType.BuyItem]: { itemId: string; quantity: number };

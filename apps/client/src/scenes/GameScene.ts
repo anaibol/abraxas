@@ -61,6 +61,7 @@ export class GameScene extends Phaser.Scene {
   private cameraController!: CameraController;
   public soundManager!: SoundManager;
   private audioManager: AudioManager;
+  public onTargetingCancelled?: () => void;
   private gameEventHandler!: GameEventHandler;
   private weatherManager!: WeatherManager;
   private lightManager!: LightManager;
@@ -227,6 +228,7 @@ export class GameScene extends Phaser.Scene {
           this.onGMMapClick?.(tileX, tileY);
         }
       },
+      () => this.onTargetingCancelled?.(),
     );
 
     const $state = Callbacks.get(this.room);
@@ -553,14 +555,21 @@ export class GameScene extends Phaser.Scene {
     this.network.sendCast(spellId, 0, 0);
   }
 
-  startSpellTargeting(spellId: string, rangeTiles: number) {
-    if (!this.canAct()) return;
+  startSpellTargeting(spellId: string, rangeTiles: number): boolean {
+    const lp = this.room.state.players.get(this.room.sessionId);
+    if (!this.canAct()) {
+      if (lp && lp.stunned) {
+        this.onConsoleMessage?.(i18n.t("game.status.stun_prevent_cast", "You are stunned and cannot cast spells!"), "#ff4444", "combat");
+      }
+      return false;
+    }
     this.inputHandler.cancelTargeting();
     if (rangeTiles > 0) {
       this.inputHandler.enterTargeting({ mode: "spell", spellId, rangeTiles });
     } else {
       this.network.sendCast(spellId, 0, 0);
     }
+    return true;
   }
 
   private clearTargetingOverlay() {
