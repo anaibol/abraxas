@@ -12,6 +12,7 @@ export function CharacterHeader({ state, isRecording }: CharacterHeaderProps) {
   const { t } = useTranslation();
   return (
     <Box
+      position="relative"
       px="4"
       pt="3.5"
       pb="2.5"
@@ -55,71 +56,74 @@ export function CharacterHeader({ state, isRecording }: CharacterHeaderProps) {
 
       {/* Attackability indicator */}
       {state.alive && (() => {
+        let config;
         if (state.spawnProtection) {
-          return (
-            <Box
-              mt="1.5"
-              px="3"
-              py="0.5"
-              bg="rgba(20, 15, 35, 0.85)"
-              border="1px solid rgba(180, 140, 255, 0.6)"
-              borderRadius="full"
-              display="inline-block"
-            >
-              <Text textStyle={T.badgeText} color="#c8a0ff" fontWeight="700" letterSpacing="2px">
-                🛡 {t("status.spawn_protected", { defaultValue: "PROTECTED" })}
-              </Text>
-            </Box>
-          );
+          config = {
+            bg: "rgba(20, 15, 35, 0.6)",
+            border: "rgba(180, 140, 255, 0.3)",
+            color: "#c8a0ff",
+            icon: "🛡",
+            text: t("status.spawn_protected", { defaultValue: "PROTECTED" }),
+          };
+        } else if (state.inSafeZone) {
+          config = {
+            bg: "rgba(10, 30, 10, 0.6)",
+            border: "rgba(40, 160, 40, 0.3)",
+            color: "#4edb6e",
+            icon: "🏠",
+            text: t("status.safe_zone", { defaultValue: "SAFE ZONE" }),
+          };
+        } else if (!state.pvpEnabled) {
+          config = {
+            bg: "rgba(10, 20, 40, 0.6)",
+            border: "rgba(60, 120, 220, 0.3)",
+            color: "#6aabff",
+            icon: "🔵",
+            text: t("status.pvp_off", { defaultValue: "PvP OFF" }),
+          };
+        } else {
+          config = {
+            bg: "rgba(40, 5, 5, 0.6)",
+            border: "rgba(220, 50, 50, 0.3)",
+            color: "#ff6b6b",
+            icon: "⚔",
+            text: t("status.pvp_on", { defaultValue: "PvP ON" }),
+          };
         }
-        if (state.inSafeZone) {
-          return (
-            <Box
-              mt="1.5"
-              px="3"
-              py="0.5"
-              bg="rgba(10, 30, 10, 0.85)"
-              border="1px solid rgba(40, 160, 40, 0.6)"
-              borderRadius="full"
-              display="inline-block"
-            >
-              <Text textStyle={T.badgeText} color="#4edb6e" fontWeight="700" letterSpacing="2px">
-                🏠 {t("status.safe_zone", { defaultValue: "SAFE ZONE" })}
-              </Text>
-            </Box>
-          );
-        }
-        if (!state.pvpEnabled) {
-          return (
-            <Box
-              mt="1.5"
-              px="3"
-              py="0.5"
-              bg="rgba(10, 20, 40, 0.85)"
-              border="1px solid rgba(60, 120, 220, 0.6)"
-              borderRadius="full"
-              display="inline-block"
-            >
-              <Text textStyle={T.badgeText} color="#6aabff" fontWeight="700" letterSpacing="2px">
-                🔵 {t("status.pvp_off", { defaultValue: "PvP OFF" })}
-              </Text>
-            </Box>
-          );
-        }
+
         return (
-          <Box
-            mt="1.5"
-            px="3"
-            py="0.5"
-            bg="rgba(40, 5, 5, 0.85)"
-            border="1px solid rgba(220, 50, 50, 0.7)"
-            borderRadius="full"
-            display="inline-block"
+          <Flex
+            position="absolute"
+            top="3"
+            right="3"
+            px="2"
+            py="1"
+            bg={config.bg}
+            border="1px solid"
+            borderColor={config.border}
+            borderRadius="md"
+            align="center"
+            gap="1.5"
+            backdropFilter="blur(4px)"
+            boxShadow={`0 0 10px ${config.color}20`}
+            userSelect="none"
+            pointerEvents="none"
           >
-            <Text textStyle={T.badgeText} color="#ff6b6b" fontWeight="700" letterSpacing="2px">
-              ⚔ {t("status.pvp_on", { defaultValue: "PvP ON" })}
+            <Text fontSize="10px" lineHeight="1">
+              {config.icon}
             </Text>
-          </Box>
+            <Text
+              textStyle={T.badgeText}
+              fontSize="9px"
+              lineHeight="1"
+              color={config.color}
+              fontWeight="bold"
+              letterSpacing="1px"
+              whiteSpace="nowrap"
+            >
+              {config.text}
+            </Text>
+          </Flex>
         );
       })()}
       {isRecording && (

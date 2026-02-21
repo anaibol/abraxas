@@ -141,6 +141,18 @@ const SPELL_FX: Record<string, FxRecipe> = {
       { tex: "RING", colors: [0x4488ff, 0xffffff], count: 4, speed: { min: 10, max: 30 }, scale: { start: 0.33, end: 0.0 }, lifespan: { min: 360, max: 660 }, rotate: { start: 0, end: 360 }, radius: 14 },
     ],
   },
+  blink: {
+    flash: { color: 0xaa44ff, size: 28, duration: 120 },
+    rings: [{ color: 0xdd88ff, start: 32, end: 2, duration: 180, alpha: 0.9, width: 2 }],
+    bursts: [
+      {
+        tex: "SHARD", colors: [], color: [0xffffff, 0xdd88ff, 0x8800cc, 0x220055],
+        colorEase: "Quad.Out", count: 14, speed: { min: 40, max: 160 },
+        scale: { start: 0.45, end: 0.0 }, scaleEase: "Cubic.Out", lifespan: { min: 140, max: 300 },
+        gravityY: -10, radius: 4
+      }
+    ]
+  },
   // ── Warrior ──
   war_cry: {
     rings: [
@@ -1561,6 +1573,7 @@ export class EffectManager {
       soul_drain: 0x8844cc,
       hemorrhage: 0xcc0000,
       backstab: 0xcc0000,
+      blink: 0xaa44ff,
       poison_arrow: 0x44cc00,
       envenom: 0x44cc00,
       poison_bite: 0x44cc00,
@@ -1625,6 +1638,7 @@ export class EffectManager {
   ) {
     const spell = ABILITIES[spellId];
     if (!spell || spell.rangeTiles <= 1) return;
+    if (spell.effect === "teleport") return; // Teleports do not launch traveling projectiles
 
     const sprite = this.spriteManager.getSprite(casterSessionId);
     if (!sprite) return;

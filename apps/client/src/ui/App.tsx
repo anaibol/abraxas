@@ -168,7 +168,7 @@ function AppContent() {
   } | null>(null);
   const [currentMapName, setCurrentMapName] = useState("arena");
   const { settings: gameSettingsState } = useGameSettings();
-  const { addCooldown } = useCooldown();
+  const { addCooldown, getCooldownProgress, cooldowns } = useCooldown();
 
   const [room, setRoom] = useState<Room<GameState> | null>(null);
   const roomRef = useRef<Room<GameState> | null>(null);
@@ -483,6 +483,12 @@ function AppContent() {
               (tileX, tileY) => {
                 networkRef.current?.sendGMTeleport(tileX, tileY);
               },
+              getCooldownProgress,
+              (spellId: string) => {
+                const cd = cooldowns[spellId];
+                if (!cd) return false;
+                return Date.now() < cd.expiresAt;
+              },
             );
 
             gameScene.setCooldownCallback(addCooldown);
@@ -511,7 +517,7 @@ function AppContent() {
         setJoinError(t("game.connection_failed_desc"));
       }
     },
-    [addCooldown, addConsoleMessage, resetConsoleMessages, t],
+    [addCooldown, getCooldownProgress, cooldowns, addConsoleMessage, resetConsoleMessages, t],
   );
 
   const handleLogout = useCallback(() => {

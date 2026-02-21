@@ -2,6 +2,7 @@ import { AudioAssets, CLASS_APPEARANCE, ITEMS, NPC_APPEARANCE } from "@abraxas/s
 import Phaser from "phaser";
 import { AoGrhResolver } from "../assets/AoGrhResolver";
 import { FONTS, getGameTextResolution } from "../ui/tokens";
+import { TREE_GRH_POOL } from "../systems/MapBaker";
 
 export class PreloaderScene extends Phaser.Scene {
   constructor() {
@@ -71,6 +72,11 @@ export class PreloaderScene extends Phaser.Scene {
       [...helmetIds],
       fxIds,
     );
+
+    for (const treeGrhId of TREE_GRH_POOL) {
+      const staticGrh = resolver.resolveStaticGrh(treeGrhId);
+      if (staticGrh) neededPngs.add(staticGrh.grafico);
+    }
 
     const count = neededPngs.size;
     const textMsg = `Loading ${count} graphics...`;

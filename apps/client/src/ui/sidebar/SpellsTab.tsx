@@ -189,8 +189,8 @@ export function SpellsTab({
                   {spell.key && !isLocked && (
                     <Box
                       position="absolute"
-                      bottom="-1px"
-                      right="-1px"
+                      bottom="2px"
+                      right="2px"
                       layerStyle={T.goldBadge}
                       bg={isPending ? T.gold : "#1a1510"}
                       borderColor={isPending ? T.gold : T.raised}

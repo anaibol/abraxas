@@ -155,6 +155,7 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     armor: 100,
     abilities: [],
     passive: true,
+    stationary: true,
     dialogue: {
       greetings: [
         "npc.merchant.greet_1",
@@ -405,6 +406,7 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     armor: 100,
     abilities: [],
     passive: true,
+    stationary: true,
     dialogue: {
       greetings: [
         "npc.banker.greet_1",
@@ -585,6 +587,7 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     int: 0,
     speedTilesPerSecond: 0,
     passive: true,
+    stationary: true,
     armor: 5,
     abilities: [],
     expReward: 0,
@@ -596,6 +599,7 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     int: 0,
     speedTilesPerSecond: 0,
     passive: true,
+    stationary: true,
     armor: 0,
     abilities: [],
     expReward: 0,
@@ -622,6 +626,7 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     int: 0,
     speedTilesPerSecond: 0,
     passive: true,
+    stationary: true,
     armor: 20,
     abilities: [],
     expReward: 0,
@@ -632,6 +637,7 @@ export const NPC_STATS: Record<NpcType, NpcStats> = Object.fromEntries(
   Object.entries(_NPC_STATS).map(([k, v]) => {
     const stats: NpcStats = {
       passive: false,
+      stationary: false,
       fleesWhenLow: false,
       abilityCastChance: 0.4,
       rareSpawn: false,

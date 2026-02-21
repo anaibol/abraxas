@@ -60,6 +60,8 @@ export class GameScene extends Phaser.Scene {
   private spriteManager!: SpriteManager;
   private effectManager!: EffectManager;
   private inputHandler!: InputHandler;
+  private getCooldownProgress?: (spellId: string) => number;
+  private isSpellOnCooldown?: (spellId: string) => boolean;
 
   public soundManager!: SoundManager;
   private audioManager: AudioManager;
@@ -105,6 +107,8 @@ export class GameScene extends Phaser.Scene {
     onPlayerRightClick?: PlayerRightClickCallback,
     onNpcRightClick?: NpcRightClickCallback,
     onGMMapClick?: GMMapClickCallback,
+    getCooldownProgress?: (spellId: string) => number,
+    isSpellOnCooldown?: (spellId: string) => boolean,
   ) {
     super({ key: "GameScene" });
     this.network = network;
@@ -117,6 +121,8 @@ export class GameScene extends Phaser.Scene {
     this.onPlayerRightClick = onPlayerRightClick;
     this.onNpcRightClick = onNpcRightClick;
     this.onGMMapClick = onGMMapClick;
+    this.getCooldownProgress = getCooldownProgress;
+    this.isSpellOnCooldown = isSpellOnCooldown;
   }
 
   
@@ -173,7 +179,17 @@ export class GameScene extends Phaser.Scene {
     // Hook into inner-map warp command to flash the screen
     this.network.onWarp = (data) => {
       if (data.targetMap === this.room.roomId) {
-        this.cameras.main.flash(400, 200, 255, 255);
+        const px = data.targetX * TILE_SIZE + TILE_SIZE / 2;
+        const py = data.targetY * TILE_SIZE + TILE_SIZE / 2;
+        const cx = this.cameras.main.scrollX + this.cameras.main.width / 2;
+        const cy = this.cameras.main.scrollY + this.cameras.main.height / 2;
+        const dx = (px - cx) / TILE_SIZE;
+        const dy = (py - cy) / TILE_SIZE;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist > 15) {
+          this.cameras.main.flash(400, 200, 255, 255);
+        }
       }
     };
 
@@ -244,6 +260,7 @@ export class GameScene extends Phaser.Scene {
         }
       },
       () => this.onTargetingCancelled?.(),
+      this.isSpellOnCooldown,
     );
 
     const $state = Callbacks.get(this.room);
@@ -675,13 +692,52 @@ export class GameScene extends Phaser.Scene {
     if (this.tileHighlight) {
       const mouseTile = this.getMouseTile();
       this.tileHighlight.clear();
-      this.tileHighlight.lineStyle(2, 0xffff00, 0.8);
-      this.tileHighlight.strokeRect(
-        mouseTile.x * TILE_SIZE,
-        mouseTile.y * TILE_SIZE,
-        TILE_SIZE,
-        TILE_SIZE,
-      );
+      
+      const targetingSpellId = this.inputHandler.targeting?.mode === "spell" ? this.inputHandler.targeting.spellId : null;
+      let isOnCooldown = false;
+      let cdProgress = 0;
+
+      if (targetingSpellId && this.isSpellOnCooldown && this.getCooldownProgress) {
+        isOnCooldown = this.isSpellOnCooldown(targetingSpellId);
+        cdProgress = this.getCooldownProgress(targetingSpellId);
+      }
+
+      const px = mouseTile.x * TILE_SIZE;
+      const py = mouseTile.y * TILE_SIZE;
+
+      if (isOnCooldown && cdProgress > 0) {
+        // Red outline when on cooldown
+        this.tileHighlight.lineStyle(2, 0xff0000, 0.8);
+        this.tileHighlight.strokeRect(px, py, TILE_SIZE, TILE_SIZE);
+
+        // Draw radial pie-chart countdown at the center of the cursor
+        const cx = px + TILE_SIZE / 2;
+        const cy = py + TILE_SIZE / 2;
+        const radius = TILE_SIZE * 0.4;
+        
+        // Background dark circle
+        this.tileHighlight.fillStyle(0x000000, 0.6);
+        this.tileHighlight.fillCircle(cx, cy, radius);
+
+        // Foreground wedge showing remaining CD
+        this.tileHighlight.fillStyle(0xff0000, 0.7);
+        this.tileHighlight.beginPath();
+        this.tileHighlight.moveTo(cx, cy);
+        
+        // Progress goes from 1.0 (just started) down to 0.0 (ready)
+        // Start from -90 deg (top center), sweep clockwise
+        const startRad = Phaser.Math.DegToRad(-90);
+        // Angle covers the remaining duration. At progress=1.0, covers full 360 deg. 
+        const endRad = startRad + (Math.PI * 2 * cdProgress);
+        this.tileHighlight.arc(cx, cy, radius, startRad, endRad, false);
+        this.tileHighlight.closePath();
+        this.tileHighlight.fillPath();
+
+      } else {
+        // Yellow outline when ready to cast
+        this.tileHighlight.lineStyle(2, 0xffff00, 0.8);
+        this.tileHighlight.strokeRect(px, py, TILE_SIZE, TILE_SIZE);
+      }
     }
   }
 

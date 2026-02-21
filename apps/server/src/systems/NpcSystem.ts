@@ -173,14 +173,23 @@ export class NpcSystem {
     }
 
     const stats = NPC_STATS[npc.npcType];
-    if (stats.passive) return;
     if (tickCount % IDLE_SCAN_INTERVAL !== 0) return;
 
-    const target = this.scanForAggroTarget(npc);
-    if (target) {
-      npc.targetId = target.sessionId;
-      npc.state = NpcState.CHASE;
-      this.tryBark(npc, "aggro", this.broadcastFn);
+    if (!stats.passive) {
+      const target = this.scanForAggroTarget(npc);
+      if (target) {
+        npc.targetId = target.sessionId;
+        npc.state = NpcState.CHASE;
+        this.tryBark(npc, "aggro", this.broadcastFn);
+        return;
+      }
+    }
+
+    if (stats.stationary) {
+      // Feature: Natural regeneration while idle (even for stationary)
+      if (tickCount % 50 === 0 && npc.hp < npc.maxHp) {
+        npc.hp = Math.min(npc.maxHp, npc.hp + Math.ceil(npc.maxHp * 0.01));
+      }
       return;
     }
 
@@ -202,7 +211,8 @@ export class NpcSystem {
     tickCount: number,
     roomId: string,
   ): void {
-    if (tickCount % IDLE_SCAN_INTERVAL === 0) {
+    const stats = NPC_STATS[npc.npcType];
+    if (!stats.passive && tickCount % IDLE_SCAN_INTERVAL === 0) {
       const target = this.scanForAggroTarget(npc);
       if (target) {
         npc.targetId = target.sessionId;
@@ -344,8 +354,9 @@ export class NpcSystem {
     tickCount: number,
     roomId: string,
   ): void {
+    const stats = NPC_STATS[npc.npcType];
     // Re-aggro any player that wanders into range while the NPC is heading home.
-    if (tickCount % IDLE_SCAN_INTERVAL === 0) {
+    if (!stats.passive && tickCount % IDLE_SCAN_INTERVAL === 0) {
       const target = this.scanForAggroTarget(npc);
       if (target) {
         npc.targetId = target.sessionId;

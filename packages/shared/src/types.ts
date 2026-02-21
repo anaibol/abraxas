@@ -256,6 +256,9 @@ export interface NpcStats extends CharStats {
   /** How long after death before this rare NPC respawns (ms). Requires rareSpawn=true. */
   rareSpawnIntervalMs?: number;
 
+  /** True if the NPC should never wander from its spawn point. */
+  stationary?: boolean;
+
   /** Per-NPC dialogue configuration. When set, players can click to talk. */
   dialogue?: NpcDialogue;
 }

@@ -1,6 +1,6 @@
 import { ABILITIES, CLASS_STATS } from "@abraxas/shared";
 import { Box, Flex, Text } from "@chakra-ui/react";
-import { X } from "lucide-react";
+import { Coins, X } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAudio } from "../contexts/AudioContext";
@@ -133,10 +133,12 @@ export function Sidebar({
         borderBottom="1px solid"
         borderBottomColor={T.border}
       >
-        <Text textStyle={T.codeText} color={T.gold} fontWeight="700">
-          {state.gold}
-          {t("sidebar.inventory.gold_abbr")}
-        </Text>
+        <Flex align="center" gap="1.5">
+          <Coins size={14} color={HEX.gold} />
+          <Text textStyle={T.codeText} color={T.gold} fontWeight="700">
+            {state.gold}
+          </Text>
+        </Flex>
         <WorldStatus />
       </Flex>
 

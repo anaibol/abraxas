@@ -339,7 +339,9 @@ export class PlayerSprite {
     // AO convention: offHeadY is offset from feet line to head bottom (negative = up)
     const headY = TILE_SIZE / 2 + offY;
     this.headSprite?.setPosition(offX, headY);
-    this.helmetSprite?.setPosition(offX, headY);
+    // Helmets are various heights (16px, 28px, etc) but always align to the TOP of the head.
+    // Since head is always 50px tall and bottom-anchored at headY, head top is headY - 50.
+    this.helmetSprite?.setPosition(offX, headY - 50);
   }
 
   updateAppearance(bodyId: number, headId: number) {
@@ -528,13 +530,13 @@ export class PlayerSprite {
   }
 
   private updateZOrder() {
-    this.bodySprite.setDepth(3);
-    if (this.headSprite) this.headSprite.setDepth(4);
-    if (this.helmetSprite) this.helmetSprite.setDepth(5);
+    this.bodySprite.setDepth(RENDER_LAYERS.Y_SORT_BASE + 3);
+    if (this.headSprite) this.headSprite.setDepth(RENDER_LAYERS.Y_SORT_BASE + 4);
+    if (this.helmetSprite) this.helmetSprite.setDepth(RENDER_LAYERS.Y_SORT_BASE + 5);
 
     const weaponFront = this.currentDir === Direction.DOWN || this.currentDir === Direction.RIGHT;
-    if (this.weaponSprite) this.weaponSprite.setDepth(weaponFront ? 7 : 1);
-    if (this.shieldSprite) this.shieldSprite.setDepth(weaponFront ? 1 : 7);
+    if (this.weaponSprite) this.weaponSprite.setDepth(weaponFront ? RENDER_LAYERS.Y_SORT_BASE + 7 : RENDER_LAYERS.Y_SORT_BASE + 1);
+    if (this.shieldSprite) this.shieldSprite.setDepth(weaponFront ? RENDER_LAYERS.Y_SORT_BASE + 1 : RENDER_LAYERS.Y_SORT_BASE + 7);
   }
 
   setMoving(moving: boolean) {
@@ -625,7 +627,7 @@ export class PlayerSprite {
         (id) => this.resolver.getHelmetEntry(id),
         null,
         0,
-        1,
+        0,
       );
       if (newHelmetAoId) this.updateHeadPosition();
     }
@@ -681,7 +683,7 @@ export class PlayerSprite {
       `grh-${mountStatic.id}`,
     );
     this.mountSprite.setOrigin(0.5, 1);
-    this.mountSprite.setDepth(2);
+    this.mountSprite.setDepth(RENDER_LAYERS.Y_SORT_BASE + 2);
     this.container.addAt(this.mountSprite, 0);
 
     // Shift the rider slightly upward so it sits on the mount
@@ -747,7 +749,7 @@ export class PlayerSprite {
     if (!scene || this.statusEmitters.has(name)) return;
     this.ensureStatusTextures(scene);
     const emitter = scene.add.particles(this.renderX, this.renderY + offsetY, texture, config);
-    emitter.setDepth(this.container.depth + depth);
+    emitter.setDepth(RENDER_LAYERS.Y_SORT_BASE + depth);
     this.statusEmitters.set(name, emitter);
     this.activeStatusTints.add(name);
     this.refreshTint();
@@ -967,7 +969,7 @@ export class PlayerSprite {
       x: { min: -TILE_SIZE * 0.7, max: TILE_SIZE * 0.7 },
       rotate: { start: 0, end: 360 },
     });
-    this.invulnEmitter.setDepth(this.container.depth + 3);
+    this.invulnEmitter.setDepth(RENDER_LAYERS.Y_SORT_BASE + 3);
 
     this.activeStatusTints.add("invuln");
     this.refreshTint();
@@ -1001,7 +1003,7 @@ export class PlayerSprite {
       quantity: 7,
       tint: [0xffffff, 0xcccccc, 0x888888],
     });
-    emitter.setDepth(this.container.depth + 10);
+    emitter.setDepth(RENDER_LAYERS.Y_SORT_BASE + 10);
     emitter.explode();
     scene.time.delayedCall(500, () => emitter.destroy());
   }
@@ -1071,7 +1073,7 @@ export class PlayerSprite {
         quantity,
         frequency,
       });
-      this.meditationEmitter.setDepth(this.container.depth + 2);
+      this.meditationEmitter.setDepth(RENDER_LAYERS.Y_SORT_BASE + 2);
     }
   }
 

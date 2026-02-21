@@ -140,8 +140,8 @@ export function InventoryTab({
                   textStyle={T.badgeText}
                   color="#fff"
                   position="absolute"
-                  bottom="0"
-                  right="1px"
+                  bottom="2px"
+                  right="4px"
                 >
                   {invItem.quantity}
                 </Text>

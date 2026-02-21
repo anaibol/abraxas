@@ -363,6 +363,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
           if (oldClient) {
             oldClient.send(ServerMessageType.Error, {
               message: "game.logged_in_elsewhere",
+              silent: true,
             });
             oldClient.leave();
           }

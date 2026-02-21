@@ -74,8 +74,8 @@ function ItemGrid({ slots, selectedSlotIndex, onSelect }: ItemGridProps) {
             {slot && slot.quantity > 1 && (
               <Text
                 position="absolute"
-                bottom="1px"
-                right="2px"
+                bottom="2px"
+                right="4px"
                 fontSize="10px"
                 color="#fff"
                 fontWeight="700"

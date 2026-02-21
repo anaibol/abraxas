@@ -65,56 +65,19 @@ const NOISE_AMOUNT: Record<number, number> = {
 
 const TEX_MAP_BG = "__mapBaker_bg";
 
+// Pool of known good tree Grh IDs from the indices (e.g. 157-171, 100-114)
+export const TREE_GRH_POOL = [
+	100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114,
+	157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171
+];
+
 export class MapBaker {
 	private waterTiles: { px: number; py: number }[] = [];
 	private waterOverlay?: Phaser.GameObjects.Graphics;
 	private treeSprites: Phaser.GameObjects.Sprite[] = [];
 
 	constructor(private scene: Phaser.Scene, private welcome: WelcomeData) {
-		this.generateTreeTextures();
 		this.bakeEntireMap();
-	}
-
-	// ── Pre-generate reusable textures for tree types ─────────────────────────
-	private generateTreeTextures() {
-		// Only generate if they don't already exist (e.g. across scene restarts)
-		if (this.scene.textures.exists("tree_oak")) return;
-
-		const g = this.scene.add.graphics();
-
-		// 1. Oak tree (Round, puffy, classic RPG tree)
-		g.clear();
-		let radius = 26;
-		g.fillStyle(0xffffff, 1.0);
-		g.fillCircle(30, 24, radius);
-		g.fillCircle(16, 36, radius * 0.7);
-		g.fillCircle(44, 36, radius * 0.7);
-		g.fillCircle(30, 10, radius * 0.8);
-		
-		g.generateTexture("tree_oak_mask", 60, 60);
-
-		// 2. Pine tree (Tall, triangular, layered)
-		g.clear();
-		g.fillStyle(0xffffff, 1.0);
-		g.fillTriangle(30, 0, 10, 35, 50, 35);
-		g.fillTriangle(30, 15, 5, 50, 55, 50);
-		g.fillTriangle(30, 30, 0, 65, 60, 65);
-		
-		g.generateTexture("tree_pine_mask", 60, 70);
-
-		// 3. Willow tree (Drooping, wide, organic)
-		g.clear();
-		g.fillStyle(0xffffff, 1.0);
-		g.fillCircle(35, 20, 22);
-		g.fillCircle(15, 30, 15);
-		g.fillCircle(55, 30, 15);
-		g.fillRoundedRect(10, 20, 15, 35, 8);
-		g.fillRoundedRect(45, 20, 15, 35, 8);
-		g.fillRoundedRect(25, 25, 20, 40, 10);
-		
-		g.generateTexture("tree_willow_mask", 70, 70);
-
-		g.destroy();
 	}
 
 	// ── Main bake ──────────────────────────────────────────────────────────────
@@ -301,47 +264,36 @@ export class MapBaker {
 	}
 
 	private drawTreeDetails(g: Phaser.GameObjects.Graphics, px: number, py: number, tx: number, ty: number) {
+		const aoResolver = this.scene.registry.get("aoResolver");
+		if (!aoResolver) return;
+
 		const cx = px + TILE_SIZE / 2;
-		const cy = py + TILE_SIZE / 2 + 12; // Base of the tree is lower down
+		const cy = py + TILE_SIZE / 2; // Base of the tree is lower down
 
-		// Trunk (drawn into the base ground layer `g` for 1 draw call)
-		const trunkWidth = 4 + tileHash(tx, ty, 10) * 4;
-		const trunkHeight = 16 + tileHash(tx, ty, 11) * 12;
-		g.fillStyle(0x3d2a14, 1.0);
-		g.fillRect(cx - trunkWidth / 2, cy - trunkHeight, trunkWidth, trunkHeight);
-		
-		// Add a shadow on one side of the trunk
-		g.fillStyle(0x2b1c0b, 0.6);
-		g.fillRect(cx, cy - trunkHeight, trunkWidth / 2, trunkHeight);
-
-		// Determine tree archetype based on tile hash
+		// ── Render Tree using genuine AO Grh texture ──
 		const archetypeHash = tileHash(tx, ty, 600);
-		let texKey = "tree_oak_mask";
-		let tint = 0x1f4a16;
+		const treeIdx = Math.floor(tileHash(tx, ty, 601) * TREE_GRH_POOL.length);
+		const grhId = TREE_GRH_POOL[treeIdx];
+
+		const staticGrh = aoResolver.resolveStaticGrh(grhId);
+		if (!staticGrh) return;
+
+		const texKey = `ao-${staticGrh.grafico}`;
+		const frameKey = `grh-${staticGrh.id}`;
+
+		// We do not set scale variations for now since the AO textures are precisely pixel-art sized
+		// and scaling pixel art randomly looks bad. But we can slightly tint.
+		const tint = varyColor(0xffffff, tx, ty, 602, 10); 
+
+		const sprite = this.scene.add.sprite(cx, cy + 16, texKey, frameKey);
 		
-		if (archetypeHash < 0.33) {
-			texKey = "tree_pine_mask";
-			tint = varyColor(0x184224, tx, ty, 601, 15); // Dark, bluer green
-		} else if (archetypeHash < 0.66) {
-			texKey = "tree_oak_mask";
-			tint = varyColor(0x27591e, tx, ty, 602, 12); // Rich mid green
-		} else {
-			texKey = "tree_willow_mask";
-			tint = varyColor(0x3a6b2b, tx, ty, 603, 10); // Lighter, yellow green
-		}
-
-		// Calculate size variation
-		const scale = 0.8 + tileHash(tx, ty, 604) * 0.5; // 0.8x to 1.3x size
-
-		// Place a Sprite instead of a Graphics object
-		const sprite = this.scene.add.sprite(cx, cy - trunkHeight + 5, texKey);
-		sprite.setOrigin(0.5, 1.0); // Anchor at bottom center of canopy
-		sprite.setScale(scale);
+		// In AO, trees generally anchor at their bottom-center so they sort nicely.
+		sprite.setOrigin(0.5, 1.0); 
 		sprite.setTint(tint);
 		sprite.setAlpha(0.95);
 		
 		// Sort the tree based on its geometric base Y
-		sprite.setDepth(RENDER_LAYERS.Y_SORT_BASE + cy / TILE_SIZE);
+		sprite.setDepth(RENDER_LAYERS.Y_SORT_BASE + (cy + 16) / TILE_SIZE);
 		
 		this.treeSprites.push(sprite);
 	}
