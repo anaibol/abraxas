@@ -21,10 +21,8 @@ export function CharacterHeader({ state, isRecording }: CharacterHeaderProps) {
       textAlign="center"
     >
       <Text
-        fontSize="16px"
-        fontWeight="700"
+        textStyle={T.heading}
         color={T.gold}
-        letterSpacing="2px"
         textShadow="0 0 12px rgba(180,140,50,0.25)"
       >
         {state.name}
@@ -68,7 +66,7 @@ export function CharacterHeader({ state, isRecording }: CharacterHeaderProps) {
               borderRadius="full"
               display="inline-block"
             >
-              <Text textStyle={T.statLabel} color="#c8a0ff" fontWeight="700" letterSpacing="2px" fontSize="10px">
+              <Text textStyle={T.badgeText} color="#c8a0ff" fontWeight="700" letterSpacing="2px">
                 🛡 {t("status.spawn_protected", { defaultValue: "PROTECTED" })}
               </Text>
             </Box>
@@ -85,7 +83,7 @@ export function CharacterHeader({ state, isRecording }: CharacterHeaderProps) {
               borderRadius="full"
               display="inline-block"
             >
-              <Text textStyle={T.statLabel} color="#4edb6e" fontWeight="700" letterSpacing="2px" fontSize="10px">
+              <Text textStyle={T.badgeText} color="#4edb6e" fontWeight="700" letterSpacing="2px">
                 🏠 {t("status.safe_zone", { defaultValue: "SAFE ZONE" })}
               </Text>
             </Box>
@@ -102,7 +100,7 @@ export function CharacterHeader({ state, isRecording }: CharacterHeaderProps) {
               borderRadius="full"
               display="inline-block"
             >
-              <Text textStyle={T.statLabel} color="#6aabff" fontWeight="700" letterSpacing="2px" fontSize="10px">
+              <Text textStyle={T.badgeText} color="#6aabff" fontWeight="700" letterSpacing="2px">
                 🔵 {t("status.pvp_off", { defaultValue: "PvP OFF" })}
               </Text>
             </Box>
@@ -118,7 +116,7 @@ export function CharacterHeader({ state, isRecording }: CharacterHeaderProps) {
             borderRadius="full"
             display="inline-block"
           >
-            <Text textStyle={T.statLabel} color="#ff6b6b" fontWeight="700" letterSpacing="2px" fontSize="10px">
+            <Text textStyle={T.badgeText} color="#ff6b6b" fontWeight="700" letterSpacing="2px">
               ⚔ {t("status.pvp_on", { defaultValue: "PvP ON" })}
             </Text>
           </Box>

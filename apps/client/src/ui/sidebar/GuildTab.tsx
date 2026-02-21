@@ -50,7 +50,7 @@ export function GuildTab({
               bg={T.darkest}
               borderColor={T.border}
               color={T.goldText}
-              fontSize="11px"
+              textStyle={T.statLabel}
               fontFamily={T.mono}
               _focus={{ borderColor: T.gold }}
             />
@@ -102,7 +102,7 @@ export function GuildTab({
                 bg={T.darkest}
                 borderColor={T.border}
                 color={T.goldText}
-                fontSize="11px"
+                textStyle={T.statLabel}
                 fontFamily={T.mono}
                 _focus={{ borderColor: T.gold }}
               />
@@ -150,7 +150,7 @@ export function GuildTab({
                   >
                     {member.name}
                   </Text>
-                  <Text fontSize="10px" color={T.goldDark} textTransform="uppercase">
+                  <Text textStyle={T.badgeText} color={T.goldDark} textTransform="uppercase">
                     {member.role}
                   </Text>
                 </VStack>

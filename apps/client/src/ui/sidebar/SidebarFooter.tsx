@@ -147,7 +147,7 @@ function StatChip({ label, value }: { label: string; value: number }) {
       <Text textStyle={T.statLabel} color={T.goldDark} letterSpacing="1px">
         {label}
       </Text>
-      <Text fontSize="20px" fontWeight="700" color={T.gold} mt="0.5">
+      <Text textStyle={T.headingLg} color={T.gold} mt="0.5">
         {value}
       </Text>
     </Box>
@@ -177,10 +177,8 @@ function FooterButton({ icon, label, onClick, danger }: FooterButtonProps) {
       color={danger ? "#c05050" : T.goldDark}
       cursor="pointer"
       fontFamily={T.display}
-      fontSize="10px"
+      textStyle={T.badgeText}
       fontWeight="700"
-      letterSpacing="0.5px"
-      textTransform="uppercase"
       transition="all 0.12s"
       _hover={{
         borderColor: danger ? "rgba(200,40,40,0.7)" : T.gold,

@@ -64,7 +64,7 @@ export function LoadingScreen() {
           border="1px solid"
           borderColor={`${HEX.gold}44`}
           borderRadius="full"
-          animation={`${spin} 10s linear infinite`}
+          animation={`${spin} 2.5s linear infinite`}
           css={{
             "&::after": {
               content: '""',
@@ -132,18 +132,16 @@ export function LoadingScreen() {
 
         <Flex direction="column" gap="1" maxW="400px">
           <Text
-            fontSize="12px"
+            textStyle={T.formLabel}
             color={T.goldDark}
             fontFamily={T.display}
-            letterSpacing="2px"
-            textTransform="uppercase"
           >
             {t("loading.searching")}
           </Text>
           <Text
-            fontSize="13px"
+            textStyle={T.bodyText}
             color={T.goldDim}
-            fontFamily="'Segoe UI', system-ui, sans-serif"
+            fontFamily={T.display}
             fontStyle="italic"
             fontWeight="500"
             minH="40px"

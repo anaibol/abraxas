@@ -195,7 +195,7 @@ export function MerchantShop({
               <Text color="#fff" textStyle={T.bodyMuted} mb="1">
                 {t("ui.merchant.unit_price")}
               </Text>
-              <Text color={T.gold} textStyle={T.heading} fontWeight="700">
+              <Text color={T.gold} textStyle={T.heading}>
                 {tab === "buy" ? selectedItem.goldValue : Math.floor(selectedItem.goldValue * 0.5)}{" "}
                 GP
               </Text>
@@ -255,7 +255,7 @@ export function MerchantShop({
               <Text color="whiteAlpha.600" textStyle={T.statLabel}>
                 {t("ui.merchant.total_cost")}
               </Text>
-              <Text color={T.gold} textStyle={T.headingLg} fontWeight="700">
+              <Text color={T.gold} textStyle={T.headingLg}>
                 {(tab === "buy"
                   ? selectedItem.goldValue * quantity
                   : Math.floor(selectedItem.goldValue * 0.5) * quantity

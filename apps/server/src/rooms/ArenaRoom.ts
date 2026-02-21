@@ -1,6 +1,5 @@
 import {
   type BroadcastFn,
-  type ItemAffix,
   ItemRarity,
   type JoinOptions,
   NPC_STATS,

@@ -86,14 +86,14 @@ export function ItemTooltip({ item, quantity, x, y }: ItemTooltipProps) {
             color={rarityColor}
             fontFamily={T.display}
             fontWeight="700"
-            fontSize="13px"
+            textStyle={T.bodyText}
             lineHeight="1.2"
             lineClamp={2}
           >
             {t(item.name)}
           </Text>
           {quantity && quantity > 1 && (
-            <Text color={T.goldDark} fontSize="10px" fontFamily={T.mono}>
+            <Text color={T.goldDark} textStyle={T.badgeText} fontFamily={T.mono}>
               ×{quantity}
             </Text>
           )}
@@ -103,7 +103,7 @@ export function ItemTooltip({ item, quantity, x, y }: ItemTooltipProps) {
       {/* Slot + Rarity badge */}
       <Flex px="3" py="1.5" gap="2" align="center" borderBottom="1px solid" borderBottomColor={HEX.border}>
         <Text
-          fontSize="9px"
+          fontSize="10px"
           fontWeight="700"
           letterSpacing="1.5px"
           color={HEX.goldMuted}
@@ -113,7 +113,7 @@ export function ItemTooltip({ item, quantity, x, y }: ItemTooltipProps) {
         </Text>
         <Box w="1px" h="10px" bg={HEX.border} />
         <Text
-          fontSize="9px"
+          fontSize="10px"
           fontWeight="700"
           letterSpacing="1.5px"
           color={rarityColor}
@@ -132,11 +132,11 @@ export function ItemTooltip({ item, quantity, x, y }: ItemTooltipProps) {
             const sign = value > 0 ? "+" : "";
             return (
               <Flex key={key} justify="space-between" align="center" py="0.5">
-                <Text fontSize="11px" color={HEX.goldText}>
+                <Text textStyle={T.statLabel} color={HEX.goldText}>
                   {info.label}
                 </Text>
                 <Text
-                  fontSize="11px"
+                  textStyle={T.statLabel}
                   fontWeight="700"
                   fontFamily={T.mono}
                   color={value > 0 ? info.color : "#ff4444"}
@@ -153,26 +153,26 @@ export function ItemTooltip({ item, quantity, x, y }: ItemTooltipProps) {
       {/* Consumable effects */}
       {hasConsume && (
         <Box px="3" py="2" borderBottom="1px solid" borderBottomColor={HEX.border}>
-          <Text fontSize="9px" fontWeight="700" letterSpacing="1px" color={HEX.goldMuted} mb="1" textTransform="uppercase">
+          <Text fontSize="10px" fontWeight="700" letterSpacing="1px" color={HEX.goldMuted} mb="1" textTransform="uppercase">
             {t("tooltip.use_effect", "Use Effect")}
           </Text>
           {item.consumeEffect?.healHp && (
-            <Text fontSize="11px" color="#55ff55">
+            <Text textStyle={T.statLabel} color="#55ff55">
               ❤️ +{item.consumeEffect.healHp} HP
             </Text>
           )}
           {item.consumeEffect?.healMana && (
-            <Text fontSize="11px" color="#6699ff">
+            <Text textStyle={T.statLabel} color="#6699ff">
               💧 +{item.consumeEffect.healMana} Mana
             </Text>
           )}
           {item.consumeEffect?.cureDebuff && (
-            <Text fontSize="11px" color="#aaffaa">
+            <Text textStyle={T.statLabel} color="#aaffaa">
               ✨ {t("tooltip.cures_debuffs", "Cures debuffs")}
             </Text>
           )}
           {item.consumeEffect?.buffStat && (
-            <Text fontSize="11px" color="#ffcc44">
+            <Text textStyle={T.statLabel} color="#ffcc44">
               ⬆️ +{item.consumeEffect.buffAmount} {item.consumeEffect.buffStat}{" "}
               ({Math.round((item.consumeEffect.buffDurationMs ?? 0) / 1000)}s)
             </Text>
@@ -183,10 +183,10 @@ export function ItemTooltip({ item, quantity, x, y }: ItemTooltipProps) {
       {/* Class restriction */}
       {item.requiredClass && item.requiredClass.length > 0 && (
         <Box px="3" py="1.5" borderBottom="1px solid" borderBottomColor={HEX.border}>
-          <Text fontSize="9px" fontWeight="700" letterSpacing="1px" color={HEX.goldMuted} mb="0.5" textTransform="uppercase">
+          <Text fontSize="10px" fontWeight="700" letterSpacing="1px" color={HEX.goldMuted} mb="0.5" textTransform="uppercase">
             {t("tooltip.class_required", "Class")}
           </Text>
-          <Text fontSize="10px" color={HEX.goldText}>
+          <Text textStyle={T.badgeText} color={HEX.goldText}>
             {item.requiredClass.map((c) => t(`class.${c}`)).join(", ")}
           </Text>
         </Box>
@@ -194,8 +194,8 @@ export function ItemTooltip({ item, quantity, x, y }: ItemTooltipProps) {
 
       {/* Gold value */}
       <Flex px="3" py="1.5" align="center" gap="1.5">
-        <Text fontSize="11px">🪙</Text>
-        <Text fontSize="11px" color={HEX.gold} fontFamily={T.mono} fontWeight="700">
+        <Text textStyle={T.statLabel}>🪙</Text>
+        <Text textStyle={T.statLabel} color={HEX.gold} fontFamily={T.mono} fontWeight="700">
           {item.goldValue}
         </Text>
       </Flex>

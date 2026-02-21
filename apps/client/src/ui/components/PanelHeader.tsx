@@ -21,18 +21,15 @@ export function PanelHeader({ title, subtitle, onClose }: PanelHeaderProps) {
       <Flex align="center" justify="space-between" px="5" py="3.5" borderBottom="1px solid" borderBottomColor={T.border} bg={T.darkest}>
         <Box>
           <Text
-            fontFamily={T.display}
-            fontSize="15px"
+            textStyle={T.sectionLabel}
             fontWeight="700"
-            letterSpacing="3px"
-            textTransform="uppercase"
             color={T.gold}
             textShadow={`0 0 10px ${HEX.goldDark}`}
           >
             {title}
           </Text>
           {subtitle && (
-            <Text color={T.goldDark} fontSize="11px" letterSpacing="2px" textTransform="uppercase" mt="0.5">
+            <Text color={T.goldDark} textStyle={T.statLabel} mt="0.5">
               {subtitle}
             </Text>
           )}

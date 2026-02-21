@@ -63,10 +63,7 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
               <Text
                 textStyle={T.sectionLabel}
                 color={T.goldDark}
-                letterSpacing="2px"
                 mb="4"
-                fontSize="10px"
-                textTransform="uppercase"
               >
                 {t("settings.section.audio")}
               </Text>
@@ -118,9 +115,6 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
                 <Text
                   textStyle={T.sectionLabel}
                   color={T.goldDark}
-                  letterSpacing="2px"
-                  fontSize="10px"
-                  textTransform="uppercase"
                 >
                   {t("settings.section.language")}
                 </Text>
@@ -167,10 +161,7 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
               <Text
                 textStyle={T.sectionLabel}
                 color={T.goldDark}
-                letterSpacing="2px"
                 mb="4"
-                fontSize="10px"
-                textTransform="uppercase"
               >
                 {t("settings.section.visual", "Visual")}
               </Text>
@@ -218,10 +209,7 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
               <Text
                 textStyle={T.sectionLabel}
                 color={T.goldDark}
-                letterSpacing="2px"
                 mb="4"
-                fontSize="10px"
-                textTransform="uppercase"
               >
                 {t("settings.section.interface")}
               </Text>
@@ -290,10 +278,7 @@ function VolumeSetting({ icon, label, value, onChange }: VolumeSettingProps) {
             {isMuted ? <VolumeX size={15} /> : icon}
           </Box>
           <Text
-            fontFamily={T.display}
-            fontSize="12px"
-            fontWeight="600"
-            letterSpacing="0.5px"
+            textStyle={T.formLabel}
             textDecoration={isMuted ? "line-through" : "none"}
             opacity={isMuted ? 0.5 : 1}
           >
@@ -301,10 +286,8 @@ function VolumeSetting({ icon, label, value, onChange }: VolumeSettingProps) {
           </Text>
         </Flex>
         <Text
-          fontFamily={T.mono}
-          fontSize="11px"
+          textStyle={T.statLabel}
           color={isMuted ? T.goldDark : T.gold}
-          fontWeight="700"
           minW="34px"
           textAlign="right"
         >
@@ -351,7 +334,7 @@ function ToggleSetting({ icon, label, value, onChange }: ToggleSettingProps) {
     <Flex align="center" justify="space-between" cursor="pointer" onClick={() => onChange(!value)}>
       <Flex align="center" gap="2" color={T.goldText}>
         <Box color={T.goldDark}>{icon}</Box>
-        <Text fontFamily={T.display} fontSize="12px" fontWeight="600" letterSpacing="0.5px">
+        <Text textStyle={T.formLabel}>
           {label}
         </Text>
       </Flex>
@@ -402,7 +385,7 @@ function ParticleQualitySelector({ value, onChange }: ParticleQualitySelectorPro
     <Flex align="center" justify="space-between">
       <Flex align="center" gap="2" color={T.goldText}>
         <Box color={T.goldDark}><Sparkles size={15} /></Box>
-        <Text fontFamily={T.display} fontSize="12px" fontWeight="600" letterSpacing="0.5px">
+        <Text textStyle={T.formLabel}>
           {t("settings.particle_quality", "Particle Quality")}
         </Text>
       </Flex>

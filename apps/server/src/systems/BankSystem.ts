@@ -1,4 +1,3 @@
-import type { ItemAffix } from "@abraxas/shared";
 import { type InventoryEntry, ITEMS, ItemRarity, type StatType } from "@abraxas/shared";
 import { prisma } from "../database/db";
 import { ItemRarity as PrismaItemRarity } from "../generated/prisma";
@@ -24,7 +23,7 @@ export class BankSystem {
         quantity: s.qty,
         slotIndex: s.idx,
         rarity: s.item?.rarity ?? ItemRarity.COMMON,
-        affixes: (s.item?.affixesJson as ItemAffix[]) || [],
+        affixes: s.item?.affixesJson || [],
       })) || []
     );
   }
@@ -187,7 +186,7 @@ export class BankSystem {
 
       const instanceData = {
         rarity: bankSlot.item?.rarity ?? ItemRarity.COMMON,
-        affixes: (bankSlot.item?.affixesJson as ItemAffix[]) || [],
+        affixes: bankSlot.item?.affixesJson || [],
       };
 
       // Try to add to inventory first
