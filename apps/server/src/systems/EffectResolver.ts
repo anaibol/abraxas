@@ -11,6 +11,7 @@ import {
 import type { Entity, SpatialLookup } from "../utils/SpatialLookup";
 import type { BuffSystem } from "./BuffSystem";
 import type { DamageCalculator } from "./DamageCalculator";
+import { logger } from "../logger";
 
 // ── EffectResolver ─────────────────────────────────────────────────────
 
@@ -151,7 +152,7 @@ export class EffectResolver {
         now,
       );
       if (damageRes.dodged || damageRes.parried) {
-        console.log(`[Combat] ${attacker.name} -> ${target.name} (${ability.id}): MISS (Dodged: ${damageRes.dodged}, Parried: ${damageRes.parried})`);
+        logger.debug({ intent: "ability_damage", result: "miss", attacker: attacker.name, target: target.name, ability: ability.id, dodged: damageRes.dodged, parried: damageRes.parried });
         broadcast(ServerMessageType.Damage, {
           targetSessionId: target.sessionId,
           attackerSessionId: attacker.sessionId,
@@ -162,7 +163,7 @@ export class EffectResolver {
           parried: damageRes.parried,
         });
       } else {
-        console.log(`[Combat] ${attacker.name} -> ${target.name} (${ability.id}): HIT ${damageRes.damage} (Crit: ${damageRes.crit}) HP: ${target.hp} -> ${target.hp - damageRes.damage}`);
+        logger.debug({ intent: "ability_damage", result: "hit", attacker: attacker.name, target: target.name, ability: ability.id, damage: damageRes.damage, crit: damageRes.crit, hpBefore: target.hp, hpAfter: target.hp - damageRes.damage });
         target.hp -= damageRes.damage;
       interruptCast(target.sessionId, broadcast);
       this.buffSystem.breakStealth(target.sessionId);

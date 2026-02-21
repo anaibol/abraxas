@@ -819,7 +819,7 @@ export class CombatSystem {
         : this.spatial.findEntityAtTile(windup.targetTileX, windup.targetTileY);
 
       if (!target || !target.alive) {
-        console.log(`[Combat] ${attacker.name} -> Empty/Dead Tile (${windup.abilityId}) at ${windup.targetTileX},${windup.targetTileY}`);
+        logger.debug({ intent: "resolve_ability", result: "no_target", abilityId: windup.abilityId, targetTile: `${windup.targetTileX},${windup.targetTileY}` });
       }
       if (target && target.alive) {
         const valid = this.isValidTarget(attacker, target, ability);

@@ -1722,24 +1722,25 @@ export class EffectManager {
 
     // The main body of smoke (quality-scaled)
     this.burst(px, py, TEX.SMOKE, {
-      colors: [0x888888, 0x666666, 0x444444, 0x222222],
-      count: Math.max(8, Math.round(30 * m)),
-      speed: { min: 10, max: 45 },
-      scale: { start: 0.33, end: 1.82 },
-      lifespan: { min: 1080, max: 2100 },
-      gravityY: -8,
-      radius: 11,
+      colors: [0x888888, 0x666666, 0x444444, 0x333333],
+      count: Math.max(5, Math.round(14 * m)),
+      speed: { min: 12, max: 40 },
+      scale: { start: 0.2, end: 0.72 },
+      lifespan: { min: 400, max: 800 },
+      gravityY: -14,
+      drag: 0.06,
+      radius: 8,
       blendMode: Phaser.BlendModes.NORMAL,
-      alpha: { start: 0.85, end: 0 },
+      alpha: { start: 0.55, end: 0 },
     });
 
-    // Initial blast
+    // Initial blast wisp
     this.burst(px, py, TEX.CIRCLE, {
       colors: [0xaaaaaa, 0x888888],
-      count: Math.max(4, Math.round(10 * m)),
-      speed: { min: 40, max: 80 },
-      scale: { start: 0.39, end: 0.0 },
-      lifespan: { min: 240, max: 480 },
+      count: Math.max(3, Math.round(5 * m)),
+      speed: { min: 30, max: 60 },
+      scale: { start: 0.26, end: 0.0 },
+      lifespan: { min: 180, max: 360 },
       gravityY: 0,
       radius: 3,
       blendMode: Phaser.BlendModes.NORMAL,
