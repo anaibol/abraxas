@@ -266,12 +266,14 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
           style={{
             width: "100%",
             height: "100%",
+            lineHeight: "40px",
             background: "transparent",
             border: "none",
             color: "white",
             padding: "0 10px",
             outline: "none",
             fontSize: "13px",
+            fontFamily: "inherit",
           }}
           placeholder={
             activeChannel === "group"

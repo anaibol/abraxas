@@ -181,12 +181,30 @@ export class InputHandler {
       }
     }
 
-    if (this.targeting) {
-      if (Phaser.Input.Keyboard.JustDown(this.escKey) || rightClicked) {
-        this.cancelTargeting();
-        return;
-      }
+    // If currently targeting, handle cancellation from Esc or Right Click
+    if (this.targeting && (Phaser.Input.Keyboard.JustDown(this.escKey) || rightClicked)) {
+      this.cancelTargeting();
+      return;
+    }
 
+    // Process new targeting inputs
+    let newTargetingTriggered = false;
+    for (const { key, spellId, rangeTiles } of this.spellKeys) {
+      if (Phaser.Input.Keyboard.JustDown(key)) {
+        if (this.targeting) this.cancelTargeting();
+        this.handleSpellKey(spellId, rangeTiles);
+        newTargetingTriggered = true;
+        break;
+      }
+    }
+
+    if (!newTargetingTriggered && Phaser.Input.Keyboard.JustDown(this.ctrlKey)) {
+      if (this.targeting) this.cancelTargeting();
+      this.handleAttackInput();
+    }
+
+    // After evaluating keyboard, if we are in targeting mode, process left click to cast/attack
+    if (this.targeting) {
       if (leftClicked) {
         const mouseTile = getMouseTile();
         if (this.targeting.mode === "spell") {
@@ -195,28 +213,8 @@ export class InputHandler {
           this.network.sendAttack(mouseTile.x, mouseTile.y);
         }
         this.cancelTargeting();
-        return;
       }
-
-      for (const { key, spellId, rangeTiles } of this.spellKeys) {
-        if (Phaser.Input.Keyboard.JustDown(key)) {
-          this.cancelTargeting();
-          this.handleSpellKey(spellId, rangeTiles);
-          return;
-        }
-      }
-
-      if (Phaser.Input.Keyboard.JustDown(this.ctrlKey)) {
-        this.cancelTargeting();
-        this.handleAttackInput();
-        return;
-      }
-
       return;
-    }
-
-    if (Phaser.Input.Keyboard.JustDown(this.ctrlKey)) {
-      this.handleAttackInput();
     }
 
     if (leftClicked) {

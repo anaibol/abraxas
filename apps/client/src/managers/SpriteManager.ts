@@ -47,6 +47,10 @@ export class SpriteManager {
       isLocal,
       player.role,
     );
+    // Item #51: Never show health bar for the local player.
+    if (isLocal) {
+      sprite.setHpBarVisibility(false);
+    }
     this.sprites.set(sessionId, sprite);
     // Camera centering is handled each frame in GameScene.update() via
     // cameraController.centerOn(localSprite.targetX, localSprite.targetY).
@@ -295,10 +299,29 @@ export class SpriteManager {
 
   /** White preFX outline on the targeted enemy; auto-clears previous target (#48). */
   setTargetOutline(sessionId: string | null) {
-    if (this.targetOutlineSession && this.targetOutlineSession !== sessionId)
+    if (this.targetOutlineSession && this.targetOutlineSession !== sessionId) {
       this.forEachPreFX(this.targetOutlineSession, p => p.clear());
+      // Hide HP bar of previous target unless it's the local player
+      const prevSprite = this.getSprite(this.targetOutlineSession);
+      if (prevSprite && !prevSprite.isLocal) {
+        prevSprite.setHpBarVisibility(false);
+      }
+    }
+    
     this.targetOutlineSession = sessionId;
-    if (sessionId) this.forEachPreFX(sessionId, p => p.addGlow(0xffffff, 2, 2, false, 0.08, 12));
+    
+    if (sessionId) {
+      this.forEachPreFX(sessionId, p => p.addGlow(0xffffff, 2, 2, false, 0.08, 12));
+      // Show HP bar of new target (unless it's the local player)
+      const newSprite = this.getSprite(sessionId);
+      if (newSprite && !newSprite.isLocal) {
+        newSprite.setHpBarVisibility(true);
+      }
+    }
+  }
+
+  get currentTargetId(): string | null {
+    return this.targetOutlineSession;
   }
 
   private startLowHpGlow(sessionId: string) {

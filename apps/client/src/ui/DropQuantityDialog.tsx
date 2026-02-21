@@ -72,13 +72,15 @@ export function DropQuantityDialog({
             }}
             style={{
               width: "100%",
+              height: "32px",
+              lineHeight: "32px",
               background: HEX.surface,
               border: `1px solid ${HEX.border}`,
               borderRadius: "2px",
               color: HEX.goldText,
               fontFamily: "var(--chakra-fonts-mono)",
               fontSize: "14px",
-              padding: "4px 8px",
+              padding: "0 8px",
               outline: "none",
               boxSizing: "border-box",
             }}

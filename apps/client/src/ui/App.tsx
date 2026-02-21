@@ -73,6 +73,7 @@ export function App() {
   const killFeedIdRef = useRef(0);
   const [phase, setPhase] = useState<"lobby" | "game">("lobby");
   const [connecting, setConnecting] = useState(false);
+  const [joinError, setJoinError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [connectionLost, setConnectionLost] = useState(false);
   const [playerState, setPlayerState] = useState<PlayerState>({
@@ -301,6 +302,7 @@ export function App() {
         reconnectTimerRef.current = null;
       }
       setConnecting(true);
+      setJoinError(null);
       if (mapName) setIsLoading(true); // If warping, show loading
 
       try {
@@ -495,7 +497,6 @@ export function App() {
                 autoCenter: Phaser.Scale.CENTER_BOTH,
               },
               roundPixels: true,
-              resolution: window.devicePixelRatio,
             });
           });
         });
@@ -503,11 +504,7 @@ export function App() {
         console.error("Failed to connect:", err);
         setConnecting(false);
         setIsLoading(false);
-        toaster.create({
-          title: t("game.connection_failed"),
-          description: t("game.connection_failed_desc"),
-          type: "error",
-        });
+        setJoinError(t("game.connection_failed_desc"));
       }
     },
     [addConsoleMessage, resetConsoleMessages, t],
@@ -653,7 +650,7 @@ export function App() {
         </Flex>
       )}
       {connecting && <LoadingScreen />}
-      {phase === "lobby" && !connecting && <Lobby onJoin={handleJoin} connecting={connecting} />}
+      {phase === "lobby" && !connecting && <Lobby onJoin={handleJoin} connecting={connecting} error={joinError} />}
       {phase === "game" && mapData && (
         <>
           {isLoading && <LoadingScreen />}

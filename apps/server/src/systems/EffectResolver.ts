@@ -99,7 +99,18 @@ export class EffectResolver {
         scalingStatValue,
         now,
       );
-      if (damageRes.dodged || damageRes.parried) return;
+      if (damageRes.dodged || damageRes.parried) {
+        broadcast(ServerMessageType.Damage, {
+          targetSessionId: target.sessionId,
+          attackerSessionId: attacker.sessionId,
+          amount: 0,
+          hpAfter: target.hp,
+          type: ability.damageSchool === DamageSchool.PHYSICAL ? DamageSchool.PHYSICAL : "magic",
+          dodged: damageRes.dodged,
+          parried: damageRes.parried,
+        });
+        return;
+      }
       target.hp -= damageRes.damage;
       interruptCast(target.sessionId, broadcast);
       this.buffSystem.breakStealth(target.sessionId);
@@ -139,25 +150,37 @@ export class EffectResolver {
         scalingStatValue,
         now,
       );
-      if (!damageRes.dodged && !damageRes.parried) {
-        target.hp -= damageRes.damage;
-        interruptCast(target.sessionId, broadcast);
-        this.buffSystem.breakStealth(target.sessionId);
+      if (damageRes.dodged || damageRes.parried) {
+        console.log(`[Combat] ${attacker.name} -> ${target.name} (${ability.id}): MISS (Dodged: ${damageRes.dodged}, Parried: ${damageRes.parried})`);
         broadcast(ServerMessageType.Damage, {
           targetSessionId: target.sessionId,
           attackerSessionId: attacker.sessionId,
-          amount: damageRes.damage,
+          amount: 0,
           hpAfter: target.hp,
           type: ability.damageSchool === DamageSchool.PHYSICAL ? DamageSchool.PHYSICAL : "magic",
-          crit: damageRes.crit,
-          blocked: damageRes.blocked,
-          glancing: damageRes.glancing,
+          dodged: damageRes.dodged,
+          parried: damageRes.parried,
         });
-        this.applyRageOnHit(attacker, target);
-        if (target.hp <= 0) {
-          onDeath(target, attacker.sessionId);
-        }
+      } else {
+        console.log(`[Combat] ${attacker.name} -> ${target.name} (${ability.id}): HIT ${damageRes.damage} (Crit: ${damageRes.crit}) HP: ${target.hp} -> ${target.hp - damageRes.damage}`);
+        target.hp -= damageRes.damage;
+      interruptCast(target.sessionId, broadcast);
+      this.buffSystem.breakStealth(target.sessionId);
+      broadcast(ServerMessageType.Damage, {
+        targetSessionId: target.sessionId,
+        attackerSessionId: attacker.sessionId,
+        amount: damageRes.damage,
+        hpAfter: target.hp,
+        type: ability.damageSchool === DamageSchool.PHYSICAL ? DamageSchool.PHYSICAL : "magic",
+        crit: damageRes.crit,
+        blocked: damageRes.blocked,
+        glancing: damageRes.glancing,
+      });
+      this.applyRageOnHit(attacker, target);
+      if (target.hp <= 0) {
+        onDeath(target, attacker.sessionId);
       }
+    }
 
       // Apply secondary stat modifier (e.g. ice_bolt AGI slow) if defined alongside damage
       if (
@@ -337,7 +360,18 @@ export class EffectResolver {
             scalingStatValue,
             now,
           );
-          if (damageRes.dodged || damageRes.parried) continue;
+          if (damageRes.dodged || damageRes.parried) {
+            broadcast(ServerMessageType.Damage, {
+              targetSessionId: victim.sessionId,
+              attackerSessionId: attacker.sessionId,
+              amount: 0,
+              hpAfter: victim.hp,
+              type: ability.damageSchool === DamageSchool.PHYSICAL ? DamageSchool.PHYSICAL : "magic",
+              dodged: damageRes.dodged,
+              parried: damageRes.parried,
+            });
+            continue;
+          }
           victim.hp -= damageRes.damage;
           this.buffSystem.breakStealth(victim.sessionId);
           broadcast(ServerMessageType.Damage, {
