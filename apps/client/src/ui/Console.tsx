@@ -157,8 +157,8 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
       pos="fixed"
       bottom={{ base: "210px", md: "20px" }}
       left="20px"
-      w={{ base: "55vw", md: "420px" }}
-      maxW={{ base: "240px", md: "420px" }}
+      w={{ base: "calc(100vw - 40px)", md: "420px" }}
+      maxW={{ base: "calc(100vw - 40px)", md: "none" }}
       h={{ base: "130px", md: "240px" }}
       bg="rgba(12, 10, 18, 0.65)"
       backdropFilter="blur(6px)"

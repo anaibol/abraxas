@@ -48,6 +48,8 @@ export class PlayerSprite {
   private shadowAlpha = 0.35;
   private shadowOffsetX = 0;
   private chatBubbleText: Phaser.GameObjects.Text | null = null;
+  public uiContainer: Phaser.GameObjects.Container;
+
 
   public targetX: number;
   public targetY: number;
@@ -245,14 +247,19 @@ export class PlayerSprite {
     const containerChildren: Phaser.GameObjects.GameObject[] = [
       this.shadowSprite,
       this.bodySprite,
-      this.nameText,
-      this.hpBarGfx,
-      this.speakingIcon,
     ];
     if (this.headSprite) containerChildren.push(this.headSprite);
 
     this.container = scene.add.container(px, py, containerChildren);
     this.container.setDepth(10);
+
+    const uiChildren: Phaser.GameObjects.GameObject[] = [
+      this.nameText,
+      this.hpBarGfx,
+      this.speakingIcon,
+    ];
+    this.uiContainer = scene.add.container(px, py, uiChildren);
+    this.uiContainer.setDepth(50); // Ensure UI is always on top of players
 
     this.container.setInteractive(
       new Phaser.Geom.Rectangle(-TILE_SIZE / 2, -TILE_SIZE, TILE_SIZE, TILE_SIZE * 2),
@@ -265,6 +272,12 @@ export class PlayerSprite {
       this.container.on("pointerout", () => this.nameText.setVisible(false));
     }
     this.resolver.ensureAnimation(scene, bodyGrhId, "body");
+  }
+
+  /** Centralized way to set alpha for both the physical sprite and its floating UI */
+  public setAlpha(alpha: number) {
+    if (this.container?.active) this.container.setAlpha(alpha);
+    if (this.uiContainer?.active) this.uiContainer.setAlpha(alpha);
   }
 
   /** Sync the shadow sprite's frame with the body sprite's current frame. */
@@ -1125,6 +1138,11 @@ export class PlayerSprite {
     }
 
     this.container.setPosition(this.renderX, this.renderY);
+    this.container.setDepth(this.renderY / TILE_SIZE); // Y-sort properly against other players
+    
+    if (this.uiContainer?.active) {
+      this.uiContainer.setPosition(this.renderX, this.renderY);
+    }
 
     const wx = this.renderX;
     const wy = this.renderY;
@@ -1164,7 +1182,7 @@ export class PlayerSprite {
     text.setOrigin(0.5, 1);
 
     this.chatBubbleText = text;
-    this.container.add(text);
+    this.uiContainer.add(text);
 
     const floatOffset = 6;
     text.setY(textY + floatOffset);
@@ -1204,10 +1222,8 @@ export class PlayerSprite {
     this.invulnEmitter?.destroy();
     this.invulnRingTween?.stop();
     this.tintTween?.stop();
-    // Pass `true` so Phaser also destroys all container children (bodySprite,
-    // headSprite, weaponSprite, nameText, hpBarGfx, speakingIcon, etc.).
-    // Without this, those objects remain on the display list and run every frame,
-    // causing the "1072 sprites" display-list leak that tanks performance.
-    this.container.destroy(true);
+    // Pass `true` so Phaser also destroys all container children.
+    if (this.container?.active) this.container.destroy(true);
+    if (this.uiContainer?.active) this.uiContainer.destroy(true);
   }
 }

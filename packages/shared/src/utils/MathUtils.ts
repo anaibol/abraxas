@@ -75,4 +75,15 @@ export const MathUtils = {
     }
     return false;
   },
+
+  /** Returns true if the tile is within map bounds and is not a collision tile (wall). */
+  isTileWalkable(x: number, y: number, map: { width: number; height: number; collision: number[][] }): boolean {
+    return (
+      x >= 0 &&
+      x < map.width &&
+      y >= 0 &&
+      y < map.height &&
+      map.collision[y]?.[x] !== 1
+    );
+  }
 };

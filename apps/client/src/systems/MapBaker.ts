@@ -67,6 +67,7 @@ const TEX_MAP_BG = "__mapBaker_bg";
 export class MapBaker {
 	private waterTiles: { px: number; py: number }[] = [];
 	private waterOverlay?: Phaser.GameObjects.Graphics;
+	private treeGraphicsObjs: Phaser.GameObjects.Graphics[] = [];
 
 	constructor(private scene: Phaser.Scene, private welcome: WelcomeData) {
 		this.bakeEntireMap();
@@ -257,20 +258,31 @@ export class MapBaker {
 
 	private drawTreeDetails(g: Phaser.GameObjects.Graphics, px: number, py: number, tx: number, ty: number) {
 		const cx = px + TILE_SIZE / 2;
-		const cy = py + TILE_SIZE / 2;
+		const cy = py + TILE_SIZE / 2 + 12; // base of the tree is lower down
 
-		// Trunk
-		g.fillStyle(0x3d2a14, 0.7);
-		g.fillRect(cx - 2, cy + 2, 4, TILE_SIZE / 2 - 3);
+		// Trunk (drawn into the base ground layer `g`)
+		g.fillStyle(0x3d2a14, 1.0);
+		g.fillRect(cx - 3, cy - 24, 6, 24);
 
-		// Canopy — varying radius
-		const radius = 6 + tileHash(tx, ty, 600) * 4;
-		g.fillStyle(0x1f4a16, 0.7);
-		g.fillCircle(cx, cy - 2, radius);
+		// Canopy — drawn into its own sorted Graphics object
+		const treeGraphics = this.scene.add.graphics();
+		// Sort the tree based on its base Y just like we do for PlayerSprite
+		treeGraphics.setDepth(cy / TILE_SIZE);
+		this.treeGraphicsObjs.push(treeGraphics);
 
-		// Highlight on canopy
-		g.fillStyle(0x2a5c1e, 0.4);
-		g.fillCircle(cx - 2, cy - 4, radius * 0.5);
+		const radius = 22 + tileHash(tx, ty, 600) * 8; // 22 to 30 radius
+		treeGraphics.fillStyle(0x1f4a16, 0.9);
+		// Main canopy clusters
+		treeGraphics.fillCircle(cx, cy - 32, radius);
+		treeGraphics.fillCircle(cx - 14, cy - 20, radius * 0.7);
+		treeGraphics.fillCircle(cx + 14, cy - 20, radius * 0.7);
+		treeGraphics.fillCircle(cx, cy - 48, radius * 0.8);
+
+		// Highlights
+		treeGraphics.fillStyle(0x2a5c1e, 0.6);
+		treeGraphics.fillCircle(cx - 8, cy - 36, radius * 0.5);
+		treeGraphics.fillCircle(cx + 8, cy - 28, radius * 0.4);
+		treeGraphics.fillCircle(cx, cy - 50, radius * 0.5);
 	}
 
 	private drawWaterDetails(g: Phaser.GameObjects.Graphics, px: number, py: number, tx: number, ty: number) {
@@ -349,5 +361,14 @@ export class MapBaker {
 			this.waterOverlay.lineTo(px + TILE_SIZE - 4 + offsetX, py + TILE_SIZE / 2 + 1);
 			this.waterOverlay.strokePath();
 		}
+	}
+
+	destroy() {
+		for (const g of this.treeGraphicsObjs) {
+			g.destroy();
+		}
+		this.treeGraphicsObjs = [];
+		this.waterOverlay?.destroy();
+		this.waterTiles = [];
 	}
 }

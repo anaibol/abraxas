@@ -157,6 +157,8 @@ export class GameScene extends Phaser.Scene {
     };
 
     this.input.mouse?.disableContextMenu();
+    this.input.setPollAlways();
+
 
     this.applyFixedZoom();
     this.scale.on("resize", () => this.applyFixedZoom());

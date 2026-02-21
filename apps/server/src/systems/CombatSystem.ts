@@ -394,16 +394,30 @@ export class CombatSystem {
 
     // Validate target if ability is not self-target or AoE around self (i.e. has ranged targeting)
     if (ability.rangeTiles > 0) {
-      const target = this.spatial.findEntityAtTile(targetTileX, targetTileY);
-      if (target) {
-        const failureReason = this.getCastFailureReason(caster, target, ability);
-        if (failureReason) {
-          sendToClient?.(ServerMessageType.InvalidTarget, { reason: failureReason });
+      if (ability.effect === "teleport") {
+        if (
+          targetTileX < 0 ||
+          targetTileX >= this.map.width ||
+          targetTileY < 0 ||
+          targetTileY >= this.map.height ||
+          this.map.collision[targetTileY]?.[targetTileX] === 1 ||
+          this.spatial.isTileOccupied(targetTileX, targetTileY)
+        ) {
+          sendToClient?.(ServerMessageType.InvalidTarget, { reason: "invalid" });
           return false;
         }
-      } else if (ability.effect !== "summon") { // Summon abilities can target empty tiles
-        // No entity at targeted tile — silently ignore instead of showing an error
-        return false;
+      } else {
+        const target = this.spatial.findEntityAtTile(targetTileX, targetTileY);
+        if (target) {
+          const failureReason = this.getCastFailureReason(caster, target, ability);
+          if (failureReason) {
+            sendToClient?.(ServerMessageType.InvalidTarget, { reason: failureReason });
+            return false;
+          }
+        } else if (ability.effect !== "summon") { // Summon abilities can target empty tiles
+          // No entity at targeted tile — silently ignore instead of showing an error
+          return false;
+        }
       }
     }
 
@@ -814,6 +828,41 @@ export class CombatSystem {
         );
       }
     } else {
+      if (ability.effect === "teleport") {
+        const dist = MathUtils.chebyshevDist(attacker.getPosition(), {
+          x: windup.targetTileX,
+          y: windup.targetTileY,
+        });
+        if (dist > ability.rangeTiles) {
+          broadcast(ServerMessageType.Notification, {
+            message: "game.target_out_of_range",
+            templateData: { targetSessionId: attacker.sessionId },
+          });
+          return;
+        }
+        if (!this.hasLineOfSight(attacker.getPosition(), { x: windup.targetTileX, y: windup.targetTileY })) {
+          broadcast(ServerMessageType.Notification, {
+            message: "game.no_line_of_sight",
+            templateData: { targetSessionId: attacker.sessionId },
+          });
+          return;
+        }
+
+        this.effects.applyAbilityToTarget(
+          attacker,
+          attacker, // target is ignored by teleport logic, use attacker
+          ability,
+          windup,
+          broadcast,
+          onDeath,
+          now,
+          this.interruptCast.bind(this),
+          false,
+          onSummon,
+        );
+        return;
+      }
+
       let target = windup.targetSessionId
         ? this.spatial.findEntityBySessionId(windup.targetSessionId)
         : this.spatial.findEntityAtTile(windup.targetTileX, windup.targetTileY);

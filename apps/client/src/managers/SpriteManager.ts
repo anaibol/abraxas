@@ -164,14 +164,14 @@ export class SpriteManager {
     const sprite = this.sprites.get(sessionId);
     if (!sprite) return;
     const prev = sprite.container.alpha;
-    sprite.container.setAlpha(toAlpha);
+    sprite.setAlpha(toAlpha);
     this.scene.time.delayedCall(durationMs, () => {
-      if (sprite?.container) sprite.container.setAlpha(prev);
+      if (sprite?.container) sprite.setAlpha(prev);
     });
   }
 
   setAlpha(sessionId: string, alpha: number) {
-    this.sprites.get(sessionId)?.container.setAlpha(alpha);
+    this.sprites.get(sessionId)?.setAlpha(alpha);
   }
 
   showChatBubble(sessionId: string, message: string) {
@@ -378,11 +378,11 @@ export class SpriteManager {
     if (this.spawnProtectionTweens.has(sprite.sessionId)) return;
 
     if (!entity.alive) {
-      sprite.container.setAlpha(0.3);
+      sprite.setAlpha(0.3);
     } else if (entity.stealthed) {
-      sprite.container.setAlpha(sprite.isLocal ? 0.5 : 0.15);
+      sprite.setAlpha(sprite.isLocal ? 0.5 : 0.15);
     } else {
-      sprite.container.setAlpha(1);
+      sprite.setAlpha(1);
     }
   }
 }

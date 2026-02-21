@@ -18,6 +18,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     buffStat: StatType.STR,
     buffAmount: 10,
     fxId: 16,
+    rangeTiles: 0,
+    effect: "buff",
   },
 
   /** W — Melee stun: close-range bash that interrupts */
