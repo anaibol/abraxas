@@ -1,9 +1,9 @@
 import type { ItemAffix } from "@abraxas/shared";
 import { type InventoryEntry, ITEMS, ItemRarity, type StatType } from "@abraxas/shared";
 import { prisma } from "../database/db";
-import { ItemRarity as PrismaItemRarity } from "../generated/prisma";
 import { logger } from "../logger";
 import type { Player } from "../schema/Player";
+import { toSharedRarity, toPrismaRarity } from "../utils/rarityUtils";
 import type { InventorySystem } from "./InventorySystem";
 
 export class BankSystem {
@@ -27,7 +27,7 @@ export class BankSystem {
         itemId: s.item?.itemDef.code || "",
         quantity: s.qty,
         slotIndex: s.idx,
-        rarity: (s.item?.rarity?.toLowerCase() as ItemRarity) || ItemRarity.COMMON,
+        rarity: toSharedRarity(s.item?.rarity),
         affixes: (s.item?.affixesJson as unknown as ItemAffix[]) || [],
       })) || [];
 
@@ -87,7 +87,7 @@ export class BankSystem {
           itemId,
           quantity,
           slotIndex: nextIdx,
-          rarity: invItem.rarity as ItemRarity,
+          rarity: invItem.rarity,
           affixes: Array.from(invItem.affixes).map((a) => ({
             type: a.affixType,
             stat: a.stat as StatType,
@@ -103,7 +103,7 @@ export class BankSystem {
           itemId,
           quantity: 1,
           slotIndex: nextIdx,
-          rarity: invItem.rarity as ItemRarity,
+          rarity: invItem.rarity,
           affixes: Array.from(invItem.affixes).map((a) => ({
             type: a.affixType,
             stat: a.stat as StatType,
@@ -145,7 +145,7 @@ export class BankSystem {
 
     // Try add to inventory
     const instanceData = {
-      rarity: bankItem.rarity as ItemRarity,
+      rarity: bankItem.rarity,
       affixes: bankItem.affixes || [],
     };
 
@@ -189,7 +189,7 @@ export class BankSystem {
           const instance = await tx.itemInstance.create({
             data: {
               itemDefId: itemDef.id,
-              rarity: (item.rarity?.toUpperCase() as PrismaItemRarity) || PrismaItemRarity.COMMON,
+              rarity: toPrismaRarity(item.rarity),
               affixesJson: item.affixes ? (item.affixes as unknown as import("../generated/prisma").Prisma.InputJsonValue) : [],
             },
           });
