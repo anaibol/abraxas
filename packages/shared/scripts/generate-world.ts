@@ -50,21 +50,19 @@ function generateArena() {
   ];
 
   // Define warps
-  const warps = [
-    { x: 150, y: 150, targetMap: "catacombs", targetX: 5, targetY: 5 }
-  ];
-  
-  // Make area around warp clear 
-  for(let dy=-2;dy<=2;dy++) {
-    for(let dx=-2;dx<=2;dx++) {
-      collision[150+dy][150+dx] = 0;
-      tileTypes[150+dy][150+dx] = 0;
+  const warps = [{ x: 150, y: 150, targetMap: "catacombs", targetX: 5, targetY: 5 }];
+
+  // Make area around warp clear
+  for (let dy = -2; dy <= 2; dy++) {
+    for (let dx = -2; dx <= 2; dx++) {
+      collision[150 + dy][150 + dx] = 0;
+      tileTypes[150 + dy][150 + dx] = 0;
       // wall around it
-      if (Math.abs(dy)===2 || Math.abs(dx)===2) {
-          if (dy !== 2) {
-            collision[150+dy][150+dx] = 1;
-            tileTypes[150+dy][150+dx] = 1;
-          }
+      if (Math.abs(dy) === 2 || Math.abs(dx) === 2) {
+        if (dy !== 2) {
+          collision[150 + dy][150 + dx] = 1;
+          tileTypes[150 + dy][150 + dx] = 1;
+        }
       }
     }
   }
@@ -72,7 +70,7 @@ function generateArena() {
   // Draw some water near the edge
   for (let y = 10; y < 40; y++) {
     for (let x = 10; x < 40; x++) {
-        const val = Math.random();
+      const val = Math.random();
       if (val < 0.5) {
         collision[y][x] = 1;
         tileTypes[y][x] = 3; // Water
@@ -92,10 +90,10 @@ function generateArena() {
     spawns: [{ x: 100, y: 100 }],
     newbieSpawns: [{ x: 100, y: 100 }],
     safeZones: [{ x: 90, y: 90, w: 20, h: 20 }],
-    npcCount: 150, 
+    npcCount: 150,
     merchantCount: 5,
     npcs,
-    warps
+    warps,
   });
 }
 
@@ -155,42 +153,50 @@ function generateCatacombs() {
   }
 
   const npcs: any[] = [];
-  const validCaveTiles: {x: number, y: number}[] = [];
+  const validCaveTiles: { x: number; y: number }[] = [];
   for (let y = 10; y < height - 10; y++) {
     for (let x = 10; x < width - 10; x++) {
-        if (collision[y][x] === 0) {
-            // Count neighbors to make sure it's somewhat open
-            let walls = 0;
-            for (let dy = -1; dy <= 1; dy++) {
-                for (let dx = -1; dx <= 1; dx++) {
-                    if (collision[y + dy][x + dx] === 1) walls++;
-                }
-            }
-            if (walls <= 3) {
-                 validCaveTiles.push({x, y});
-            }
+      if (collision[y][x] === 0) {
+        // Count neighbors to make sure it's somewhat open
+        let walls = 0;
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            if (collision[y + dy][x + dx] === 1) walls++;
+          }
         }
+        if (walls <= 3) {
+          validCaveTiles.push({ x, y });
+        }
+      }
     }
   }
-  
+
   // Shuffle valid tiles
   validCaveTiles.sort(() => Math.random() - 0.5);
 
-  const mobPool = ["skeleton", "zombie", "ghost", "spider", "skeleton_archer", "vampire", "gargoyle"];
-  
+  const mobPool = [
+    "skeleton",
+    "zombie",
+    "ghost",
+    "spider",
+    "skeleton_archer",
+    "vampire",
+    "gargoyle",
+  ];
+
   // place random mobs
   for (let i = 0; i < 60; i++) {
-      if (validCaveTiles.length === 0) break;
-      const t = validCaveTiles.pop()!;
-      const type = mobPool[Math.floor(Math.random() * mobPool.length)];
-      npcs.push({ type, x: t.x, y: t.y });
+    if (validCaveTiles.length === 0) break;
+    const t = validCaveTiles.pop()!;
+    const type = mobPool[Math.floor(Math.random() * mobPool.length)];
+    npcs.push({ type, x: t.x, y: t.y });
   }
 
   // place bosses
-  for(let i=0; i < 2; i++) {
-        if (validCaveTiles.length === 0) break;
-        npcs.push({ type: "lich", ...validCaveTiles.pop()! });
-        npcs.push({ type: "dark_knight", ...validCaveTiles.pop()! });
+  for (let i = 0; i < 2; i++) {
+    if (validCaveTiles.length === 0) break;
+    npcs.push({ type: "lich", ...validCaveTiles.pop()! });
+    npcs.push({ type: "dark_knight", ...validCaveTiles.pop()! });
   }
 
   saveMap("catacombs", {
@@ -201,7 +207,7 @@ function generateCatacombs() {
     tileTypes,
     spawns: [{ x: 5, y: 5 }],
     warps: [{ x: 4, y: 4, targetMap: "arena", targetX: 150, targetY: 151 }],
-    npcs
+    npcs,
   });
 }
 

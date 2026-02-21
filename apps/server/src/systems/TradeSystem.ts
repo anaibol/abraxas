@@ -1,11 +1,11 @@
 import {
   ITEMS,
+  type ItemRarity,
   MAX_INVENTORY_SLOTS,
   ServerMessageType,
+  type StatType,
   type TradeOffer,
   type TradeState,
-  ItemRarity,
-  StatType,
 } from "@abraxas/shared";
 import { logger } from "../logger";
 import type { Player } from "../schema/Player";
@@ -188,8 +188,6 @@ export class TradeSystem {
             // We are giving the whole stack away. The incoming stack will take a slot.
             slotsNeeded++;
           } else {
-            // Stacks into existing.
-            continue;
           }
         } else {
           slotsNeeded++;

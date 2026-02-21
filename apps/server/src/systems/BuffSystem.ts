@@ -1,10 +1,10 @@
 import {
-  EntityType,
   type BroadcastFn,
+  EntityType,
   type PlayerBuffState,
   ServerMessageType,
 } from "@abraxas/shared";
-import { Player } from "../schema/Player";
+import type { Player } from "../schema/Player";
 import type { Entity } from "../utils/SpatialLookup";
 
 export class BuffSystem {
@@ -53,7 +53,7 @@ export class BuffSystem {
       });
     }
   }
-  
+
   hasBuff(sessionId: string, id: string, now: number): boolean {
     const s = this.state.get(sessionId);
     return !!s && s.buffs.some((b) => b.id === id && now < b.expiresAt);
@@ -145,7 +145,9 @@ export class BuffSystem {
     if (!s) return;
     s.dots = [];
     // Keep positive buffs (str, agi, etc.) — only remove debuff-type buffs
-    s.buffs = s.buffs.filter(b => !["poison", "weakness", "slow", "burn", "curse"].includes(b.id));
+    s.buffs = s.buffs.filter(
+      (b) => !["poison", "weakness", "slow", "burn", "curse"].includes(b.id),
+    );
   }
 
   /** Apply a temporary stat buff from an elixir item. Uses the existing buff slot. */
@@ -197,7 +199,10 @@ export class BuffSystem {
       // B005: After expiring buffs that may have boosted maxHP/maxMana, clamp current values.
       if (s.buffs.length !== buffsBefore) {
         if (entity.hp > entity.maxHp) entity.hp = entity.maxHp;
-        if (entity.entityType === EntityType.PLAYER && (entity as Player).mana > (entity as Player).maxMana) {
+        if (
+          entity.entityType === EntityType.PLAYER &&
+          (entity as Player).mana > (entity as Player).maxMana
+        ) {
           (entity as Player).mana = (entity as Player).maxMana;
         }
       }
@@ -228,11 +233,8 @@ export class BuffSystem {
 
         if (entity.hp <= 0) {
           entity.hp = 0;
-          entity.alive = false;
-          broadcast(ServerMessageType.Death, {
-            sessionId,
-            killerSessionId: dot.sourceSessionId,
-          });
+          // B8: Let onDeath handle alive=false + spatial removal
+          // to keep death logic consistent with other kill paths.
           onDeath(entity, dot.sourceSessionId);
           break;
         }

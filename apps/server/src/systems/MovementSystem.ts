@@ -1,4 +1,4 @@
-import { type Direction, type TileMap, EntityType, DIRECTION_DELTA, ITEMS } from "@abraxas/shared";
+import { DIRECTION_DELTA, type Direction, EntityType, ITEMS, type TileMap } from "@abraxas/shared";
 import { logger } from "../logger";
 import type { Entity, SpatialLookup } from "../utils/SpatialLookup";
 import type { BuffSystem } from "./BuffSystem";
@@ -13,7 +13,10 @@ type MoveResult = {
 };
 
 export class MovementSystem {
-  constructor(private spatial: SpatialLookup, private buffSystem: BuffSystem) {}
+  constructor(
+    private spatial: SpatialLookup,
+    private buffSystem: BuffSystem,
+  ) {}
 
   /** Instantly moves an entity to the target tile, updating the spatial grid. */
   teleport(entity: Entity, tileX: number, tileY: number): void {
@@ -85,7 +88,8 @@ export class MovementSystem {
       newY < 0 ||
       newY >= map.height ||
       map.collision[newY]?.[newX] === 1 ||
-      (entity.entityType !== EntityType.PLAYER && map.warps?.some((w) => w.x === newX && w.y === newY)) ||
+      (entity.entityType !== EntityType.PLAYER &&
+        map.warps?.some((w) => w.x === newX && w.y === newY)) ||
       this.spatial.isTileOccupied(newX, newY, entity.sessionId)
     ) {
       return { success: false };

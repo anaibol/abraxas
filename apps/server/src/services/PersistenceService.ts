@@ -1,9 +1,8 @@
 import type { EquipmentData, InventoryEntry } from "@abraxas/shared";
 import { type ClassType, Direction } from "@abraxas/shared";
 import { prisma } from "../database/db";
-import { DropType, EquipSlot, ItemRarity, type Prisma } from "../generated/prisma";
+import { type DropType, EquipSlot, ItemRarity, type Prisma } from "../generated/prisma";
 import { logger } from "../logger";
-
 
 /** Maps EquipmentData keys to Prisma EquipSlot enum values. */
 const EQUIPMENT_SLOT_MAP: Record<string, EquipSlot | undefined> = {
@@ -271,7 +270,7 @@ export class PersistenceService {
         const instance = await prisma.itemInstance.create({
           data: {
             itemDefId: itemDef.id,
-            rarity: (data.instanceData.rarity.toUpperCase() as ItemRarity),
+            rarity: data.instanceData.rarity.toUpperCase() as ItemRarity,
             nameOverride: data.instanceData.nameOverride,
             affixesJson: data.instanceData.affixes as Prisma.JsonArray,
           },
@@ -286,7 +285,7 @@ export class PersistenceService {
         mapId: data.mapId,
         tileX: data.tileX,
         tileY: data.tileY,
-        itemType: (data.itemType.toUpperCase() as DropType),
+        itemType: data.itemType.toUpperCase() as DropType,
         itemId: itemInstanceId,
         quantity: data.quantity,
         goldAmount: data.goldAmount,

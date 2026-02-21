@@ -312,11 +312,7 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     maxLevel: 40,
     aggroRange: 7,
     barks: {
-      aggro: [
-        "For the Dark Lord!",
-        "Your light ends here.",
-        "None shall pass!",
-      ],
+      aggro: ["For the Dark Lord!", "Your light ends here.", "None shall pass!"],
       low_hp: ["My armour holds!", "This is not over!", "ENRAGE!"],
       kill: ["Another falls.", "Kneel before darkness."],
     },
@@ -337,7 +333,11 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     abilities: [],
     passive: true,
     barks: {
-      idle: ["Your gold is safe with us.", "Deposits and withdrawals here!", "Banking hours: always."],
+      idle: [
+        "Your gold is safe with us.",
+        "Deposits and withdrawals here!",
+        "Banking hours: always.",
+      ],
     },
   },
   horse: {
@@ -453,11 +453,7 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     aggroRange: 8,
     rareSpawn: true,
     barks: {
-      aggro: [
-        "You dare challenge a DRAGON?!",
-        "Insolent creature... BURN!",
-        "*ROOOAAAAR*",
-      ],
+      aggro: ["You dare challenge a DRAGON?!", "Insolent creature... BURN!", "*ROOOAAAAR*"],
       low_hp: [
         "You are stronger than I expected, insect.",
         "Feel my TRUE power!",
@@ -538,7 +534,6 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     expReward: 0,
   },
 };
-
 
 export const NPC_STATS: Record<NpcType, NpcStats> = Object.fromEntries(
   Object.entries(_NPC_STATS).map(([k, v]) => {

@@ -1,6 +1,6 @@
+import { extname, join } from "node:path";
 import { BunWebSockets } from "@colyseus/bun-websockets";
-import { type Router } from "@colyseus/core";
-import { join, extname } from "node:path";
+import type { Router } from "@colyseus/core";
 import type { ServerWebSocket } from "bun";
 
 const MIME: Record<string, string> = {

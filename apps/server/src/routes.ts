@@ -23,18 +23,21 @@ function extractBearerToken(req: Request): string | null {
 /** Verifies the bearer token on a request. Returns `{ payload }` on success or `{ response }` with the error to send. */
 function requireAuth(ctx: { request?: Request }, requiredRole?: string) {
   const token = ctx.request ? extractBearerToken(ctx.request) : null;
-  if (!token) return { payload: null, response: { body: { error: "Unauthorized" }, status: 401 } as const };
+  if (!token)
+    return { payload: null, response: { body: { error: "Unauthorized" }, status: 401 } as const };
   const payload = verifyToken(token);
-  if (!payload) return { payload: null, response: { body: { error: "Invalid or expired token" }, status: 401 } as const };
+  if (!payload)
+    return {
+      payload: null,
+      response: { body: { error: "Invalid or expired token" }, status: 401 } as const,
+    };
   if (requiredRole && payload.role !== requiredRole)
     return { payload: null, response: { body: { error: "Forbidden" }, status: 403 } as const };
   return { payload, response: null };
 }
 
-export const healthEndpoint = createEndpoint(
-  "/health",
-  { method: "GET" },
-  async (ctx) => ctx.json({ ok: true }),
+export const healthEndpoint = createEndpoint("/health", { method: "GET" }, async (ctx) =>
+  ctx.json({ ok: true }),
 );
 
 export const registerEndpoint: ReturnType<typeof createEndpoint> = createEndpoint(
@@ -110,24 +113,20 @@ export const loginEndpoint: ReturnType<typeof createEndpoint> = createEndpoint(
   },
 );
 
-export const meEndpoint = createEndpoint(
-  "/api/me",
-  { method: "GET" },
-  async (ctx) => {
-    if (!ctx.request) return ctx.json({ error: "Missing request" }, { status: 400 });
-    const auth = requireAuth(ctx);
-    if (!auth.payload) return ctx.json(auth.response!.body, { status: auth.response!.status });
-    const { payload } = auth;
+export const meEndpoint = createEndpoint("/api/me", { method: "GET" }, async (ctx) => {
+  if (!ctx.request) return ctx.json({ error: "Missing request" }, { status: 400 });
+  const auth = requireAuth(ctx);
+  if (!auth.payload) return ctx.json(auth.response!.body, { status: auth.response!.status });
+  const { payload } = auth;
 
-    const characters = await prisma.character.findMany({
-      where: { accountId: payload.userId },
-      select: { id: true, name: true, class: true, level: true },
-      orderBy: { lastLoginAt: "desc" },
-    });
+  const characters = await prisma.character.findMany({
+    where: { accountId: payload.userId },
+    select: { id: true, name: true, class: true, level: true },
+    orderBy: { lastLoginAt: "desc" },
+  });
 
-    return ctx.json({ characters, role: payload.role });
-  },
-);
+  return ctx.json({ characters, role: payload.role });
+});
 
 export const createCharacterEndpoint: ReturnType<typeof createEndpoint> = createEndpoint(
   "/api/characters",

@@ -1,9 +1,9 @@
 import { ServerMessageType } from "@abraxas/shared";
 import type { Client } from "@colyseus/core";
 import { prisma } from "../database/db";
+import { HandlerUtils } from "../handlers/HandlerUtils";
 import { logger } from "../logger";
 import type { GameState } from "../schema/GameState";
-import { HandlerUtils } from "../handlers/HandlerUtils";
 
 export class FriendsSystem {
   private onlineUsers = new Map<string, string>(); // userId -> sessionId

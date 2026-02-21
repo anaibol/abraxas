@@ -33,7 +33,274 @@ const TEX = {
   ARROW: "fx-arrow", // sharp arrow texture for physical projectiles (16×16)
 } as const;
 
+// ── FxRecipe: data-driven spell effect system ────────────────────────────────
+
+type FxRing  = { color: number; start: number; end: number; duration: number; alpha?: number; width?: number; delay?: number };
+type FxFlash = { color: number; size: number; duration: number };
+type FxBurstEntry = BurstConfig & { tex: keyof typeof TEX; delay?: number };
+type FxHelper = "createThickSmoke" | "createCampfire" | "createLightningStrike" | "createFrostExplosion"
+  | "createEarthShatter" | "createPoisonCloud" | "createVines" | "createMeteorFall" | "createWaterSplash"
+  | "createRain" | "createAcidSplash";
+
+type FxRecipe = {
+  flash?: FxFlash;
+  rings?: FxRing[];
+  bursts?: FxBurstEntry[];
+  helpers?: FxHelper[];
+};
+
+/** Lookup table for data-driven spell effects. Complex effects (chain_lightning, meteor_strike) stay as custom methods. */
+const SPELL_FX: Record<string, FxRecipe> = {
+  // ── Mage ──
+  ice_bolt: {
+    rings: [{ color: 0x44ddff, start: 4, end: 40, duration: 330, alpha: 0.85, width: 3 }],
+    bursts: [
+      { tex: "SHARD", colors: [0x88eeff, 0x44aaff, 0xccffff, 0xffffff], count: 22, speed: { min: 80, max: 190 }, scale: { start: 0.7, end: 0 }, lifespan: { min: 300, max: 620 }, rotate: { start: 0, end: 360 } },
+      { tex: "CIRCLE", colors: [0xffffff, 0xaaeeff], count: 14, speed: { min: 15, max: 55 }, scale: { start: 0.3, end: 0 }, lifespan: { min: 550, max: 950 }, gravityY: -28, radius: 16 },
+    ],
+  },
+  arcane_surge: {
+    flash: { color: 0xaa44ff, size: 36, duration: 100 },
+    rings: [
+      { color: 0x8844ff, start: 5, end: 50, duration: 420, alpha: 0.85, width: 4 },
+      { color: 0xffffff, start: 5, end: 42, duration: 310, alpha: 0.7, width: 2, delay: 60 },
+    ],
+    bursts: [
+      { tex: "CIRCLE", colors: [0xaa44ff, 0xcc88ff, 0xffccff, 0xffffff], count: 34, speed: { min: 70, max: 200 }, scale: { start: 0.8, end: 0 }, lifespan: { min: 350, max: 750 }, gravityY: -32, radius: 8 },
+    ],
+  },
+  mana_shield: {
+    rings: [{ color: 0x4488ff, start: 5, end: 36, duration: 380, alpha: 0.85, width: 3 }],
+    bursts: [
+      { tex: "CIRCLE", colors: [0x4488ff, 0x88bbff, 0xccddff], count: 24, speed: { min: 20, max: 62 }, scale: { start: 0.55, end: 0 }, lifespan: { min: 400, max: 820 }, gravityY: -30, radius: 18 },
+      { tex: "RING", colors: [0x4488ff, 0xffffff], count: 8, speed: { min: 10, max: 30 }, scale: { start: 0.5, end: 0 }, lifespan: { min: 600, max: 1100 }, rotate: { start: 0, end: 360 }, radius: 22 },
+    ],
+  },
+  // ── Warrior ──
+  war_cry: {
+    rings: [
+      { color: 0xff6600, start: 5, end: 65, duration: 500, alpha: 0.85, width: 4 },
+      { color: 0xffcc00, start: 5, end: 60, duration: 480, alpha: 0.5, width: 3, delay: 100 },
+    ],
+    bursts: [{ tex: "CIRCLE", colors: [0xff6600, 0xffaa00, 0xffee44], count: 28, speed: { min: 40, max: 120 }, scale: { start: 0.65, end: 0 }, lifespan: { min: 350, max: 700 }, radius: 20 }],
+  },
+  whirlwind: {
+    flash: { color: 0xcccccc, size: 34, duration: 80 },
+    rings: [{ color: 0xcccccc, start: 5, end: 52, duration: 400, alpha: 0.85, width: 4 }],
+    bursts: [
+      { tex: "SHARD", colors: [0xcccccc, 0xffffff, 0xaaccff], count: 28, speed: { min: 90, max: 220 }, scale: { start: 0.65, end: 0 }, lifespan: { min: 200, max: 480 }, angle: { min: 0, max: 360 }, rotate: { start: 0, end: 720 } },
+      { tex: "SPARK", colors: [0xffffff, 0xffcc88], count: 16, speed: { min: 50, max: 140 }, scale: { start: 0.4, end: 0 }, lifespan: { min: 150, max: 380 }, angle: { min: 0, max: 360 } },
+    ],
+  },
+  battle_shout: {
+    rings: [
+      { color: 0xffcc00, start: 5, end: 72, duration: 520, alpha: 0.85, width: 4 },
+      { color: 0xffcc00, start: 5, end: 85, duration: 580, alpha: 0.5, width: 3, delay: 120 },
+    ],
+    bursts: [{ tex: "CIRCLE", colors: [0xffcc00, 0xffee88, 0xffffff], count: 24, speed: { min: 30, max: 90 }, scale: { start: 0.5, end: 0 }, lifespan: { min: 400, max: 780 }, radius: 22 }],
+  },
+  enrage: {
+    flash: { color: 0xff4400, size: 44, duration: 120 },
+    rings: [{ color: 0xff4400, start: 5, end: 52, duration: 460, alpha: 0.85, width: 4 }],
+    bursts: [{ tex: "CIRCLE", colors: [0xff2200, 0xff8800, 0xffcc00], count: 32, speed: { min: 70, max: 165 }, scale: { start: 0.7, end: 0 }, lifespan: { min: 400, max: 820 }, radius: 20 }],
+  },
+  // ── Priest / Holy ──
+  holy_nova: {
+    flash: { color: 0xffffff, size: 46, duration: 100 },
+    rings: [
+      { color: 0xffffcc, start: 5, end: 60, duration: 450, alpha: 0.9, width: 4 },
+      { color: 0xffcc88, start: 5, end: 60, duration: 475, alpha: 0.5, width: 2, delay: 100 },
+    ],
+    bursts: [{ tex: "STAR", colors: [0xffffff, 0xffff88, 0xffee44, 0xffcc00], count: 32, speed: { min: 40, max: 140 }, scale: { start: 0.7, end: 0 }, lifespan: { min: 400, max: 850 }, rotate: { start: 0, end: 360 }, gravityY: -30 }],
+  },
+  heal: {
+    flash: { color: 0x44ff88, size: 32, duration: 120 },
+    rings: [{ color: 0x33dd66, start: 5, end: 42, duration: 380, alpha: 0.85, width: 3 }],
+    bursts: [
+      { tex: "CROSS", colors: [0x44ff88, 0xffffff, 0xaaffcc], count: 24, speed: { min: 20, max: 80 }, scale: { start: 0.65, end: 0 }, lifespan: { min: 500, max: 950 }, rotate: { start: 0, end: 360 }, gravityY: -48, radius: 14 },
+      { tex: "CIRCLE", colors: [0x33dd66, 0x88ffaa], count: 16, speed: { min: 15, max: 50 }, scale: { start: 0.4, end: 0 }, lifespan: { min: 600, max: 1100 }, gravityY: -55, radius: 20 },
+      { tex: "STAR", colors: [0xffffff, 0xaaffcc], count: 8, speed: { min: 25, max: 55 }, scale: { start: 0.45, end: 0 }, lifespan: { min: 700, max: 1200 }, rotate: { start: 0, end: 360 }, gravityY: -60, radius: 18 },
+    ],
+  },
+  divine_shield: {
+    flash: { color: 0xffff88, size: 42, duration: 120 },
+    rings: [
+      { color: 0xffdd44, start: 5, end: 48, duration: 420, alpha: 0.9, width: 4 },
+      { color: 0xffee88, start: 5, end: 50, duration: 570, alpha: 0.7, width: 3, delay: 100 },
+    ],
+    bursts: [{ tex: "STAR", colors: [0xffffff, 0xffff44, 0xffcc00], count: 20, speed: { min: 15, max: 60 }, scale: { start: 0.55, end: 0 }, lifespan: { min: 600, max: 1100 }, rotate: { start: 0, end: 360 }, gravityY: -42, radius: 26 }],
+  },
+  holy_strike: {
+    flash: { color: 0xffffaa, size: 28, duration: 80 },
+    rings: [{ color: 0xffdd44, start: 4, end: 35, duration: 300, alpha: 0.85, width: 3 }],
+    bursts: [{ tex: "STAR", colors: [0xffffff, 0xffff88, 0xffcc00], count: 16, speed: { min: 50, max: 130 }, scale: { start: 0.55, end: 0 }, lifespan: { min: 250, max: 550 }, rotate: { start: 0, end: 360 } }],
+  },
+  // ── Rogue ──
+  smoke_bomb: {
+    flash: { color: 0x333333, size: 38, duration: 100 },
+    rings: [
+      { color: 0x444444, start: 5, end: 55, duration: 500, alpha: 0.75, width: 4 },
+      { color: 0x222222, start: 5, end: 70, duration: 680, alpha: 0.45, width: 3, delay: 100 },
+    ],
+    bursts: [
+      { tex: "SMOKE", colors: [0x222222, 0x333333, 0x444444, 0x555555], count: 40, speed: { min: 20, max: 70 }, scale: { start: 1.2, end: 0.2 }, lifespan: { min: 600, max: 1400 }, gravityY: -18, radius: 28, blendMode: 0 /* NORMAL */, alpha: { start: 0.7, end: 0 } },
+    ],
+  },
+  hemorrhage: {
+    flash: { color: 0xdd2222, size: 26, duration: 80 },
+    rings: [{ color: 0xcc1111, start: 4, end: 36, duration: 320, alpha: 0.85, width: 3 }],
+    bursts: [
+      { tex: "CIRCLE", colors: [0xff2222, 0xdd0000, 0x880000], count: 22, speed: { min: 50, max: 140 }, scale: { start: 0.6, end: 0 }, lifespan: { min: 250, max: 520 }, gravityY: 55, radius: 8 },
+      { tex: "CIRCLE", colors: [0xff4444, 0xcc0000], count: 12, speed: { min: 30, max: 80 }, scale: { start: 0.35, end: 0 }, lifespan: { min: 400, max: 780 }, angle: { min: 210, max: 330 }, gravityY: 120 },
+    ],
+  },
+  backstab: {
+    flash: { color: 0xff4444, size: 24, duration: 60 },
+    rings: [{ color: 0xff4444, start: 4, end: 28, duration: 250, alpha: 0.85, width: 3 }],
+    bursts: [{ tex: "SPARK", colors: [0xff4444, 0xffaa44, 0xffffff], count: 14, speed: { min: 60, max: 160 }, scale: { start: 0.5, end: 0 }, lifespan: { min: 150, max: 350 }, angle: { min: -40, max: 40 } }],
+  },
+  stealth: {
+    rings: [{ color: 0x6644aa, start: 40, end: 5, duration: 400, alpha: 0.7, width: 3 }],
+    bursts: [
+      { tex: "SMOKE", colors: [0x332255, 0x221133, 0x110022], count: 24, speed: { min: 10, max: 40 }, scale: { start: 0.8, end: 0 }, lifespan: { min: 500, max: 1050 }, gravityY: -15, radius: 22, blendMode: 0, alpha: { start: 0.55, end: 0 } },
+      { tex: "CIRCLE", colors: [0x6644aa, 0x8866cc], count: 10, speed: { min: 15, max: 45 }, scale: { start: 0.3, end: 0 }, lifespan: { min: 400, max: 750 }, gravityY: -35, radius: 18 },
+    ],
+  },
+  evasion: {
+    flash: { color: 0x44ccff, size: 30, duration: 100 },
+    rings: [
+      { color: 0x44ccff, start: 5, end: 42, duration: 360, alpha: 0.85, width: 3 },
+    ],
+    bursts: [
+      { tex: "SHARD", colors: [0x44ccff, 0xaaeeff, 0xffffff], count: 20, speed: { min: 80, max: 190 }, scale: { start: 0.5, end: 0 }, lifespan: { min: 200, max: 420 }, rotate: { start: 0, end: 360 } },
+    ],
+  },
+  // ── Hunter ──
+  aimed_shot: {
+    flash: { color: 0xffaa44, size: 24, duration: 80 },
+    rings: [{ color: 0xffaa44, start: 4, end: 36, duration: 300, alpha: 0.85, width: 3 }],
+    bursts: [
+      { tex: "SPARK", colors: [0xffaa44, 0xffcc88, 0xffffff], count: 18, speed: { min: 80, max: 200 }, scale: { start: 0.5, end: 0 }, lifespan: { min: 200, max: 450 }, angle: { min: -30, max: 30 } },
+      { tex: "CIRCLE", colors: [0xffaa44, 0xff8800], count: 10, speed: { min: 20, max: 55 }, scale: { start: 0.3, end: 0 }, lifespan: { min: 300, max: 600 }, radius: 12 },
+    ],
+  },
+  multi_shot: {
+    rings: [{ color: 0x88ff44, start: 4, end: 37, duration: 340, alpha: 0.75, width: 3 }],
+    bursts: [{ tex: "SHARD", colors: [0x88ff44, 0xffee44, 0xffffff], count: 22, speed: { min: 90, max: 190 }, scale: { start: 0.5, end: 0 }, lifespan: { min: 250, max: 510 }, angle: { min: -65, max: 65 }, rotate: { start: 0, end: 180 } }],
+  },
+  mark_target: {
+    flash: { color: 0xff4444, size: 22, duration: 80 },
+    rings: [{ color: 0xff4444, start: 4, end: 30, duration: 300, alpha: 0.85, width: 3 }],
+    bursts: [{ tex: "CROSS", colors: [0xff4444, 0xffaa44, 0xffffff], count: 12, speed: { min: 20, max: 55 }, scale: { start: 0.5, end: 0 }, lifespan: { min: 400, max: 750 }, rotate: { start: 0, end: 360 } }],
+  },
+  curse: {
+    rings: [{ color: 0x8800aa, start: 5, end: 40, duration: 400, alpha: 0.8, width: 4 }],
+    bursts: [
+      { tex: "SMOKE", colors: [0x440066, 0x220033, 0x110022], count: 22, speed: { min: 15, max: 55 }, scale: { start: 0.8, end: 0 }, lifespan: { min: 500, max: 1100 }, gravityY: -22, radius: 20, blendMode: 0, alpha: { start: 0.6, end: 0 } },
+      { tex: "CIRCLE", colors: [0x8800aa, 0xcc44ff, 0xff88ff], count: 16, speed: { min: 30, max: 92 }, scale: { start: 0.5, end: 0 }, lifespan: { min: 350, max: 720 }, gravityY: -36, radius: 12 },
+    ],
+  },
+  // ── NPC effects ──
+  fire_breath: {
+    rings: [{ color: 0xff4400, start: 5, end: 72, duration: 520, alpha: 0.85, width: 5 }],
+    bursts: [
+      { tex: "CIRCLE", colors: [0xff2200, 0xff7700, 0xffcc00, 0xffee88], count: 48, speed: { min: 60, max: 185 }, scale: { start: 0.9, end: 0 }, lifespan: { min: 400, max: 920 }, gravityY: -35, radius: 42 },
+      { tex: "SMOKE", colors: [0x883300, 0x441100], count: 18, speed: { min: 20, max: 62 }, scale: { start: 1.1, end: 0.2 }, lifespan: { min: 600, max: 1250 }, gravityY: -22, radius: 37, blendMode: 0, alpha: { start: 0.52, end: 0 } },
+    ],
+  },
+  frost_breath: {
+    rings: [
+      { color: 0x44aaff, start: 5, end: 68, duration: 540, alpha: 0.8, width: 4 },
+      { color: 0xffffff, start: 5, end: 52, duration: 440, alpha: 0.5, width: 2, delay: 85 },
+    ],
+    bursts: [
+      { tex: "SHARD", colors: [0x44ccff, 0x88eeff, 0xffffff], count: 30, speed: { min: 60, max: 165 }, scale: { start: 0.6, end: 0 }, lifespan: { min: 400, max: 760 }, rotate: { start: 0, end: 270 }, radius: 38 },
+      { tex: "SMOKE", colors: [0x88ccff, 0xaaddff], count: 16, speed: { min: 15, max: 47 }, scale: { start: 0.9, end: 0.2 }, lifespan: { min: 600, max: 1120 }, gravityY: -16, radius: 42, blendMode: 0, alpha: { start: 0.42, end: 0 } },
+    ],
+  },
+  banshee_wail: {
+    rings: [
+      { color: 0x8844cc, start: 5, end: 78, duration: 620, alpha: 0.8, width: 5 },
+      { color: 0xcc44ff, start: 5, end: 62, duration: 510, alpha: 0.55, width: 3, delay: 105 },
+    ],
+    bursts: [
+      { tex: "SMOKE", colors: [0xcc44ff, 0x880088, 0x4400aa], count: 26, speed: { min: 20, max: 68 }, scale: { start: 0.8, end: 0 }, lifespan: { min: 600, max: 1250 }, gravityY: -22, radius: 52, blendMode: 0, alpha: { start: 0.62, end: 0 } },
+      { tex: "CIRCLE", colors: [0x8844cc, 0xcc44ff], count: 18, speed: { min: 30, max: 92 }, scale: { start: 0.5, end: 0 }, lifespan: { min: 400, max: 820 }, gravityY: -36, radius: 32 },
+    ],
+  },
+  shadow_bolt: {
+    rings: [{ color: 0x330044, start: 5, end: 42, duration: 370, alpha: 0.8, width: 4 }],
+    bursts: [
+      { tex: "CIRCLE", colors: [0x220033, 0x550055, 0x8800aa, 0xff44ff], count: 32, speed: { min: 60, max: 178 }, scale: { start: 0.7, end: 0 }, lifespan: { min: 350, max: 720 }, radius: 7 },
+      { tex: "SMOKE", colors: [0x110022, 0x330033], count: 15, speed: { min: 15, max: 50 }, scale: { start: 0.9, end: 0.1 }, lifespan: { min: 500, max: 1020 }, gravityY: -16, radius: 17, blendMode: 0, alpha: { start: 0.5, end: 0 } },
+    ],
+  },
+  soul_drain: {
+    rings: [{ color: 0x4422aa, start: 4, end: 30, duration: 320, alpha: 0.8, width: 3 }],
+    bursts: [{ tex: "CIRCLE", colors: [0x4422aa, 0x8844cc, 0xaaaaff], count: 20, speed: { min: 20, max: 72 }, scale: { start: 0.55, end: 0 }, lifespan: { min: 400, max: 820 }, gravityY: -48, radius: 11 }],
+  },
+  web_shot: {
+    rings: [{ color: 0x888888, start: 5, end: 32, duration: 360, alpha: 0.7, width: 3 }],
+    bursts: [{ tex: "CIRCLE", colors: [0x888888, 0xaaaaaa, 0xffffff], count: 20, speed: { min: 30, max: 92 }, scale: { start: 0.4, end: 0 }, lifespan: { min: 300, max: 660 }, radius: 11 }],
+  },
+  // ── Paladin ──
+  consecration: {
+    rings: [
+      { color: 0xffcc00, start: 5, end: 48, duration: 480, alpha: 0.85, width: 4 },
+      { color: 0xff6600, start: 5, end: 36, duration: 380, alpha: 0.6, width: 3, delay: 80 },
+    ],
+    bursts: [
+      { tex: "CIRCLE", colors: [0xff6600, 0xffcc00, 0xffffff, 0xffee44], count: 32, speed: { min: 50, max: 145 }, scale: { start: 0.65, end: 0 }, lifespan: { min: 400, max: 840 }, gravityY: -32, radius: 30 },
+      { tex: "STAR", colors: [0xffffff, 0xffee44], count: 14, speed: { min: 25, max: 72 }, scale: { start: 0.5, end: 0 }, lifespan: { min: 500, max: 920 }, rotate: { start: 0, end: 360 }, gravityY: -42, radius: 24 },
+    ],
+  },
+  // ── Druid ──
+  bear_form: {
+    flash: { color: 0x8B5E3C, size: 40, duration: 150 },
+    rings: [{ color: 0x8B5E3C, start: 6, end: 52, duration: 500, alpha: 0.8, width: 4 }],
+    bursts: [
+      { tex: "SMOKE", colors: [0x6B4226, 0xA07040, 0x5C3A1C], count: 30, speed: { min: 30, max: 95 }, scale: { start: 1.0, end: 0.1 }, lifespan: { min: 500, max: 1100 }, gravityY: -18, radius: 32, blendMode: 0, alpha: { start: 0.7, end: 0 } },
+      { tex: "CIRCLE", colors: [0x8B5E3C, 0xD2A679, 0xFFEECC], count: 16, speed: { min: 50, max: 130 }, scale: { start: 0.55, end: 0 }, lifespan: { min: 350, max: 700 }, radius: 18 },
+    ],
+  },
+  cat_form: {
+    rings: [{ color: 0x44FF88, start: 4, end: 40, duration: 360, alpha: 0.8, width: 3 }],
+    bursts: [
+      { tex: "SHARD", colors: [0x44FF88, 0xAAFFCC, 0xFFFFFF], count: 24, speed: { min: 100, max: 240 }, scale: { start: 0.55, end: 0 }, lifespan: { min: 180, max: 380 }, angle: { min: 0, max: 360 }, rotate: { start: 0, end: 180 } },
+      { tex: "CIRCLE", colors: [0x44FF88, 0x88FFCC], count: 12, speed: { min: 30, max: 80 }, scale: { start: 0.35, end: 0 }, lifespan: { min: 300, max: 600 }, gravityY: -40, radius: 16 },
+    ],
+  },
+  // ── Necromancer ──
+  summon: {
+    rings: [
+      { color: 0x220033, start: 5, end: 40, duration: 480, alpha: 0.7, width: 4 },
+      { color: 0x8844CC, start: 5, end: 30, duration: 380, alpha: 0.4, width: 2, delay: 80 },
+    ],
+    bursts: [
+      { tex: "SMOKE", colors: [0x110022, 0x330033, 0x550055], count: 28, speed: { min: 15, max: 55 }, scale: { start: 1.0, end: 0.1 }, lifespan: { min: 700, max: 1500 }, gravityY: -40, radius: 20, blendMode: 0, alpha: { start: 0.65, end: 0 } },
+      { tex: "CIRCLE", colors: [0xCC44FF, 0x8800CC, 0x4400AA], count: 18, speed: { min: 30, max: 90 }, scale: { start: 0.55, end: 0 }, lifespan: { min: 400, max: 850 }, gravityY: -60, radius: 14 },
+    ],
+  },
+  // ── Default fallback ──
+  _default: {
+    rings: [{ color: 0xaaaaff, start: 4, end: 32, duration: 320, alpha: 0.7, width: 2 }],
+    bursts: [{ tex: "CIRCLE", colors: [0xffffff, 0xaaaaff], count: 18, speed: { min: 40, max: 105 }, scale: { start: 0.5, end: 0 }, lifespan: { min: 300, max: 620 } }],
+  },
+};
+
+/** Alias map: spellId → recipe key (for effects that reuse another recipe). */
+const SPELL_FX_ALIASES: Record<string, string> = {
+  poison_arrow: "poison", envenom: "poison", poison_bite: "poison",
+  judgment: "holy_strike", lay_on_hands: "heal", aura_of_protection: "divine_shield",
+  holy_bolt: "smite", summon_zombie: "summon", summon_skeleton: "summon",
+  soul_blast: "soul_drain", execute: "backstab", leap: "earthquake",
+  cleave: "whirlwind", berserker_rage: "enrage", shadowstep: "stealth",
+  fan_of_knives: "multi_shot", detect_invisibility: "divine_shield",
+  cleanse_paralysis: "divine_shield",
+};
+
 // ── EffectManager ─────────────────────────────────────────────────────────────
+
 
 export class EffectManager {
   private texturesReady = false;
@@ -1556,6 +1823,28 @@ export class EffectManager {
 
   // ── Public API ────────────────────────────────────────────────────────────
 
+  // ── Recipe-based effect player ───────────────────────────────────────────────
+
+  /** Renders a data-driven FxRecipe at the given world pixel position. */
+  private playRecipe(px: number, py: number, recipe: FxRecipe) {
+    if (recipe.flash) this.flash(px, py, recipe.flash.color, recipe.flash.size, recipe.flash.duration);
+    if (recipe.rings) {
+      for (const r of recipe.rings) {
+        const play = () => this.ring(px, py, r.color, r.start, r.end, r.duration, r.alpha ?? 0.85, r.width ?? 3);
+        r.delay ? this.scene.time.delayedCall(r.delay, play) : play();
+      }
+    }
+    if (recipe.bursts) {
+      for (const b of recipe.bursts) {
+        const { tex, delay, ...cfg } = b;
+        const play = () => this.burst(px, py, TEX[tex], cfg);
+        delay ? this.scene.time.delayedCall(delay, play) : play();
+      }
+    }
+  }
+
+  // ── Public API ────────────────────────────────────────────────────────────
+
   /** Plays the full layered visual effect for a spell at a tile position. */
   playSpellEffect(spellId: string, targetTileX: number, targetTileY: number, casterSessionId?: string) {
     this.ensureTextures();
@@ -1563,131 +1852,28 @@ export class EffectManager {
     const py = targetTileY * TILE_SIZE + TILE_SIZE / 2;
     if (!this.isOnScreen(px, py)) return;
 
+    // Custom effects that need scene helpers or special logic
     switch (spellId) {
-      case "fireball":
-        return this.fx_fireball(px, py);
-      case "ice_bolt":
-        return this.fx_ice_bolt(px, py);
-      case "thunderstorm":
-        return this.fx_thunderstorm(px, py);
-      case "frost_nova":
-        return this.fx_frost_nova(px, py);
-      case "arcane_surge":
-        return this.fx_arcane_surge(px, py);
-      case "war_cry":
-        return this.fx_war_cry(px, py);
-      case "whirlwind":
-        return this.fx_whirlwind(px, py);
-      case "shield_bash":
-        return this.fx_shield_bash(px, py);
-      case "battle_shout":
-        return this.fx_battle_shout(px, py);
-      case "holy_nova":
-        return this.fx_holy_nova(px, py);
-      case "heal":
-        return this.fx_heal(px, py);
-      case "divine_shield":
-        return this.fx_divine_shield(px, py);
-      case "smoke_bomb":
-        return this.fx_smoke_bomb(px, py);
-      case "hemorrhage":
-        return this.fx_hemorrhage(px, py);
-      case "backstab":
-        return this.fx_backstab(px, py);
-      case "stealth":
-        return this.fx_stealth(px, py);
-      case "poison_arrow":
-      case "envenom":
-      case "poison_bite":
-        return this.fx_poison(px, py);
-      case "holy_strike":
-        return this.fx_holy_strike(px, py);
-      case "smite":
-        return this.fx_smite(px, py);
-      case "curse":
-        return this.fx_curse(px, py);
-      case "mark_target":
-        return this.fx_mark_target(px, py);
-      case "mana_shield":
-        return this.fx_mana_shield(px, py);
-      case "evasion":
-        return this.fx_evasion(px, py);
-      case "aimed_shot":
-        return this.fx_aimed_shot(px, py);
-      case "multi_shot":
-        return this.fx_multi_shot(px, py);
-      case "enrage":
-        return this.fx_enrage(px, py);
-      case "fire_breath":
-        return this.fx_fire_breath(px, py);
-      case "frost_breath":
-        return this.fx_frost_breath(px, py);
-      case "banshee_wail":
-        return this.fx_banshee_wail(px, py);
-      case "shadow_bolt":
-        return this.fx_shadow_bolt(px, py);
-      case "soul_drain":
-        return this.fx_soul_drain(px, py);
-      case "web_shot":
-        return this.fx_web_shot(px, py);
-      // ── Paladin ────────────────────────────────────────────────────────────
-      case "judgment":
-        return this.fx_holy_strike(px, py);
-      case "lay_on_hands":
-        return this.fx_heal(px, py);
-      case "consecration":
-        return this.fx_consecration(px, py);
-      case "aura_of_protection":
-        return this.fx_divine_shield(px, py);
-      case "holy_bolt":
-        return this.fx_smite(px, py);
-      // ── New Spells ─────────────────────────────────────────────────────────
-      case "meteor_strike":
-        return this.fx_meteor_strike(px, py);
-      case "chain_lightning":
-        return this.fx_chain_lightning(casterSessionId, px, py); // Requires caster position
-      case "entangling_roots":
-        return this.fx_entangling_roots(px, py);
-      case "cleansing_rain":
-        return this.fx_cleansing_rain(px, py);
-      case "acid_splash":
-        return this.fx_acid_splash(px, py);
-      case "earthquake":
-        return this.fx_earthquake(px, py);
-      // ── Druid ─────────────────────────────────────────────────────────────
-      case "bear_form":
-        return this.fx_bear_form(px, py);
-      case "cat_form":
-        return this.fx_cat_form(px, py);
-      case "tree_form":
-        return this.fx_tree_form(px, py);
-      // ── Necromancer ────────────────────────────────────────────────────────
-      case "summon_zombie":
-      case "summon_skeleton":
-        return this.fx_summon(px, py);
-      case "soul_blast":
-        return this.fx_soul_drain(px, py); // reuse: dark expanding burst
-      // ── Warrior extras ────────────────────────────────────────────────────
-      case "execute":
-        return this.fx_backstab(px, py);   // devastating melee finisher
-      case "leap":
-        return this.fx_earthquake(px, py); // ground impact on landing
-      case "cleave":
-        return this.fx_whirlwind(px, py);  // wide arc attack
-      case "berserker_rage":
-        return this.fx_enrage(px, py);
-      // ── Rogue extras ──────────────────────────────────────────────────────
-      case "shadowstep":
-        return this.fx_stealth(px, py);
-      case "fan_of_knives":
-        return this.fx_multi_shot(px, py);
-      // ── Detect invisibility ───────────────────────────────────────────────
-      case "detect_invisibility":
-      case "cleanse_paralysis":
-        return this.fx_divine_shield(px, py);
-      default:
-        return this.fx_default(px, py);
+      case "fireball":        return this.fx_fireball(px, py);
+      case "thunderstorm":    return this.fx_thunderstorm(px, py);
+      case "frost_nova":      return this.fx_frost_nova(px, py);
+      case "shield_bash":     return this.fx_shield_bash(px, py);
+      case "smite":           return this.fx_smite(px, py);
+      case "poison_arrow": case "envenom": case "poison_bite":
+                              return this.fx_poison(px, py);
+      case "meteor_strike":   return this.fx_meteor_strike(px, py);
+      case "chain_lightning":  return this.fx_chain_lightning(casterSessionId, px, py);
+      case "entangling_roots": return this.fx_entangling_roots(px, py);
+      case "cleansing_rain":  return this.fx_cleansing_rain(px, py);
+      case "acid_splash":     return this.fx_acid_splash(px, py);
+      case "earthquake":      return this.fx_earthquake(px, py);
+      case "tree_form":       return this.fx_tree_form(px, py);
     }
+
+    // Data-driven effects: resolve alias, find recipe, play it
+    const key = SPELL_FX_ALIASES[spellId] ?? spellId;
+    const recipe = SPELL_FX[key] ?? SPELL_FX._default;
+    this.playRecipe(px, py, recipe);
   }
 
   /** Plays a melee hit burst at the target's world position. */

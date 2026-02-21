@@ -2,11 +2,11 @@ import {
   type BroadcastFn,
   NPC_DROPS,
   NPC_STATS,
+  type NpcType,
   type ServerMessages,
   ServerMessageType,
   SPAWN_PROTECTION_MS,
   type TileMap,
-  type NpcType,
 } from "@abraxas/shared";
 import type { Client } from "@colyseus/core";
 import type { GameState } from "../schema/GameState";
@@ -111,25 +111,30 @@ export class TickSystem {
 
     // 5. Natural regeneration & class resources
     // Cache mana_spring NPCs once per 20-tick interval to avoid O(players × npcs) work.
-    const manaSprings = state.tick % 20 === 0
-      ? Array.from(state.npcs.values()).filter(
-          (n) => n.npcType === ("mana_spring" as NpcType) && n.alive && n.ownerId,
-        )
-      : null;
+    const manaSprings =
+      state.tick % 20 === 0
+        ? Array.from(state.npcs.values()).filter(
+            (n) => n.npcType === ("mana_spring" as NpcType) && n.alive && n.ownerId,
+          )
+        : null;
 
     for (const player of state.players.values()) {
       if (!player.alive) continue;
 
       // Mana
       if (player.meditating && state.tick % 5 === 0) TickSystem.restoreStat(player, "mana", 0.02);
-      else if (!player.meditating && state.tick % 20 === 0) TickSystem.restoreStat(player, "mana", 0.01);
+      else if (!player.meditating && state.tick % 20 === 0)
+        TickSystem.restoreStat(player, "mana", 0.01);
 
       // HP
       if (state.tick % 30 === 0) TickSystem.restoreStat(player, "hp", 0.005);
 
       // Energy (Rogue) — fast regen
       if (player.classType === "ROGUE" && state.tick % 20 === 0) {
-        player.energy = Math.min(player.maxEnergy, player.energy + Math.floor(player.maxEnergy * 0.1));
+        player.energy = Math.min(
+          player.maxEnergy,
+          player.energy + Math.floor(player.maxEnergy * 0.1),
+        );
       }
 
       // Focus (Ranger)
@@ -147,7 +152,8 @@ export class TickSystem {
         for (const npc of manaSprings) {
           const dx = npc.tileX - player.tileX;
           const dy = npc.tileY - player.tileY;
-          if (dx * dx + dy * dy <= 16) { // 4-tile radius
+          if (dx * dx + dy * dy <= 16) {
+            // 4-tile radius
             player.mana = Math.min(player.maxMana, player.mana + 5);
           }
         }
@@ -211,12 +217,14 @@ export class TickSystem {
       }
     }
 
-    void systems.quests.updateProgress(player.dbId, "kill", killedNpc.npcType, 1).then((updates) => {
-      if (updates.length > 0) {
-        const client = this.opts.findClient(player.sessionId);
-        if (client) this.opts.sendQuestUpdates(client, updates);
-      }
-    });
+    void systems.quests
+      .updateProgress(player.dbId, "kill", killedNpc.npcType, 1)
+      .then((updates) => {
+        if (updates.length > 0) {
+          const client = this.opts.findClient(player.sessionId);
+          if (client) this.opts.sendQuestUpdates(client, updates);
+        }
+      });
 
     // Necromancer soul gain on kill
     if (player.classType === "NECROMANCER" && player.souls < player.maxSouls) {

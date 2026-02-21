@@ -1,7 +1,7 @@
 import { EntityType, MathUtils } from "@abraxas/shared";
 import type { GameState } from "../schema/GameState";
 import type { Npc } from "../schema/Npc";
-import { Player } from "../schema/Player";
+import type { Player } from "../schema/Player";
 
 /** Union of all concrete entity types that live in the game world. */
 export type Entity = Player | Npc;
@@ -9,16 +9,17 @@ export type Entity = Player | Npc;
 // ── Spatial hash grid ─────────────────────────────────────────────────────
 
 export class SpatialLookup {
-  // Spatial Hash Grid: "x,y" -> Set<sessionId>
-  private grid = new Map<string, Set<string>>();
+  // P-2: Numeric keys avoid per-lookup string allocation.
+  private grid = new Map<number, Set<string>>();
+  private static readonly MAP_WIDTH = 1024;
 
   constructor(private state: GameState) {
     for (const p of this.state.players.values()) this.addToGrid(p);
     for (const n of this.state.npcs.values()) this.addToGrid(n);
   }
 
-  private getKey(x: number, y: number): string {
-    return `${Math.floor(x)},${Math.floor(y)}`;
+  private getKey(x: number, y: number): number {
+    return Math.floor(y) * SpatialLookup.MAP_WIDTH + Math.floor(x);
   }
 
   /** Clears and rebuilds the grid from the current state — call after devMode state restore. */

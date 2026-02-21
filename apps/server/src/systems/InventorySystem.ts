@@ -3,11 +3,11 @@ import {
   CLASS_STATS,
   type EquipmentSlot,
   ITEMS,
+  type ItemRarity,
   LEVEL_UP_STATS,
   MAX_INVENTORY_SLOTS,
-  StatType,
-  ItemRarity,
   type StatBonuses,
+  type StatType,
 } from "@abraxas/shared";
 import { InventoryItem, ItemAffixSchema } from "../schema/InventoryItem";
 import type { Player } from "../schema/Player";
@@ -45,7 +45,11 @@ export class InventorySystem {
     player: Player,
     itemId: string,
     quantity: number = 1,
-    instanceData?: { rarity: ItemRarity; nameOverride?: string; affixes: { type: string; stat: StatType; value: number }[] },
+    instanceData?: {
+      rarity: ItemRarity;
+      nameOverride?: string;
+      affixes: { type: string; stat: StatType; value: number }[];
+    },
     onError?: (msg: string) => void,
   ): boolean {
     const def = ITEMS[itemId];
@@ -75,17 +79,17 @@ export class InventorySystem {
         item.itemId = itemId;
         item.quantity = quantity;
         item.slotIndex = i;
-        
+
         if (instanceData) {
-            item.rarity = instanceData.rarity;
-            item.nameOverride = instanceData.nameOverride ?? "";
-            instanceData.affixes.forEach(a => {
-                const s = new ItemAffixSchema();
-                s.affixType = a.type;
-                s.stat = a.stat;
-                s.value = a.value;
-                item.affixes.push(s);
-            });
+          item.rarity = instanceData.rarity;
+          item.nameOverride = instanceData.nameOverride ?? "";
+          instanceData.affixes.forEach((a) => {
+            const s = new ItemAffixSchema();
+            s.affixType = a.type;
+            s.stat = a.stat;
+            s.value = a.value;
+            item.affixes.push(s);
+          });
         }
 
         player.inventory.push(item);
@@ -98,7 +102,7 @@ export class InventorySystem {
   }
 
   removeItem(player: Player, itemId: string, quantity: number = 1): boolean {
-    const item = player.inventory.find(i => i.itemId === itemId);
+    const item = player.inventory.find((i) => i.itemId === itemId);
     if (!item) return false;
     if (item.quantity > quantity) {
       item.quantity -= quantity;
@@ -110,7 +114,7 @@ export class InventorySystem {
   }
 
   equipItem(player: Player, itemId: string, onError?: (msg: string) => void): boolean {
-    const item = player.inventory.find(i => i.itemId === itemId);
+    const item = player.inventory.find((i) => i.itemId === itemId);
     if (!item) {
       onError?.("game.item_not_found");
       return false;
@@ -176,18 +180,18 @@ export class InventorySystem {
     if (!item) return false;
 
     // Find empty slot for unequipped item
-    const usedSlots = new Set(player.inventory.map(i => i.slotIndex));
+    const usedSlots = new Set(player.inventory.map((i) => i.slotIndex));
     let freeIdx = -1;
     for (let i = 0; i < MAX_INVENTORY_SLOTS; i++) {
-        if (!usedSlots.has(i)) {
-            freeIdx = i;
-            break;
-        }
+      if (!usedSlots.has(i)) {
+        freeIdx = i;
+        break;
+      }
     }
 
     if (freeIdx === -1) {
-        onError?.("game.inventory_full");
-        return false;
+      onError?.("game.inventory_full");
+      return false;
     }
 
     item.slotIndex = freeIdx;
@@ -199,10 +203,10 @@ export class InventorySystem {
   }
 
   useItem(player: Player, itemId: string, onError?: (msg: string) => void): boolean {
-    const item = player.inventory.find(i => i.itemId === itemId);
+    const item = player.inventory.find((i) => i.itemId === itemId);
     if (!item) {
-        onError?.("game.item_not_found");
-        return false;
+      onError?.("game.item_not_found");
+      return false;
     }
 
     const def = ITEMS[item.itemId];
@@ -213,8 +217,8 @@ export class InventorySystem {
 
     const fx = def.consumeEffect;
 
-    if (fx.healHp)       player.hp   = Math.min(player.maxHp,   player.hp   + fx.healHp);
-    if (fx.healMana)     player.mana = Math.min(player.maxMana, player.mana + fx.healMana);
+    if (fx.healHp) player.hp = Math.min(player.maxHp, player.hp + fx.healHp);
+    if (fx.healMana) player.mana = Math.min(player.maxMana, player.mana + fx.healMana);
 
     // Antidote — remove active DoT / debuff effects
     if (fx.cureDebuff && this.buffSystem) {
@@ -223,23 +227,17 @@ export class InventorySystem {
 
     // Elixir — temporary stat buff
     if (fx.buffStat && fx.buffAmount && fx.buffDurationMs && this.buffSystem) {
-      this.buffSystem.applyTempBuff(
-        player,
-        fx.buffStat,
-        fx.buffAmount,
-        fx.buffDurationMs,
-      );
+      this.buffSystem.applyTempBuff(player, fx.buffStat, fx.buffAmount, fx.buffDurationMs);
     }
 
     if (item.quantity > 1) {
-        item.quantity--;
+      item.quantity--;
     } else {
-        const idx = player.inventory.indexOf(item);
-        player.inventory.splice(idx, 1);
+      const idx = player.inventory.indexOf(item);
+      player.inventory.splice(idx, 1);
     }
     return true;
   }
-
 
   private getEquipmentBonuses(player: Player): StatBonuses {
     const bonuses: StatBonuses = {
@@ -266,12 +264,12 @@ export class InventorySystem {
 
       // Affix bonuses
       for (const affix of item.affixes) {
-          if (affix.stat === "str") bonuses.str += affix.value;
-          else if (affix.stat === "agi") bonuses.agi += affix.value;
-          else if (affix.stat === "int") bonuses.int += affix.value;
-          else if (affix.stat === "hp") bonuses.hp += affix.value;
-          else if (affix.stat === "mana") bonuses.mana += affix.value;
-          else if (affix.stat === "armor") bonuses.armor += affix.value;
+        if (affix.stat === "str") bonuses.str += affix.value;
+        else if (affix.stat === "agi") bonuses.agi += affix.value;
+        else if (affix.stat === "int") bonuses.int += affix.value;
+        else if (affix.stat === "hp") bonuses.hp += affix.value;
+        else if (affix.stat === "mana") bonuses.mana += affix.value;
+        else if (affix.stat === "armor") bonuses.armor += affix.value;
       }
     }
 
@@ -316,12 +314,12 @@ export class InventorySystem {
 
   /** Mirrors the @view() InventoryItem slots into the public string ID fields. */
   syncPublicEquipIds(player: Player): void {
-    player.equipWeaponId  = player.equipWeapon?.itemId  ?? "";
-    player.equipArmorId   = player.equipArmor?.itemId   ?? "";
-    player.equipShieldId  = player.equipShield?.itemId  ?? "";
-    player.equipHelmetId  = player.equipHelmet?.itemId  ?? "";
-    player.equipRingId    = player.equipRing?.itemId    ?? "";
-    player.equipMountId   = player.equipMount?.itemId   ?? "";
+    player.equipWeaponId = player.equipWeapon?.itemId ?? "";
+    player.equipArmorId = player.equipArmor?.itemId ?? "";
+    player.equipShieldId = player.equipShield?.itemId ?? "";
+    player.equipHelmetId = player.equipHelmet?.itemId ?? "";
+    player.equipRingId = player.equipRing?.itemId ?? "";
+    player.equipMountId = player.equipMount?.itemId ?? "";
   }
 
   dropAllItems(player: Player): InventoryItem[] {
@@ -333,7 +331,7 @@ export class InventorySystem {
     const basicKept = new Set<string>();
 
     for (const slotKey of Object.values(EQUIP_SLOT_MAP)) {
-      const item = (player as any)[slotKey] as InventoryItem | undefined;
+      const item = (player as Pick<Player, EquipSlotKey>)[slotKey];
       if (!item) continue;
       if (basicItems.has(item.itemId)) {
         basicKept.add(item.itemId);

@@ -44,7 +44,8 @@ export class WorldEventSystem {
       // Broadcast live progress
       broadcast(ServerMessageType.WorldEventProgress, {
         eventId: schedule.event.id,
-        npcsDead: schedule.event.spawns.reduce((s, w) => s + w.count, 0) - schedule.activeNpcIds.length,
+        npcsDead:
+          schedule.event.spawns.reduce((s, w) => s + w.count, 0) - schedule.activeNpcIds.length,
         npcsTotalCount: schedule.event.spawns.reduce((s, w) => s + w.count, 0),
       });
       break;
@@ -113,11 +114,7 @@ export class WorldEventSystem {
     });
   }
 
-  private endEvent(
-    schedule: EventSchedule,
-    broadcast: BroadcastFn,
-    now: number,
-  ): void {
+  private endEvent(schedule: EventSchedule, broadcast: BroadcastFn, now: number): void {
     const { event } = schedule;
 
     // Clear synced state

@@ -1,5 +1,12 @@
-import { type Ability, type NpcStats, type ClassStats, EntityType } from "@abraxas/shared";
-import { type BufferedAction, Direction, type WindupAction } from "@abraxas/shared";
+import {
+  type Ability,
+  type BufferedAction,
+  type ClassStats,
+  Direction,
+  EntityType,
+  type NpcStats,
+  type WindupAction,
+} from "@abraxas/shared";
 import { Schema, type } from "@colyseus/schema";
 
 /**
@@ -24,9 +31,10 @@ export abstract class Char extends Schema {
   windupAction: WindupAction | null = null;
 
   // Combat stats (common to players and NPCs)
-  @type("uint8") str: number = 0;
-  @type("uint8") agi: number = 0;
-  @type("uint8") intStat: number = 0;
+  // B13: Use uint16 — stats can exceed 255 with equipment + buffs + level scaling
+  @type("uint16") str: number = 0;
+  @type("uint16") agi: number = 0;
+  @type("uint16") intStat: number = 0;
   @type("uint16") armor: number = 0;
 
   // hp is the Colyseus-tracked field; `alive` is kept in sync by the setter.

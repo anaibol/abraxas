@@ -79,7 +79,7 @@ export class ItemHandlers {
   ): void {
     const player = HandlerUtils.getActivePlayer(ctx, client);
     if (!player) return;
-    
+
     if (
       ctx.systems.inventory.useItem(player, data.itemId, (msg) =>
         HandlerUtils.sendError(client, msg),
@@ -108,9 +108,9 @@ export class ItemHandlers {
 
     // Capture instance data for the drop
     const instanceData = {
-        rarity: item.rarity,
-        nameOverride: item.nameOverride,
-        affixes: item.affixes.map(a => ({ type: a.affixType, stat: a.stat, value: a.value }))
+      rarity: item.rarity,
+      nameOverride: item.nameOverride,
+      affixes: item.affixes.map((a) => ({ type: a.affixType, stat: a.stat, value: a.value })),
     };
 
     if (ctx.systems.inventory.removeItem(player, data.itemId, qty)) {
@@ -123,7 +123,14 @@ export class ItemHandlers {
         return true;
       }) ?? { x: player.tileX, y: player.tileY };
 
-      ctx.systems.drops.spawnItemDrop(ctx.state.drops, tile.x, tile.y, itemId, qty, instanceData as any);
+      ctx.systems.drops.spawnItemDrop(
+        ctx.state.drops,
+        tile.x,
+        tile.y,
+        itemId,
+        qty,
+        instanceData as any,
+      );
     }
   }
 }

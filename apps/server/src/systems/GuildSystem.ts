@@ -1,14 +1,19 @@
 import { type ServerMessages, ServerMessageType } from "@abraxas/shared";
 import type { Client } from "@colyseus/core";
 import { GuildRole } from "../generated/prisma";
+import { HandlerUtils } from "../handlers/HandlerUtils";
 import type { GameState } from "../schema/GameState";
 import { GuildService } from "../services/GuildService";
-import { HandlerUtils } from "../handlers/HandlerUtils";
 
 export class GuildSystem {
   private invitations = new Map<
     string,
-    { guildId: string; inviterSessionId: string; guildName: string; timer: ReturnType<typeof setTimeout> }
+    {
+      guildId: string;
+      inviterSessionId: string;
+      guildName: string;
+      timer: ReturnType<typeof setTimeout>;
+    }
   >();
 
   /** O(1) reverse lookup: dbId → sessionId. Updated on join/leave. */

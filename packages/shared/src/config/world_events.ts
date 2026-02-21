@@ -15,7 +15,7 @@ export const WORLD_EVENTS: WorldEvent[] = [
       { npcType: "goblin", count: 5 },
       { npcType: "orc", count: 2 },
     ],
-    durationMs: 5 * 60_000,  // 5 minutes
+    durationMs: 5 * 60_000, // 5 minutes
     intervalMs: 30 * 60_000, // every 30 minutes
   },
   {
@@ -27,16 +27,14 @@ export const WORLD_EVENTS: WorldEvent[] = [
       { npcType: "skeleton", count: 3 },
       { npcType: "ghost", count: 2 },
     ],
-    durationMs: 7 * 60_000,  // 7 minutes
+    durationMs: 7 * 60_000, // 7 minutes
     intervalMs: 45 * 60_000, // every 45 minutes
   },
   {
     id: "dragon_sighting",
     name: "Dragon Sighting",
     description: "A fearsome dragon has been spotted circling the skies!",
-    spawns: [
-      { npcType: "dragon", count: 1 },
-    ],
+    spawns: [{ npcType: "dragon", count: 1 }],
     durationMs: 10 * 60_000, // 10 minutes
     intervalMs: 90 * 60_000, // every 90 minutes
   },
@@ -48,7 +46,7 @@ export const WORLD_EVENTS: WorldEvent[] = [
       { npcType: "troll", count: 3 },
       { npcType: "orc", count: 2 },
     ],
-    durationMs: 6 * 60_000,  // 6 minutes
+    durationMs: 6 * 60_000, // 6 minutes
     intervalMs: 40 * 60_000, // every 40 minutes
   },
   {
@@ -59,7 +57,7 @@ export const WORLD_EVENTS: WorldEvent[] = [
       { npcType: "spider", count: 6 },
       { npcType: "vampire", count: 1 },
     ],
-    durationMs: 4 * 60_000,  // 4 minutes
+    durationMs: 4 * 60_000, // 4 minutes
     intervalMs: 25 * 60_000, // every 25 minutes
   },
   {
@@ -70,7 +68,7 @@ export const WORLD_EVENTS: WorldEvent[] = [
       { npcType: "vampire", count: 2 },
       { npcType: "lich", count: 1 },
     ],
-    durationMs: 8 * 60_000,  // 8 minutes
+    durationMs: 8 * 60_000, // 8 minutes
     intervalMs: 60 * 60_000, // every 60 minutes
   },
 ];

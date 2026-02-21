@@ -2,6 +2,7 @@ import {
   ABILITIES,
   AGGRO_RANGE,
   type BroadcastFn,
+  type ClassStats,
   DIRECTION_DELTA,
   Direction,
   EntityType,
@@ -14,15 +15,14 @@ import {
   type NpcType,
   ServerMessageType,
   type TileMap,
-  type ClassStats,
 } from "@abraxas/shared";
 import { logger } from "../logger";
 import type { GameState } from "../schema/GameState";
 import { Npc } from "../schema/Npc";
-import { Player } from "../schema/Player";
+import type { Player } from "../schema/Player";
+import { Pathfinder } from "../utils/Pathfinder";
 import type { Entity, SpatialLookup } from "../utils/SpatialLookup";
 import { findSafeSpawn } from "../utils/spawnUtils";
-import { Pathfinder } from "../utils/Pathfinder";
 import type { BuffSystem } from "./BuffSystem";
 import type { CombatSystem } from "./CombatSystem";
 import type { MovementSystem } from "./MovementSystem";
@@ -41,7 +41,6 @@ const PATROL_STEPS = 4;
 
 /** Max Manhattan distance a patrolling NPC may wander from its spawn point. */
 const PATROL_TETHER_RADIUS = 8;
-
 
 /** Minimum ms between bark broadcasts per NPC (avoids bark spam). */
 const BARK_COOLDOWN_MS = 8_000;
@@ -114,16 +113,8 @@ export class NpcSystem {
       npc.level = this.calculateSpawnLevel(type, map);
     }
 
-    const stats = NPC_STATS[type];
-
-    // Scale stats based on level (10% increase per level above 1)
-    const scale = 1 + (npc.level - 1) * 0.1;
-    npc.maxHp = Math.ceil(stats.hp * scale);
-    npc.hp = npc.maxHp;
-    npc.str = Math.ceil(stats.str * scale);
-    npc.agi = Math.ceil(stats.agi * scale);
-    npc.intStat = Math.ceil(stats.int * scale);
-    npc.armor = Math.ceil(stats.armor * scale);
+    // D3: Use shared stat recalculation
+    this.recalcNpcStats(npc);
 
     npc.alive = true;
     npc.state = NpcState.IDLE;
@@ -137,6 +128,19 @@ export class NpcSystem {
     this.state.npcs.set(npc.sessionId, npc);
     this.spatial.addToGrid(npc);
     return npc;
+  }
+
+  /** D3: Shared NPC stat scaling formula — called from spawnNpcAt and levelUp. */
+  private recalcNpcStats(npc: Npc): void {
+    const stats = NPC_STATS[npc.npcType];
+    if (!stats) return;
+    const scale = 1 + (npc.level - 1) * 0.1;
+    npc.maxHp = Math.ceil(stats.hp * scale);
+    npc.hp = npc.maxHp;
+    npc.str = Math.ceil(stats.str * scale);
+    npc.agi = Math.ceil(stats.agi * scale);
+    npc.intStat = Math.ceil(stats.int * scale);
+    npc.armor = Math.ceil(stats.armor * scale);
   }
 
   private calculateSpawnLevel(npcType: NpcType, _map: TileMap): number {
@@ -165,7 +169,6 @@ export class NpcSystem {
     logger.error({ intent: "spawn_npc", result: "failed", npcType: type });
     return undefined;
   }
-
 
   public spawnSummon(caster: Entity, abilityId: string, x: number, y: number): void {
     const ability = ABILITIES[abilityId];
@@ -317,7 +320,10 @@ export class NpcSystem {
     }
 
     // Tether sanity check (B018): If already outside radius, head home.
-    const distToSpawn = MathUtils.manhattanDist(npc.getPosition(), { x: npc.spawnX, y: npc.spawnY });
+    const distToSpawn = MathUtils.manhattanDist(npc.getPosition(), {
+      x: npc.spawnX,
+      y: npc.spawnY,
+    });
     if (distToSpawn > PATROL_TETHER_RADIUS + 1) {
       npc.state = NpcState.RETURN;
       return;
@@ -375,7 +381,7 @@ export class NpcSystem {
     const stats = NPC_STATS[npc.npcType];
     const dist = MathUtils.manhattanDist(npc.getPosition(), target.getPosition());
     const maxLeash = npc.ownerId ? AGGRO_RANGE * 2 : AGGRO_RANGE * LEASH_MULTIPLIER;
-    
+
     if (dist > maxLeash) {
       npc.targetId = "";
       npc.state = npc.ownerId ? NpcState.FOLLOW : NpcState.RETURN;
@@ -505,16 +511,23 @@ export class NpcSystem {
     if (tickCount % IDLE_SCAN_INTERVAL === 0) {
       // If owner has an active attack buffer/windup, attack their target
       if (owner.bufferedAction?.type === "attack") {
-        const t = this.spatial.findEntityAtTile(owner.bufferedAction.targetTileX!, owner.bufferedAction.targetTileY!);
+        const t = this.spatial.findEntityAtTile(
+          owner.bufferedAction.targetTileX!,
+          owner.bufferedAction.targetTileY!,
+        );
         if (t && t.alive && t.sessionId !== npc.sessionId) {
           npc.targetId = t.sessionId;
           npc.state = NpcState.CHASE;
           return;
         }
       }
-      
+
       // Defend owner: scan for nearby hostiles targeting the owner
-      const nearbyEnemies = this.spatial.findEntitiesInRadius(owner.tileX, owner.tileY, AGGRO_RANGE);
+      const nearbyEnemies = this.spatial.findEntitiesInRadius(
+        owner.tileX,
+        owner.tileY,
+        AGGRO_RANGE,
+      );
       for (const enemy of nearbyEnemies) {
         if (enemy.entityType === EntityType.NPC && (enemy as Npc).targetId === owner.sessionId) {
           npc.targetId = enemy.sessionId;
@@ -554,11 +567,7 @@ export class NpcSystem {
     }
 
     // Recalculate if target moved or path is empty
-    if (
-      npc.pathTargetTileX !== tx ||
-      npc.pathTargetTileY !== ty ||
-      npc.path.length === 0
-    ) {
+    if (npc.pathTargetTileX !== tx || npc.pathTargetTileY !== ty || npc.path.length === 0) {
       npc.pathTargetTileX = tx;
       npc.pathTargetTileY = ty;
       npc.path = Pathfinder.findPath(
@@ -585,7 +594,7 @@ export class NpcSystem {
     const dir = MathUtils.getDirection(npc.getPosition(), { x: nextStep.x, y: nextStep.y });
 
     const result = this.movementSystem.tryMove(npc, dir, map, now, tickCount, roomId);
-    
+
     if (result.success) {
       // Successfully moved, consume the step
       npc.path.shift();
@@ -624,16 +633,8 @@ export class NpcSystem {
 
   private levelUp(npc: Npc, roomId: string, broadcast: BroadcastFn): void {
     npc.level++;
-
-    // Stat boosts: ~10% increase per level based on base stats
-    const stats = NPC_STATS[npc.npcType];
-    const scale = 1 + (npc.level - 1) * 0.1;
-    npc.maxHp = Math.ceil(stats.hp * scale);
-    npc.hp = npc.maxHp;
-    npc.str = Math.ceil(stats.str * scale);
-    npc.agi = Math.ceil(stats.agi * scale);
-    npc.intStat = Math.ceil(stats.int * scale);
-    npc.armor = Math.ceil(stats.armor * scale);
+    // D3: Use shared stat recalculation
+    this.recalcNpcStats(npc);
 
     broadcast(ServerMessageType.LevelUp, {
       sessionId: npc.sessionId,
@@ -671,8 +672,10 @@ export class NpcSystem {
 
       // Basic collision check (ignoring occupancy for flee flexibility)
       if (
-        nx >= 0 && nx < this.currentMap.width &&
-        ny >= 0 && ny < this.currentMap.height &&
+        nx >= 0 &&
+        nx < this.currentMap.width &&
+        ny >= 0 &&
+        ny < this.currentMap.height &&
         this.currentMap.collision[ny]?.[nx] === 0
       ) {
         return dir;
@@ -716,9 +719,13 @@ export class NpcSystem {
     if (!available.length) return false;
 
     // Prioritise: phaseAbilities come first when in phase 2, otherwise use order-as-priority.
-    const ordered = npc.bossPhase >= 1
-      ? [...available.filter(id => phaseAbilities.includes(id)), ...available.filter(id => !phaseAbilities.includes(id))]
-      : available;
+    const ordered =
+      npc.bossPhase >= 1
+        ? [
+            ...available.filter((id) => phaseAbilities.includes(id)),
+            ...available.filter((id) => !phaseAbilities.includes(id)),
+          ]
+        : available;
 
     const abilityId = ordered[0];
     const didCast = this.combatSystem.tryCast(
@@ -851,7 +858,12 @@ export class NpcSystem {
    * Rare NPCs are stored in the NPC registry with `rareRespawnAt > 0` and removed
    * from the map on death; we track pending rare respawns in a side array.
    */
-  private rareRespawnQueue: { npcType: NpcType; rareRespawnAt: number; spawnX: number; spawnY: number }[] = [];
+  private rareRespawnQueue: {
+    npcType: NpcType;
+    rareRespawnAt: number;
+    spawnX: number;
+    spawnY: number;
+  }[] = [];
 
   /** Register a rare NPC so its respawn timer can be polled. Call after map load. */
   registerRareNpc(type: NpcType, spawnX: number, spawnY: number, rareRespawnAt: number = 0): void {

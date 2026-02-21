@@ -1,4 +1,4 @@
-import { DamageSchool, StatType, type Ability } from "../types";
+import { type Ability, DamageSchool, StatType } from "../types";
 import { VIEWPORT_TILES_X } from "./constants";
 
 /** Range that covers the entire visible viewport (half the canonical width). */
@@ -1024,7 +1024,7 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     effect: "heal",
     damageSchool: DamageSchool.MAGICAL,
     key: "",
-    fxId: 1
+    fxId: 1,
   },
   /** Druid: Spirit of the Bear — massive HP/Armor buff and appearance change */
   bear_form: {

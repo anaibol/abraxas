@@ -17,8 +17,6 @@ import type { RoomContext } from "./RoomContext";
 import { SocialHandlers } from "./SocialHandlers";
 import { TamingHandlers } from "./TamingHandlers";
 
-
-
 export class MessageHandler {
   constructor(public ctx: RoomContext) {}
 

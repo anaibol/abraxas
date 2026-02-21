@@ -15,10 +15,7 @@ type FindSpawnFn = (x: number, y: number) => { x: number; y: number } | null;
  * returns the exact same coordinates (the spiral didn't escape the zone).
  * Returns null if every tile in the zone is occupied.
  */
-function pickSafeZoneTile(
-  map: TileMap,
-  findSpawn: FindSpawnFn,
-): { x: number; y: number } | null {
+function pickSafeZoneTile(map: TileMap, findSpawn: FindSpawnFn): { x: number; y: number } | null {
   if (!map.safeZones?.length) return null;
   const zone = map.safeZones[Math.floor(Math.random() * map.safeZones.length)];
 
@@ -64,7 +61,10 @@ export class RespawnSystem {
     const remaining: PendingRespawn[] = [];
 
     for (const entry of this.pending) {
-      if (now < entry.respawnAt) { remaining.push(entry); continue; }
+      if (now < entry.respawnAt) {
+        remaining.push(entry);
+        continue;
+      }
 
       const player = getPlayer(entry.sessionId);
       if (!player) continue;
@@ -79,7 +79,10 @@ export class RespawnSystem {
           return findSpawn ? findSpawn(c.x, c.y) : c;
         })();
 
-      if (!spawn) { remaining.push(entry); continue; }
+      if (!spawn) {
+        remaining.push(entry);
+        continue;
+      }
 
       player.tileX = spawn.x;
       player.tileY = spawn.y;
@@ -88,6 +91,8 @@ export class RespawnSystem {
       player.alive = true;
       player.stealthed = false;
       player.stunned = false;
+      // B10: Clear spell cooldowns from previous life
+      player.spellCooldowns.clear();
 
       onRespawn?.(player);
       broadcast(ServerMessageType.Respawn, {

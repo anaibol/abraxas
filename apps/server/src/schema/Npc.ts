@@ -1,5 +1,12 @@
-import { type Ability, type NpcStats, type NpcType } from "@abraxas/shared";
-import { ABILITIES, EntityType, NPC_STATS, NpcState } from "@abraxas/shared";
+import {
+  ABILITIES,
+  type Ability,
+  EntityType,
+  NPC_STATS,
+  NpcState,
+  type NpcStats,
+  type NpcType,
+} from "@abraxas/shared";
 import { type } from "@colyseus/schema";
 import { Char } from "./Char";
 
@@ -60,4 +67,3 @@ export class Npc extends Char {
     return ABILITIES[abilityId];
   }
 }
-

@@ -1,5 +1,4 @@
-import { type ItemAffix, ItemRarity } from "@abraxas/shared";
-import { AFFIXES, type AffixDef } from "@abraxas/shared";
+import { AFFIXES, type AffixDef, type ItemAffix, ItemRarity } from "@abraxas/shared";
 
 export interface GeneratedItem {
   rarity: ItemRarity;
@@ -9,9 +8,9 @@ export interface GeneratedItem {
 
 export class ItemGenerator {
   static generate(level: number): GeneratedItem {
-    const rarity = this.rollRarity();
+    const rarity = ItemGenerator.rollRarity();
     const affixes: ItemAffix[] = [];
-    
+
     let affixCount = 0;
     if (rarity === ItemRarity.UNCOMMON) affixCount = 1;
     else if (rarity === ItemRarity.RARE) affixCount = 2;
@@ -29,11 +28,12 @@ export class ItemGenerator {
         } while (chosen.has(affix.id));
 
         chosen.add(affix.id);
-        const value = Math.floor(Math.random() * (affix.maxValue - affix.minValue + 1)) + affix.minValue;
+        const value =
+          Math.floor(Math.random() * (affix.maxValue - affix.minValue + 1)) + affix.minValue;
         affixes.push({
           type: affix.id,
           stat: affix.stat,
-          value: value
+          value: value,
         });
       }
     }
@@ -41,7 +41,7 @@ export class ItemGenerator {
     return {
       rarity,
       affixes,
-      nameOverride: this.generateName(rarity, affixes)
+      nameOverride: ItemGenerator.generateName(rarity, affixes),
     };
   }
 
@@ -50,15 +50,19 @@ export class ItemGenerator {
     if (roll < 0.01) return ItemRarity.LEGENDARY;
     if (roll < 0.05) return ItemRarity.EPIC;
     if (roll < 0.15) return ItemRarity.RARE;
-    if (roll < 0.40) return ItemRarity.UNCOMMON;
+    if (roll < 0.4) return ItemRarity.UNCOMMON;
     return ItemRarity.COMMON;
   }
 
   private static generateName(rarity: ItemRarity, affixes: ItemAffix[]): string | undefined {
     if (rarity === ItemRarity.COMMON) return undefined;
 
-    const prefix = affixes.find((a: ItemAffix) => AFFIXES.find((d: AffixDef) => d.id === a.type)?.type === "prefix");
-    const suffix = affixes.find((a: ItemAffix) => AFFIXES.find((d: AffixDef) => d.id === a.type)?.type === "suffix");
+    const prefix = affixes.find(
+      (a: ItemAffix) => AFFIXES.find((d: AffixDef) => d.id === a.type)?.type === "prefix",
+    );
+    const suffix = affixes.find(
+      (a: ItemAffix) => AFFIXES.find((d: AffixDef) => d.id === a.type)?.type === "suffix",
+    );
 
     const prefixName = prefix ? AFFIXES.find((d: AffixDef) => d.id === prefix.type)?.name : "";
     const suffixName = suffix ? AFFIXES.find((d: AffixDef) => d.id === suffix.type)?.name : "";

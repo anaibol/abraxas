@@ -1,5 +1,5 @@
 import type { Direction, NpcEntityState, PlayerEntityState, WelcomeData } from "@abraxas/shared";
-import { AudioAssets, CLASS_STATS, DIRECTION_DELTA, i18n, TILE_SIZE } from "@abraxas/shared";
+import { AudioAssets, CLASS_STATS, DIRECTION_DELTA, i18n, MathUtils, TILE_SIZE } from "@abraxas/shared";
 import { Callbacks, type Room } from "@colyseus/sdk";
 import Phaser from "phaser";
 import type { Drop } from "../../../server/src/schema/Drop";
@@ -613,14 +613,9 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
+  // B34: Delegate to shared MathUtils.isInSafeZone
   private isInSafeZone(x: number, y: number): boolean {
-    if (!this.welcome.safeZones) return false;
-    for (const zone of this.welcome.safeZones) {
-      if (x >= zone.x && x < zone.x + zone.w && y >= zone.y && y < zone.y + zone.h) {
-        return true;
-      }
-    }
-    return false;
+    return MathUtils.isInSafeZone(x, y, this.welcome.safeZones);
   }
 
   private pushSidebarUpdate(player: Player): void {

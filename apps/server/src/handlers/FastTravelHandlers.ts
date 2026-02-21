@@ -27,9 +27,7 @@ export class FastTravelHandlers {
     }
 
     // Validate destination tile
-    if (
-      ctx.map.collision[wp.y]?.[wp.x] !== 0
-    ) {
+    if (ctx.map.collision[wp.y]?.[wp.x] !== 0) {
       HandlerUtils.sendError(client, "fast_travel.blocked");
       return;
     }

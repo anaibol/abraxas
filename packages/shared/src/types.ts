@@ -328,9 +328,9 @@ export type Ability = {
   comboPointsCost?: number;
   comboPointsGain?: number;
 
-  executeThreshold?: number;     // 0.0 to 1.0. Applies executeMultiplier to damage if target HP is below this %.
-  executeMultiplier?: number;    // Multiplier for damage when in execute threshold.
-  comboDamageMultiplier?: number;// Additional damage multiplier per combo point spent.
+  executeThreshold?: number; // 0.0 to 1.0. Applies executeMultiplier to damage if target HP is below this %.
+  executeMultiplier?: number; // Multiplier for damage when in execute threshold.
+  comboDamageMultiplier?: number; // Additional damage multiplier per combo point spent.
 };
 
 export interface InventoryEntry {
@@ -632,9 +632,19 @@ export type ServerMessages = {
 
   // NPC
   [ServerMessageType.NpcBark]: { npcId: string; text: string };
-  [ServerMessageType.WorldEventStart]: { eventId: string; name: string; description: string; durationMs: number; totalNpcs: number };
+  [ServerMessageType.WorldEventStart]: {
+    eventId: string;
+    name: string;
+    description: string;
+    durationMs: number;
+    totalNpcs: number;
+  };
   [ServerMessageType.WorldEventEnd]: { eventId: string };
-  [ServerMessageType.WorldEventProgress]: { eventId: string; npcsDead: number; npcsTotalCount: number };
+  [ServerMessageType.WorldEventProgress]: {
+    eventId: string;
+    npcsDead: number;
+    npcsTotalCount: number;
+  };
 
   // Fast Travel
   [ServerMessageType.FastTravelUsed]: { waypointId: string; tileX: number; tileY: number };

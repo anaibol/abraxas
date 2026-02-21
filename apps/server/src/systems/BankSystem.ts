@@ -1,10 +1,10 @@
-import { type InventoryEntry, ITEMS, ItemRarity, StatType } from "@abraxas/shared";
+import type { ItemAffix } from "@abraxas/shared";
+import { type InventoryEntry, ITEMS, ItemRarity, type StatType } from "@abraxas/shared";
 import { prisma } from "../database/db";
 import { ItemRarity as PrismaItemRarity } from "../generated/prisma";
 import { logger } from "../logger";
 import type { Player } from "../schema/Player";
 import type { InventorySystem } from "./InventorySystem";
-import type { ItemAffix } from "@abraxas/shared";
 
 export class BankSystem {
   private activeBanks = new Map<string, InventoryEntry[]>();
@@ -64,16 +64,16 @@ export class BankSystem {
     const currentSlots = bankItems.length;
     let neededSlots = 0;
     if (def.stackable) {
-        if (!bankItems.find(i => i.itemId === itemId)) {
-            neededSlots = 1;
-        }
+      if (!bankItems.find((i) => i.itemId === itemId)) {
+        neededSlots = 1;
+      }
     } else {
-        neededSlots = quantity;
+      neededSlots = quantity;
     }
 
     if (currentSlots + neededSlots > 50) {
-        onError?.("game.bank_full");
-        return false;
+      onError?.("game.bank_full");
+      return false;
     }
 
     // Move to bank

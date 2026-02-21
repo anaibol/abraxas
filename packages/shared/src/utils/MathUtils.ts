@@ -56,4 +56,19 @@ export const MathUtils = {
     }
     return points;
   },
+
+  /** B34: Shared safe-zone check — returns true if (x,y) is inside any zone rect. */
+  isInSafeZone(
+    x: number,
+    y: number,
+    safeZones?: { x: number; y: number; w: number; h: number }[],
+  ): boolean {
+    if (!safeZones) return false;
+    for (const zone of safeZones) {
+      if (x >= zone.x && x < zone.x + zone.w && y >= zone.y && y < zone.y + zone.h) {
+        return true;
+      }
+    }
+    return false;
+  },
 };

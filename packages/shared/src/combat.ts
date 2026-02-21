@@ -45,7 +45,7 @@ function checkHit(attackerHit: number, targetAgi: number, baseDodge: number): bo
   let dodgeVal = baseDodge;
   const bonusAgi = Math.max(0, targetAgi - 10);
   dodgeVal += bonusAgi / (bonusAgi + 100);
-  
+
   // Total chance to hit is Hit Rating minus Target Dodge
   const hitChance = attackerHit - dodgeVal;
   return Math.random() <= hitChance;
@@ -65,15 +65,29 @@ export function calcMeleeDamage(
   defenderParryChance: number = 0.05,
   defenderBlockChance: number = 0,
 ): DamageResult {
-  
   // 1. Check Hit & Dodge
-  if (!checkHit(attackerHitChance, defenderAgi, 0)) { // 0 base dodge aside from agi
-    return { damage: 0, dodged: true, parried: false, blocked: false, crit: false, glancing: false };
+  if (!checkHit(attackerHitChance, defenderAgi, 0)) {
+    // 0 base dodge aside from agi
+    return {
+      damage: 0,
+      dodged: true,
+      parried: false,
+      blocked: false,
+      crit: false,
+      glancing: false,
+    };
   }
 
   // 2. Check Parry
   if (Math.random() < defenderParryChance) {
-    return { damage: 0, dodged: false, parried: true, blocked: false, crit: false, glancing: false };
+    return {
+      damage: 0,
+      dodged: false,
+      parried: true,
+      blocked: false,
+      crit: false,
+      glancing: false,
+    };
   }
 
   // Base damage scales with attacker STR
@@ -109,13 +123,13 @@ export function calcMeleeDamage(
     blocked = true;
   }
 
-  return { 
-    damage: Math.max(1, Math.round(damage)), 
-    dodged: false, 
-    parried: false, 
-    blocked, 
-    crit, 
-    glancing 
+  return {
+    damage: Math.max(1, Math.round(damage)),
+    dodged: false,
+    parried: false,
+    blocked,
+    crit,
+    glancing,
   };
 }
 
@@ -132,14 +146,20 @@ export function calcRangedDamage(
   attackerArmorPen: number = 0,
   defenderBlockChance: number = 0,
 ): DamageResult {
-
   // Reduced dodge chance vs ranged
-  let bonusAgi = Math.max(0, defenderAgi - 10);
-  let dodgeVal = (bonusAgi / (bonusAgi + 100)) * 0.6; 
+  const bonusAgi = Math.max(0, defenderAgi - 10);
+  const dodgeVal = (bonusAgi / (bonusAgi + 100)) * 0.6;
   const hitChance = attackerHitChance - dodgeVal;
 
   if (Math.random() > hitChance) {
-    return { damage: 0, dodged: true, parried: false, blocked: false, crit: false, glancing: false };
+    return {
+      damage: 0,
+      dodged: true,
+      parried: false,
+      blocked: false,
+      crit: false,
+      glancing: false,
+    };
   }
 
   let raw = attackerAgi * 1.3;
@@ -170,13 +190,13 @@ export function calcRangedDamage(
     blocked = true;
   }
 
-  return { 
-    damage: Math.max(1, Math.round(damage)), 
-    dodged: false, 
-    parried: false, 
-    blocked, 
-    crit, 
-    glancing 
+  return {
+    damage: Math.max(1, Math.round(damage)),
+    dodged: false,
+    parried: false,
+    blocked,
+    crit,
+    glancing,
   };
 }
 
@@ -190,9 +210,9 @@ export function calcSpellDamage(
   defenderLvl: number = 1,
   attackerCritChance: number = 0.05,
   attackerCritMult: number = 1.5,
-): { damage: number, crit: boolean, glancing: boolean } {
+): { damage: number; crit: boolean; glancing: boolean } {
   let raw = baseDamage + scalingStat * scalingRatio;
-  
+
   let glancing = false;
   if (defenderLvl > attackerLvl + 2) {
     const levelDiff = defenderLvl - attackerLvl;
@@ -212,7 +232,7 @@ export function calcSpellDamage(
 
   const resistMult = Math.max(0.3, 1 - defenderInt * 0.005);
   const damage = Math.max(1, Math.round(raw * resistMult));
-  
+
   return { damage, crit, glancing };
 }
 
@@ -223,10 +243,10 @@ export function calcHealAmount(
   scalingRatio: number,
   attackerCritChance: number = 0.05,
   attackerCritMult: number = 1.5,
-): { heal: number, crit: boolean } {
+): { heal: number; crit: boolean } {
   let raw = baseAmount + casterInt * scalingRatio;
   let crit = false;
-  
+
   if (Math.random() < attackerCritChance) {
     raw *= attackerCritMult;
     crit = true;

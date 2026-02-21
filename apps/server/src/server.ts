@@ -1,7 +1,7 @@
 import type { TileMap } from "@abraxas/shared";
 import { createRouter, defineRoom, defineServer, type Server } from "@colyseus/core";
-import { logger } from "./logger";
 import { GameTransport } from "./GameTransport";
+import { logger } from "./logger";
 import { ArenaRoom } from "./rooms/ArenaRoom";
 import {
   adminCharactersEndpoint,

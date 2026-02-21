@@ -1,4 +1,4 @@
-import { MathUtils, TileMap } from "@abraxas/shared";
+import { MathUtils, type TileMap } from "@abraxas/shared";
 import type { SpatialLookup } from "./SpatialLookup";
 
 export interface PathNode {
@@ -79,7 +79,7 @@ export class Pathfinder {
 
     while (openList.length > 0) {
       iterations++;
-      if (iterations > this.MAX_ITERATIONS) {
+      if (iterations > Pathfinder.MAX_ITERATIONS) {
         // Fallback: return partial path to the node with lowest 'h' we found so far
         // to at least walk towards the target.
         break;
@@ -100,7 +100,7 @@ export class Pathfinder {
 
       // Found the goal
       if (current.x === targetX && current.y === targetY) {
-        return this.reconstructPath(current);
+        return Pathfinder.reconstructPath(current);
       }
 
       const currentKey = `${current.x},${current.y}`;
@@ -137,15 +137,16 @@ export class Pathfinder {
           // encourage going around, rather than outright treating it as impassible,
           // because entities move.
           if (spatial.isTileOccupied(nx, ny, ignoreEntityId)) {
-             // For now, let's treat dynamic entities as soft obstacles (high cost) rather than hard walls
-             // so they don't block chokes permanently while computing path.
+            // For now, let's treat dynamic entities as soft obstacles (high cost) rather than hard walls
+            // so they don't block chokes permanently while computing path.
           }
         }
 
         // Standard g cost = 1 per step
-        const isOccupied = (nx !== targetX || ny !== targetY) && spatial.isTileOccupied(nx, ny, ignoreEntityId);
+        const isOccupied =
+          (nx !== targetX || ny !== targetY) && spatial.isTileOccupied(nx, ny, ignoreEntityId);
         // Add huge penalty for walking through occupied tiles to strongly prefer open routes
-        const stepCost = isOccupied ? 10 : 1; 
+        const stepCost = isOccupied ? 10 : 1;
 
         const tentativeG = current.g + stepCost;
 

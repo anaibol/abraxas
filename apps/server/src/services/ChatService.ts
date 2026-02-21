@@ -3,10 +3,7 @@ import type { Client } from "@colyseus/core";
 import { logger } from "../logger";
 import type { Player } from "../schema/Player";
 
-type BroadcastFn = <T extends ServerMessageType>(
-  type: T,
-  payload: ServerMessages[T],
-) => void;
+type BroadcastFn = <T extends ServerMessageType>(type: T, payload: ServerMessages[T]) => void;
 
 export class ChatService {
   constructor(

@@ -1,4 +1,4 @@
-import { DROP_EXPIRY_MS, DropType, ItemRarity, StatType } from "@abraxas/shared";
+import { DROP_EXPIRY_MS, DropType, type ItemRarity, type StatType } from "@abraxas/shared";
 import type { MapSchema } from "@colyseus/schema";
 import { Drop } from "../schema/Drop";
 import { ItemAffixSchema } from "../schema/InventoryItem";
@@ -8,7 +8,13 @@ import type { InventorySystem } from "./InventorySystem";
 export class DropSystem {
   constructor(private inventorySystem: InventorySystem) {}
 
-  public createDrop(drops: MapSchema<Drop>, tileX: number, tileY: number, itemType: string, id?: string): Drop {
+  public createDrop(
+    drops: MapSchema<Drop>,
+    tileX: number,
+    tileY: number,
+    itemType: string,
+    id?: string,
+  ): Drop {
     const dropId = id || crypto.randomUUID();
     const drop = new Drop();
     drop.id = dropId;
@@ -26,16 +32,20 @@ export class DropSystem {
     tileY: number,
     itemId: string,
     quantity: number,
-    instanceData?: { rarity: ItemRarity; nameOverride?: string; affixes: { type: string; stat: StatType; value: number }[] }
+    instanceData?: {
+      rarity: ItemRarity;
+      nameOverride?: string;
+      affixes: { type: string; stat: StatType; value: number }[];
+    },
   ): Drop {
     const drop = this.createDrop(drops, tileX, tileY, DropType.ITEM);
     drop.itemId = itemId;
     drop.quantity = quantity;
-    
+
     if (instanceData) {
       drop.rarity = instanceData.rarity;
       drop.nameOverride = instanceData.nameOverride ?? "";
-      instanceData.affixes.forEach(a => {
+      instanceData.affixes.forEach((a) => {
         const s = new ItemAffixSchema();
         s.affixType = a.type;
         s.stat = a.stat;
@@ -43,7 +53,7 @@ export class DropSystem {
         drop.affixes.push(s);
       });
     }
-    
+
     return drop;
   }
 

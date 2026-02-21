@@ -60,7 +60,7 @@ export class TamingHandlers {
     }
 
     // Consume one lasso regardless of success
-    const lassoItem = player.inventory.find(i => i.itemId === "lasso");
+    const lassoItem = player.inventory.find((i) => i.itemId === "lasso");
     if (lassoItem) {
       ctx.systems.inventory.removeItem(player, lassoItem.itemId, 1);
     }
@@ -70,7 +70,7 @@ export class TamingHandlers {
     if (player.classType === "RANGER") {
       successChance = 0.75; // Rangers are much better at taming
     } else if (player.classType === "PALADIN") {
-      successChance = 0.50; // Paladins are okay with mounts
+      successChance = 0.5; // Paladins are okay with mounts
     }
 
     if (Math.random() < successChance) {

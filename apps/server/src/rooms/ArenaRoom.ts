@@ -1,13 +1,13 @@
 import {
   type BroadcastFn,
+  EntityType,
   type ItemAffix,
   type JoinOptions,
-  EntityType,
   NPC_VIEW_RADIUS,
   type NpcType,
   PLAYER_RESPAWN_TIME_MS,
-  SPAWN_PROTECTION_MS,
   ServerMessageType,
+  SPAWN_PROTECTION_MS,
   TICK_MS,
   type TileMap,
 } from "@abraxas/shared";
@@ -22,8 +22,8 @@ import { SocialHandlers } from "../handlers/SocialHandlers";
 import { logger } from "../logger";
 import { GameState } from "../schema/GameState";
 import { ItemAffixSchema } from "../schema/InventoryItem";
-import { Npc } from "../schema/Npc";
-import { Player } from "../schema/Player";
+import type { Npc } from "../schema/Npc";
+import type { Player } from "../schema/Player";
 import { ChatService } from "../services/ChatService";
 import { LevelService } from "../services/LevelService";
 import { getMap } from "../services/MapService";
@@ -105,7 +105,13 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       this.drops = new DropSystem(this.inventorySystem);
       this.spatial = new SpatialLookup(this.state);
       this.movement = new MovementSystem(this.spatial, this.buffSystem);
-      this.combat = new CombatSystem(this.state, this.spatial, this.buffSystem, this.map, this.roomMapName);
+      this.combat = new CombatSystem(
+        this.state,
+        this.spatial,
+        this.buffSystem,
+        this.map,
+        this.roomMapName,
+      );
       this.npcSystem = new NpcSystem(
         this.state,
         this.movement,
@@ -176,7 +182,12 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       this.onMessage("gm_spawn", (client, message) => {
         const player = this.state.players.get(client.sessionId);
         if (!player) return;
-        logger.info({ intent: "gm_spawn", sessionId: player.sessionId, role: player.role, npcType: message.type });
+        logger.info({
+          intent: "gm_spawn",
+          sessionId: player.sessionId,
+          role: player.role,
+          npcType: message.type,
+        });
         if (player.role !== "ADMIN") {
           logger.warn({ intent: "gm_spawn", result: "rejected", role: player.role });
           return;
@@ -207,29 +218,34 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         findClient: (sid) => this.findClient(sid),
       });
 
-      // Load persistent state
-      PersistenceService.loadWorldDrops(this.roomMapName).then((drops) => {
-        for (const d of drops) {
-          const drop = this.drops.createDrop(this.state.drops, d.tileX, d.tileY, d.itemType.toLowerCase() as "item" | "gold", d.id);
-          drop.itemId = d.itemId || "";
-          drop.quantity = d.quantity;
-          drop.goldAmount = d.goldAmount;
-          drop.spawnedAt = d.spawnedAt.getTime();
-          
-          if (d.item) {
-              drop.rarity = d.item.rarity || "common";
-              drop.nameOverride = d.item.nameOverride || "";
-              const affixes = (d.item.affixesJson as unknown as ItemAffix[]) || [];
-              affixes.forEach((a) => {
-                  const s = new ItemAffixSchema();
-                  s.affixType = a.type;
-                  s.stat = a.stat;
-                  s.value = a.value;
-                  drop.affixes.push(s);
-              });
-          }
+      // B9: Await drop loading so players joining immediately see all drops.
+      const savedDrops = await PersistenceService.loadWorldDrops(this.roomMapName);
+      for (const d of savedDrops) {
+        const drop = this.drops.createDrop(
+          this.state.drops,
+          d.tileX,
+          d.tileY,
+          d.itemType.toLowerCase() as "item" | "gold",
+          d.id,
+        );
+        drop.itemId = d.itemId || "";
+        drop.quantity = d.quantity;
+        drop.goldAmount = d.goldAmount;
+        drop.spawnedAt = d.spawnedAt.getTime();
+
+        if (d.item) {
+          drop.rarity = d.item.rarity || "common";
+          drop.nameOverride = d.item.nameOverride || "";
+          const affixes = (d.item.affixesJson as unknown as ItemAffix[]) || [];
+          affixes.forEach((a) => {
+            const s = new ItemAffixSchema();
+            s.affixType = a.type;
+            s.stat = a.stat;
+            s.value = a.value;
+            drop.affixes.push(s);
+          });
         }
-      });
+      }
 
       // ── NPC persistence: DB-first spawn ──────────────────────────────────
       // If the DB already has NPC rows for this map, restore them — the world
@@ -370,7 +386,8 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       // Restore saved companions
       if (player.savedCompanions && player.savedCompanions.length > 0) {
         for (const comp of player.savedCompanions) {
-          const spawnLoc = findSafeSpawn(player.tileX, player.tileY, this.map, this.spatial) ?? player;
+          const spawnLoc =
+            findSafeSpawn(player.tileX, player.tileY, this.map, this.spatial) ?? player;
           const sx = "x" in spawnLoc ? spawnLoc.x : spawnLoc.tileX;
           const sy = "y" in spawnLoc ? spawnLoc.y : spawnLoc.tileY;
 
@@ -381,7 +398,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
             sy,
             player.sessionId,
           );
-          
+
           // Apply saved level and HP
           newNpc.level = comp.level;
           newNpc.exp = comp.exp;
@@ -455,8 +472,6 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     });
   }
 
-
-
   async onLeave(client: Client) {
     await this.removePlayer(client);
   }
@@ -467,7 +482,9 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       SocialHandlers.handleGroupLeave(this.messageHandler.ctx, client);
 
       const activeCompanions: { type: string; level: number; exp: number; hp: number }[] = [];
-      this.state.npcs.forEach((npc) => {
+      // B7: Collect companion IDs first, then delete — mutating during forEach is unsafe.
+      const companionIds: string[] = [];
+      for (const [id, npc] of this.state.npcs) {
         if (npc.ownerId === player.sessionId && npc.alive) {
           activeCompanions.push({
             type: npc.npcType,
@@ -475,10 +492,12 @@ export class ArenaRoom extends Room<{ state: GameState }> {
             exp: npc.exp,
             hp: npc.hp,
           });
-          // Also remove the companion from the game world when the player logs out
-          this.state.npcs.delete(npc.sessionId);
+          companionIds.push(id);
         }
-      });
+      }
+      for (const id of companionIds) {
+        this.state.npcs.delete(id);
+      }
 
       await this.playerService.cleanupPlayer(player, this.roomMapName, activeCompanions);
       await this.bankSystem.closeBank(player);
@@ -522,7 +541,8 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       }
     });
 
-    if (entity.entityType === EntityType.PLAYER) this.onPlayerDeath(entity as Player, killerSessionId);
+    if (entity.entityType === EntityType.PLAYER)
+      this.onPlayerDeath(entity as Player, killerSessionId);
     else this.tickSystem.handleNpcDeath(entity as Npc, killerSessionId);
   }
 
@@ -583,11 +603,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       this.lastPlayerTiles.set(client.sessionId, { x: player.tileX, y: player.tileY });
 
       // Build the set of NPC ids that should now be visible.
-      const nearby = this.spatial.findEntitiesInRadius(
-        player.tileX,
-        player.tileY,
-        NPC_VIEW_RADIUS,
-      );
+      const nearby = this.spatial.findEntitiesInRadius(player.tileX, player.tileY, NPC_VIEW_RADIUS);
       nextIds = new Set<string>();
       for (const entity of nearby) {
         if (entity.entityType === EntityType.NPC) {
@@ -618,7 +634,6 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       }
     }
   }
-
 
   /**
    * Called from TickSystem each game tick to refresh per-client AoI views.

@@ -1,11 +1,14 @@
 import { type ServerMessages, ServerMessageType } from "@abraxas/shared";
 import type { Client } from "@colyseus/core";
+import { HandlerUtils } from "../handlers/HandlerUtils";
 import type { GameState } from "../schema/GameState";
 import { Group } from "../schema/Group";
-import { HandlerUtils } from "../handlers/HandlerUtils";
 
 export class SocialSystem {
-  private invitations = new Map<string, { groupId: string; inviterSessionId: string; timer: ReturnType<typeof setTimeout> }>();
+  private invitations = new Map<
+    string,
+    { groupId: string; inviterSessionId: string; timer: ReturnType<typeof setTimeout> }
+  >();
 
   constructor(
     private state: GameState,

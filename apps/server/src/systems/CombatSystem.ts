@@ -2,11 +2,11 @@ import type { Ability, BroadcastFn, ServerMessages, TileMap, WindupAction } from
 import {
   ABILITIES,
   BUFFER_WINDOW_MS,
+  CLASS_APPEARANCE,
   calcHealAmount,
   calcMeleeDamage,
   calcRangedDamage,
   calcSpellDamage,
-  CLASS_APPEARANCE,
   DamageSchool,
   EntityType,
   GCD_MS,
@@ -15,12 +15,42 @@ import {
   ServerMessageType,
   StatType,
 } from "@abraxas/shared";
+import { logger } from "../logger";
 import type { GameState } from "../schema/GameState";
-import { Player } from "../schema/Player";
-import { Npc } from "../schema/Npc";
+import type { Npc } from "../schema/Npc";
+import type { Player } from "../schema/Player";
 import type { Entity, SpatialLookup } from "../utils/SpatialLookup";
 import type { BuffSystem } from "./BuffSystem";
-import { logger } from "../logger";
+
+/** Player fields that correspond to resource costs. */
+type PlayerResourceField = "mana" | "souls" | "rage" | "energy" | "focus" | "holyPower";
+type AbilityCostKey =
+  | "manaCost"
+  | "soulCost"
+  | "rageCost"
+  | "energyCost"
+  | "focusCost"
+  | "holyPowerCost";
+
+/** Maps ability cost keys → Player field, log reason, and i18n key. */
+const RESOURCE_COSTS: readonly {
+  costKey: AbilityCostKey;
+  field: PlayerResourceField;
+  reason: string;
+  msg: string;
+}[] = [
+  { costKey: "manaCost", field: "mana", reason: "no_mana", msg: "game.not_enough_mana" },
+  { costKey: "soulCost", field: "souls", reason: "no_souls", msg: "game.not_enough_souls" },
+  { costKey: "rageCost", field: "rage", reason: "no_rage", msg: "game.not_enough_rage" },
+  { costKey: "energyCost", field: "energy", reason: "no_energy", msg: "game.not_enough_energy" },
+  { costKey: "focusCost", field: "focus", reason: "no_focus", msg: "game.not_enough_focus" },
+  {
+    costKey: "holyPowerCost",
+    field: "holyPower",
+    reason: "no_holy_power",
+    msg: "game.not_enough_holy_power",
+  },
+];
 
 type SendToClientFn = <T extends ServerMessageType>(type: T, message?: ServerMessages[T]) => void;
 
@@ -38,7 +68,7 @@ export class CombatSystem {
         message: "game.cast_interrupted",
       });
       // Assuming a hypothetical CastInterrupted message exists, or just clear it silently.
-      // We will clear it silently for now if the client doesn't explicitly support it, 
+      // We will clear it silently for now if the client doesn't explicitly support it,
       // but it stops the cast from resolving.
     }
   }
@@ -161,10 +191,15 @@ export class CombatSystem {
     now: number,
     sendToClient?: SendToClientFn,
   ): boolean {
-    logger.debug({ intent: "try_attack", attacker: attacker.sessionId, target: `${targetTileX},${targetTileY}` });
+    logger.debug({
+      intent: "try_attack",
+      attacker: attacker.sessionId,
+      target: `${targetTileX},${targetTileY}`,
+    });
     if (this.buffSystem.isStunned(attacker.sessionId, now)) return false;
 
-    const stats = attacker.getStats()!;
+    const stats = attacker.getStats();
+    if (!stats) return false; // B2: guard against missing NPC stats
 
     const lastMelee = this.lastMeleeMs.get(attacker.sessionId) ?? 0;
     const meleeReady = now >= lastMelee + stats.attackCooldownMs;
@@ -240,7 +275,12 @@ export class CombatSystem {
     now: number,
     sendToClient?: SendToClientFn,
   ): boolean {
-    logger.debug({ intent: "try_cast", caster: caster.sessionId, ability: abilityId, target: `${targetTileX},${targetTileY}` });
+    logger.debug({
+      intent: "try_cast",
+      caster: caster.sessionId,
+      ability: abilityId,
+      target: `${targetTileX},${targetTileY}`,
+    });
     if (this.buffSystem.isStunned(caster.sessionId, now)) {
       logger.debug({ intent: "try_cast", result: "fail", reason: "stunned" });
       return false;
@@ -265,7 +305,13 @@ export class CombatSystem {
       }
 
       if (ability.requiredLevel && pc.level < ability.requiredLevel) {
-        logger.debug({ intent: "try_cast", result: "fail", reason: "level_req", level: pc.level, required: ability.requiredLevel });
+        logger.debug({
+          intent: "try_cast",
+          result: "fail",
+          reason: "level_req",
+          level: pc.level,
+          required: ability.requiredLevel,
+        });
         sendToClient?.(ServerMessageType.Notification, {
           message: "game.skill_locked",
         });
@@ -274,7 +320,12 @@ export class CombatSystem {
     }
 
     if (now < caster.lastGcdMs + GCD_MS || this.activeWindups.has(caster.sessionId)) {
-      logger.debug({ intent: "try_cast", result: "buffered", gcdReady: now >= caster.lastGcdMs + GCD_MS, hasWindup: this.activeWindups.has(caster.sessionId) });
+      logger.debug({
+        intent: "try_cast",
+        result: "buffered",
+        gcdReady: now >= caster.lastGcdMs + GCD_MS,
+        hasWindup: this.activeWindups.has(caster.sessionId),
+      });
       return this.bufferAction(caster, {
         type: "cast",
         spellId: abilityId,
@@ -294,47 +345,19 @@ export class CombatSystem {
 
     if (caster.entityType === EntityType.PLAYER) {
       const pc = caster as Player;
-      if (ability.manaCost && pc.mana < ability.manaCost) {
-        logger.debug({ intent: "try_cast", result: "fail", reason: "no_mana", has: pc.mana, needs: ability.manaCost });
-        sendToClient?.(ServerMessageType.Notification, {
-          message: "game.not_enough_mana",
-        });
-        return false;
-      }
-      if (ability.soulCost && pc.souls < ability.soulCost) {
-        logger.debug({ intent: "try_cast", result: "fail", reason: "no_souls", has: pc.souls, needs: ability.soulCost });
-        sendToClient?.(ServerMessageType.Notification, {
-          message: "game.not_enough_souls",
-        });
-        return false;
-      }
-      if (ability.rageCost && pc.rage < ability.rageCost) {
-        logger.debug({ intent: "try_cast", result: "fail", reason: "no_rage", has: pc.rage, needs: ability.rageCost });
-        sendToClient?.(ServerMessageType.Notification, {
-          message: "game.not_enough_rage",
-        });
-        return false;
-      }
-      if (ability.energyCost && pc.energy < ability.energyCost) {
-        logger.debug({ intent: "try_cast", result: "fail", reason: "no_energy", has: pc.energy, needs: ability.energyCost });
-        sendToClient?.(ServerMessageType.Notification, {
-          message: "game.not_enough_energy",
-        });
-        return false;
-      }
-      if (ability.focusCost && pc.focus < ability.focusCost) {
-        logger.debug({ intent: "try_cast", result: "fail", reason: "no_focus", has: pc.focus, needs: ability.focusCost });
-        sendToClient?.(ServerMessageType.Notification, {
-          message: "game.not_enough_focus",
-        });
-        return false;
-      }
-      if (ability.holyPowerCost && pc.holyPower < ability.holyPowerCost) {
-        logger.debug({ intent: "try_cast", result: "fail", reason: "no_holy_power", has: pc.holyPower, needs: ability.holyPowerCost });
-        sendToClient?.(ServerMessageType.Notification, {
-          message: "game.not_enough_holy_power",
-        });
-        return false;
+      for (const rc of RESOURCE_COSTS) {
+        const cost = ability[rc.costKey];
+        if (cost && pc[rc.field] < cost) {
+          logger.debug({
+            intent: "try_cast",
+            result: "fail",
+            reason: rc.reason,
+            has: pc[rc.field],
+            needs: cost,
+          });
+          sendToClient?.(ServerMessageType.Notification, { message: rc.msg });
+          return false;
+        }
       }
     }
 
@@ -344,7 +367,13 @@ export class CombatSystem {
         y: targetTileY,
       });
       if (dist > ability.rangeTiles) {
-        logger.debug({ intent: "try_cast", result: "fail", reason: "range", dist, max: ability.rangeTiles });
+        logger.debug({
+          intent: "try_cast",
+          result: "fail",
+          reason: "range",
+          dist,
+          max: ability.rangeTiles,
+        });
         sendToClient?.(ServerMessageType.InvalidTarget);
         return false;
       }
@@ -363,12 +392,11 @@ export class CombatSystem {
     let comboPointsSpent = 0;
     if (caster.entityType === EntityType.PLAYER) {
       const pc = caster as Player;
-      pc.mana -= ability.manaCost;
-      if (ability.soulCost) pc.souls -= ability.soulCost;
-      if (ability.rageCost) pc.rage -= ability.rageCost;
-      if (ability.energyCost) pc.energy -= ability.energyCost;
-      if (ability.focusCost) pc.focus -= ability.focusCost;
-      if (ability.holyPowerCost) pc.holyPower -= ability.holyPowerCost;
+      // Deduct all resource costs
+      for (const rc of RESOURCE_COSTS) {
+        const cost = ability[rc.costKey];
+        if (cost) pc[rc.field] -= cost;
+      }
 
       // Handle Combo Points
       if (ability.comboPointsGain) {
@@ -376,7 +404,6 @@ export class CombatSystem {
       }
       if (ability.comboPointsCost) {
         comboPointsSpent = Math.min(pc.comboPoints, ability.comboPointsCost);
-        // Sometimes cost specifies 5, but we can spend 1-5. We just empty all we can up to the cost.
         if (ability.comboDamageMultiplier) {
           comboPointsSpent = pc.comboPoints; // Spend ALL for finishing moves
         }
@@ -425,7 +452,10 @@ export class CombatSystem {
       this.resolveAutoAttack(attacker, windup, broadcast, onDeath, now);
     } else {
       // Spell Echo: Next spell casts twice
-      if (attacker.entityType === EntityType.PLAYER && this.buffSystem.hasBuff(attacker.sessionId, "spell_echo", now)) {
+      if (
+        attacker.entityType === EntityType.PLAYER &&
+        this.buffSystem.hasBuff(attacker.sessionId, "spell_echo", now)
+      ) {
         this.buffSystem.removeBuff(attacker.sessionId, "spell_echo");
         // Resolve once
         this.resolveAbility(attacker, windup, broadcast, onDeath, now, onSummon);
@@ -447,7 +477,8 @@ export class CombatSystem {
     const target = this.spatial.findEntityAtTile(windup.targetTileX, windup.targetTileY);
 
     if (target && target.alive && this.canAttack(attacker, target)) {
-      const stats = attacker.getStats()!;
+      const stats = attacker.getStats();
+      if (!stats) return; // B2: guard against undefined stats
       const dist = MathUtils.manhattanDist(attacker.getPosition(), {
         x: target.tileX,
         y: target.tileY,
@@ -488,20 +519,48 @@ export class CombatSystem {
       const defenderAgi = this.boosted(target, StatType.AGI, now);
       const aSec = this.getSecondaryStats(attacker, now);
       const dSec = this.getSecondaryStats(target, now);
-      
+
       const aLvl = attacker.level;
       const dLvl = target.level;
 
       const result =
         windup.type === "ranged"
-          ? calcRangedDamage(attackerAgi, defenderArmor, defenderAgi, aLvl, dLvl, aSec.hitRating, aSec.critChance, aSec.critMultiplier, aSec.armorPen, dSec.blockChance)
-          : calcMeleeDamage(attackerStr, defenderArmor, defenderAgi, aLvl, dLvl, aSec.hitRating, aSec.critChance, aSec.critMultiplier, aSec.armorPen, dSec.parryChance, dSec.blockChance);
+          ? calcRangedDamage(
+              attackerAgi,
+              defenderArmor,
+              defenderAgi,
+              aLvl,
+              dLvl,
+              aSec.hitRating,
+              aSec.critChance,
+              aSec.critMultiplier,
+              aSec.armorPen,
+              dSec.blockChance,
+            )
+          : calcMeleeDamage(
+              attackerStr,
+              defenderArmor,
+              defenderAgi,
+              aLvl,
+              dLvl,
+              aSec.hitRating,
+              aSec.critChance,
+              aSec.critMultiplier,
+              aSec.armorPen,
+              dSec.parryChance,
+              dSec.blockChance,
+            );
 
       attacker.lastCombatMs = now;
       target.lastCombatMs = now;
 
       if (result.dodged || result.parried) {
-        logger.debug({ intent: "auto_attack", result: result.dodged ? "dodge" : "parry", attackerId: attacker.sessionId, targetId: target.sessionId });
+        logger.debug({
+          intent: "auto_attack",
+          result: result.dodged ? "dodge" : "parry",
+          attackerId: attacker.sessionId,
+          targetId: target.sessionId,
+        });
         broadcast(ServerMessageType.AttackHit, {
           sessionId: attacker.sessionId,
           targetSessionId: target.sessionId,
@@ -509,7 +568,12 @@ export class CombatSystem {
           parried: result.parried,
         });
       } else {
-        logger.debug({ intent: "auto_attack", result: "hit", damage: result.damage, hpAfter: target.hp - result.damage });
+        logger.debug({
+          intent: "auto_attack",
+          result: "hit",
+          damage: result.damage,
+          hpAfter: target.hp - result.damage,
+        });
         target.hp -= result.damage;
         this.interruptCast(target.sessionId, broadcast);
         // B043: Taking damage breaks stealth
@@ -529,12 +593,7 @@ export class CombatSystem {
         });
 
         // Rage Generation
-        if (attacker.entityType === EntityType.PLAYER && (attacker as Player).classType === "WARRIOR") {
-          (attacker as Player).rage = Math.min((attacker as Player).maxRage, (attacker as Player).rage + 5);
-        }
-        if (target.entityType === EntityType.PLAYER && (target as Player).classType === "WARRIOR") {
-          (target as Player).rage = Math.min((target as Player).maxRage, (target as Player).rage + 3);
-        }
+        this.applyRageOnHit(attacker, target);
 
         if (target.hp <= 0) {
           onDeath(target, attacker.sessionId);
@@ -588,7 +647,13 @@ export class CombatSystem {
         const isAlly =
           candidate.sessionId === attacker.sessionId || this.sameFaction(attacker, candidate);
         if (!isAlly || !candidate.alive) continue;
-        const healRes = calcHealAmount(ability.baseDamage, scalingStat, ability.scalingRatio, aSec.critChance, aSec.critMultiplier);
+        const healRes = calcHealAmount(
+          ability.baseDamage,
+          scalingStat,
+          ability.scalingRatio,
+          aSec.critChance,
+          aSec.critMultiplier,
+        );
         const maxHp = this.boosted(candidate, StatType.HP, now);
         candidate.hp = Math.min(maxHp, candidate.hp + healRes.heal);
         broadcast(ServerMessageType.Heal, {
@@ -628,7 +693,16 @@ export class CombatSystem {
         for (const victim of victims) {
           if (!this.isValidTarget(attacker, victim, ability)) continue;
           // Suppress per-victim CastHit; the main one was already broadcast above.
-          this.applyAbilityToTarget(attacker, victim, ability, windup, broadcast, onDeath, now, true);
+          this.applyAbilityToTarget(
+            attacker,
+            victim,
+            ability,
+            windup,
+            broadcast,
+            onDeath,
+            now,
+            true,
+          );
         }
       } else {
         if (this.isValidTarget(attacker, attacker, ability)) {
@@ -719,7 +793,10 @@ export class CombatSystem {
   /** Shared Rage generation logic applied to both attacker and defender on any hit. */
   private applyRageOnHit(attacker: Entity, target: Entity): void {
     if (attacker.entityType === EntityType.PLAYER && (attacker as Player).classType === "WARRIOR") {
-      (attacker as Player).rage = Math.min((attacker as Player).maxRage, (attacker as Player).rage + 5);
+      (attacker as Player).rage = Math.min(
+        (attacker as Player).maxRage,
+        (attacker as Player).rage + 5,
+      );
     }
     if (target.entityType === EntityType.PLAYER && (target as Player).classType === "WARRIOR") {
       (target as Player).rage = Math.min((target as Player).maxRage, (target as Player).rage + 3);
@@ -736,7 +813,8 @@ export class CombatSystem {
     if (aOwnerId && bOwnerId && aOwnerId === bOwnerId) return true;
 
     if (a.entityType === EntityType.PLAYER && b.entityType === EntityType.PLAYER) {
-      const pa = a as Player, pb = b as Player;
+      const pa = a as Player,
+        pb = b as Player;
       if (pa.groupId && pa.groupId === pb.groupId) return true;
       if (pa.guildId && pa.guildId === pb.guildId) return true;
       return false;
@@ -757,7 +835,8 @@ export class CombatSystem {
     )
       return false;
     if (attacker.entityType === EntityType.PLAYER && target.entityType === EntityType.PLAYER) {
-      const pa = attacker as Player, pt = target as Player;
+      const pa = attacker as Player,
+        pt = target as Player;
       if (!pa.pvpEnabled || !pt.pvpEnabled) return false;
     }
     return true;
@@ -777,14 +856,9 @@ export class CombatSystem {
     }
   }
 
+  // B34: Delegate to shared MathUtils.isInSafeZone
   private isInSafeZone(x: number, y: number): boolean {
-    if (!this.map.safeZones) return false;
-    for (const zone of this.map.safeZones) {
-      if (x >= zone.x && x < zone.x + zone.w && y >= zone.y && y < zone.y + zone.h) {
-        return true;
-      }
-    }
-    return false;
+    return MathUtils.isInSafeZone(x, y, this.map.safeZones);
   }
 
   private applyAbilityToTarget(
@@ -839,7 +913,14 @@ export class CombatSystem {
         durationMs: dotDuration,
       });
     } else if (ability.effect === "leech") {
-      const damageRes = this.calcAbilityDamage(attacker, target, ability, windup, scalingStatValue, now);
+      const damageRes = this.calcAbilityDamage(
+        attacker,
+        target,
+        ability,
+        windup,
+        scalingStatValue,
+        now,
+      );
       if (damageRes.dodged || damageRes.parried) return; // Skip effects if dodged
       target.hp -= damageRes.damage;
       this.interruptCast(target.sessionId, broadcast);
@@ -869,7 +950,14 @@ export class CombatSystem {
         hpAfter: attacker.hp,
       });
     } else if (ability.effect === "damage" || ability.baseDamage > 0) {
-      const damageRes = this.calcAbilityDamage(attacker, target, ability, windup, scalingStatValue, now);
+      const damageRes = this.calcAbilityDamage(
+        attacker,
+        target,
+        ability,
+        windup,
+        scalingStatValue,
+        now,
+      );
       if (!damageRes.dodged && !damageRes.parried) {
         target.hp -= damageRes.damage;
         this.interruptCast(target.sessionId, broadcast);
@@ -913,7 +1001,13 @@ export class CombatSystem {
       }
     } else if (ability.effect === "heal") {
       const aSec = this.getSecondaryStats(attacker, now);
-      const healRes = calcHealAmount(ability.baseDamage, scalingStatValue, ability.scalingRatio, aSec.critChance, aSec.critMultiplier);
+      const healRes = calcHealAmount(
+        ability.baseDamage,
+        scalingStatValue,
+        ability.scalingRatio,
+        aSec.critChance,
+        aSec.critMultiplier,
+      );
       const maxHp = this.boosted(target, StatType.HP, now);
       target.hp = Math.min(maxHp, target.hp + healRes.heal);
       broadcast(ServerMessageType.Heal, {
@@ -955,8 +1049,7 @@ export class CombatSystem {
         if (buffStat === StatType.RAGE) pt.rage = Math.min(pt.maxRage, pt.rage + buffAmount);
         if (buffStat === StatType.ENERGY)
           pt.energy = Math.min(pt.maxEnergy, pt.energy + buffAmount);
-        if (buffStat === StatType.FOCUS)
-          pt.focus = Math.min(pt.maxFocus, pt.focus + buffAmount);
+        if (buffStat === StatType.FOCUS) pt.focus = Math.min(pt.maxFocus, pt.focus + buffAmount);
         if (buffStat === StatType.HOLY_POWER)
           pt.holyPower = Math.min(pt.maxHolyPower, pt.holyPower + buffAmount);
       } else {
@@ -1010,25 +1103,36 @@ export class CombatSystem {
         durationMs: ability.durationMs ?? 30000,
       });
     } else if (ability.effect === "teleport") {
-      // Logic for Leap, Blink, etc.
-      // 1. Move the caster
+      // B15: Validate target tile is walkable before teleporting
+      const tx = windup.targetTileX;
+      const ty = windup.targetTileY;
+      if (
+        tx < 0 ||
+        tx >= this.map.width ||
+        ty < 0 ||
+        ty >= this.map.height ||
+        this.map.collision[ty]?.[tx] === 1
+      ) {
+        return; // Invalid destination — silently fail
+      }
+
       this.spatial.removeFromGrid(attacker);
-      attacker.tileX = target.tileX;
-      attacker.tileY = target.tileY;
+      attacker.tileX = tx;
+      attacker.tileY = ty;
       this.spatial.addToGrid(attacker);
 
-      // 2. Broadcast Warp to tell clients to instantly move the sprite
       broadcast(ServerMessageType.Warp, {
         targetMap: this.roomMapName,
         targetX: attacker.tileX,
         targetY: attacker.tileY,
       });
-
-      // 3. If there's damage/AOE attached (like Leap), it will be handled by the parent caller
-      // since teleport abilities usually target a tile and apply effects in a radius.
     } else if (ability.effect === "pickpocket") {
       // Logic for Pickpocket: Gain gold from an NPC target
-      if (attacker.entityType === EntityType.PLAYER && target.entityType === EntityType.NPC && target.alive) {
+      if (
+        attacker.entityType === EntityType.PLAYER &&
+        target.entityType === EntityType.NPC &&
+        target.alive
+      ) {
         const goldGain = Math.floor(Math.random() * 40) + 10; // 10-50 gold
         (attacker as Player).gold += goldGain;
         broadcast(ServerMessageType.Notification, {
@@ -1067,39 +1171,85 @@ export class CombatSystem {
     scalingStatValue: number,
     now: number,
   ) {
-    let result = { damage: 0, crit: false, glancing: false, blocked: false, parried: false, dodged: false };
+    let result = {
+      damage: 0,
+      crit: false,
+      glancing: false,
+      blocked: false,
+      parried: false,
+      dodged: false,
+    };
     const aSec = this.getSecondaryStats(attacker, now);
     const dSec = this.getSecondaryStats(target, now);
     const aLvl = attacker.level;
     const dLvl = target.level;
-    
+
     if (ability.damageSchool === DamageSchool.PHYSICAL) {
       const defenderArmor = this.boosted(target, StatType.ARMOR, now);
       const defenderAgi = this.boosted(target, StatType.AGI, now);
-      
+
       if (ability.scalingStat === StatType.AGI) {
-        result = calcRangedDamage(scalingStatValue, defenderArmor, defenderAgi, aLvl, dLvl, aSec.hitRating, aSec.critChance, aSec.critMultiplier, aSec.armorPen, dSec.blockChance);
+        result = calcRangedDamage(
+          scalingStatValue,
+          defenderArmor,
+          defenderAgi,
+          aLvl,
+          dLvl,
+          aSec.hitRating,
+          aSec.critChance,
+          aSec.critMultiplier,
+          aSec.armorPen,
+          dSec.blockChance,
+        );
       } else {
-        result = calcMeleeDamage(scalingStatValue, defenderArmor, defenderAgi, aLvl, dLvl, aSec.hitRating, aSec.critChance, aSec.critMultiplier, aSec.armorPen, dSec.parryChance, dSec.blockChance);
+        result = calcMeleeDamage(
+          scalingStatValue,
+          defenderArmor,
+          defenderAgi,
+          aLvl,
+          dLvl,
+          aSec.hitRating,
+          aSec.critChance,
+          aSec.critMultiplier,
+          aSec.armorPen,
+          dSec.parryChance,
+          dSec.blockChance,
+        );
       }
     } else {
       const defenderInt = this.boosted(target, StatType.INT, now);
-      const spellRes = calcSpellDamage(ability.baseDamage, scalingStatValue, ability.scalingRatio, defenderInt, aLvl, dLvl, aSec.critChance, aSec.critMultiplier);
-      result = { damage: spellRes.damage, crit: spellRes.crit, glancing: spellRes.glancing, blocked: false, parried: false, dodged: false };
+      const spellRes = calcSpellDamage(
+        ability.baseDamage,
+        scalingStatValue,
+        ability.scalingRatio,
+        defenderInt,
+        aLvl,
+        dLvl,
+        aSec.critChance,
+        aSec.critMultiplier,
+      );
+      result = {
+        damage: spellRes.damage,
+        crit: spellRes.crit,
+        glancing: spellRes.glancing,
+        blocked: false,
+        parried: false,
+        dodged: false,
+      };
     }
 
     let damage = result.damage;
 
     // Special Case: Combo Points Multiplier
     if (ability.comboDamageMultiplier && windup.comboPointsSpent) {
-      damage *= (1 + ability.comboDamageMultiplier * windup.comboPointsSpent);
+      damage *= 1 + ability.comboDamageMultiplier * windup.comboPointsSpent;
     }
 
     // Special Case: Execute
     if (ability.executeThreshold) {
       const hpRatio = target.hp / this.boosted(target, StatType.HP, now);
       if (hpRatio <= ability.executeThreshold) {
-        damage *= (ability.executeMultiplier ?? 2.0);
+        damage *= ability.executeMultiplier ?? 2.0;
       }
     } else if (ability.id === "execute") {
       const hpRatio = target.hp / this.boosted(target, StatType.HP, now);
@@ -1124,13 +1274,27 @@ export class CombatSystem {
   private getSecondaryStats(entity: Entity, now: number) {
     const stats = entity.getStats();
     return {
-      hitRating: (stats?.hitRating ?? 0.95) + this.buffSystem.getBuffBonus(entity.sessionId, StatType.HIT_RATING, now) / 100,
-      critChance: (stats?.critChance ?? 0.05) + this.buffSystem.getBuffBonus(entity.sessionId, StatType.CRIT_CHANCE, now) / 100,
-      critMultiplier: (stats?.critMultiplier ?? 1.5) + this.buffSystem.getBuffBonus(entity.sessionId, StatType.CRIT_MULTIPLIER, now) / 100,
-      armorPen: (stats?.armorPen ?? 0) + this.buffSystem.getBuffBonus(entity.sessionId, StatType.ARMOR_PEN, now) / 100,
-      dodgeChance: (stats?.dodgeChance ?? 0.05) + this.buffSystem.getBuffBonus(entity.sessionId, StatType.DODGE_CHANCE, now) / 100,
-      parryChance: (stats?.parryChance ?? 0.05) + this.buffSystem.getBuffBonus(entity.sessionId, StatType.PARRY_CHANCE, now) / 100,
-      blockChance: (stats?.blockChance ?? 0) + this.buffSystem.getBuffBonus(entity.sessionId, StatType.BLOCK_CHANCE, now) / 100,
+      hitRating:
+        (stats?.hitRating ?? 0.95) +
+        this.buffSystem.getBuffBonus(entity.sessionId, StatType.HIT_RATING, now) / 100,
+      critChance:
+        (stats?.critChance ?? 0.05) +
+        this.buffSystem.getBuffBonus(entity.sessionId, StatType.CRIT_CHANCE, now) / 100,
+      critMultiplier:
+        (stats?.critMultiplier ?? 1.5) +
+        this.buffSystem.getBuffBonus(entity.sessionId, StatType.CRIT_MULTIPLIER, now) / 100,
+      armorPen:
+        (stats?.armorPen ?? 0) +
+        this.buffSystem.getBuffBonus(entity.sessionId, StatType.ARMOR_PEN, now) / 100,
+      dodgeChance:
+        (stats?.dodgeChance ?? 0.05) +
+        this.buffSystem.getBuffBonus(entity.sessionId, StatType.DODGE_CHANCE, now) / 100,
+      parryChance:
+        (stats?.parryChance ?? 0.05) +
+        this.buffSystem.getBuffBonus(entity.sessionId, StatType.PARRY_CHANCE, now) / 100,
+      blockChance:
+        (stats?.blockChance ?? 0) +
+        this.buffSystem.getBuffBonus(entity.sessionId, StatType.BLOCK_CHANCE, now) / 100,
     };
   }
 }
