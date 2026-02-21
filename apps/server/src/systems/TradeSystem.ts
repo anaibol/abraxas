@@ -14,7 +14,6 @@ import type { InventorySystem } from "./InventorySystem";
 export class TradeSystem {
   private activeTrades = new Map<string, TradeState>();
   private pendingRequests = new Map<string, string>(); // targetSessionId -> requesterSessionId
-  /** Bug #47: Prevents concurrent executeTrade calls for the same trade. */
   private executingTrades = new Set<string>();
 
   constructor(private inventorySystem: InventorySystem) {}
@@ -89,6 +88,11 @@ export class TradeSystem {
     // Validate each item against the actual inventory to get metadata
     const validatedItems: TradeOffer["items"] = [];
     for (const off of offer.items) {
+      // Bug #51: Clamp non-stackable item quantity to 1
+      const itemDef = ITEMS[off.itemId];
+      if (itemDef && !itemDef.stackable && off.quantity > 1) {
+        off.quantity = 1;
+      }
       const invItem = player.inventory.find((i) => i.itemId === off.itemId);
       if (!invItem || invItem.quantity < off.quantity) {
         logger.warn({
@@ -135,12 +139,15 @@ export class TradeSystem {
     return trade.alice.offer.confirmed && trade.bob.offer.confirmed;
   }
 
-  async executeTrade(trade: TradeState, players: { get: (id: string) => Player | undefined }) {
-    // Bug #47: Prevent concurrent execution of the same trade
-    if (this.executingTrades.has(trade.tradeId)) return false;
+  async executeTrade(trade: TradeState, players: { get: (id: string) => Player | undefined }): Promise<boolean | null> {
+    // Bug #1 fix: Check canComplete under the lock to prevent TOCTOU race
+    if (this.executingTrades.has(trade.tradeId)) return null;
     this.executingTrades.add(trade.tradeId);
 
     try {
+      // Must re-check after acquiring the lock
+      if (!this.canComplete(trade)) return null;
+
       const alice = players.get(trade.alice.sessionId);
       const bob = players.get(trade.bob.sessionId);
 
@@ -190,15 +197,13 @@ export class TradeSystem {
       const def = ITEMS[off.itemId];
       if (def?.stackable) {
         const existing = player.inventory.find((i) => i.itemId === off.itemId);
-        // If it exists and we're NOT giving it ALL away, it will stack.
-        // If we ARE giving it all away, it will take the freed slot (net 0).
         if (existing) {
           const givingThisItem = givingOffer.items.find((i) => i.itemId === off.itemId);
           if (givingThisItem && givingThisItem.quantity === existing.quantity) {
             // We are giving the whole stack away. The incoming stack will take a slot.
             slotsNeeded++;
-          } else {
           }
+          // Otherwise stacks onto existing, no new slot needed
         } else {
           slotsNeeded++;
         }
@@ -226,7 +231,6 @@ export class TradeSystem {
       to.gold += offer.gold;
     }
     for (const item of offer.items) {
-      // Bug #48: Pass slotIndex for correct item disambiguation
       if (this.inventorySystem.removeItem(from, item.itemId, item.quantity, item.slotIndex)) {
         this.inventorySystem.addItem(to, item.itemId, item.quantity, {
           rarity: item.rarity!,
@@ -244,7 +248,6 @@ export class TradeSystem {
       this.cleanup(trade.bob.sessionId);
       return trade;
     }
-    // Bug #49: Clean up pending requests on disconnect/cancel
     this.pendingRequests.delete(sessionId);
     // Also remove any pending request where this player is the requester
     for (const [target, requester] of this.pendingRequests) {

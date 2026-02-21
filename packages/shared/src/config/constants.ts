@@ -22,3 +22,7 @@ export const VIEWPORT_TILES_Y = 14;
  *  Covers the full viewport plus a ~3-tile buffer so entities walking into frame
  *  are already streamed before they become visible. */
 export const NPC_VIEW_RADIUS = 20;
+
+/** Tile radius used for server-side Player Area-of-Interest filtering per client.
+ *  Prevents maphacks — clients only receive nearby player data. */
+export const PLAYER_VIEW_RADIUS = 20;

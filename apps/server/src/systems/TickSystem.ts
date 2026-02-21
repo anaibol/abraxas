@@ -68,10 +68,12 @@ export class TickSystem {
     state.tick++;
 
     // Time of day: 1 real minute = 1 game hour
-    state.timeOfDay += (deltaTime / 1000) * (1 / 60);
+    // Bug #79: Clamp deltaTime to prevent time-of-day jumps on lag spikes
+    const clampedDelta = Math.min(deltaTime, 200);
+    state.timeOfDay += (clampedDelta / 1000) * (1 / 60);
     if (state.timeOfDay >= 24) state.timeOfDay -= 24;
 
-    // Weather randomises every ~40 s
+    // Bug #76: Weather randomises every ~50s (1000 ticks at 20 TPS)
     if (state.tick % 1000 === 0) {
       const rnd = Math.random();
       if (rnd < 0.7) state.weather = "clear";
@@ -151,9 +153,10 @@ export class TickSystem {
       // Mana Spring: nearby friendly summon restores mana
       if (manaSprings) {
         for (const npc of manaSprings) {
-          const dx = npc.tileX - player.tileX;
-          const dy = npc.tileY - player.tileY;
-          if (dx * dx + dy * dy <= 16) {
+          const dx = Math.abs(npc.tileX - player.tileX);
+          const dy = Math.abs(npc.tileY - player.tileY);
+          // Bug #77: Use Manhattan distance (consistent with other range checks)
+          if (dx + dy <= 4) {
             // 4-tile radius
             player.mana = Math.min(player.maxMana, player.mana + 5);
           }
@@ -201,7 +204,7 @@ export class TickSystem {
     const { systems, state } = this.opts;
     const stats = NPC_STATS[killedNpc.npcType];
 
-    if (stats && typeof stats.expReward === "number") {
+    if (stats?.expReward) {
       const companions = Array.from(state.npcs.values()).filter(
         (n) => n.ownerId === player.sessionId && n.alive,
       );
@@ -247,10 +250,15 @@ export class TickSystem {
       let ty = killedNpc.tileY + Math.floor(Math.random() * 3) - 1;
       tx = Math.max(0, Math.min(this.opts.map.width - 1, tx));
       ty = Math.max(0, Math.min(this.opts.map.height - 1, ty));
-      // Fall back to NPC's tile if scatter position is blocked
+      // Bug #78: Fall back to NPC's tile if scatter position is blocked, verify NPC tile is also walkable
       if (this.opts.map.collision[ty]?.[tx] === 1) {
         tx = killedNpc.tileX;
         ty = killedNpc.tileY;
+        // If even the NPC tile is blocked (NPC was removed), try the raw random position clamped
+        if (this.opts.map.collision[ty]?.[tx] === 1) {
+          tx = Math.max(0, Math.min(this.opts.map.width - 1, killedNpc.tileX));
+          ty = Math.max(0, Math.min(this.opts.map.height - 1, killedNpc.tileY));
+        }
       }
       if (entry.itemId === "gold") {
         systems.drops.spawnGoldDrop(this.opts.state.drops, tx, ty, qty);

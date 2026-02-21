@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useAudio } from "../contexts/AudioContext";
 import { Button } from "./components/Button";
 import { ItemGrid } from "./components/ItemGrid";
+import { ModalOverlay } from "./components/ModalOverlay";
 import type { InventorySlot } from "./sidebar/types";
 import { T } from "./tokens";
 
@@ -163,24 +164,15 @@ export function TradeWindow({
   );
 
   return (
-    <Box
-      pos="fixed"
-      inset="0"
+    <ModalOverlay
       zIndex={300}
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      bg="rgba(0,0,0,0.7)"
+      onClose={onCancel}
+      panelProps={{
+        w: { base: "calc(100vw - 32px)", md: "560px" },
+        maxH: "90dvh",
+        overflowY: "auto",
+      }}
     >
-      <Box
-        layerStyle={T.panelGlass}
-        animation="popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards"
-        w={{ base: "calc(100vw - 32px)", md: "560px" }}
-        maxH="90dvh"
-        overflowY="auto"
-        fontFamily={T.display}
-        onClick={(e) => e.stopPropagation()}
-      >
         {/* Title */}
         <Box
           px="5"
@@ -369,7 +361,6 @@ export function TradeWindow({
             </>
           )}
         </Flex>
-      </Box>
-    </Box>
+      </ModalOverlay>
   );
 }

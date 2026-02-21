@@ -5,6 +5,7 @@ import {
   type JoinOptions,
   NPC_STATS,
   NPC_VIEW_RADIUS,
+  PLAYER_VIEW_RADIUS,
   type NpcType,
   PLAYER_RESPAWN_TIME_MS,
   ServerMessageType,
@@ -82,6 +83,8 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 
   /** Per-client set of NPC sessionIds currently in the client's StateView. */
   private npcViewSets = new Map<string, Set<string>>();
+  /** Per-client set of other Player sessionIds currently in the client's StateView. */
+  private playerViewSets = new Map<string, Set<string>>();
   /** Per-client last-known player tile position; used to skip AoI rebuild when the player hasn't moved. */
   private lastPlayerTiles = new Map<string, { x: number; y: number }>();
 
@@ -314,6 +317,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       this.setSimulationInterval((dt) => {
         this.tickSystem.tick(dt);
         this.tickNpcViews();
+        this.tickPlayerViews();
       }, TICK_MS);
 
       logger.info({ room: this.roomId, message: "onCreate completed successfully" });
@@ -412,6 +416,23 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       // Seed the AoI view with NPCs in range around the player's spawn point.
       this.npcViewSets.set(client.sessionId, new Set());
       this.updateNpcView(client, player);
+      // Seed the AoI view with other players in range.
+      this.playerViewSets.set(client.sessionId, new Set());
+      this.updatePlayerView(client, player);
+      // Add the new player to all existing clients' views if they are nearby.
+      for (const otherClient of this.clients) {
+        if (otherClient.sessionId === client.sessionId) continue;
+        const otherPlayer = this.state.players.get(otherClient.sessionId);
+        if (!otherPlayer || !otherClient.view) continue;
+        const otherSet = this.playerViewSets.get(otherClient.sessionId);
+        if (!otherSet) continue;
+        const dx = player.tileX - otherPlayer.tileX;
+        const dy = player.tileY - otherPlayer.tileY;
+        if (dx * dx + dy * dy <= PLAYER_VIEW_RADIUS * PLAYER_VIEW_RADIUS) {
+          otherClient.view.add(player);
+          otherSet.add(client.sessionId);
+        }
+      }
       // If the player logged out while dead, queue an immediate respawn
       // so they enter the world alive on the first server tick.
       if (!player.alive) {
@@ -483,9 +504,11 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     // Player is already in state.players, so view.add() is safe here.
     client.view = new StateView();
     client.view.add(player);
-    // Re-seed the AoI view for the reconnecting client.
+    // Re-seed the AoI views for the reconnecting client.
     this.npcViewSets.set(client.sessionId, new Set());
     this.updateNpcView(client, player);
+    this.playerViewSets.set(client.sessionId, new Set());
+    this.updatePlayerView(client, player);
 
     if (player.userId) {
       this.friends.setUserOnline(player.userId, client.sessionId);
@@ -534,16 +557,36 @@ export class ArenaRoom extends Room<{ state: GameState }> {
           companionIds.push(id);
         }
       }
+      // Bug #4 fix: Clean up spatial grid and combat state for each companion
       for (const id of companionIds) {
+        const npc = this.state.npcs.get(id);
+        if (npc) {
+          this.spatial.removeFromGrid(npc);
+          this.combat.removeEntity(npc.sessionId);
+          this.buffSystem.removePlayer(npc.sessionId);
+        }
         this.state.npcs.delete(id);
       }
 
       await this.playerService.cleanupPlayer(player, this.roomMapName, activeCompanions);
+      // Bug #5 fix: Await bank persistence to complete before cleaning up player state
       await this.bankSystem.closeBank(player);
     }
     // Clean up AoI tracking for the departing client.
     this.npcViewSets.delete(client.sessionId);
+    this.playerViewSets.delete(client.sessionId);
     this.lastPlayerTiles.delete(client.sessionId);
+    // Remove the departing player from all other clients' player views.
+    if (player) {
+      for (const otherClient of this.clients) {
+        if (otherClient.sessionId === client.sessionId) continue;
+        const otherSet = this.playerViewSets.get(otherClient.sessionId);
+        if (otherSet?.has(client.sessionId)) {
+          otherClient.view?.remove(player);
+          otherSet.delete(client.sessionId);
+        }
+      }
+    }
     this.combat.removeEntity(client.sessionId);
     this.buffSystem.removePlayer(client.sessionId);
     this.respawnSystem.removePlayer(client.sessionId);
@@ -594,8 +637,28 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     // B4: Clear buff/DoT state on death — prevents memory leak for connected-but-dead players
     this.buffSystem.removePlayer(player.sessionId);
     const dropped = this.inventorySystem.dropAllItems(player);
-    for (const d of dropped)
-      this.drops.spawnItemDrop(this.state.drops, player.tileX, player.tileY, d.itemId, d.quantity);
+    for (const d of dropped) {
+      // Bug #2 fix: Pass affix/rarity instance data so rare/epic gear isn't lost
+      const instanceData = d.affixes?.length > 0 || (d.rarity && d.rarity !== 'COMMON')
+        ? {
+            rarity: d.rarity,
+            nameOverride: d.nameOverride,
+            affixes: Array.from(d.affixes).map((a) => ({
+              type: a.affixType,
+              stat: a.stat,
+              value: a.value,
+            })),
+          }
+        : undefined;
+      this.drops.spawnItemDrop(
+        this.state.drops,
+        player.tileX,
+        player.tileY,
+        d.itemId,
+        d.quantity,
+        instanceData,
+      );
+    }
     if (player.gold > 0) {
       this.drops.spawnGoldDrop(this.state.drops, player.tileX, player.tileY, player.gold);
       player.gold = 0;
@@ -673,7 +736,99 @@ export class ArenaRoom extends Room<{ state: GameState }> {
   public tickNpcViews(): void {
     for (const client of this.clients) {
       const player = this.state.players.get(client.sessionId);
-      if (player) this.updateNpcView(client, player);
+      if (!player) continue;
+
+      // Bug #10 fix: Only rebuild AoI when the player has actually moved.
+      // The remove pass in updateNpcView handles dead/despawned NPCs even
+      // for stationary players, so we still call it — but only when moved.
+      const lastTile = this.lastPlayerTiles.get(client.sessionId);
+      if (lastTile && lastTile.x === player.tileX && lastTile.y === player.tileY) {
+        // Player hasn't moved, but still do a lightweight remove pass for dead NPCs
+        const currentSet = this.npcViewSets.get(client.sessionId);
+        if (currentSet && client.view) {
+          for (const id of currentSet) {
+            const npc = this.state.npcs.get(id);
+            if (!npc || !npc.alive) {
+              if (npc) client.view.remove(npc);
+              currentSet.delete(id);
+            }
+          }
+        }
+        continue;
+      }
+
+      this.lastPlayerTiles.set(client.sessionId, { x: player.tileX, y: player.tileY });
+      this.updateNpcView(client, player);
+    }
+  }
+
+  // ── Player Area-of-Interest (AoI) filtering ────────────────────────────────
+
+  /**
+   * Updates the Colyseus StateView for `client` so it includes exactly the
+   * other players within PLAYER_VIEW_RADIUS tiles.  The player's own schema
+   * is always in their view (added during onJoin/onReconnect).
+   */
+  public updatePlayerView(client: Client, player: Player): void {
+    if (!client.view) return;
+
+    const currentSet = this.playerViewSets.get(client.sessionId);
+    if (!currentSet) return;
+
+    const nearby = this.spatial.findEntitiesInRadius(player.tileX, player.tileY, PLAYER_VIEW_RADIUS);
+    const nextIds = new Set<string>();
+    for (const entity of nearby) {
+      if (entity.isPlayer() && entity.sessionId !== client.sessionId) {
+        nextIds.add(entity.sessionId);
+      }
+    }
+
+    // Add newly-visible players.
+    for (const id of nextIds) {
+      if (!currentSet.has(id)) {
+        const otherPlayer = this.state.players.get(id);
+        if (otherPlayer) {
+          client.view.add(otherPlayer);
+          currentSet.add(id);
+        }
+      }
+    }
+
+    // Remove players that left range or disconnected.
+    for (const id of currentSet) {
+      if (!nextIds.has(id)) {
+        const otherPlayer = this.state.players.get(id);
+        if (otherPlayer) client.view.remove(otherPlayer);
+        currentSet.delete(id);
+      }
+    }
+  }
+
+  /**
+   * Called from TickSystem each tick to refresh per-client player AoI views.
+   * Uses the same move-check optimization as tickNpcViews.
+   */
+  public tickPlayerViews(): void {
+    for (const client of this.clients) {
+      const player = this.state.players.get(client.sessionId);
+      if (!player) continue;
+
+      const lastTile = this.lastPlayerTiles.get(client.sessionId);
+      if (lastTile && lastTile.x === player.tileX && lastTile.y === player.tileY) {
+        // Player hasn't moved — lightweight remove pass for disconnected players
+        const currentSet = this.playerViewSets.get(client.sessionId);
+        if (currentSet && client.view) {
+          for (const id of currentSet) {
+            if (!this.state.players.has(id)) {
+              currentSet.delete(id);
+            }
+          }
+        }
+        continue;
+      }
+
+      // lastPlayerTiles is already set by tickNpcViews, no need to set again
+      this.updatePlayerView(client, player);
     }
   }
 }

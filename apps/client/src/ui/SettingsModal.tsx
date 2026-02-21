@@ -1,8 +1,10 @@
 import { Box, Flex, Text } from "@chakra-ui/react";
-import { Bug, Camera, Languages, Map as MapIcon, Music, Sparkles, Volume2, Waves, Wind, X } from "lucide-react";
+import { Bug, Camera, Languages, Map as MapIcon, Music, Sparkles, Volume2, Waves, Wind } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useGameSettings } from "../hooks/useGameSettings";
 import type { ParticleQuality } from "../settings/gameSettings";
+import { ModalOverlay } from "./components/ModalOverlay";
+import { PanelHeader } from "./components/PanelHeader";
 import { HEX, T } from "./tokens";
 
 const LANGUAGES: { code: string; label: string; flag: string }[] = [
@@ -43,62 +45,14 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
           border-style: solid;
         }
       `}</style>
-      <Box
-        pos="fixed"
-        inset="0"
-        zIndex={200}
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        bg="rgba(0,0,0,0.65)"
-        backdropFilter="blur(4px)"
-        onClick={onClose}
+      <ModalOverlay
+        onClose={onClose}
+        panelProps={{
+          w: { base: "calc(100vw - 32px)", md: "420px" },
+          overflow: "hidden",
+        }}
       >
-        <Box
-          layerStyle={T.panelGlass}
-          animation="popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards"
-          w={{ base: "calc(100vw - 32px)", md: "420px" }}
-          overflow="hidden"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Header */}
-          <Flex
-            align="center"
-            justify="space-between"
-            px="5"
-            py="3.5"
-            borderBottom="1px solid"
-            borderBottomColor={T.border}
-            bg={T.darkest}
-          >
-            <Text
-              fontFamily={T.display}
-              fontSize="15px"
-              fontWeight="700"
-              letterSpacing="2px"
-              textTransform="uppercase"
-              color={T.gold}
-            >
-              {t("settings.title")}
-            </Text>
-            <Box
-              w="28px"
-              h="28px"
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-              color={T.goldDark}
-              cursor="pointer"
-              borderRadius="4px"
-              _hover={{ color: T.gold, bg: T.raised }}
-              onClick={onClose}
-            >
-              <X size={16} />
-            </Box>
-          </Flex>
-
-          {/* Gold separator */}
-          <Box h="1px" bg={`linear-gradient(90deg, transparent, ${HEX.gold}, transparent)`} />
+          <PanelHeader title={t("settings.title")} onClose={onClose} />
 
           {/* Body */}
           <Box px="5" py="5" display="flex" flexDirection="column" gap="6">
@@ -289,8 +243,7 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
               </Flex>
             </Box>
           </Box>
-        </Box>
-      </Box>
+        </ModalOverlay>
     </>
   );
 }

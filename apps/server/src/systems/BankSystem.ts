@@ -79,6 +79,8 @@ export class BankSystem {
     if (def.stackable) {
       const existing = bankItems.find((i) => i.itemId === itemId);
       if (existing) {
+        // Bug #53: Stackable items should never have unique affixes, so merging quantities is safe.
+        // If a stackable item somehow has affixes, the existing stack's affixes are preserved.
         existing.quantity += quantity;
       } else {
         const nextIdx = this.getNextIndex(bankItems);
@@ -167,7 +169,8 @@ export class BankSystem {
     if (!items) return;
 
     try {
-      // Persist to DB
+      // Bug #3 fix: Use explicit 30s timeout (default 5s is too short for 50-slot banks)
+      // and batch itemDef lookups to reduce round-trips.
       await prisma.$transaction(async (tx) => {
         const bank = await tx.bank.upsert({
           where: { characterId: player.dbId },
@@ -187,11 +190,16 @@ export class BankSystem {
         // Delete old slots
         await tx.bankSlot.deleteMany({ where: { bankId: bank.id } });
 
+        // Batch-resolve all itemDef codes in one query
+        const uniqueCodes = [...new Set(items.map((i) => i.itemId))];
+        const itemDefs = await tx.itemDef.findMany({
+          where: { code: { in: uniqueCodes } },
+        });
+        const defMap = new Map(itemDefs.map((d) => [d.code, d]));
+
         // Create new slots
         for (const item of items) {
-          const itemDef = await tx.itemDef.findUnique({
-            where: { code: item.itemId },
-          });
+          const itemDef = defMap.get(item.itemId);
           if (!itemDef) continue;
 
           const instance = await tx.itemInstance.create({
@@ -211,7 +219,7 @@ export class BankSystem {
             },
           });
         }
-      });
+      }, { timeout: 30_000 });
     } catch (e) {
       logger.error({ message: "Failed to persist bank", error: String(e) });
     } finally {

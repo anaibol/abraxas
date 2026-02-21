@@ -189,9 +189,16 @@ export class BuffSystem {
       entity.spawnProtection = now < s.spawnProtectedUntil;
 
       // Polymorph Healing (special case)
-      if (s.buffs.some((b) => b.id === "polymorph")) {
-        const heal = Math.ceil(entity.maxHp * 0.01); // 1% HP per tick
-        entity.hp = Math.min(entity.maxHp, entity.hp + heal);
+      // Bug #24: Use time-based heal (every 250ms) instead of per-tick to be TPS-independent
+      const polyBuff = s.buffs.find((b) => b.id === "polymorph");
+      if (polyBuff) {
+        const polyInterval = 250; // ms between heals
+        const lastPolyHeal = (polyBuff as { lastHealAt?: number }).lastHealAt ?? 0;
+        if (now - lastPolyHeal >= polyInterval) {
+          const heal = Math.ceil(entity.maxHp * 0.01); // 1% HP per tick interval
+          entity.hp = Math.min(entity.maxHp, entity.hp + heal);
+          (polyBuff as { lastHealAt?: number }).lastHealAt = now;
+        }
       }
 
       // Expire old buffs

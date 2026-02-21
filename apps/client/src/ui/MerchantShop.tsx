@@ -6,6 +6,8 @@ import { useTranslation } from "react-i18next";
 import { useAudio } from "../contexts/AudioContext";
 import { Button } from "./components/Button";
 import { ItemGrid } from "./components/ItemGrid";
+import { ModalOverlay } from "./components/ModalOverlay";
+import { PanelHeader } from "./components/PanelHeader";
 import { HEX, T } from "./tokens";
 
 interface MerchantShopProps {
@@ -41,57 +43,22 @@ export function MerchantShop({
   };
 
   return (
-    <Box
-      pos="fixed"
-      inset="0"
-      zIndex="200"
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      bg="rgba(0,0,0,0.65)"
-      onClick={onClose}
-    >
-      <Box
-        layerStyle={T.panelGlass}
-        animation="popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards"
-        p={{ base: "4", md: "6" }}
-        w={{ base: "calc(100vw - 32px)", md: "550px" }}
-        maxH="85dvh"
-        overflowY="auto"
-        fontFamily={T.display}
-        onClick={(e) => e.stopPropagation()}
-        css={{
+    <ModalOverlay
+      onClose={onClose}
+      panelProps={{
+        p: { base: "4", md: "6" },
+        w: { base: "calc(100vw - 32px)", md: "550px" },
+        maxH: "85dvh",
+        overflowY: "auto",
+        css: {
           "&::-webkit-scrollbar": { width: "6px" },
           "&::-webkit-scrollbar-track": { background: "transparent" },
           "&::-webkit-scrollbar-thumb": { background: HEX.goldDark, borderRadius: "10px" },
           "&::-webkit-scrollbar-thumb:hover": { background: HEX.gold },
-        }}
-      >
-
-      <Flex justify="space-between" align="center" mb="6">
-        <Text
-          color={T.gold}
-          fontSize="15px"
-          fontWeight="700"
-          letterSpacing="3px"
-          textTransform="uppercase"
-          textShadow={`0 0 10px ${HEX.goldDark}`}
-        >
-          {t("ui.merchant.title")}
-        </Text>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onClose}
-          color={T.gold}
-          p="0"
-          minW="32px"
-          _hover={{ bg: "whiteAlpha.100", transform: "scale(1.1)" }}
-          transition="all 0.2s"
-        >
-          ✕
-        </Button>
-      </Flex>
+        },
+      }}
+    >
+      <PanelHeader title={t("ui.merchant.title")} onClose={onClose} />
 
       <Flex
         mb="6"
@@ -319,7 +286,6 @@ export function MerchantShop({
           </Button>
         </Box>
       )}
-    </Box>
-    </Box>
+    </ModalOverlay>
   );
 }

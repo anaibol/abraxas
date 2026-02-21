@@ -3,6 +3,7 @@ import {
   type ClassStats,
   DIRECTION_DELTA,
   Direction,
+  MathUtils,
   NPC_STATS,
   NPC_TYPES,
   NpcState,
@@ -46,7 +47,12 @@ export class NpcSpawner {
 
     const mapHasMerchant = map.npcs?.some((n) => n.type === "merchant");
     if (!mapHasMerchant && map.spawns.length > 0) {
-      this.spawnNpcAt("merchant" as NpcType, map, map.spawns[0].x + 2, map.spawns[0].y);
+      // Bug #38: Use findSafeSpawn instead of hardcoded offset that could land on a wall
+      const merchantSpot = findSafeSpawn(map.spawns[0].x + 2, map.spawns[0].y, map, this.spatial)
+        ?? findSafeSpawn(map.spawns[0].x, map.spawns[0].y, map, this.spatial);
+      if (merchantSpot) {
+        this.spawnNpcAt("merchant" as NpcType, map, merchantSpot.x, merchantSpot.y);
+      }
     }
   }
 
@@ -96,8 +102,11 @@ export class NpcSpawner {
     return npc;
   }
 
+  /**
+   * Shared NPC stat scaling formula — called from spawnNpcAt and levelUp.
    * @param resetHp When true (default for new spawns), set HP to maxHp. When false
-   *                (level-up mid-combat), scale HP proportionally to the new max. */
+   *                (level-up mid-combat), scale HP proportionally to the new max.
+   */
   recalcNpcStats(npc: Npc, resetHp = true): void {
     const stats = NPC_STATS[npc.npcType];
     if (!stats) return;
@@ -150,6 +159,8 @@ export class NpcSpawner {
       const rx = Math.floor(Math.random() * map.width);
       const ry = Math.floor(Math.random() * map.height);
       if (map.collision[ry]?.[rx] !== 0) continue;
+      // Bug #37: Don't spawn hostile NPCs inside safe zones
+      if (!ownerId && MathUtils.isInSafeZone(rx, ry, map.safeZones)) continue;
 
       const safe = findSafeSpawn(rx, ry, map, this.spatial);
       if (safe) {

@@ -41,12 +41,17 @@ export class MovementSystem {
     tick: number,
     roomId: string,
   ): MoveResult {
+    // Bug #12 fix: Defense-in-depth — dead entities cannot move
+    if (!entity.alive) return { success: false };
+
     const stats = entity.getStats();
     if (!stats) return { success: false };
 
     let speed = stats.speedTilesPerSecond;
     if (entity.isPlayer()) {
-      if (entity.speedOverride > 0) speed = entity.speedOverride;
+      // Bug #14 fix: Mount speed is additive, not a replacement.
+      // speedOverride is now used as a bonus on top of base speed.
+      if (entity.speedOverride > 0) speed += entity.speedOverride;
       // Apply mount speed bonus if a mount is equipped
       if (entity.equipMount?.itemId) {
         const mountBonus = ITEMS[entity.equipMount.itemId]?.stats?.speedBonus ?? 0;

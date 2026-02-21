@@ -1,7 +1,9 @@
 import { NPC_TYPES } from "@abraxas/shared";
-import { Box, HStack, SimpleGrid, Text } from "@chakra-ui/react";
+import { Box, SimpleGrid, Text } from "@chakra-ui/react";
 import { useState, useEffect, useRef } from "react";
 import { Button } from "./components/Button";
+import { ModalOverlay } from "./components/ModalOverlay";
+import { PanelHeader } from "./components/PanelHeader";
 import { T } from "./tokens";
 
 interface SummonOverlayProps {
@@ -31,41 +33,18 @@ export function SummonOverlay({ onSummon, onClose }: SummonOverlayProps) {
   );
 
   return (
-    <Box
-      pos="fixed"
-      inset="0"
-      bg="rgba(0,0,0,0.6)"
-      zIndex="400"
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      onClick={onClose}
+    <ModalOverlay
+      zIndex={400}
+      onClose={onClose}
+      panelProps={{
+        p: { base: "4", md: "6" },
+        w: { base: "calc(100vw - 32px)", md: "560px" },
+        maxH: "80dvh",
+        display: "flex",
+        flexDirection: "column",
+      }}
     >
-      <Box
-        layerStyle={T.panelGlass}
-        animation="popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards"
-        p={{ base: "4", md: "6" }}
-        w={{ base: "calc(100vw - 32px)", md: "560px" }}
-        maxH="80dvh"
-        display="flex"
-        flexDirection="column"
-        fontFamily={T.display}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <HStack justify="space-between" mb="4">
-          <Text fontSize="xl" fontWeight="bold" color={T.goldText} textShadow="1px 1px 0 #000">
-            Summon Creature
-          </Text>
-          <Button
-            size="sm"
-            variant="ghost"
-            color="#ff4444"
-            onClick={onClose}
-            _hover={{ bg: "rgba(255,0,0,0.2)" }}
-          >
-            ✕
-          </Button>
-        </HStack>
+        <PanelHeader title="Summon Creature" onClose={onClose} />
 
         <Box mb="4">
           <input
@@ -117,7 +96,6 @@ export function SummonOverlay({ onSummon, onClose }: SummonOverlayProps) {
             </Text>
           )}
         </Box>
-      </Box>
-    </Box>
+      </ModalOverlay>
   );
 }

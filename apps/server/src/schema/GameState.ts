@@ -5,7 +5,9 @@ import { Npc } from "./Npc";
 import { Player } from "./Player";
 
 export class GameState extends Schema {
-  @type({ map: Player }) players = new MapSchema<Player>();
+  @view()
+  @type({ map: Player })
+  players = new MapSchema<Player>();
   @view()
   @type({ map: Npc })
   npcs = new MapSchema<Npc>();

@@ -157,13 +157,14 @@ export class PlayerService {
   }
 
   public isPlayerTotallyNew(player: Player): boolean {
+    // Bug #64: Removed gold check — a player receiving gold from another system
+    // shouldn't prevent them from getting starting gear
     return (
       player.inventory.length === 0 &&
       !player.equipWeapon &&
       !player.equipArmor &&
       !player.equipShield &&
-      !player.equipHelmet &&
-      player.gold === 0
+      !player.equipHelmet
     );
   }
 

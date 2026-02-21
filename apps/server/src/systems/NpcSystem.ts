@@ -260,7 +260,8 @@ export class NpcSystem {
 
     const stats = NPC_STATS[npc.npcType];
     const dist = MathUtils.manhattanDist(npc.getPosition(), target.getPosition());
-    const maxLeash = npc.ownerId ? AGGRO_RANGE * 2 : AGGRO_RANGE * LEASH_MULTIPLIER;
+    const aggroRange = this.getAggroRange(npc);
+    const maxLeash = npc.ownerId ? aggroRange * 2 : aggroRange * LEASH_MULTIPLIER;
 
     if (dist > maxLeash) {
       npc.targetId = "";
@@ -315,7 +316,7 @@ export class NpcSystem {
     }
 
     const dist = MathUtils.manhattanDist(npc.getPosition(), threat.getPosition());
-    if (dist > AGGRO_RANGE) {
+    if (dist > this.getAggroRange(npc)) {
       npc.targetId = "";
       npc.state = npc.ownerId ? NpcState.FOLLOW : NpcState.RETURN;
       return;
@@ -389,10 +390,10 @@ export class NpcSystem {
     // Assist owner in combat
     if (tickCount % IDLE_SCAN_INTERVAL === 0) {
       // If owner has an active attack buffer/windup, attack their target
-      if (owner.bufferedAction?.type === "attack") {
+      if (owner.bufferedAction?.type === "attack" && owner.bufferedAction.targetTileX !== undefined) {
         const t = this.spatial.findEntityAtTile(
-          owner.bufferedAction.targetTileX!,
-          owner.bufferedAction.targetTileY!,
+          owner.bufferedAction.targetTileX,
+          owner.bufferedAction.targetTileY ?? 0,
         );
         if (t && t.alive && t.sessionId !== npc.sessionId) {
           npc.targetId = t.sessionId;
@@ -714,10 +715,10 @@ export class NpcSystem {
     for (const entry of this.rareRespawnQueue) {
       if (entry.rareRespawnAt === 0 || now < entry.rareRespawnAt) continue;
       entry.rareRespawnAt = 0; // Reset — will be set again on next death via handleDeath
-      const safe = this.spatial.isTileOccupied(entry.spawnX, entry.spawnY)
-        ? null
-        : { x: entry.spawnX, y: entry.spawnY };
-      const spawnTile = safe ?? { x: entry.spawnX, y: entry.spawnY };
+      // Bug #11 fix: Use findSafeSpawn to find a nearby walkable tile instead of
+      // falling back to the same occupied tile.
+      const spawnTile = findSafeSpawn(entry.spawnX, entry.spawnY, map, this.spatial)
+        ?? { x: entry.spawnX, y: entry.spawnY };
       this.spawner.spawnNpcAt(entry.npcType, map, spawnTile.x, spawnTile.y);
       broadcast(ServerMessageType.Notification, {
         message: `A ${entry.npcType.replaceAll("_", " ")} has been spotted in the world!`,

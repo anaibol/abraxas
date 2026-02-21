@@ -145,7 +145,7 @@ export class SoundManager {
     }
   }
 
-  /** Item 79: Sync live ambiance volume when setting changes. */
+  /** Sync live ambiance volume when setting changes. */
   private applyAmbianceVolume(vol: number) {
     if (!this.currentAmbiance) return;
     if (this.currentAmbiance instanceof Phaser.Sound.WebAudioSound ||
@@ -192,7 +192,7 @@ export class SoundManager {
       const baseSfxVol = BASE_SFX[key] ?? 0.5;
       const s = gameSettings.get();
 
-      // Item 79: UI sounds use uiVolume instead of sfxVolume
+      // UI sounds use uiVolume instead of sfxVolume
       const isUISfx = [
         AudioAssets.CLICK, AudioAssets.CLICK_HOVER,
         AudioAssets.CLICK_OPEN, AudioAssets.CLICK_CLOSE,
@@ -272,7 +272,6 @@ export class SoundManager {
   startAmbiance(key: typeof AudioAssets.AMBIANCE_WIND | typeof AudioAssets.AMBIANCE_CRICKETS) {
     if (this.currentAmbiance?.key === key) return;
     this.stopAmbiance();
-    // Item 79: use ambianceVolume setting
     const targetVol = gameSettings.get().ambianceVolume * 0.6;
     this.currentAmbiance = this.scene.sound.add(key, { loop: true, volume: 0 });
     this.currentAmbiance.play();

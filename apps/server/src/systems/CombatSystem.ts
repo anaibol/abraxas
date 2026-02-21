@@ -831,8 +831,8 @@ export class CombatSystem {
     if (attacker.sessionId === target.sessionId) return false;
     if (this.sameFaction(attacker, target)) return false;
     if (
-      this.isInSafeZone(attacker.tileX, attacker.tileY) ||
-      this.isInSafeZone(target.tileX, target.tileY)
+      MathUtils.isInSafeZone(attacker.tileX, attacker.tileY, this.map.safeZones) ||
+      MathUtils.isInSafeZone(target.tileX, target.tileY, this.map.safeZones)
     )
       return false;
     if (attacker.isPlayer() && target.isPlayer()) {
@@ -855,8 +855,4 @@ export class CombatSystem {
     }
   }
 
-  // B34: Delegate to shared MathUtils.isInSafeZone
-  private isInSafeZone(x: number, y: number): boolean {
-    return MathUtils.isInSafeZone(x, y, this.map.safeZones);
-  }
 }

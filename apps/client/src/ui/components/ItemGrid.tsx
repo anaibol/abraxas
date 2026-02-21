@@ -24,7 +24,7 @@ export function ItemGrid({ slots, selectedSlotIndex, onSelect, maxSlots = 24 }: 
       gap="2"
       bg="blackAlpha.400"
       p="3"
-      borderRadius="8px"
+      borderRadius="4px"
       border="1px solid"
       borderColor={T.border}
     >

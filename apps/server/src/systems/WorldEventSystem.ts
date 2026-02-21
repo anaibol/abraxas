@@ -56,9 +56,6 @@ export class WorldEventSystem {
     for (const schedule of this.schedules) {
       if (schedule.nextStartAt === 0) continue;
 
-      // ── Start event ─────────────────────────────────────────────────────────
-      // Bug #96: Removed the global `this.state.worldEventId === ""` check so multiple events can technically overlap (or at least one doesn't permanently block another from firing its wave)
-      // Actually, since the client only shows one event banner, we might still want to only SHOW one, but run them independently. Let's still gate the start but gracefully handle overlapping schedules by pushing back `nextStartAt` if blocked, rather than skipping.
       if (now >= schedule.nextStartAt) {
         if (this.state.worldEventId === "") {
           this.startEvent(schedule, map, now, broadcast);
@@ -128,7 +125,6 @@ export class WorldEventSystem {
     this.state.worldEventId = "";
     this.state.worldEventEndsAt = 0;
 
-    // Bug #98: Despawn any surviving event NPCs when the event ends
     for (const npcId of schedule.activeNpcIds) {
       const npc = this.npcSystem.getNpc(npcId);
       if (npc && npc.alive) {

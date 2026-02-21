@@ -89,17 +89,18 @@ export class EconomyHandlers {
     if (trade) {
       EconomyHandlers.sendToParticipants(ctx, trade, ServerMessageType.TradeStateUpdate, trade);
 
-      if (ctx.systems.trade.canComplete(trade)) {
-        ctx.systems.trade.executeTrade(trade, ctx.state.players).then((success) => {
-          if (success) {
-            EconomyHandlers.sendToParticipants(ctx, trade, ServerMessageType.TradeCompleted, {});
-          } else {
-            EconomyHandlers.sendToParticipants(ctx, trade, ServerMessageType.TradeCancelled, {
-              reason: "game.trade_failed_validation",
-            });
-          }
-        });
-      }
+      // Bug #1 fix: executeTrade now checks canComplete internally under the lock
+      // to prevent TOCTOU race between confirm and execute.
+      ctx.systems.trade.executeTrade(trade, ctx.state.players).then((result) => {
+        if (result === true) {
+          EconomyHandlers.sendToParticipants(ctx, trade, ServerMessageType.TradeCompleted, {});
+        } else if (result === false) {
+          EconomyHandlers.sendToParticipants(ctx, trade, ServerMessageType.TradeCancelled, {
+            reason: "game.trade_failed_validation",
+          });
+        }
+        // result === null means not both confirmed yet — no action needed
+      });
     }
   }
 

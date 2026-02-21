@@ -15,9 +15,23 @@ type FindSpawnFn = (x: number, y: number) => { x: number; y: number } | null;
  * returns the exact same coordinates (the spiral didn't escape the zone).
  * Returns null if every tile in the zone is occupied.
  */
-function pickSafeZoneTile(map: TileMap, findSpawn: FindSpawnFn): { x: number; y: number } | null {
+function pickSafeZoneTile(map: TileMap, findSpawn: FindSpawnFn, deathX?: number, deathY?: number): { x: number; y: number } | null {
   if (!map.safeZones?.length) return null;
-  const zone = map.safeZones[Math.floor(Math.random() * map.safeZones.length)];
+
+  // Bug #73: Pick the closest safe zone to the death position, not a random one
+  let zone = map.safeZones[0];
+  if (deathX !== undefined && deathY !== undefined && map.safeZones.length > 1) {
+    let bestDist = Infinity;
+    for (const sz of map.safeZones) {
+      const cx = sz.x + sz.w / 2;
+      const cy = sz.y + sz.h / 2;
+      const dist = Math.abs(cx - deathX) + Math.abs(cy - deathY);
+      if (dist < bestDist) {
+        bestDist = dist;
+        zone = sz;
+      }
+    }
+  }
 
   // Collect walkable tiles then Fisher-Yates shuffle in-place
   const tiles: { x: number; y: number }[] = [];
@@ -72,7 +86,7 @@ export class RespawnSystem {
       // 1. Try a safe zone tile (stays within zone bounds).
       // 2. Fall back to a regular spawn point only if the entire zone is full.
       const spawn =
-        (findSpawn && pickSafeZoneTile(map, findSpawn)) ??
+        (findSpawn && pickSafeZoneTile(map, findSpawn, player.tileX, player.tileY)) ??
         (() => {
           if (!map.spawns?.length) return null;
           const c = map.spawns[Math.floor(Math.random() * map.spawns.length)];

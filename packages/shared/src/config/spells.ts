@@ -31,6 +31,9 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     scalingRatio: 0.5,
     cooldownMs: 8000,
     durationMs: 2000,
+    effect: "stun",
+    damageSchool: DamageSchool.PHYSICAL,
+    rangeTiles: 1,
     fxId: 17,
   },
 
@@ -44,11 +47,14 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     scalingStat: StatType.STR,
     scalingRatio: 0.8,
     cooldownMs: 6000,
+    rangeTiles: 0,
     aoeRadius: 1,
+    effect: "damage",
+    damageSchool: DamageSchool.PHYSICAL,
     fxId: 14,
   },
 
-  /** R — AoE debuff: warcry that lowers enemy armor + STR in a wide radius */
+  /** R — AoE debuff: warcry that lowers enemy armor in a wide radius */
   battle_shout: {
     id: "battle_shout",
     key: "",
@@ -56,7 +62,9 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     manaCost: 25,
     cooldownMs: 15000,
     durationMs: 6000,
+    rangeTiles: 0,
     aoeRadius: 3,
+    effect: "debuff",
     buffStat: StatType.ARMOR,
     buffAmount: 12,
     fxId: 16,
@@ -124,6 +132,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     effect: "damage",
     damageSchool: DamageSchool.PHYSICAL,
     rangeTiles: 1,
+    executeThreshold: 0.2,
+    executeMultiplier: 3.0,
   },
   /** Cleave (Passive-ish Active): Hits 2 additional nearby targets */
   cleave: {
@@ -137,7 +147,7 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     scalingRatio: 0.7,
     cooldownMs: 4000,
     aoeRadius: 2,
-    effect: "aoe",
+    effect: "damage",
     damageSchool: DamageSchool.PHYSICAL,
     rangeTiles: 1,
   },
@@ -204,7 +214,10 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     scalingStat: StatType.INT,
     scalingRatio: 1.0,
     cooldownMs: 6000,
+    rangeTiles: FULL_VIEWPORT_RANGE,
     aoeRadius: 2,
+    effect: "damage",
+    damageSchool: DamageSchool.MAGICAL,
     fxId: 14,
   },
 
@@ -229,6 +242,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     manaCost: 30,
     cooldownMs: 20000,
     durationMs: 6000,
+    rangeTiles: 0,
+    effect: "buff",
     buffStat: StatType.ARMOR,
     buffAmount: 15,
     fxId: 18,
@@ -245,7 +260,10 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     scalingRatio: 0.5,
     cooldownMs: 12000,
     durationMs: 2000,
+    rangeTiles: 0,
     aoeRadius: 3,
+    effect: "stun",
+    damageSchool: DamageSchool.MAGICAL,
     fxId: 22,
   },
 
@@ -273,6 +291,10 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     scalingStat: StatType.INT,
     scalingRatio: 1.5,
     cooldownMs: 10000,
+    windupMs: 600,
+    rangeTiles: FULL_VIEWPORT_RANGE,
+    effect: "damage",
+    damageSchool: DamageSchool.MAGICAL,
     fxId: 3,
   },
 
@@ -288,7 +310,7 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     scalingRatio: 1.5,
     cooldownMs: 15000,
     windupMs: 800,
-    effect: "aoe",
+    effect: "damage",
     damageSchool: DamageSchool.MAGICAL,
     aoeRadius: 4,
   },
@@ -305,7 +327,7 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     scalingRatio: 1.2,
     cooldownMs: 8000,
     windupMs: 200,
-    effect: "aoe",
+    effect: "damage",
     damageSchool: DamageSchool.MAGICAL,
     aoeRadius: 3,
   },
@@ -385,7 +407,10 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     scalingStat: StatType.AGI,
     scalingRatio: 0.8,
     cooldownMs: 5000,
+    rangeTiles: FULL_VIEWPORT_RANGE,
     aoeRadius: 2,
+    effect: "damage",
+    damageSchool: DamageSchool.PHYSICAL,
     fxId: 14,
   },
 
@@ -411,6 +436,7 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     key: "",
     requiredLevel: 6,
     manaCost: 30,
+    rangeTiles: 0,
     cooldownMs: 20000,
     durationMs: 5000,
     buffStat: StatType.AGI,
@@ -428,6 +454,10 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     scalingStat: StatType.AGI,
     scalingRatio: 1.5,
     cooldownMs: 10000,
+    windupMs: 500,
+    rangeTiles: FULL_VIEWPORT_RANGE,
+    effect: "damage",
+    damageSchool: DamageSchool.PHYSICAL,
     fxId: 3,
   },
 
@@ -439,6 +469,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     manaCost: 20,
     cooldownMs: 15000,
     durationMs: 8000,
+    rangeTiles: FULL_VIEWPORT_RANGE,
+    effect: "debuff",
     buffStat: StatType.ARMOR,
     buffAmount: 10,
     fxId: 19,
@@ -464,7 +496,7 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     dotIntervalMs: 1000,
     dotDurationMs: 4000,
   },
-  /** Pet Bond: Increases AGI and STR by 5 for each active companion */
+  /** Pet Bond: Boosts AGI for buff duration */
   pet_bond: {
     id: "pet_bond",
     key: "",
@@ -473,7 +505,10 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     manaCost: 30,
     cooldownMs: 60000,
     durationMs: 30000,
+    rangeTiles: 0,
     effect: "buff",
+    buffStat: StatType.AGI,
+    buffAmount: 10,
   },
   /** Explosive Trap: Places a trap that explodes when an enemy steps on it (Summon logic) */
   explosive_trap: {
@@ -512,7 +547,7 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     scalingRatio: 1.2,
     cooldownMs: 15000,
     aoeRadius: 4,
-    effect: "aoe",
+    effect: "damage",
     damageSchool: DamageSchool.PHYSICAL,
   },
 
@@ -585,7 +620,7 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     fxId: 2,
   },
 
-  /** Y — Acid Splash: Ranged AoE bubbling green venom reduces armor and deals DoT */
+  /** Y — Acid Splash: Ranged AoE DoT that reduces armor */
   acid_splash: {
     id: "acid_splash",
     key: "",
@@ -597,13 +632,10 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     scalingRatio: 0.8,
     cooldownMs: 10000,
     windupMs: 350,
-    effect: "debuff",
+    effect: "dot",
     damageSchool: DamageSchool.MAGICAL,
     rangeTiles: FULL_VIEWPORT_RANGE,
     aoeRadius: 2,
-    buffStat: StatType.ARMOR,
-    buffAmount: 15,
-    durationMs: 6000,
     dotDamage: 8,
     dotIntervalMs: 1500,
     dotDurationMs: 6000,
@@ -641,7 +673,7 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     cooldownMs: 20000,
     durationMs: 8000,
     aoeRadius: 2,
-    effect: "aoe",
+    effect: "damage",
     buffStat: StatType.AGI,
     buffAmount: -10,
   },
@@ -657,7 +689,7 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     scalingRatio: 1.0,
     cooldownMs: 8000,
     aoeRadius: 3,
-    effect: "aoe",
+    effect: "damage",
   },
 
   // ── CLERIC ────────────────────────────────────────────────────────────────
@@ -672,6 +704,9 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     scalingStat: StatType.INT,
     scalingRatio: 0.6,
     cooldownMs: 3000,
+    rangeTiles: 1,
+    effect: "damage",
+    damageSchool: DamageSchool.MAGICAL,
     fxId: 23,
   },
 
@@ -685,6 +720,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     scalingStat: StatType.INT,
     scalingRatio: 1.0,
     cooldownMs: 4000,
+    rangeTiles: 0,
+    effect: "heal",
     fxId: 1,
   },
 
@@ -711,7 +748,10 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     scalingStat: StatType.INT,
     scalingRatio: 0.8,
     cooldownMs: 8000,
+    rangeTiles: 0,
     aoeRadius: 3,
+    effect: "aoe_heal",
+    damageSchool: DamageSchool.MAGICAL,
     fxId: 1,
   },
 
@@ -728,7 +768,7 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     fxId: 1,
   },
 
-  /** T — Curse: debuffs an enemy INT + armor, increasing all damage they take */
+  /** T — Curse: debuffs an enemy INT, increasing all magic damage they take */
   curse: {
     id: "curse",
     key: "",
@@ -736,6 +776,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     manaCost: 20,
     cooldownMs: 15000,
     durationMs: 10000,
+    rangeTiles: FULL_VIEWPORT_RANGE,
+    effect: "debuff",
     buffStat: StatType.INT,
     buffAmount: 15,
     fxId: 10,
@@ -751,6 +793,9 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     scalingStat: StatType.INT,
     scalingRatio: 1.2,
     cooldownMs: 6000,
+    rangeTiles: FULL_VIEWPORT_RANGE,
+    effect: "damage",
+    damageSchool: DamageSchool.MAGICAL,
     fxId: 23,
   },
 
@@ -783,6 +828,9 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     scalingStat: StatType.STR,
     scalingRatio: 0.8,
     cooldownMs: 4000,
+    rangeTiles: 1,
+    effect: "damage",
+    damageSchool: DamageSchool.MAGICAL,
     fxId: 23,
   },
 
@@ -793,6 +841,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     requiredLevel: 3,
     manaCost: 60,
     baseDamage: 80,
+    rangeTiles: 0,
+    effect: "heal",
     scalingStat: StatType.INT,
     scalingRatio: 1.0,
     cooldownMs: 30000,
@@ -809,7 +859,10 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     scalingStat: StatType.STR,
     scalingRatio: 0.6,
     cooldownMs: 8000,
+    rangeTiles: 0,
     aoeRadius: 2,
+    effect: "damage",
+    damageSchool: DamageSchool.MAGICAL,
     fxId: 34,
   },
 
@@ -821,6 +874,8 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     manaCost: 40,
     cooldownMs: 25000,
     durationMs: 8000,
+    rangeTiles: 0,
+    effect: "buff",
     buffStat: StatType.ARMOR,
     buffAmount: 18,
     fxId: 18,
@@ -836,6 +891,9 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     scalingStat: StatType.INT,
     scalingRatio: 1.0,
     cooldownMs: 5000,
+    rangeTiles: FULL_VIEWPORT_RANGE,
+    effect: "damage",
+    damageSchool: DamageSchool.MAGICAL,
     fxId: 23,
   },
 
@@ -961,7 +1019,7 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     scalingRatio: 0.6,
     cooldownMs: 5000,
     windupMs: 350,
-    effect: "aoe",
+    effect: "damage",
     damageSchool: DamageSchool.MAGICAL,
     key: "",
     // Radius 2 keeps the blast tight — appropriate for a low-tier goblin ability.
@@ -1026,7 +1084,7 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     key: "",
     fxId: 1,
   },
-  /** Druid: Spirit of the Bear — massive HP/Armor buff and appearance change */
+  /** Druid: Spirit of the Bear — massive Armor buff and appearance change */
   bear_form: {
     id: "bear_form",
     rangeTiles: 0,
@@ -1034,10 +1092,10 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
     cooldownMs: 30000,
     durationMs: 15000,
     effect: "buff",
-    buffStat: StatType.HP, // Primary buff is HP
-    buffAmount: 100, // +100 max HP (will need adjustment to scale better maybe)
+    buffStat: StatType.ARMOR,
+    buffAmount: 30,
     appearanceOverride: { bodyId: 75, headId: 0 },
-    fxId: 15, // Nature-y green burst
+    fxId: 15,
   },
   /** Druid: Spirit of the Cat — SPD/AGI buff and appearance change */
   cat_form: {

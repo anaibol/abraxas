@@ -171,9 +171,6 @@ export class DamageCalculator {
       if (hpRatio <= ability.executeThreshold) {
         damage *= ability.executeMultiplier ?? 2.0;
       }
-    } else if (ability.id === "execute") {
-      const hpRatio = target.hp / this.boosted(target, StatType.HP, now);
-      if (hpRatio < 0.2) damage *= 3;
     }
 
     result.damage = Math.max(1, Math.round(damage));

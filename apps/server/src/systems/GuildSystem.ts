@@ -145,6 +145,14 @@ export class GuildSystem {
       return;
     }
 
+    // Bug #15 fix: Prevent double-guild join if player joined another guild
+    // between receiving and accepting this invite.
+    if (player.guildId) {
+      HandlerUtils.sendError(client, "You are already in a guild.");
+      this.clearInvitation(client.sessionId);
+      return;
+    }
+
     try {
       await GuildService.addMember(guildId, player.dbId);
       player.guildId = guildId;

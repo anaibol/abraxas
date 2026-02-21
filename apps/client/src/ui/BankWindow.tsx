@@ -4,6 +4,8 @@ import { type ChangeEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAudio } from "../contexts/AudioContext";
 import { Button } from "./components/Button";
+import { ModalOverlay } from "./components/ModalOverlay";
+import { PanelHeader } from "./components/PanelHeader";
 import { HEX, T } from "./tokens";
 
 type BankSlot = {
@@ -116,53 +118,16 @@ export function BankWindow({
   };
 
   return (
-    <Box
-      pos="fixed"
-      inset="0"
-      zIndex="200"
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      bg="rgba(0,0,0,0.65)"
-      onClick={onClose}
+    <ModalOverlay
+      onClose={onClose}
+      panelProps={{
+        p: { base: "4", md: "8" },
+        w: { base: "calc(100vw - 24px)", md: "700px" },
+        maxH: "90dvh",
+        overflowY: "auto",
+      }}
     >
-      <Box
-        layerStyle={T.panelGlass}
-        animation="popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards"
-        p={{ base: "4", md: "8" }}
-        w={{ base: "calc(100vw - 24px)", md: "700px" }}
-        maxH="90dvh"
-        overflowY="auto"
-        fontFamily={T.display}
-        onClick={(e) => e.stopPropagation()}
-      >
-      <Flex justify="space-between" align="center" mb="8">
-        <Box>
-          <Text
-            color={T.gold}
-            fontSize="15px"
-            fontWeight="700"
-            letterSpacing="3px"
-            textTransform="uppercase"
-            textShadow={`0 0 15px ${HEX.goldDark}`}
-          >
-            {t("ui.bank.title")}
-          </Text>
-          <Text color={T.goldDark} fontSize="11px" letterSpacing="2px" textTransform="uppercase">
-            {t("ui.bank.subtitle")}
-          </Text>
-        </Box>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onClose}
-          color={T.gold}
-          fontSize="20px"
-          _hover={{ bg: "whiteAlpha.100", transform: "scale(1.2)" }}
-        >
-          ✕
-        </Button>
-      </Flex>
+      <PanelHeader title={t("ui.bank.title")} subtitle={t("ui.bank.subtitle")} onClose={onClose} />
 
       <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={{ base: "4", md: "8" }}>
         <Box>
@@ -293,7 +258,6 @@ export function BankWindow({
           </Flex>
         )}
       </Box>
-    </Box>
-    </Box>
+    </ModalOverlay>
   );
 }
