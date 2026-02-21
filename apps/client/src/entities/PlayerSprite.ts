@@ -253,7 +253,6 @@ export class PlayerSprite {
     if (this.headSprite) containerChildren.push(this.headSprite);
 
     this.container = scene.add.container(px, py, containerChildren);
-    this.container.setDepth(10);
 
     const uiChildren: Phaser.GameObjects.GameObject[] = [
       this.nameText,
@@ -261,7 +260,7 @@ export class PlayerSprite {
       this.speakingIcon,
     ];
     this.uiContainer = scene.add.container(px, py, uiChildren);
-    this.uiContainer.setDepth(50); // Ensure UI is always on top of players
+    this.uiContainer.setDepth(RENDER_LAYERS.UI_OVERLAYS); // Ensure UI is always on top of players
 
     this.container.setInteractive(
       new Phaser.Geom.Rectangle(-TILE_SIZE / 2, -TILE_SIZE, TILE_SIZE, TILE_SIZE * 2),

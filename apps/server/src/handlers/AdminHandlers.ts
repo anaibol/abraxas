@@ -1,4 +1,4 @@
-import { DIRECTION_DELTA, type NpcType, ServerMessageType } from "@abraxas/shared";
+import { DIRECTION_DELTA, type NpcType, ServerMessageType, MathUtils } from "@abraxas/shared";
 import type { Client } from "@colyseus/core";
 import { logger } from "../logger";
 import type { Player } from "../schema/Player";
@@ -113,7 +113,11 @@ export class AdminHandlers {
         const spawnX = player.tileX + delta.dx;
         const spawnY = player.tileY + delta.dy;
 
-        if (spawnX >= 0 && spawnX < ctx.map.width && spawnY >= 0 && spawnY < ctx.map.height) {
+        // We don't check for collision strictly for GM spawn, just bounds and walkable check if applicable, 
+        // though original just checked bounds. Let's use isTileWalkable to enforce not spawning in walls, or just bounds manually.
+        // The original code: spawnX >= 0 && spawnX < ctx.map.width && spawnY >= 0 && spawnY < ctx.map.height
+        // Using isTileWalkable provides an extra safety against spawning in walls.
+        if (MathUtils.isTileWalkable(spawnX, spawnY, ctx.map)) {
           ctx.systems.npc.spawnNpcAt(npcId, ctx.map, spawnX, spawnY);
           client.send(ServerMessageType.Notification, {
             message: `[GM] Spawned ${npcId} at ${spawnX},${spawnY}`,
@@ -200,13 +204,7 @@ export class AdminHandlers {
           HandlerUtils.sendError(client, "Usage: /gm tp <x> <y>");
           return;
         }
-        if (
-          x < 0 ||
-          x >= ctx.map.width ||
-          y < 0 ||
-          y >= ctx.map.height ||
-          ctx.map.collision[y]?.[x] === 1
-        ) {
+        if (!MathUtils.isTileWalkable(x, y, ctx.map)) {
           HandlerUtils.sendError(client, "gm.invalid_tile");
           return;
         }

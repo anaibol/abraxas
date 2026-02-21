@@ -662,9 +662,7 @@ export class GameScene extends Phaser.Scene {
         for (let dx = -range; dx <= range; dx++) {
           const tx = cx + dx;
           const ty = cy + dy;
-          if (tx < 0 || ty < 0 || tx >= this.welcome.mapWidth || ty >= this.welcome.mapHeight)
-            continue;
-          if (this.collisionGrid[ty]?.[tx] === 1) continue;
+          if (!MathUtils.isTileWalkable(tx, ty, { width: this.welcome.mapWidth, height: this.welcome.mapHeight, collision: this.collisionGrid })) continue;
           const px = tx * TILE_SIZE;
           const py = ty * TILE_SIZE;
           this.rangeOverlay.fillRect(px, py, TILE_SIZE, TILE_SIZE);
@@ -748,8 +746,7 @@ export class GameScene extends Phaser.Scene {
     const nextY = sprite.predictedTileY + delta.dy;
 
     const { mapWidth, mapHeight } = this.welcome;
-    if (nextX < 0 || nextX >= mapWidth || nextY < 0 || nextY >= mapHeight) return;
-    if (this.collisionGrid[nextY]?.[nextX] === 1) return;
+    if (!MathUtils.isTileWalkable(nextX, nextY, { width: mapWidth, height: mapHeight, collision: this.collisionGrid })) return;
 
     for (const [sid, p] of this.room.state.players) {
       if (sid === this.room.sessionId) continue;
