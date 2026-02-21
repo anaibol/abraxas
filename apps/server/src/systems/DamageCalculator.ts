@@ -43,6 +43,9 @@ export class DamageCalculator {
       [StatType.INT]: entity.intStat,
       [StatType.ARMOR]: entity.armor,
       [StatType.HP]: entity.maxHp,
+      [StatType.MANA]: entity.isPlayer() ? entity.maxMana : 0,
+      [StatType.ENERGY]: entity.isPlayer() ? entity.energy : 0,
+      [StatType.RAGE]: entity.isPlayer() ? entity.rage : 0,
     };
     return (bases[stat] ?? 0) + this.buffSystem.getBuffBonus(entity.sessionId, stat, now);
   }
