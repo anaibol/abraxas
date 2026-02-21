@@ -141,7 +141,7 @@ export class PersistenceService {
                 data: {
                   rarity: item.rarity ?? ItemRarity.COMMON,
                   nameOverride: item.nameOverride ?? null,
-                  affixesJson: (item.affixes as unknown as Prisma.InputJsonValue) ?? [],
+                  affixesJson: item.affixes ?? [],
                 },
               });
             }
@@ -165,7 +165,7 @@ export class PersistenceService {
                   boundToCharacterId: char.id,
                   rarity: item.rarity ?? ItemRarity.COMMON,
                   nameOverride: item.nameOverride,
-                  affixesJson: (item.affixes as unknown as Prisma.InputJsonValue) ?? [],
+                  affixesJson: item.affixes ?? [],
                 },
               });
 
@@ -274,7 +274,7 @@ export class PersistenceService {
             itemDefId: itemDef.id,
             rarity: (data.instanceData.rarity?.toUpperCase() || "COMMON") as PrismaItemRarity,
             nameOverride: data.instanceData.nameOverride,
-            affixesJson: data.instanceData.affixes as unknown as Prisma.JsonArray,
+            affixesJson: data.instanceData.affixes ?? [],
           },
         });
         itemInstanceId = instance.id;
