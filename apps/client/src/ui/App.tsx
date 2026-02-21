@@ -565,6 +565,14 @@ function AppContent() {
     }
   }, []);
 
+  const handleHoverSpell = useCallback((spellId: string | null, rangeTiles: number) => {
+    const game = phaserGameRef.current;
+    if (!game) return;
+    const scene = game.scene.getScene("GameScene");
+    if (!(scene instanceof GameScene)) return;
+    scene.setHoveredSpellRange(spellId, rangeTiles);
+  }, []);
+
   const mobileSpells = useMemo(() => {
     const classStats = CLASS_STATS[playerState.classType?.toUpperCase() ?? "WARRIOR"];
     if (!classStats) return [];
@@ -789,6 +797,7 @@ function AppContent() {
                 selectedItemId={selectedItemId}
                 onSelectItem={setSelectedItemId}
                 onSpellClick={handleSpellClick}
+                onHoverSpell={handleHoverSpell}
                 pendingSpellId={pendingSpellId}
                 onClose={isMobile ? () => setIsSidebarOpen(false) : undefined}
                 onSettings={() => setShowSettings(true)}

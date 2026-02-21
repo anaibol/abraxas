@@ -63,6 +63,9 @@ export class GameScene extends Phaser.Scene {
   private getCooldownProgress?: (spellId: string) => number;
   private isSpellOnCooldown?: (spellId: string) => boolean;
 
+  private hoveredSpellId: string | null = null;
+  private hoveredSpellRange: number = 0;
+
   public soundManager!: SoundManager;
   private audioManager: AudioManager;
   public onTargetingCancelled?: () => void;
@@ -548,7 +551,7 @@ export class GameScene extends Phaser.Scene {
     this.lightManager.update(time);
     this.mapBaker.update(time);
 
-    if (this.inputHandler.targeting) {
+    if (this.inputHandler.targeting || this.hoveredSpellId) {
       this.updateTargetingOverlay();
     }
 
@@ -636,6 +639,16 @@ export class GameScene extends Phaser.Scene {
     return true;
   }
 
+  setHoveredSpellRange(spellId: string | null, range: number) {
+    this.hoveredSpellId = spellId;
+    this.hoveredSpellRange = range;
+    if (!spellId) {
+      this.clearTargetingOverlay();
+    } else {
+      this.onEnterTargeting(range);
+    }
+  }
+
   private clearTargetingOverlay() {
     this.rangeOverlay?.destroy();
     this.rangeOverlay = null;
@@ -693,7 +706,9 @@ export class GameScene extends Phaser.Scene {
       const mouseTile = this.getMouseTile();
       this.tileHighlight.clear();
       
-      const targetingSpellId = this.inputHandler.targeting?.mode === "spell" ? this.inputHandler.targeting.spellId : null;
+      const targetingSpellId = this.inputHandler.targeting?.mode === "spell" 
+        ? this.inputHandler.targeting.spellId 
+        : this.hoveredSpellId;
       let isOnCooldown = false;
       let cdProgress = 0;
 

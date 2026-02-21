@@ -134,7 +134,7 @@ export function Sidebar({
         borderBottom="1px solid"
       >
         <Text textStyle={T.codeText} color={T.gold} fontWeight="700">
-          🪙 {state.gold}
+          💰 {state.gold}
         </Text>
         <WorldStatus />
       </Flex>
