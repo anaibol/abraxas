@@ -6,6 +6,7 @@
     "apps/*"
   ],
   "scripts": {
+    "dev": "bun run dev:server & bun run dev:client",
     "dev:server": "bun run --cwd apps/server dev",
     "dev:client": "bun run --cwd apps/client dev",
     "build": "bun run --cwd apps/client build",
@@ -15,7 +16,11 @@
     "check-translations": "node check_translations.js",
     "check:i18n": "node check_i18n.js",
     "check:assets": "bun check_assets.ts",
-    "cleanup:assets": "bun check_assets.ts --cleanup"
+    "check:audio": "bun check_assets.ts --audio",
+    "cleanup:assets": "bun check_assets.ts --cleanup",
+    "asset:master": "bun apps/client/scripts/asset-master.ts",
+    "asset:auto": "bun apps/client/scripts/asset-master.ts auto",
+    "asset:reconcile": "bun scripts/reconcile-assets.ts"
   },
   "devDependencies": {
     "@types/express": "^5.0.6"

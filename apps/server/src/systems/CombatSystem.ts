@@ -368,6 +368,9 @@ export class CombatSystem {
     const cd = caster.spellCooldowns.get(abilityId) || 0;
     if (now < cd) {
       logger.debug({ intent: "try_cast", result: "fail", reason: "cooldown", abilityId, now, cd });
+      if (caster.isPlayer()) {
+        sendToClient?.(ServerMessageType.Notification, { message: "game.spell_not_ready" });
+      }
       return false;
     }
 

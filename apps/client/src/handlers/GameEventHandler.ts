@@ -35,6 +35,7 @@ export class GameEventHandler {
     private onCameraShake?: (intensity: number, durationMs: number) => void,
     private onCameraFlash?: (r: number, g: number, b: number, durationMs: number) => void,
     private onCameraZoom?: (zoom: number, durationMs: number) => void,
+    private onHitStop?: (durationMs: number) => void,
     private lightManager?: LightManager,
   ) {}
 
@@ -201,8 +202,13 @@ export class GameEventHandler {
       const now = Date.now();
       if (now - this.lastShakeTime > this.SHAKE_COOLDOWN_MS) {
         this.lastShakeTime = now;
-        const intensity = Math.min(0.015, data.amount * 0.00005);
-        if (intensity > 0.002) this.maybeShake(intensity, 150);
+        const intensity = Math.min(0.035, data.amount * 0.0001);
+        if (intensity > 0.002) {
+          this.maybeShake(intensity, 200);
+          // Hard hits trigger a brief cinematic hit-stop
+          if (intensity > 0.015) this.onHitStop?.(45);
+          else if (intensity > 0.008) this.onHitStop?.(25);
+        }
       }
       this.onCameraFlash?.(255, 60, 60, 150);
       this.soundManager.playHit(opts);

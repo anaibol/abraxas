@@ -116,6 +116,16 @@ export class GameScene extends Phaser.Scene {
     this.onGMMapClick = onGMMapClick;
   }
 
+  
+  public triggerHitStop(durationMs: number) {
+    if (durationMs <= 0 || this.scene.isPaused("GameScene")) return;
+    
+    this.scene.pause("GameScene");
+    setTimeout(() => {
+      this.scene.resume("GameScene");
+    }, durationMs);
+  }
+
   create() {
     this.room = this.network.getRoom();
     this.welcome = this.network.getWelcomeData();
@@ -391,6 +401,7 @@ export class GameScene extends Phaser.Scene {
           this.cameraController.applyFixedZoom();
         });
       },
+      (durationMs: number) => this.triggerHitStop(durationMs),
       this.lightManager,
     );
     this.gameEventHandler.setupListeners();

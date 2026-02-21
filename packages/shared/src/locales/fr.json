@@ -117,7 +117,7 @@
     "invalid_target": "Cible invalide",
     "invalid_target_los": "Cible hors de vue",
     "invalid_target_out_of_range": "Cible hors de portée",
-    "invalid_target_dead_or_invalid": "Cible invalide ou morte",
+    "invalid_target_dead_or_invalid": "Cible invalide",
     "invalid_target_safe_zone": "Cible en zone sûre",
     "invalid_target_friendly_fire": "Cible alliée",
     "invalid_target_pvp_disabled": "Mode PvP désactivé",
