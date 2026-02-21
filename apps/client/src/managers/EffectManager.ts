@@ -714,26 +714,7 @@ export class EffectManager {
     });
   }
 
-  private fx_ice_bolt(px: number, py: number) {
-    this.ring(px, py, 0x44ddff, 4, 40, 330, 0.85, 3);
-    this.burst(px, py, TEX.SHARD, {
-      colors: [0x88eeff, 0x44aaff, 0xccffff, 0xffffff],
-      count: 22,
-      speed: { min: 80, max: 190 },
-      scale: { start: 0.7, end: 0 },
-      lifespan: { min: 300, max: 620 },
-      rotate: { start: 0, end: 360 },
-    });
-    this.burst(px, py, TEX.CIRCLE, {
-      colors: [0xffffff, 0xaaeeff],
-      count: 14,
-      speed: { min: 15, max: 55 },
-      scale: { start: 0.3, end: 0 },
-      lifespan: { min: 550, max: 950 },
-      gravityY: -28,
-      radius: 16,
-    });
-  }
+
 
   private fx_thunderstorm(px: number, py: number) {
     // Use the new hyper-realistic lightning effect for the main strike
@@ -777,64 +758,7 @@ export class EffectManager {
     });
   }
 
-  private fx_arcane_surge(px: number, py: number) {
-    this.flash(px, py, 0xff44ff, 60, 110);
-    this.ring(px, py, 0xcc44ff, 5, 58, 400, 0.9, 5);
-    this.scene.time.delayedCall(60, () => this.ring(px, py, 0xffffff, 5, 42, 310, 0.7, 2));
-    this.burst(px, py, TEX.CIRCLE, {
-      colors: [0xcc44ff, 0xff44cc, 0xff88ff, 0xffffff],
-      count: 55,
-      speed: { min: 100, max: 270 },
-      scale: { start: 0.85, end: 0 },
-      lifespan: { min: 450, max: 960 },
-      radius: 12,
-    });
-    this.burst(px, py, TEX.STAR, {
-      colors: [0xffffff, 0xcc88ff],
-      count: 16,
-      speed: { min: 30, max: 100 },
-      scale: { start: 0.6, end: 0 },
-      lifespan: { min: 600, max: 1100 },
-      rotate: { start: 0, end: 720 },
-      gravityY: -20,
-      radius: 26,
-    });
-  }
 
-  private fx_war_cry(px: number, py: number) {
-    this.ring(px, py, 0xff8800, 5, 85, 620, 0.8, 5);
-    this.scene.time.delayedCall(100, () => this.ring(px, py, 0xffcc00, 5, 60, 480, 0.5, 3));
-    this.burst(px, py, TEX.CIRCLE, {
-      colors: [0xff8800, 0xffcc00, 0xffff00],
-      count: 30,
-      speed: { min: 60, max: 145 },
-      scale: { start: 0.65, end: 0 },
-      lifespan: { min: 350, max: 720 },
-      radius: 22,
-    });
-  }
-
-  private fx_whirlwind(px: number, py: number) {
-    this.ring(px, py, 0x88ff44, 5, 55, 480, 0.7, 4);
-    this.burst(px, py, TEX.SHARD, {
-      colors: [0x88ff44, 0x44cc44, 0xffff44, 0xffffff],
-      count: 32,
-      speed: { min: 100, max: 240 },
-      scale: { start: 0.5, end: 0 },
-      lifespan: { min: 450, max: 820 },
-      rotate: { start: 0, end: 540 },
-      radius: 30,
-    });
-    this.burst(px, py, TEX.CIRCLE, {
-      colors: [0xccff88, 0xffffff],
-      count: 20,
-      speed: { min: 30, max: 80 },
-      scale: { start: 0.35, end: 0 },
-      lifespan: { min: 400, max: 760 },
-      gravityY: -25,
-      radius: 24,
-    });
-  }
 
   private fx_shield_bash(px: number, py: number) {
     this.flash(px, py, 0xaaccff, 24, 80);
@@ -865,43 +789,7 @@ export class EffectManager {
     });
   }
 
-  private fx_battle_shout(px: number, py: number) {
-    this.flash(px, py, 0xff8800, 65, 130);
-    this.ring(px, py, 0xff8800, 5, 105, 720, 0.78, 6);
-    this.scene.time.delayedCall(120, () => this.ring(px, py, 0xffcc00, 5, 85, 580, 0.5, 3));
-    this.burst(px, py, TEX.CIRCLE, {
-      colors: [0xff8800, 0xffcc00, 0xffff00],
-      count: 30,
-      speed: { min: 55, max: 135 },
-      scale: { start: 0.62, end: 0 },
-      lifespan: { min: 400, max: 720 },
-      radius: 26,
-    });
-  }
 
-  private fx_holy_nova(px: number, py: number) {
-    this.flash(px, py, 0xffffff, 55, 120);
-    this.ring(px, py, 0xffee44, 5, 94, 720, 0.9, 6);
-    this.scene.time.delayedCall(100, () => this.ring(px, py, 0xffcc88, 5, 60, 475, 0.5, 2));
-    this.burst(px, py, TEX.STAR, {
-      colors: [0xffffff, 0xffffaa, 0xffcc44],
-      count: 36,
-      speed: { min: 80, max: 230 },
-      scale: { start: 0.7, end: 0 },
-      lifespan: { min: 500, max: 1000 },
-      rotate: { start: 0, end: 540 },
-      radius: 12,
-    });
-    this.burst(px, py, TEX.CIRCLE, {
-      colors: [0xffffff, 0xffffa0],
-      count: 20,
-      speed: { min: 20, max: 65 },
-      scale: { start: 0.5, end: 0 },
-      lifespan: { min: 700, max: 1300 },
-      gravityY: -68,
-      radius: 58,
-    });
-  }
 
   private fx_heal(px: number, py: number) {
     this.flash(px, py, 0x44ff88, 28, 100);

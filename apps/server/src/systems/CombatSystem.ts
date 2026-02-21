@@ -58,6 +58,8 @@ export class CombatSystem {
   private activeWindups = new Map<string, WindupAction>();
   /** Tracks when each entity last started an auto-attack, for attackCooldownMs enforcement. */
   private lastMeleeMs = new Map<string, number>();
+  /** B22: Only entities with pending buffered actions — avoids iterating all entities per tick. */
+  private entitiesWithBufferedAction = new Set<string>();
 
   /** Helper to interrupt an entity's cast if they take damage. */
   private interruptCast(sessionId: string, broadcast: BroadcastFn) {
@@ -96,6 +98,8 @@ export class CombatSystem {
   /** Stores a buffered action and returns false (caller should propagate). */
   private bufferAction(entity: Entity, action: Entity["bufferedAction"]): false {
     entity.bufferedAction = action;
+    // B22: Track entities with buffered actions for efficient iteration
+    this.entitiesWithBufferedAction.add(entity.sessionId);
     return false;
   }
 
@@ -133,20 +137,20 @@ export class CombatSystem {
     _onDeath: (entity: Entity, killerSessionId?: string) => void,
     _onSummon?: (caster: Entity, abilityId: string, x: number, y: number) => void,
   ) {
-    const entities = [...this.state.players.values(), ...this.state.npcs.values()];
-    for (const entity of entities) {
-      if (!entity.alive || !entity.bufferedAction) {
+    // B22: Only iterate entities that actually have a buffered action.
+    for (const sessionId of this.entitiesWithBufferedAction) {
+      const entity = this.spatial.findEntityBySessionId(sessionId);
+      if (!entity || !entity.alive || !entity.bufferedAction) {
+        this.entitiesWithBufferedAction.delete(sessionId);
         continue;
       }
-
-      const sessionId = entity.sessionId;
 
       // Skip if still in windup (unless we want to allow overwriting, but current logic is wait)
       if (this.activeWindups.has(sessionId)) continue;
 
-      // Buffer expires if too old
       if (now - entity.bufferedAction.bufferedAt > BUFFER_WINDOW_MS) {
         entity.bufferedAction = null;
+        this.entitiesWithBufferedAction.delete(sessionId);
         continue;
       }
 
@@ -164,6 +168,7 @@ export class CombatSystem {
           )
         ) {
           entity.bufferedAction = null;
+          this.entitiesWithBufferedAction.delete(sessionId);
         }
       } else if (entity.bufferedAction.type === "cast" && entity.bufferedAction.spellId) {
         if (
@@ -178,6 +183,7 @@ export class CombatSystem {
           )
         ) {
           entity.bufferedAction = null;
+          this.entitiesWithBufferedAction.delete(sessionId);
         }
       }
     }

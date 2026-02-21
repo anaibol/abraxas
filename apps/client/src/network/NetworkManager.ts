@@ -202,8 +202,20 @@ export class NetworkManager {
     );
 
     await welcomePromise;
+
+    // Detect unintentional disconnects (server restart, network failure).
+    // Code >= 4000 means the client called room.leave() intentionally.
+    this.room.onLeave((code) => {
+      if (code < 4000 && this.onDisconnect) {
+        this.onDisconnect(code);
+      }
+    });
+
     return this.room;
   }
+
+  /** Fired when the connection drops unexpectedly (server restart, network loss). */
+  public onDisconnect: ((code: number) => void) | null = null;
 
   public onAudioData: ((sessionId: string, data: ArrayBuffer) => void) | null = null;
 

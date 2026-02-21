@@ -73,6 +73,7 @@ export function App() {
   const [phase, setPhase] = useState<"lobby" | "game">("lobby");
   const [connecting, setConnecting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [connectionLost, setConnectionLost] = useState(false);
   const [playerState, setPlayerState] = useState<PlayerState>({
     name: getRandomName(),
     classType: "WARRIOR",
@@ -359,6 +360,22 @@ export function App() {
         network.onWorldEventEnd = () => {
           setWorldEvent(null);
         };
+        network.onDisconnect = () => {
+          setConnectionLost(true);
+          // Auto-redirect to lobby after a brief overlay
+          setTimeout(() => {
+            networkRef.current = null;
+            phaserGameRef.current?.destroy(true);
+            phaserGameRef.current = null;
+            roomRef.current = null;
+            setRoom(null);
+            setPhase("lobby");
+            setConnectionLost(false);
+            setConnecting(false);
+            setIsLoading(false);
+          }, 2000);
+        };
+
         network.onWorldEventProgress = (data) => {
           setWorldEvent((prev) =>
             prev ? { ...prev, npcsDead: data.npcsDead } : null,
@@ -553,6 +570,25 @@ export function App() {
           </ToastRoot>
         )}
       </Toaster>
+      {connectionLost && (
+        <Flex
+          pos="fixed"
+          inset="0"
+          zIndex={9999}
+          bg="rgba(0, 0, 0, 0.85)"
+          align="center"
+          justify="center"
+          direction="column"
+          gap="4"
+        >
+          <Box fontSize="2xl" fontWeight="bold" color="#ff6655">
+            {t("game.connection_lost", "Connection Lost")}
+          </Box>
+          <Box fontSize="md" color="whiteAlpha.700">
+            {t("game.reconnecting", "Returning to lobby...")}
+          </Box>
+        </Flex>
+      )}
       {phase === "lobby" && <Lobby onJoin={handleJoin} connecting={connecting} />}
       {phase === "game" && mapData && (
         <>
