@@ -65,7 +65,7 @@ export class SpriteManager {
       }
     }
     sprite.setFacing(player.facing);
-    sprite.updateHpMana(player.hp, player.mana ?? 0);
+    sprite.updateHp(player.hp);
     sprite.updateAppearance(player.overrideBodyId ?? 0, player.overrideHeadId ?? 0);
     sprite.updateEquipment(
       player.equipWeaponId,
@@ -129,7 +129,7 @@ export class SpriteManager {
       this.scene.soundManager.playStep({ sourceX: sprite.renderX, sourceY: sprite.renderY });
     }
     sprite.setFacing(npc.facing);
-    sprite.updateHpMana(npc.hp, 0);
+    sprite.updateHp(npc.hp);
     sprite.updateAppearance(npc.overrideBodyId ?? 0, npc.overrideHeadId ?? 0);
     this.updateAlpha(sprite, npc);
   }

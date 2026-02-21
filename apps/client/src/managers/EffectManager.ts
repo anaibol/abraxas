@@ -614,7 +614,7 @@ export class EffectManager {
   public drawDecal(px: number, py: number, textureName: string, durationMs: number, scale: number = 1.0, alpha: number = 0.8) {
     this.ensureTextures();
     const decal = this.scene.add.sprite(px, py, textureName);
-    decal.setDepth(0); // Ground layer
+    decal.setDepth(RENDER_LAYERS.DECALS); // Ground layer
     decal.setOrigin(0.5, 0.5);
     decal.setScale(scale);
     decal.setAlpha(alpha);
@@ -716,7 +716,7 @@ export class EffectManager {
     if (cfg.onDeath) emitterCfg.deathCallback = cfg.onDeath;
 
     const emitter = this.scene.add.particles(px, py, textureKey, emitterCfg);
-    emitter.setDepth(15);
+    emitter.setDepth(RENDER_LAYERS.PARTICLES);
     emitter.explode(scaledCount);
     this.scene.time.delayedCall(cfg.lifespan.max + (cfg.hold ?? 0) + 120, () => emitter.destroy());
   }
@@ -738,7 +738,7 @@ export class EffectManager {
         frequency: 500,
         blendMode: Phaser.BlendModes.ADD,
       })
-      .setDepth(1);
+      .setDepth(RENDER_LAYERS.DECALS);
 
     // Magical stars floating upwards continuously
     const stars = this.scene.add
@@ -756,7 +756,7 @@ export class EffectManager {
         y: { min: 0, max: 8 },
         blendMode: Phaser.BlendModes.ADD,
       })
-      .setDepth(2);
+      .setDepth(RENDER_LAYERS.DECALS + 1);
 
     this.teleportEmitters.push(aura, stars);
   }
@@ -776,7 +776,7 @@ export class EffectManager {
     lineWidth = 3,
   ) {
     const gfx = this.scene.add.graphics();
-    gfx.setDepth(14);
+    gfx.setDepth(RENDER_LAYERS.TARGETING_TILE);
     const proxy = { t: 0 };
     this.scene.tweens.add({
       targets: proxy,
@@ -797,7 +797,7 @@ export class EffectManager {
   /** Instant bright circle flash that quickly fades. */
   private flash(px: number, py: number, color: number, size: number, durationMs: number) {
     const gfx = this.scene.add.graphics();
-    gfx.setDepth(16);
+    gfx.setDepth(RENDER_LAYERS.PARTICLES);
     gfx.setBlendMode(Phaser.BlendModes.ADD);
     gfx.fillStyle(color, 0.9);
     gfx.fillCircle(px, py, size);
@@ -824,7 +824,7 @@ export class EffectManager {
     branch = false,
   ) {
     const gfx = this.scene.add.graphics();
-    gfx.setDepth(16);
+    gfx.setDepth(RENDER_LAYERS.PARTICLES);
     gfx.setBlendMode(Phaser.BlendModes.ADD);
 
     const pts: Phaser.Math.Vector2[] = [new Phaser.Math.Vector2(x, y - height)];
@@ -1097,7 +1097,7 @@ export class EffectManager {
         
         // Custom horizontal/diagonal bolt
         const gfx = this.scene.add.graphics();
-        gfx.setDepth(16);
+        gfx.setDepth(RENDER_LAYERS.PROJECTILES);
         gfx.setBlendMode(Phaser.BlendModes.ADD);
 
         const pts: Phaser.Math.Vector2[] = [new Phaser.Math.Vector2(sx, sy)];
@@ -1599,7 +1599,7 @@ export class EffectManager {
         resolution: getGameTextResolution(),
       })
       .setOrigin(0.5)
-      .setDepth(20);
+      .setDepth(RENDER_LAYERS.UI_OVERLAYS);
 
     this.scene.tweens.add({
       targets: text,
@@ -1681,7 +1681,7 @@ export class EffectManager {
     const angle = Phaser.Math.Angle.Between(sx, sy, tx, ty);
     
     const arrow = this.scene.add.image(sx, sy, TEX.ARROW);
-    arrow.setDepth(16);
+    arrow.setDepth(RENDER_LAYERS.PROJECTILES);
     arrow.setRotation(angle);
 
     const proxy = { t: 0 };
@@ -1730,7 +1730,7 @@ export class EffectManager {
 
     // Glowing orb that travels source → target (larger, multi-layer glow)
     const orb = this.scene.add.graphics();
-    orb.setDepth(16);
+    orb.setDepth(RENDER_LAYERS.PROJECTILES);
     orb.setBlendMode(Phaser.BlendModes.ADD);
 
     // Soft outer halo + bright core
@@ -1754,7 +1754,7 @@ export class EffectManager {
       alpha: { start: 0.9, end: 0 },
       frequency: 22,
     });
-    trail.setDepth(15);
+    trail.setDepth(RENDER_LAYERS.PROJECTILES - 1);
 
     const proxy = { t: 0 };
     this.scene.tweens.add({
@@ -2092,7 +2092,7 @@ export class EffectManager {
     const startY = py - 600;
 
     const orb = this.scene.add.graphics();
-    orb.setDepth(16);
+    orb.setDepth(RENDER_LAYERS.PROJECTILES);
     orb.setBlendMode(Phaser.BlendModes.ADD);
 
     const orbSize = 15;
@@ -2115,7 +2115,7 @@ export class EffectManager {
       alpha: { start: 0.8, end: 0 },
       frequency: 20,
     });
-    trail.setDepth(15);
+    trail.setDepth(RENDER_LAYERS.PROJECTILES - 1);
 
     const proxy = { t: 0 };
     this.scene.tweens.add({
@@ -2189,7 +2189,7 @@ export class EffectManager {
       blendMode: Phaser.BlendModes.ADD,
       alpha: { start: 0.6, end: 0 },
     });
-    emitter.setDepth(15);
+    emitter.setDepth(RENDER_LAYERS.PARTICLES);
     
     // Splash impacts on the ground
     const splashEmitter = this.scene.add.particles(px, py, TEX.CIRCLE, {
@@ -2204,7 +2204,7 @@ export class EffectManager {
       frequency: 40,
       blendMode: Phaser.BlendModes.ADD,
     });
-    splashEmitter.setDepth(14);
+    splashEmitter.setDepth(RENDER_LAYERS.PARTICLES - 1);
 
     // Stop emitting after duration
     this.scene.time.delayedCall(1500, () => {

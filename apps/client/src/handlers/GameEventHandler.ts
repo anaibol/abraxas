@@ -207,7 +207,7 @@ export class GameEventHandler {
     this.effectManager.showDamage(data.targetSessionId, data.amount, data.type);
     const sprite = this.spriteManager.getSprite(data.targetSessionId);
     if (sprite) {
-      sprite.updateHpMana(data.hpAfter, 0);
+      sprite.updateHp(data.hpAfter);
     }
     const opts = sprite ? { sourceX: sprite.renderX, sourceY: sprite.renderY } : undefined;
 

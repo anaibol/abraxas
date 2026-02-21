@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { RENDER_LAYERS } from "../utils/depth";
 
 export type WeatherType = "clear" | "rain" | "snow" | "fog" | "sandstorm" | "storm";
 
@@ -67,7 +68,7 @@ export class WeatherManager {
       blendMode: Phaser.BlendModes.ADD,
     });
     this.rainEmitter.setScrollFactor(0);
-    this.rainEmitter.setDepth(1000);
+    this.rainEmitter.setDepth(RENDER_LAYERS.WEATHER_FOG);
   }
 
   private startSnow() {
@@ -92,7 +93,7 @@ export class WeatherManager {
       frequency: 30,
     });
     this.snowEmitter.setScrollFactor(0);
-    this.snowEmitter.setDepth(1000);
+    this.snowEmitter.setDepth(RENDER_LAYERS.WEATHER_FOG);
   }
 
   /** Item 88 – Fog: large, slow-drifting translucent cloud particles. */
@@ -122,7 +123,7 @@ export class WeatherManager {
       blendMode: Phaser.BlendModes.NORMAL,
     });
     this.fogEmitter.setScrollFactor(0);
-    this.fogEmitter.setDepth(999);
+    this.fogEmitter.setDepth(RENDER_LAYERS.WEATHER_FOG);
   }
 
   /** Item 88 – Sandstorm: fast horizontal grit/dust particles. */
@@ -147,7 +148,7 @@ export class WeatherManager {
       blendMode: Phaser.BlendModes.ADD,
     });
     this.sandEmitter.setScrollFactor(0);
-    this.sandEmitter.setDepth(1000);
+    this.sandEmitter.setDepth(RENDER_LAYERS.WEATHER_FOG);
   }
 
   /** Item 88 – Storm: rain + random camera lightning flashes. */

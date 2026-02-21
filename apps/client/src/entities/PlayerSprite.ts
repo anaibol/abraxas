@@ -1106,7 +1106,7 @@ export class PlayerSprite {
     }
   }
 
-  updateHpMana(hp: number, _mana: number) {
+  updateHp(hp: number) {
     if (hp === undefined || this.maxHp === undefined || this.maxHp === 0) return;
     const targetRatio = Math.min(1, Math.max(0, hp / this.maxHp));
 
