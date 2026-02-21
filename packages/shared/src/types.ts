@@ -76,7 +76,7 @@ export type ClassType =
   | "DRUID";
 export type BarkTrigger = "aggro" | "low_hp" | "kill" | "idle";
 
-export type NpcType =
+export type NpcId =
   | "orc"
   | "skeleton"
   | "goblin"
@@ -180,7 +180,7 @@ export interface TileMap {
   safeZones?: { x: number; y: number; w: number; h: number }[];
   npcCount: number;
   merchantCount?: number;
-  npcs?: { type: NpcType; x: number; y: number }[];
+  npcs?: { id: NpcId; x: number; y: number }[];
   warps?: Warp[];
   waypoints?: FastTravelWaypoint[];
 }
@@ -232,7 +232,7 @@ export interface NpcStats extends CharStats {
   /**
    * Which NPC type is spawned when this NPC uses a "summon" ability.
    */
-  summonType?: NpcType;
+  summonType?: NpcId;
   /** Minimum recommended player level for this NPC's difficulty bracket. */
   minLevel?: number;
   /** Maximum recommended player level for this NPC's difficulty bracket. */
@@ -422,8 +422,8 @@ export interface PlayerEntityState extends BaseEntityState {
 
 export interface NpcEntityState extends BaseEntityState {
 
-  /** The NPC species (e.g. "orc", "wolf") — maps to Npc.npcType on the server */
-  npcType: NpcType;
+  /** The NPC species (e.g. "orc", "wolf") — maps to Npc.npcId on the server */
+  npcId: NpcId;
   classType?: never;
 }
 
@@ -644,7 +644,6 @@ export type ServerMessages = {
   [ServerMessageType.QuestAvailable]: { npcId: string; questIds: string[] };
   [ServerMessageType.OpenDialogue]: {
     npcId: string;
-    npcType: string;
     text: string;
     options: { text: string; action: string; data?: unknown }[];
   };
@@ -869,7 +868,7 @@ export interface WorldEvent {
   /** Broadcast description when the event begins. */
   description: string;
   /** NPC types + count to spawn when the event starts. */
-  spawns: { npcType: NpcType; count: number }[];
+  spawns: { npcId: NpcId; count: number }[];
   /** How long the event lasts (ms). */
   durationMs: number;
   /** How often the event recurs (ms between event ends and next start). */

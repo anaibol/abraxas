@@ -141,6 +141,13 @@ export class SpriteManager {
     }
   }
 
+  /** Update drop-shadow appearance on every entity based on time of day. */
+  updateShadows(timeOfDay: number) {
+    for (const [, sprite] of this.sprites) {
+      sprite.updateShadow(timeOfDay);
+    }
+  }
+
   getSprite(sessionId: string): PlayerSprite | undefined {
     return this.sprites.get(sessionId);
   }

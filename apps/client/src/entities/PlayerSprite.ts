@@ -44,6 +44,7 @@ export class PlayerSprite {
   private nameText: Phaser.GameObjects.Text;
   private hpBarGfx: Phaser.GameObjects.Graphics;
   private speakingIcon: Phaser.GameObjects.Text;
+  private shadowGfx!: Phaser.GameObjects.Graphics;
   private chatBubbleText: Phaser.GameObjects.Text | null = null;
 
   public targetX: number;
@@ -222,7 +223,13 @@ export class PlayerSprite {
     this.speakingIcon.setOrigin(0.5, 1);
     this.speakingIcon.setVisible(false);
 
+    // ── Drop shadow ellipse beneath the entity ──
+    this.shadowGfx = scene.add.graphics();
+    this.shadowGfx.setDepth(0);
+    this.drawShadow(0.35, 0);
+
     const containerChildren: Phaser.GameObjects.GameObject[] = [
+      this.shadowGfx,
       this.bodySprite,
       this.nameText,
       this.hpBarGfx,
@@ -244,6 +251,60 @@ export class PlayerSprite {
       this.container.on("pointerout", () => this.nameText.setVisible(false));
     }
     this.resolver.ensureAnimation(scene, bodyGrhId, "body");
+  }
+
+  /**
+   * Redraws the shadow ellipse with the given opacity and X offset.
+   * Called once at construction and then per-frame via updateShadow().
+   */
+  private drawShadow(alpha: number, offsetX: number) {
+    this.shadowGfx.clear();
+    this.shadowGfx.fillStyle(0x000000, alpha);
+    // Ellipse at the character's feet
+    this.shadowGfx.fillEllipse(offsetX, TILE_SIZE / 2, this.bodyWidth * 0.7, 8);
+  }
+
+  /**
+   * Update shadow appearance based on time of day (0-24).
+   * - Night: very faint shadow (ambient light is even, no strong sun).
+   * - Dawn/Dusk: medium shadow, offset to simulate low sun angle.
+   * - Midday: strong, centred shadow (sun directly overhead).
+   */
+  updateShadow(timeOfDay: number) {
+    let alpha: number;
+    let offsetX: number;
+
+    if (timeOfDay < 5 || timeOfDay > 20) {
+      // Night — very faint diffuse shadow
+      alpha = 0.1;
+      offsetX = 0;
+    } else if (timeOfDay >= 5 && timeOfDay < 8) {
+      // Dawn — sun rising in the east, shadow cast to the west (left)
+      const t = (timeOfDay - 5) / 3; // 0→1
+      alpha = 0.1 + t * 0.25;
+      offsetX = -6 * (1 - t);
+    } else if (timeOfDay >= 8 && timeOfDay < 12) {
+      // Morning — shadow shortens toward noon
+      const t = (timeOfDay - 8) / 4; // 0→1
+      alpha = 0.35 + t * 0.1;
+      offsetX = -3 * (1 - t);
+    } else if (timeOfDay >= 12 && timeOfDay < 14) {
+      // Midday — sun overhead, strong centred shadow
+      alpha = 0.45;
+      offsetX = 0;
+    } else if (timeOfDay >= 14 && timeOfDay < 17) {
+      // Afternoon — shadow lengthens to the east (right)
+      const t = (timeOfDay - 14) / 3; // 0→1
+      alpha = 0.45 - t * 0.1;
+      offsetX = 3 * t;
+    } else {
+      // Dusk (17-20) — long shadow to the east, fading
+      const t = (timeOfDay - 17) / 3; // 0→1
+      alpha = 0.35 - t * 0.25;
+      offsetX = 6 * (1 - t);
+    }
+
+    this.drawShadow(alpha, offsetX);
   }
 
   private updateHeadPosition() {
