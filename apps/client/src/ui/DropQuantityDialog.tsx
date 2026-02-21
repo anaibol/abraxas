@@ -34,7 +34,7 @@ export function DropQuantityDialog({
     >
       <Box
         bg={T.bg}
-        border="2px solid"
+        border="1px solid"
         borderColor={T.border}
         borderRadius="4px"
         p="5"

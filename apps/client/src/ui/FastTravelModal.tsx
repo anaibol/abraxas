@@ -1,5 +1,9 @@
 import { type FC } from "react";
 import type { FastTravelWaypoint } from "@abraxas/shared";
+import { Box, Flex, Text, VStack } from "@chakra-ui/react";
+import { useTranslation } from "react-i18next";
+import { useAudio } from "../contexts/AudioContext";
+import { HEX, T } from "./tokens";
 
 interface FastTravelModalProps {
   waypoints: FastTravelWaypoint[];
@@ -14,159 +18,131 @@ export const FastTravelModal: FC<FastTravelModalProps> = ({
   onTravel,
   onClose,
 }) => {
+  const { t } = useTranslation();
+  const { playUIClick, playUIHover } = useAudio();
+
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 70,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "rgba(0,0,0,0.65)",
-      }}
+    <Flex
+      pos="fixed"
+      inset="0"
+      zIndex={70}
+      align="center"
+      justify="center"
+      bg="rgba(0,0,0,0.65)"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div
-        style={{
-          background: "linear-gradient(160deg, rgba(10,8,22,0.98) 0%, rgba(18,12,40,0.97) 100%)",
-          border: "1px solid rgba(120,90,200,0.5)",
-          borderRadius: "14px",
-          padding: "28px 32px",
-          minWidth: "320px",
-          maxWidth: "420px",
-          boxShadow: "0 0 40px rgba(100,70,200,0.25)",
-        }}
+      <Box
+        bg={T.bg}
+        border="1px solid"
+        borderColor={T.border}
+        borderRadius="4px"
+        p="7"
+        minW="320px"
+        maxW="420px"
+        boxShadow="0 8px 48px rgba(0,0,0,0.85)"
+        fontFamily={T.display}
+        animation="popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards"
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: "20px",
-          }}
-        >
-          <div>
-            <div
-              style={{
-                color: "rgba(180, 150, 255, 0.95)",
-                fontWeight: "bold",
-                fontSize: "16px",
-                letterSpacing: "2px",
-                textShadow: "0 0 8px rgba(150,100,255,0.5)",
-              }}
+        <Flex align="center" justify="space-between" mb="5">
+          <Box>
+            <Text
+              color={T.gold}
+              fontWeight="bold"
+              fontSize="15px"
+              letterSpacing="3px"
+              textTransform="uppercase"
+              textShadow={`0 0 8px ${HEX.goldDark}`}
             >
-              ✦ FAST TRAVEL
-            </div>
-            <div
-              style={{
-                color: "rgba(150,130,180,0.7)",
-                fontSize: "11px",
-                marginTop: "2px",
-              }}
-            >
+              ✦ {t("fast_travel.title", "Fast Travel")}
+            </Text>
+            <Text color={T.goldDark} fontSize="11px" mt="0.5">
               {currentMapName}
-            </div>
-          </div>
-          <button
+            </Text>
+          </Box>
+          <Box
+            as="button"
+            bg="transparent"
+            border="none"
+            color={T.goldDark}
+            fontSize="20px"
+            cursor="pointer"
+            p="1"
+            lineHeight="1"
+            _hover={{ color: T.gold }}
             onClick={onClose}
-            style={{
-              background: "none",
-              border: "none",
-              color: "rgba(180,150,255,0.6)",
-              fontSize: "20px",
-              cursor: "pointer",
-              padding: "4px 8px",
-              lineHeight: 1,
-            }}
           >
             ✕
-          </button>
-        </div>
+          </Box>
+        </Flex>
 
         {/* Waypoint list */}
         {waypoints.length === 0 ? (
-          <div
-            style={{
-              color: "rgba(180,150,255,0.5)",
-              textAlign: "center",
-              fontSize: "13px",
-              padding: "16px 0",
-              fontStyle: "italic",
-            }}
+          <Text
+            color={T.goldDark}
+            textAlign="center"
+            fontSize="13px"
+            py="4"
+            fontStyle="italic"
           >
-            No waypoints discovered on this map.
-          </div>
+            {t("fast_travel.no_waypoints", "No waypoints discovered on this map.")}
+          </Text>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <VStack align="stretch" gap="2.5">
             {waypoints.map((wp) => (
-              <button
+              <Flex
                 key={wp.id}
+                as="button"
+                bg={T.darkest}
+                border="1px solid"
+                borderColor={T.border}
+                borderRadius="4px"
+                p="3"
+                cursor="pointer"
+                align="center"
+                gap="3"
+                transition="all 0.15s ease"
+                color={T.goldText}
+                fontSize="14px"
+                fontWeight="500"
+                textAlign="left"
+                w="100%"
+                fontFamily={T.display}
+                _hover={{ borderColor: T.gold, bg: T.surface }}
+                onMouseEnter={() => playUIHover?.()}
                 onClick={() => {
+                  playUIClick?.();
                   onTravel(wp.id);
                   onClose();
                 }}
-                style={{
-                  background: "rgba(80,50,160,0.25)",
-                  border: "1px solid rgba(120,90,200,0.4)",
-                  borderRadius: "8px",
-                  padding: "12px 16px",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "12px",
-                  transition: "all 0.15s ease",
-                  color: "rgba(210,190,255,0.9)",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  textAlign: "left",
-                  width: "100%",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.background =
-                    "rgba(100,70,200,0.45)";
-                  (e.currentTarget as HTMLButtonElement).style.borderColor =
-                    "rgba(150,120,255,0.7)";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.background =
-                    "rgba(80,50,160,0.25)";
-                  (e.currentTarget as HTMLButtonElement).style.borderColor =
-                    "rgba(120,90,200,0.4)";
-                }}
               >
-                <span style={{ fontSize: "20px" }}>🌀</span>
-                <div>
-                  <div>{wp.label}</div>
-                  <div
-                    style={{
-                      fontSize: "11px",
-                      color: "rgba(160,140,200,0.6)",
-                      marginTop: "2px",
-                    }}
-                  >
+                <Text fontSize="20px" flexShrink={0}>🌀</Text>
+                <Box>
+                  <Text fontSize="13px" fontWeight="700" color={T.goldText}>
+                    {wp.label}
+                  </Text>
+                  <Text fontSize="11px" color={T.goldDark} mt="0.5">
                     ({wp.x}, {wp.y})
-                  </div>
-                </div>
-              </button>
+                  </Text>
+                </Box>
+              </Flex>
             ))}
-          </div>
+          </VStack>
         )}
 
-        <div
-          style={{
-            marginTop: "18px",
-            color: "rgba(140,120,180,0.5)",
-            fontSize: "11px",
-            textAlign: "center",
-          }}
+        <Text
+          mt="5"
+          color={T.goldDark}
+          fontSize="11px"
+          textAlign="center"
+          letterSpacing="1px"
         >
-          Press ESC to close
-        </div>
-      </div>
-    </div>
+          {t("fast_travel.esc_hint", "Press ESC to close")}
+        </Text>
+      </Box>
+    </Flex>
   );
 };

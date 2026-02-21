@@ -218,7 +218,7 @@ export function LeaderboardModal({ myName, onClose }: LeaderboardModalProps) {
       <Box
         onClick={(e) => e.stopPropagation()}
         bg={T.bg}
-        border={`2px solid ${HEX.border}`}
+        border={`1px solid ${HEX.border}`}
         borderRadius="4px"
         w={{ base: "95vw", md: "520px" }}
         maxH="80dvh"

@@ -35,7 +35,7 @@ export function QuestDialogue({ npcId: _npcId, npcType, text, options, onAction,
       <Box
         w={{ base: "calc(100vw - 32px)", md: "450px" }}
         bg={T.bg}
-        border="3px solid"
+        border="1px solid"
         borderColor={T.border}
         boxShadow="0 0 30px rgba(0,0,0,0.8)"
         borderRadius="4px"

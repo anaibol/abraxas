@@ -178,7 +178,7 @@ export function ScoreboardOverlay({
     <Flex pos="fixed" inset="0" align="center" justify="center" zIndex={80} pointerEvents="none">
       <Box
         bg={T.bg}
-        border={`2px solid ${HEX.border}`}
+        border={`1px solid ${HEX.border}`}
         borderRadius="4px"
         w={{ base: "95vw", md: "860px" }}
         maxH="85dvh"
