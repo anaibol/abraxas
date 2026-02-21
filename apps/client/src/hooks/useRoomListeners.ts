@@ -96,11 +96,15 @@ export function useRoomListeners(
     on(ServerMessageType.OpenShop, (data) => setShopData(data));
 
     on(ServerMessageType.OpenDialogue, (data) => {
-      setDialogueData({
-        ...data,
-        text: t(data.text),
-        options: data.options.map((opt) => ({ ...opt, text: t(opt.text) })),
-      });
+      // Only open the modal if there are actual choices to make (Accept Quest, etc.)
+      const hasFunctionalOptions = data.options.some((opt) => opt.action !== "close");
+      if (hasFunctionalOptions) {
+        setDialogueData({
+          ...data,
+          text: t(data.text),
+          options: data.options.map((opt) => ({ ...opt, text: t(opt.text) })),
+        });
+      }
     });
 
     on(ServerMessageType.QuestUpdate, (data) => {
