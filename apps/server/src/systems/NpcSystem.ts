@@ -655,12 +655,25 @@ export class NpcSystem {
     const now = Date.now();
 
     if (stats.rareSpawnIntervalMs) {
-      npc.rareRespawnAt = now + stats.rareSpawnIntervalMs;
+      // Bug #27: Update the queue entry directly — the NPC is deleted below
+      // so the forEach sync in tickRareSpawns would never see it.
+      const respawnAt = now + stats.rareSpawnIntervalMs;
+      const queueEntry = this.rareRespawnQueue.find((e) => e.npcType === npc.npcType);
+      if (queueEntry) {
+        queueEntry.rareRespawnAt = respawnAt;
+      } else {
+        this.rareRespawnQueue.push({
+          npcType: npc.npcType,
+          rareRespawnAt: respawnAt,
+          spawnX: npc.spawnX,
+          spawnY: npc.spawnY,
+        });
+      }
       logger.info({
         intent: "rare_npc_death",
         npcId: npc.sessionId,
         type: npc.npcType,
-        respawnAt: new Date(npc.rareRespawnAt).toISOString(),
+        respawnAt: new Date(respawnAt).toISOString(),
       });
     } else {
       this.spawner.queueRespawn(npc.npcType, npc.spawnX, npc.spawnY);
@@ -703,15 +716,5 @@ export class NpcSystem {
       });
       logger.info({ intent: "rare_npc_respawn", type: entry.npcType });
     }
-
-    // Sync rareRespawnAt from newly-dead rare NPCs into the queue.
-    this.state.npcs.forEach((npc) => {
-      if (!npc.alive && npc.rareRespawnAt > 0) {
-        const existing = this.rareRespawnQueue.find((e) => e.npcType === npc.npcType);
-        if (existing && existing.rareRespawnAt === 0) {
-          existing.rareRespawnAt = npc.rareRespawnAt;
-        }
-      }
-    });
   }
 }

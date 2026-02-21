@@ -234,6 +234,7 @@ model Npc {
   level     Int    @default(1)
   hp        Int
   maxHp     Int
+  /// [NpcStatsJson]
   statsJson Json? // For persisting specific stat rolls if any
 
   // For unique/boss NPCs

@@ -136,7 +136,7 @@ export class PlayerService {
 
   /** Builds an InventoryItem schema from a DB ItemInstance, restoring rarity & affixes. */
   private static toInventoryItem(
-    dbItem: { itemDef: { code: string }; rarity: string | null; nameOverride: string | null; affixesJson: unknown },
+    dbItem: { itemDef: { code: string }; rarity: ItemRarity | null; nameOverride: string | null; affixesJson: ItemAffix[] | null },
     quantity = 1,
     slotIndex = 0,
   ): InventoryItem {
@@ -144,13 +144,12 @@ export class PlayerService {
     item.itemId = dbItem.itemDef.code;
     item.quantity = quantity;
     item.slotIndex = slotIndex;
-    item.rarity = (dbItem.rarity as ItemRarity) ?? ItemRarity.COMMON;
+    item.rarity = dbItem.rarity ?? ItemRarity.COMMON;
     item.nameOverride = dbItem.nameOverride ?? "";
-    const affixes = (dbItem.affixesJson as unknown as ItemAffix[]) ?? [];
-    for (const a of affixes) {
+    for (const a of dbItem.affixesJson ?? []) {
       const s = new ItemAffixSchema();
       s.affixType = a.type;
-      s.stat = a.stat as StatType;
+      s.stat = a.stat;
       s.value = a.value;
       item.affixes.push(s);
     }

@@ -16,7 +16,7 @@ import { logger } from "../logger";
 import type { GameState } from "../schema/GameState";
 import type { Npc } from "../schema/Npc";
 import type { Player } from "../schema/Player";
-import { isNpc, isPlayer, type Entity, type SpatialLookup } from "../utils/SpatialLookup";
+import type { Entity, SpatialLookup } from "../utils/SpatialLookup";
 import type { BuffSystem } from "./BuffSystem";
 import type { DamageCalculator } from "./DamageCalculator";
 import type { EffectResolver } from "./EffectResolver";
@@ -802,20 +802,20 @@ export class CombatSystem {
 
   private sameFaction(a: Entity, b: Entity): boolean {
     // Check for owner-pet or pet-pet relation
-    const aOwnerId = isNpc(a) ? a.ownerId : undefined;
-    const bOwnerId = isNpc(b) ? b.ownerId : undefined;
+    const aOwnerId = a.entityType === EntityType.NPC ? (a as Npc).ownerId : undefined;
+    const bOwnerId = b.entityType === EntityType.NPC ? (b as Npc).ownerId : undefined;
 
     if (aOwnerId && aOwnerId === b.sessionId) return true;
     if (bOwnerId && bOwnerId === a.sessionId) return true;
     if (aOwnerId && bOwnerId && aOwnerId === bOwnerId) return true;
 
-    if (isPlayer(a) && isPlayer(b)) {
-      if (a.groupId && a.groupId === b.groupId) return true;
-      if (a.guildId && a.guildId === b.guildId) return true;
+    if (a.entityType === EntityType.PLAYER && b.entityType === EntityType.PLAYER) {
+      if ((a as Player).groupId && (a as Player).groupId === (b as Player).groupId) return true;
+      if ((a as Player).guildId && (a as Player).guildId === (b as Player).guildId) return true;
       return false;
     }
-    if (isNpc(a) && isNpc(b)) {
-      return a.npcType === b.npcType;
+    if (a.entityType === EntityType.NPC && b.entityType === EntityType.NPC) {
+      return (a as Npc).npcType === (b as Npc).npcType;
     }
     return false;
   }
@@ -828,8 +828,8 @@ export class CombatSystem {
       this.isInSafeZone(target.tileX, target.tileY)
     )
       return false;
-    if (isPlayer(attacker) && isPlayer(target)) {
-      if (!attacker.pvpEnabled || !target.pvpEnabled) return false;
+    if (attacker.entityType === EntityType.PLAYER && target.entityType === EntityType.PLAYER) {
+      if (!(attacker as Player).pvpEnabled || !(target as Player).pvpEnabled) return false;
     }
     return true;
   }

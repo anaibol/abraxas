@@ -1,5 +1,6 @@
 import { DIRECTION_DELTA, type Direction, EntityType, ITEMS, type TileMap } from "@abraxas/shared";
 import { logger } from "../logger";
+import type { Player } from "../schema/Player";
 import type { Entity, SpatialLookup } from "../utils/SpatialLookup";
 import type { BuffSystem } from "./BuffSystem";
 
@@ -44,17 +45,14 @@ export class MovementSystem {
     if (!stats) return { success: false };
 
     let speed = stats.speedTilesPerSecond;
-    if (
-      "speedOverride" in entity &&
-      typeof entity.speedOverride === "number" &&
-      entity.speedOverride > 0
-    ) {
-      speed = entity.speedOverride;
-    }
-    // Apply mount speed bonus if a mount is equipped
-    if ("equipMount" in entity && typeof entity.equipMount === "string" && entity.equipMount) {
-      const mountBonus = ITEMS[entity.equipMount]?.stats?.speedBonus ?? 0;
-      speed += mountBonus;
+    if (entity.entityType === EntityType.PLAYER) {
+      const player = entity as Player;
+      if (player.speedOverride > 0) speed = player.speedOverride;
+      // Apply mount speed bonus if a mount is equipped
+      if (player.equipMount?.itemId) {
+        const mountBonus = ITEMS[player.equipMount.itemId]?.stats?.speedBonus ?? 0;
+        speed += mountBonus;
+      }
     }
 
     // Apply speed buffs from BuffSystem

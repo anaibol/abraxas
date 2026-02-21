@@ -10,7 +10,7 @@ import {
 } from "@abraxas/shared";
 import type { Npc } from "../schema/Npc";
 import type { Player } from "../schema/Player";
-import { isNpc, isPlayer, type Entity, type SpatialLookup } from "../utils/SpatialLookup";
+import type { Entity, SpatialLookup } from "../utils/SpatialLookup";
 import type { BuffSystem } from "./BuffSystem";
 import type { DamageCalculator } from "./DamageCalculator";
 
@@ -27,11 +27,11 @@ export class EffectResolver {
 
   /** Shared Rage generation logic applied to both attacker and defender on any hit. */
   applyRageOnHit(attacker: Entity, target: Entity): void {
-    if (isPlayer(attacker) && attacker.classType === "WARRIOR") {
-      attacker.rage = Math.min(attacker.maxRage, attacker.rage + 5);
+    if (attacker.entityType === EntityType.PLAYER && (attacker as Player).classType === "WARRIOR") {
+      (attacker as Player).rage = Math.min((attacker as Player).maxRage, (attacker as Player).rage + 5);
     }
-    if (isPlayer(target) && target.classType === "WARRIOR") {
-      target.rage = Math.min(target.maxRage, target.rage + 3);
+    if (target.entityType === EntityType.PLAYER && (target as Player).classType === "WARRIOR") {
+      (target as Player).rage = Math.min((target as Player).maxRage, (target as Player).rage + 3);
     }
   }
 
@@ -52,7 +52,7 @@ export class EffectResolver {
     suppressCastHit = false,
     onSummon?: (caster: Entity, abilityId: string, x: number, y: number) => void,
   ) {
-    if (isNpc(target) && target.npcType === "merchant") return;
+    if (target.entityType === EntityType.NPC && (target as Npc).npcType === "merchant") return;
 
     const isSelfCast = attacker.sessionId === target.sessionId;
     if (!isSelfCast && this.buffSystem.isInvulnerable(target.sessionId, now)) return;
@@ -220,14 +220,14 @@ export class EffectResolver {
       // Special Case: Resource Buffs (e.g. Berserker Rage gives 30 Rage)
       if (
         [StatType.RAGE, StatType.ENERGY, StatType.FOCUS, StatType.HOLY_POWER].includes(buffStat) &&
-        isPlayer(target)
+        target.entityType === EntityType.PLAYER
       ) {
-        if (buffStat === StatType.RAGE) target.rage = Math.min(target.maxRage, target.rage + buffAmount);
+        const pt = target as Player;        if (buffStat === StatType.RAGE) pt.rage = Math.min(pt.maxRage, pt.rage + buffAmount);
         if (buffStat === StatType.ENERGY)
-          target.energy = Math.min(target.maxEnergy, target.energy + buffAmount);
-        if (buffStat === StatType.FOCUS) target.focus = Math.min(target.maxFocus, target.focus + buffAmount);
+          pt.energy = Math.min(pt.maxEnergy, pt.energy + buffAmount);
+        if (buffStat === StatType.FOCUS) pt.focus = Math.min(pt.maxFocus, pt.focus + buffAmount);
         if (buffStat === StatType.HOLY_POWER)
-          target.holyPower = Math.min(target.maxHolyPower, target.holyPower + buffAmount);
+          pt.holyPower = Math.min(pt.maxHolyPower, pt.holyPower + buffAmount);
       } else {
         this.buffSystem.addBuff(
           target.sessionId,
@@ -250,12 +250,12 @@ export class EffectResolver {
       let bodyId = 0;
       let headId = 0;
 
-      if (isPlayer(target)) {
-        const appearance = CLASS_APPEARANCE[target.classType];
+      if (target.entityType === EntityType.PLAYER) {
+        const appearance = CLASS_APPEARANCE[(target as Player).classType];
         bodyId = appearance?.bodyId || 0;
         headId = appearance?.headId || 0;
-      } else if (isNpc(target)) {
-        const appearance = NPC_APPEARANCE[target.npcType];
+      } else if (target.entityType === EntityType.NPC) {
+        const appearance = NPC_APPEARANCE[(target as Npc).npcType];
         bodyId = appearance?.bodyId || 0;
         headId = appearance?.headId || 0;
       }
@@ -303,7 +303,7 @@ export class EffectResolver {
       });
     } else if (ability.effect === "pickpocket") {
       if (
-        isPlayer(attacker) &&
+        attacker.entityType === EntityType.PLAYER &&
         target.entityType === EntityType.NPC &&
         target.alive
       ) {

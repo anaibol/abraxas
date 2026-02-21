@@ -27,7 +27,7 @@ export class BankSystem {
         quantity: s.qty,
         slotIndex: s.idx,
         rarity: s.item?.rarity ?? ItemRarity.COMMON,
-        affixes: (s.item?.affixesJson as unknown as ItemAffix[]) || [],
+        affixes: s.item?.affixesJson || [],
       })) || [];
 
     this.activeBanks.set(player.sessionId, items);
@@ -189,7 +189,7 @@ export class BankSystem {
             data: {
               itemDefId: itemDef.id,
               rarity: item.rarity ?? ItemRarity.COMMON,
-              affixesJson: item.affixes ? (item.affixes as unknown as import("../generated/prisma").Prisma.InputJsonValue) : [],
+              affixesJson: item.affixes ?? [],
             },
           });
 

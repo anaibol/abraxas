@@ -252,7 +252,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         if (d.item) {
           drop.rarity = d.item.rarity ?? ItemRarity.COMMON;
           drop.nameOverride = d.item.nameOverride || "";
-          const affixes = (d.item.affixesJson as unknown as ItemAffix[]) || [];
+          const affixes = d.item.affixesJson || [];
           affixes.forEach((a) => {
             const s = new ItemAffixSchema();
             s.affixType = a.type;
