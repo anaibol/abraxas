@@ -211,17 +211,12 @@ export const Minimap: FC<MinimapProps> = ({
   return (
     <div
       style={{
-        position: "absolute",
-        top: isMobile ? "12px" : undefined,
-        bottom: isMobile ? undefined : "20px",
-        right: isMobile ? "64px" : "20px",
         border: isGM ? "2px solid rgba(212, 168, 67, 0.85)" : "2px solid rgba(212, 168, 67, 0.5)",
         backgroundColor: "rgba(10, 8, 20, 0.85)",
-        borderRadius: "50%",
         overflow: "hidden",
         width: `${size}px`,
         height: `${size}px`,
-        zIndex: 40,
+        flexShrink: 0,
         pointerEvents: "auto",
         cursor: isGM ? "crosshair" : "default",
       }}

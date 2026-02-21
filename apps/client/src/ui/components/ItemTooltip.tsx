@@ -36,12 +36,9 @@ interface ItemTooltipProps {
   quantity?: number;
   /** Currently equipped item for the same slot — enables stat comparison */
   equippedItem?: Item | null;
-  /** Screen position */
-  x: number;
-  y: number;
 }
 
-export function ItemTooltip({ item, quantity, equippedItem, x, y }: ItemTooltipProps) {
+export function ItemTooltip({ item, quantity, equippedItem }: ItemTooltipProps) {
   const { t } = useTranslation();
   const rarityColor = RARITY_COLORS[item.rarity] || "#aaa";
   const rarityBg = RARITY_BG[item.rarity] || "transparent";
@@ -56,13 +53,7 @@ export function ItemTooltip({ item, quantity, equippedItem, x, y }: ItemTooltipP
 
   return (
     <Box
-      position="fixed"
-      left={`${x + 14}px`}
-      top={`${y - 8}px`}
-      zIndex={9999}
-      pointerEvents="none"
-      minW="180px"
-      maxW="240px"
+      w="100%"
       bg={HEX.bg}
       border="1px solid"
       borderColor={rarityColor}

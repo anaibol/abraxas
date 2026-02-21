@@ -7,11 +7,9 @@ interface SpellTooltipProps {
   spell: Ability;
   playerLevel: number;
   currentMana: number;
-  x: number;
-  y: number;
 }
 
-export function SpellTooltip({ spell, playerLevel, currentMana, x, y }: SpellTooltipProps) {
+export function SpellTooltip({ spell, playerLevel, currentMana }: SpellTooltipProps) {
   const { t } = useTranslation();
 
   const isLevelLocked = !!spell.requiredLevel && playerLevel < spell.requiredLevel;
@@ -22,19 +20,13 @@ export function SpellTooltip({ spell, playerLevel, currentMana, x, y }: SpellToo
 
   return (
     <Box
-      position="fixed"
-      left={`${x + 14}px`}
-      top={`${y - 8}px`}
-      zIndex={9999}
-      pointerEvents="none"
-      minW="200px"
-      maxW="260px"
+      w="100%"
       bg={HEX.bg}
       border="1px solid"
       borderColor={borderColor}
       borderRadius="4px"
-      boxShadow={`0 0 16px ${bgGlow}, 0 4px 20px rgba(0,0,0,0.8)`}
       overflow="hidden"
+      mt="2"
     >
       {/* Header */}
       <Flex

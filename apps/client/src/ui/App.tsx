@@ -59,6 +59,7 @@ import { QuestDialogue } from "./QuestDialogue";
 import { LeaderboardModal } from "./LeaderboardModal";
 import { SettingsModal } from "./SettingsModal";
 import { Sidebar } from "./Sidebar";
+import { SocialPanel } from "./SocialPanel";
 import type { PlayerState } from "./sidebar/types";
 import { TradeWindow } from "./TradeWindow";
 import { SummonOverlay } from "./SummonOverlay";
@@ -673,48 +674,96 @@ function AppContent() {
         <>
           {isLoading && <LoadingScreen />}
           <Flex pos="fixed" inset="0" bg={T.darkest}>
-            <Box ref={gameContainerRef} flex="1" h="100%" minW="0" overflow="hidden" pos="relative">
-              {roomRef.current && gameSettingsState.showMinimap && (
-                <Minimap
-                  map={mapData}
-                  players={roomRef.current.state?.players}
-                  npcs={roomRef.current.state?.npcs}
-                  currentPlayerId={roomRef.current.sessionId}
+            <Flex flex="1" h="100%" direction="column" minW="0">
+              {/* TOP BAR */}
+              <Flex 
+                w="100%" 
+                h={{ base: "130px", md: "240px" }} 
+                borderBottom="1px solid" 
+                borderColor={T.border}
+                zIndex={100}
+              >
+                <Console
+                  messages={consoleMessages}
+                  isChatOpen={isChatOpen}
+                  onSendChat={(msg) => {
+                    setChatPrefill(undefined);
+                    handleSendChat(msg);
+                  }}
+                  prefillMessage={chatPrefill}
                   isGM={isGM}
-                  onGMClick={(tileX, tileY) => networkRef.current?.sendGMTeleport(tileX, tileY)}
-                  markers={[
-                    // Quest NPCs: show yellow ? pin at quest NPC locations (derived from active quests)
-                    ...quests
-                      .filter((q) => q.status === "IN_PROGRESS")
-                      .flatMap((q): MinimapMarker[] => {
-                        const npc = roomRef.current?.state?.npcs
-                          ? Array.from(roomRef.current.state.npcs.values()).find(
-                              (n) => n.sessionId === q.questId,
-                            )
-                          : undefined;
-                        return npc
-                          ? [{ id: `quest-${q.questId}`, tileX: npc.tileX, tileY: npc.tileY, type: "quest" as const }]
-                          : [];
-                      }),
-                    // Waypoints from current map
-                    ...(mapData.waypoints ?? []).map((wp): MinimapMarker => ({
-                      id: `wp-${wp.id}`,
-                      tileX: wp.x,
-                      tileY: wp.y,
-                      type: "waypoint" as const,
-                    })),
-                    // Active world event marker (approx center of map)
-                    ...(worldEvent
-                      ? [{
-                          id: "world-event",
-                          tileX: Math.floor((mapData.width ?? 80) / 2),
-                          tileY: Math.floor((mapData.height ?? 60) / 2),
-                          type: "event" as const,
-                        } satisfies MinimapMarker]
-                      : []),
-                  ]}
                 />
-              )}
+                
+                <Box w={{ base: "0", md: "380px" }} display={{ base: "none", md: "flex" }}>
+                  <SocialPanel
+                    groupId={groupData?.groupId}
+                    leaderId={groupData?.leaderId}
+                    groupMembers={groupData?.members || []}
+                    onGroupInvite={(sid: string) => networkRef.current?.sendGroupInvite(sid)}
+                    onGroupLeave={() => networkRef.current?.sendGroupLeave()}
+                    onGroupKick={(sid: string) => networkRef.current?.sendGroupKick(sid)}
+                    guildId={guildData?.guildId}
+                    guildMembers={guildData?.members || []}
+                    onGuildCreate={(name: string) => networkRef.current?.sendGuildCreate(name)}
+                    onGuildInvite={(name: string) => networkRef.current?.sendGuildInvite(name)}
+                    onGuildLeave={() => networkRef.current?.sendGuildLeave()}
+                    onGuildKick={(name: string) => networkRef.current?.sendGuildKick(name)}
+                    onGuildPromote={(name: string) => networkRef.current?.sendGuildPromote(name)}
+                    onGuildDemote={(name: string) => networkRef.current?.sendGuildDemote(name)}
+                    friends={friendsData}
+                    pendingFriendRequests={pendingFriendRequests}
+                    onFriendRequest={(name: string) => networkRef.current?.sendFriendRequest(name)}
+                    onFriendAccept={(rid: string) => networkRef.current?.sendFriendAccept(rid)}
+                    onFriendRemove={(fid: string) => networkRef.current?.sendFriendRemove(fid)}
+                    onWhisper={(name: string) => {
+                      setChatPrefill(`/w ${name} `);
+                      setIsChatOpen(true);
+                    }}
+                    onTradeRequest={(sid: string) => networkRef.current?.sendTradeRequest(sid)}
+                  />
+                </Box>
+
+                {roomRef.current && gameSettingsState.showMinimap && (
+                  <Minimap
+                    map={mapData}
+                    players={roomRef.current.state?.players}
+                    npcs={roomRef.current.state?.npcs}
+                    currentPlayerId={roomRef.current.sessionId}
+                    isGM={isGM}
+                    onGMClick={(tileX, tileY) => networkRef.current?.sendGMTeleport(tileX, tileY)}
+                    markers={[
+                      ...quests
+                        .filter((q) => q.status === "IN_PROGRESS")
+                        .flatMap((q): MinimapMarker[] => {
+                          const npc = roomRef.current?.state?.npcs
+                            ? Array.from(roomRef.current.state.npcs.values()).find(
+                                (n) => n.sessionId === q.questId,
+                              )
+                            : undefined;
+                          return npc
+                            ? [{ id: `quest-${q.questId}`, tileX: npc.tileX, tileY: npc.tileY, type: "quest" as const }]
+                            : [];
+                        }),
+                      ...(mapData.waypoints ?? []).map((wp): MinimapMarker => ({
+                        id: `wp-${wp.id}`,
+                        tileX: wp.x,
+                        tileY: wp.y,
+                        type: "waypoint" as const,
+                      })),
+                      ...(worldEvent
+                        ? [{
+                            id: "world-event",
+                            tileX: Math.floor((mapData.width ?? 80) / 2),
+                            tileY: Math.floor((mapData.height ?? 60) / 2),
+                            type: "event" as const,
+                          } satisfies MinimapMarker]
+                        : []),
+                    ]}
+                  />
+                )}
+              </Flex>
+
+              <Box ref={gameContainerRef} flex="1" w="100%" overflow="hidden" pos="relative">
 
               <DebugOverlay />
 
@@ -728,6 +777,8 @@ function AppContent() {
                 stealthed={playerState.stealthed}
                 meditating={playerState.meditating}
                 level={playerState.level}
+                pvpEnabled={playerState.pvpEnabled}
+                onTogglePvP={() => networkRef.current?.sendTogglePvP()}
               />
 
               {/* Mobile sidebar toggle button */}
@@ -755,7 +806,8 @@ function AppContent() {
                   <Menu size={22} />
                 </Box>
               )}
-            </Box>
+              </Box>
+            </Flex>
             {(!isMobile || isSidebarOpen) && (
               <Sidebar
                 state={playerState}
@@ -783,7 +835,6 @@ function AppContent() {
                 onGuildKick={(name: string) => networkRef.current?.sendGuildKick(name)}
                 onGuildPromote={(name: string) => networkRef.current?.sendGuildPromote(name)}
                 onGuildDemote={(name: string) => networkRef.current?.sendGuildDemote(name)}
-                onTogglePvP={() => networkRef.current?.sendTogglePvP()}
                 friends={friendsData}
                 pendingFriendRequests={pendingFriendRequests}
                 onFriendRequest={(name: string) => networkRef.current?.sendFriendRequest(name)}
@@ -847,16 +898,6 @@ function AppContent() {
           </Flex>
           <DeathOverlay visible={showDeath} deathTime={deathTime} />
           <KillFeed entries={killFeed} />
-          <Console
-            messages={consoleMessages}
-            isChatOpen={isChatOpen}
-            onSendChat={(msg) => {
-              setChatPrefill(undefined);
-              handleSendChat(msg);
-            }}
-            prefillMessage={chatPrefill}
-            isGM={isGM}
-          />
           {/* Mobile chat button */}
           {isMobile && !isChatOpen && (
             <Box

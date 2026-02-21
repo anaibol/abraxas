@@ -85,29 +85,41 @@ export function SpellsTab({
   const [hoveredSpell, setHoveredSpell] = useState<Ability | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const graceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isTooltipActive = useRef(false);
 
   const handleMouseEnter = useCallback((spell: Ability, e: React.MouseEvent) => {
     if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
-    
-    // Position for tooltip
-    setMousePos({ x: e.clientX, y: e.clientY });
+    if (graceTimerRef.current) clearTimeout(graceTimerRef.current);
 
     const isLocked = !!spell.requiredLevel && playerLevel < spell.requiredLevel;
     const noMana = currentMana < spell.manaCost;
     const isDisabled = isLocked || noMana;
     if (!isDisabled) playUIHover?.();
 
-    // 3 second delay for details and range indicator
-    hoverTimerRef.current = setTimeout(() => {
+    if (isTooltipActive.current) {
       setHoveredSpell(spell);
       onHoverSpell?.(spell.id, spell.rangeTiles);
-    }, 3000);
+    } else {
+      // 1 second delay for details and range indicator
+      hoverTimerRef.current = setTimeout(() => {
+        isTooltipActive.current = true;
+        setHoveredSpell(spell);
+        onHoverSpell?.(spell.id, spell.rangeTiles);
+      }, 1000);
+    }
   }, [playerLevel, currentMana, playUIHover, onHoverSpell]);
 
   const handleMouseLeave = useCallback(() => {
     if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    if (graceTimerRef.current) clearTimeout(graceTimerRef.current);
+    
     setHoveredSpell(null);
     onHoverSpell?.(null, 0);
+
+    graceTimerRef.current = setTimeout(() => {
+      isTooltipActive.current = false;
+    }, 150);
   }, [onHoverSpell]);
 
   return (
@@ -219,8 +231,6 @@ export function SpellsTab({
           spell={hoveredSpell}
           playerLevel={playerLevel}
           currentMana={currentMana}
-          x={mousePos.x}
-          y={mousePos.y}
         />
       )}
     </Box>

@@ -38,17 +38,52 @@ export function InventoryTab({
   // Tooltip hover state
   const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
   const [hoveredQty, setHoveredQty] = useState(1);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    setMousePos({ x: e.clientX, y: e.clientY });
+  const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const graceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isTooltipActive = useRef(false);
+
+  const handleMouseEnter = useCallback(
+    (itemId: string, qty: number, e: React.MouseEvent) => {
+      if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+      if (graceTimerRef.current) clearTimeout(graceTimerRef.current);
+
+      // Immediate audio feedback
+      playUIHover?.();
+
+      if (isTooltipActive.current) {
+        // If tooltip was already active (we are moving between items), show immediately
+        setHoveredItemId(itemId);
+        setHoveredQty(qty);
+      } else {
+        // Otherwise apply the 1-second delay
+        hoverTimerRef.current = setTimeout(() => {
+          isTooltipActive.current = true;
+          setHoveredItemId(itemId);
+          setHoveredQty(qty);
+        }, 1000);
+      }
+    },
+    [playUIHover],
+  );
+
+  const handleMouseLeave = useCallback(() => {
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    if (graceTimerRef.current) clearTimeout(graceTimerRef.current);
+    
+    setHoveredItemId(null);
+    
+    // Give a 150ms grace period before we "forget" that a tooltip was active
+    graceTimerRef.current = setTimeout(() => {
+      isTooltipActive.current = false;
+    }, 150);
   }, []);
 
   const hoveredItem = hoveredItemId ? ITEMS[hoveredItemId] : null;
 
   return (
-    <Box p="2.5" ref={containerRef} onMouseMove={handleMouseMove}>
+    <Box p="2.5" ref={containerRef}>
       {/* Equipment slots */}
       {state.equipment && (
         <Grid templateColumns={`repeat(${EQUIPMENT_SLOTS.length}, 1fr)`} gap="1" mb="2">
@@ -70,13 +105,12 @@ export function InventoryTab({
                 onClick={() => def && onUnequip?.(slot)}
                 _hover={def ? { borderColor: T.gold, boxShadow: `0 0 8px ${RARITY_COLORS[def.rarity] || HEX.gold}66, 0 0 16px ${RARITY_COLORS[def.rarity] || HEX.gold}22` } : {}}
                 position="relative"
-                onMouseEnter={() => {
+                onMouseEnter={(e) => {
                   if (def && equipped) {
-                    setHoveredItemId(equipped);
-                    setHoveredQty(1);
+                    handleMouseEnter(equipped, 1, e);
                   }
                 }}
-                onMouseLeave={() => setHoveredItemId(null)}
+                onMouseLeave={handleMouseLeave}
               >
                 <Text fontSize="24px">{def ? getItemEmoji(equipped!) : ""}</Text>
                 {!def && (
@@ -111,14 +145,12 @@ export function InventoryTab({
               alignItems="center"
               justifyContent="center"
               position="relative"
-              onMouseEnter={() => {
+              onMouseEnter={(e) => {
                 if (def && invItem) {
-                  playUIHover?.();
-                  setHoveredItemId(invItem.itemId);
-                  setHoveredQty(invItem.quantity);
+                  handleMouseEnter(invItem.itemId, invItem.quantity, e);
                 }
               }}
-              onMouseLeave={() => setHoveredItemId(null)}
+              onMouseLeave={handleMouseLeave}
               onClick={() => {
                 if (!def || !invItem) return;
                 playUIClick?.();
@@ -175,8 +207,6 @@ export function InventoryTab({
             item={hoveredItem}
             quantity={hoveredQty}
             equippedItem={equippedItem}
-            x={mousePos.x}
-            y={mousePos.y}
           />
         );
       })()}

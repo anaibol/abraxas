@@ -32,14 +32,14 @@ const GM_COMMANDS: { usage: string; desc: string }[] = [
 
 type Channel = "all" | "global" | "group" | "guild" | "whisper" | "system" | "combat";
 
-const TABS: { id: Channel; labelKey: string; color: string }[] = [
-  { id: "all", labelKey: "console.tab_all", color: "#ccc" },
-  { id: "global", labelKey: "console.tab_global", color: "#fff" },
-  { id: "group", labelKey: "console.tab_group", color: "#77f" },
-  { id: "guild", labelKey: "console.tab_guild", color: "#a78bfa" },
-  { id: "whisper", labelKey: "console.tab_whisper", color: "#f7f" },
-  { id: "system", labelKey: "console.tab_system", color: "#ff7" },
-  { id: "combat", labelKey: "console.tab_combat", color: "#f84" },
+const TABS: { id: Channel; icon: string; labelKey: string; color: string }[] = [
+  { id: "all", icon: "💬", labelKey: "console.tab_all", color: "#ccc" },
+  { id: "global", icon: "🌍", labelKey: "console.tab_global", color: "#fff" },
+  { id: "group", icon: "👥", labelKey: "console.tab_group", color: "#77f" },
+  { id: "guild", icon: "🛡️", labelKey: "console.tab_guild", color: "#a78bfa" },
+  { id: "whisper", icon: "✉️", labelKey: "console.tab_whisper", color: "#f7f" },
+  { id: "system", icon: "⚙️", labelKey: "console.tab_system", color: "#ff7" },
+  { id: "combat", icon: "⚔️", labelKey: "console.tab_combat", color: "#f84" },
 ];
 
 const CHANNEL_COLORS: Record<string, string> = {
@@ -154,17 +154,14 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
 
   return (
     <Box
-      pos="fixed"
-      bottom={{ base: "210px", md: "20px" }}
-      left="20px"
-      w={{ base: "calc(100vw - 40px)", md: "420px" }}
-      maxW={{ base: "calc(100vw - 40px)", md: "none" }}
-      h={{ base: "130px", md: "240px" }}
+      flex="1"
+      h="100%"
       bg="rgba(12, 10, 18, 0.65)"
       backdropFilter="blur(6px)"
       borderWidth="0"
-      borderTop="1px solid rgba(255,255,255,0.06)"
-      borderRadius="2px"
+      borderBottom="1px solid rgba(255,255,255,0.06)"
+      borderRight="1px solid rgba(255,255,255,0.06)"
+      borderRadius="0"
       boxShadow="0 8px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.03)"
       color="white"
       fontFamily={T.display}
@@ -185,21 +182,26 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
         {TABS.map((tab) => (
           <Box
             key={tab.id}
-            px={{ base: "2", md: "3" }}
-            py="1"
+            px={{ base: "2", md: "4" }}
+            py="1.5"
             cursor="pointer"
-            fontSize={{ base: "10px", md: "12px" }}
-            fontWeight="700"
-            letterSpacing={{ base: "0", md: "1px" }}
-            bg={activeChannel === tab.id ? "rgba(255,255,255,0.1)" : "transparent"}
-            color={activeChannel === tab.id ? tab.color : "#666"}
+            fontSize={{ base: "14px", md: "16px" }}
+            lineHeight="1"
+            bg={activeChannel === tab.id ? "rgba(255,255,255,0.08)" : "transparent"}
             borderBottom={activeChannel === tab.id ? `2px solid ${tab.color}` : "2px solid transparent"}
             onClick={() => setActiveChannel(tab.id)}
             pointerEvents="auto"
-            _hover={{ color: tab.color }}
+            _hover={{ bg: "rgba(255,255,255,0.12)" }}
+            transition="all 0.2s"
             flexShrink={0}
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            opacity={activeChannel === tab.id ? 1 : 0.4}
+            filter={activeChannel === tab.id ? "drop-shadow(0 0 6px " + tab.color + "40)" : "grayscale(100%)"}
+            title={t(tab.labelKey)}
           >
-            {t(tab.labelKey)}
+            {tab.icon}
           </Box>
         ))}
       </HStack>

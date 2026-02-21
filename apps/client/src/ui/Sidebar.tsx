@@ -19,15 +19,12 @@ import { GoldDivider } from "./components/PanelHeader";
 import { HEX, T } from "./tokens";
 
 const SIDEBAR_TABS: readonly {
-  key: "inv" | "spells" | "quests" | "group" | "guild" | "friends";
+  key: "inv" | "spells" | "quests";
   icon: string;
 }[] = [
   { key: "inv", icon: "⚔️" },
   { key: "spells", icon: "📖" },
   { key: "quests", icon: "📜" },
-  { key: "group", icon: "⚔️" },
-  { key: "guild", icon: "🛡️" },
-  { key: "friends", icon: "👥" },
 ];
 
 export function Sidebar({
@@ -60,7 +57,6 @@ export function Sidebar({
   onGuildDemote,
   selectedItemId,
   onSelectItem,
-  onTogglePvP,
   onSpellClick,
   onHoverSpell,
   pendingSpellId,
@@ -71,11 +67,7 @@ export function Sidebar({
 }: SidebarProps) {
   const isMobile = useIsMobile();
   const { t } = useTranslation();
-  const [tab, setTab] = useState<"inv" | "spells" | "quests" | "group" | "guild" | "friends">(
-    "inv",
-  );
-  const [inviteId, setInviteId] = useState("");
-  const [friendName, setFriendName] = useState("");
+  const [tab, setTab] = useState<"inv" | "spells" | "quests">("inv");
   const { playUIClick, playUIHover } = useAudio();
 
   const stats = CLASS_STATS[state.classType];
@@ -209,49 +201,10 @@ export function Sidebar({
           />
         )}
         {tab === "quests" && <QuestLog quests={quests ?? []} />}
-        {tab === "group" && (
-          <GroupTab
-            groupId={groupId}
-            leaderId={leaderId}
-            groupMembers={groupMembers}
-            inviteId={inviteId}
-            setInviteId={setInviteId}
-            onGroupInvite={onGroupInvite}
-            onGroupLeave={onGroupLeave}
-            onGroupKick={onGroupKick}
-            onTradeRequest={onTradeRequest}
-          />
-        )}
-        {tab === "guild" && (
-          <GuildTab
-            guildId={state.guildId}
-            guildMembers={guildMembers}
-            onGuildCreate={onGuildCreate}
-            onGuildInvite={onGuildInvite}
-            onGuildLeave={onGuildLeave}
-            onGuildKick={onGuildKick}
-            onGuildPromote={onGuildPromote}
-            onGuildDemote={onGuildDemote}
-          />
-        )}
-        {tab === "friends" && (
-          <FriendsTab
-            friends={friends}
-            pendingFriendRequests={pendingFriendRequests}
-            friendName={friendName}
-            setFriendName={setFriendName}
-            onFriendRequest={onFriendRequest}
-            onFriendAccept={onFriendAccept}
-            onFriendRemove={onFriendRemove}
-            onWhisper={onWhisper}
-            onTradeRequest={onTradeRequest}
-            onGroupInvite={onGroupInvite}
-          />
-        )}
       </Box>
 
       {/* Footer */}
-      <SidebarFooter state={state} onSettings={onSettings} onLogout={onLogout} onTogglePvP={onTogglePvP} onLeaderboard={onLeaderboard} />
+      <SidebarFooter state={state} onSettings={onSettings} onLogout={onLogout} onLeaderboard={onLeaderboard} />
     </Flex>
   );
 

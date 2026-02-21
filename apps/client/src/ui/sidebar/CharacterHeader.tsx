@@ -54,78 +54,79 @@ export function CharacterHeader({ state, isRecording }: CharacterHeaderProps) {
         )}
       </HStack>
 
-      {/* Attackability indicator */}
-      {state.alive && (() => {
-        let config;
-        if (state.spawnProtection) {
-          config = {
-            bg: "rgba(20, 15, 35, 0.6)",
-            border: "rgba(180, 140, 255, 0.3)",
-            color: "#c8a0ff",
-            icon: "🛡",
-            text: t("status.spawn_protected", { defaultValue: "PROTECTED" }),
-          };
-        } else if (state.inSafeZone) {
-          config = {
-            bg: "rgba(10, 30, 10, 0.6)",
-            border: "rgba(40, 160, 40, 0.3)",
-            color: "#4edb6e",
-            icon: "🏠",
-            text: t("status.safe_zone", { defaultValue: "SAFE ZONE" }),
-          };
-        } else if (!state.pvpEnabled) {
-          config = {
-            bg: "rgba(10, 20, 40, 0.6)",
-            border: "rgba(60, 120, 220, 0.3)",
-            color: "#6aabff",
-            icon: "🔵",
-            text: t("status.pvp_off", { defaultValue: "PvP OFF" }),
-          };
-        } else {
-          config = {
-            bg: "rgba(40, 5, 5, 0.6)",
-            border: "rgba(220, 50, 50, 0.3)",
-            color: "#ff6b6b",
-            icon: "⚔",
-            text: t("status.pvp_on", { defaultValue: "PvP ON" }),
-          };
-        }
-
-        return (
-          <Flex
-            position="absolute"
-            top="3"
-            right="3"
-            px="2"
-            py="1"
-            bg={config.bg}
-            border="1px solid"
-            borderColor={config.border}
-            borderRadius="md"
-            align="center"
-            gap="1.5"
-            backdropFilter="blur(4px)"
-            boxShadow={`0 0 10px ${config.color}20`}
-            userSelect="none"
-            pointerEvents="none"
-          >
-            <Text fontSize="10px" lineHeight="1">
-              {config.icon}
-            </Text>
-            <Text
-              textStyle={T.badgeText}
-              fontSize="9px"
-              lineHeight="1"
-              color={config.color}
-              fontWeight="bold"
-              letterSpacing="1px"
-              whiteSpace="nowrap"
-            >
-              {config.text}
-            </Text>
+      {/* Status Badges */}
+      <Flex
+        position="absolute"
+        top="2"
+        right="2"
+        direction="column"
+        align="flex-end"
+        gap="1"
+        pointerEvents="none"
+      >
+        {!state.alive && (
+          <Flex layerStyle="fantasyBadge" borderColor={HEX.bloodBright}>
+             <Text textStyle={T.badgeText} color={T.bloodBright} fontSize="9px">
+               💀 {t("status.dead").toUpperCase()}
+             </Text>
           </Flex>
-        );
-      })()}
+        )}
+        {state.alive && (() => {
+          let config;
+          if (state.spawnProtection) {
+            config = {
+              borderColor: "#c8a0ff",
+              color: "#c8a0ff",
+              icon: "🛡",
+              text: t("status.spawn_protected", { defaultValue: "PROTECTED" }),
+            };
+          } else if (state.inSafeZone) {
+            config = {
+              borderColor: "#4edb6e",
+              color: "#4edb6e",
+              icon: "🏠",
+              text: t("status.safe_zone", { defaultValue: "SAFE ZONE" }),
+            };
+          } else if (!state.pvpEnabled) {
+            config = {
+              borderColor: "#6aabff",
+              color: "#6aabff",
+              icon: "🔵",
+              text: t("status.pvp_off", { defaultValue: "PvP OFF" }),
+            };
+          } else {
+            config = {
+              borderColor: "#ff6b6b",
+              color: "#ff6b6b",
+              icon: "⚔",
+              text: t("status.pvp_on", { defaultValue: "PvP ON" }),
+            };
+          }
+
+          return (
+            <Flex
+              layerStyle="fantasyBadge"
+              borderColor={config.borderColor}
+              gap="1"
+              align="center"
+            >
+              <Text fontSize="10px" lineHeight="1">
+                {config.icon}
+              </Text>
+              <Text
+                textStyle={T.badgeText}
+                fontSize="9px"
+                lineHeight="1"
+                color={config.color}
+                fontWeight="bold"
+                letterSpacing="1px"
+              >
+                {config.text.toUpperCase()}
+              </Text>
+            </Flex>
+          );
+        })()}
+      </Flex>
       {isRecording && (
         <Flex align="center" justify="center" gap="2" mt="1.5">
           <Box w="8px" h="8px" bg="#ff0000" borderRadius="full" animation="pulse 1s infinite" />

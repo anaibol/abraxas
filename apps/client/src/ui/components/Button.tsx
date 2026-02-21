@@ -29,9 +29,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         onMouseEnter={handleMouseEnter}
         onClick={handleClick}
-        transition="all 0.15s cubic-bezier(0.16, 1, 0.3, 1)"
-        _hover={{ transform: "translateY(-1px) scale(1.02)" }}
-        _active={{ transform: "scale(0.96)" }}
+        layerStyle="fantasyButton"
         {...props}
       />
     );
