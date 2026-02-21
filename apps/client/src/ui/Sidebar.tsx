@@ -1,6 +1,6 @@
 import { ABILITIES, CLASS_STATS } from "@abraxas/shared";
 import { Box, Flex, Text } from "@chakra-ui/react";
-import { Coins, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAudio } from "../contexts/AudioContext";
@@ -131,19 +131,12 @@ export function Sidebar({
         px="3"
         bg={T.darkest}
         borderBottom="1px solid"
-        borderBottomColor={T.border}
       >
-        <Flex align="center" gap="1.5">
-          <Coins size={14} color={HEX.gold} />
-          <Text textStyle={T.codeText} color={T.gold} fontWeight="700">
-            {state.gold}
-          </Text>
-        </Flex>
+        <Text textStyle={T.codeText} color={T.gold} fontWeight="700">
+          🪙 {state.gold}
+        </Text>
         <WorldStatus />
       </Flex>
-
-      {/* Tabs */}
-      <Flex borderBottom="2px solid" borderBottomColor={T.border}>
         {SIDEBAR_TABS.map(({ key, icon }) => (
           <Flex
             key={key}

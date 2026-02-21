@@ -19,6 +19,23 @@ const customConfig = defineConfig({
       fontFamily: "inherit",
       verticalAlign: "middle",
     },
+    "*": {
+      "&::-webkit-scrollbar": {
+        width: "8px",
+        height: "8px",
+      },
+      "&::-webkit-scrollbar-track": {
+        background: "rgba(0, 0, 0, 0.2)",
+      },
+      "&::-webkit-scrollbar-thumb": {
+        background: "var(--chakra-colors-game-goldDark)",
+        borderRadius: "4px",
+        border: "2px solid var(--chakra-colors-game-bg)",
+      },
+      "&::-webkit-scrollbar-thumb:hover": {
+        background: "var(--chakra-colors-game-goldDim)",
+      },
+    },
   },
   theme: {
     tokens: {
