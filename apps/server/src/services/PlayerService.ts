@@ -12,7 +12,7 @@ import {
 } from "@abraxas/shared";
 import type { Client } from "@colyseus/core";
 import type { GameState } from "../schema/GameState";
-import { InventoryItem } from "../schema/InventoryItem";
+import { InventoryItem, ItemAffixSchema } from "../schema/InventoryItem";
 import { Player } from "../schema/Player";
 import type { FriendsSystem } from "../systems/FriendsSystem";
 import type { InventorySystem } from "../systems/InventorySystem";
@@ -61,10 +61,7 @@ export class PlayerService {
     if (char.inventory?.slots) {
       for (const slot of char.inventory.slots) {
         if (slot.item?.itemDef) {
-          const invItem = new InventoryItem();
-          invItem.itemId = slot.item.itemDef.code;
-          invItem.quantity = slot.qty;
-          invItem.slotIndex = slot.idx;
+          const invItem = PlayerService.toInventoryItem(slot.item, slot.qty, slot.idx);
           player.inventory.push(invItem);
         }
       }
@@ -89,8 +86,8 @@ export class PlayerService {
     if (char.equipments) {
       for (const eq of char.equipments) {
         if (eq.item?.itemDef) {
-          const invItem = new InventoryItem();
-          invItem.itemId = eq.item.itemDef.code;
+          const invItem = PlayerService.toInventoryItem(eq.item);
+
           switch (eq.slot) {
             case "WEAPON_MAIN":
               player.equipWeapon = invItem;
@@ -135,6 +132,29 @@ export class PlayerService {
     }
 
     return player;
+  }
+
+  /** Builds an InventoryItem schema from a DB ItemInstance, restoring rarity & affixes. */
+  private static toInventoryItem(
+    dbItem: { itemDef: { code: string }; rarity: string | null; nameOverride: string | null; affixesJson: unknown },
+    quantity = 1,
+    slotIndex = 0,
+  ): InventoryItem {
+    const item = new InventoryItem();
+    item.itemId = dbItem.itemDef.code;
+    item.quantity = quantity;
+    item.slotIndex = slotIndex;
+    item.rarity = (dbItem.rarity as ItemRarity) ?? ItemRarity.COMMON;
+    item.nameOverride = dbItem.nameOverride ?? "";
+    const affixes = (dbItem.affixesJson as unknown as ItemAffix[]) ?? [];
+    for (const a of affixes) {
+      const s = new ItemAffixSchema();
+      s.affixType = a.type;
+      s.stat = a.stat as StatType;
+      s.value = a.value;
+      item.affixes.push(s);
+    }
+    return item;
   }
 
   public isPlayerTotallyNew(player: Player): boolean {
@@ -220,6 +240,7 @@ export class PlayerService {
       companions: activeCompanions,
       pvpKills: player.pvpKills,
       npcKills: player.npcKills,
+      pvpEnabled: player.pvpEnabled,
     };
 
     await PersistenceService.saveChar(player.dbId, saveData);
