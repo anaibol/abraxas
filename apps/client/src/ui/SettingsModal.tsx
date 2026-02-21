@@ -1,5 +1,6 @@
 import { Box, Flex, Text } from "@chakra-ui/react";
-import { Bug, Camera, Languages, Map as MapIcon, Music, Sparkles, Volume2, Waves, Wind } from "lucide-react";
+import { Bug, Camera, Languages, Map as MapIcon, Music, Sparkles, Volume2, VolumeX, Waves, Wind } from "lucide-react";
+import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useGameSettings } from "../hooks/useGameSettings";
 import type { ParticleQuality } from "../settings/gameSettings";
@@ -49,7 +50,8 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
         onClose={onClose}
         panelProps={{
           w: { base: "calc(100vw - 32px)", md: "420px" },
-          overflow: "hidden",
+          maxH: "90dvh",
+          overflowY: "auto",
         }}
       >
           <PanelHeader title={t("settings.title")} onClose={onClose} />
@@ -259,20 +261,49 @@ type VolumeSettingProps = {
 
 function VolumeSetting({ icon, label, value, onChange }: VolumeSettingProps) {
   const pct = Math.round(value * 100);
+  const prevRef = useRef(value || 0.5);
+  const isMuted = value === 0;
+
+  // Keep the ref updated when user drags the slider to a non-zero value
+  if (value > 0) prevRef.current = value;
+
+  const toggleMute = () => {
+    if (isMuted) {
+      onChange(prevRef.current || 0.5);
+    } else {
+      onChange(0);
+    }
+  };
 
   return (
     <Flex direction="column" gap="2">
       <Flex align="center" justify="space-between">
-        <Flex align="center" gap="2" color={T.goldText}>
-          <Box color={T.goldDark}>{icon}</Box>
-          <Text fontFamily={T.display} fontSize="12px" fontWeight="600" letterSpacing="0.5px">
+        <Flex align="center" gap="2" color={isMuted ? T.goldDark : T.goldText}>
+          <Box
+            color={isMuted ? T.goldDark : T.goldDark}
+            cursor="pointer"
+            onClick={toggleMute}
+            _hover={{ color: T.gold }}
+            transition="color 0.12s"
+            title={isMuted ? "Unmute" : "Mute"}
+          >
+            {isMuted ? <VolumeX size={15} /> : icon}
+          </Box>
+          <Text
+            fontFamily={T.display}
+            fontSize="12px"
+            fontWeight="600"
+            letterSpacing="0.5px"
+            textDecoration={isMuted ? "line-through" : "none"}
+            opacity={isMuted ? 0.5 : 1}
+          >
             {label}
           </Text>
         </Flex>
         <Text
           fontFamily="mono"
           fontSize="11px"
-          color={T.gold}
+          color={isMuted ? T.goldDark : T.gold}
           fontWeight="700"
           minW="34px"
           textAlign="right"

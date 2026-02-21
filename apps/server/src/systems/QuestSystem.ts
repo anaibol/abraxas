@@ -91,7 +91,7 @@ export class QuestSystem {
       const current = state.progress[target] || 0;
       if (current >= relevantReq.count) continue;
 
-      const reachedCount = (state.progress[relevantReq.target] || 0) >= relevantReq.count;
+      // Bug #92: Update progress BEFORE checking reachedCount to avoid stale reads
       state.progress[target] = Math.min(relevantReq.count, current + amount);
       const nowReachedCount = (state.progress[relevantReq.target] || 0) >= relevantReq.count;
 
@@ -99,8 +99,8 @@ export class QuestSystem {
         state.status = "COMPLETED";
       }
 
-      // Only sync to DB if quest completed or if we hit a target goal
-      if (state.status === "COMPLETED" || nowReachedCount !== reachedCount) {
+      // Bug #92: Always sync when progress changed (we've already guarded against no-change above)
+      if (state.status === "COMPLETED" || nowReachedCount) {
         await prisma.characterQuest.updateMany({
           where: { characterId: charId, quest: { code: state.questId } },
           data: { status: state.status, progressJson: state.progress },
@@ -130,10 +130,11 @@ export class QuestSystem {
     return questDef;
   }
 
-  getAvailableQuests(charId: string, npcId: string): string[] {
+  // Bug #93: Renamed from npcId to npcType — the param is actually the NPC type, not a session ID
+  getAvailableQuests(charId: string, npcType: string): string[] {
     const quests = this.charQuests.get(charId) ?? new Map();
     return Object.values(QUESTS)
-      .filter((q) => q.npcId === npcId && !quests.has(q.id))
+      .filter((q) => q.npcId === npcType && !quests.has(q.id))
       .map((q) => q.id);
   }
 

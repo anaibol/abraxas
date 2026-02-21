@@ -422,6 +422,7 @@ export class CombatSystem {
     }
 
     caster.lastGcdMs = now;
+    // Bug #7: Melee timer intentionally set on ability cast to prevent ability→melee weaving
     this.lastMeleeMs.set(caster.sessionId, now);
 
     const windup: WindupAction = {
@@ -837,15 +838,18 @@ export class CombatSystem {
       MathUtils.isInSafeZone(target.tileX, target.tileY, this.map.safeZones)
     )
       return false;
-    if (attacker.isPlayer() && target.isPlayer()) {
+    // GMs/admins can attack anyone — skip PvP flag requirements
+    const attackerIsGM = attacker.isPlayer() && (attacker.role === "ADMIN" || attacker.role === "GM");
+    if (!attackerIsGM && attacker.isPlayer() && target.isPlayer()) {
       if (!attacker.pvpEnabled || !target.pvpEnabled) return false;
     }
     return true;
   }
 
   private isValidTarget(attacker: Entity, target: Entity, ability: Ability): boolean {
+    // Bug #5: Include pickpocket in the harmful list
     const harmful =
-      ["damage", "dot", "stun", "debuff", "leech", "reveal"].includes(ability.effect) ||
+      ["damage", "dot", "stun", "debuff", "leech", "reveal", "pickpocket"].includes(ability.effect) ||
       ability.baseDamage > 0 ||
       ability.buffStat === StatType.STUN;
 

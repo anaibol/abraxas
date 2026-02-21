@@ -28,6 +28,7 @@ import type { MovementSystem } from "./MovementSystem";
 import type { NpcSpawner } from "./NpcSpawner";
 
 /** Scan for targets every N ticks (~500 ms at 20 TPS). */
+// Bug #35: Tick-based interval (10 ticks = 500ms at 20 TPS). Acceptable for fixed tick rate.
 const IDLE_SCAN_INTERVAL = 10;
 
 /** Flee when HP falls below this fraction of max HP. */
@@ -507,11 +508,12 @@ export class NpcSystem {
 
     npc.exp += amount;
 
-    let nextLevelExp = EXP_TABLE[npc.level] || npc.level * 100;
+    // Bug #33: Use Math.max to prevent 0 XP requirements, cap fallback at level * 200
+    let nextLevelExp = EXP_TABLE[npc.level] || Math.max(100, npc.level * 200);
     while (npc.exp >= nextLevelExp) {
       npc.exp -= nextLevelExp;
       this.levelUp(npc, roomId, broadcast);
-      nextLevelExp = EXP_TABLE[npc.level] || npc.level * 100;
+      nextLevelExp = EXP_TABLE[npc.level] || Math.max(100, npc.level * 200);
     }
   }
 

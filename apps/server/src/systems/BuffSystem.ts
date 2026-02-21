@@ -134,7 +134,9 @@ export class BuffSystem {
   applySpawnProtection(sessionId: string, durationMs: number, now: number): void {
     const s = this.getState(sessionId);
     s.spawnProtectedUntil = now + durationMs;
-    // Clear any active DoTs so they don't deal damage during the protection window
+    // Bug #26: Intentionally clear DoTs — prevents death during protection window.
+    // Players could theoretically abuse this to cleanse fatal DoTs, but the alternative
+    // (dying during spawn protection) is worse UX.
     s.dots = [];
   }
 

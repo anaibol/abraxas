@@ -144,6 +144,55 @@ export class AdminHandlers {
         });
         break;
       }
+      case "ct": {
+        const targetMap = args[1];
+        const targetX = parseInt(args[2]);
+        const targetY = parseInt(args[3]);
+        if (!targetMap || Number.isNaN(targetX) || Number.isNaN(targetY)) {
+          HandlerUtils.sendError(client, "Usage: /gm ct <mapName> <x> <y>");
+          return;
+        }
+        if (!ctx.map.warps) ctx.map.warps = [];
+        ctx.map.warps.push({
+          x: player.tileX,
+          y: player.tileY,
+          targetMap,
+          targetX,
+          targetY,
+        });
+        client.send(ServerMessageType.Notification, {
+          message: `[GM] Teleport created at ${player.tileX},${player.tileY} → ${targetMap} (${targetX},${targetY})`,
+        });
+        logger.info({
+          room: ctx.roomId,
+          sessionId: client.sessionId,
+          message: `[GM] ${player.name} created teleport at ${player.tileX},${player.tileY} → ${targetMap} (${targetX},${targetY})`,
+        });
+        break;
+      }
+      case "dt": {
+        if (!ctx.map.warps || ctx.map.warps.length === 0) {
+          HandlerUtils.sendError(client, "No warps on this map");
+          return;
+        }
+        const idx = ctx.map.warps.findIndex(
+          (w) => w.x === player.tileX && w.y === player.tileY,
+        );
+        if (idx === -1) {
+          HandlerUtils.sendError(client, "No teleport at your current tile");
+          return;
+        }
+        const removed = ctx.map.warps.splice(idx, 1)[0];
+        client.send(ServerMessageType.Notification, {
+          message: `[GM] Removed teleport at ${player.tileX},${player.tileY} (was → ${removed.targetMap} ${removed.targetX},${removed.targetY})`,
+        });
+        logger.info({
+          room: ctx.roomId,
+          sessionId: client.sessionId,
+          message: `[GM] ${player.name} removed teleport at ${player.tileX},${player.tileY}`,
+        });
+        break;
+      }
       case "tp": {
         const x = parseInt(args[1]);
         const y = parseInt(args[2]);
@@ -200,7 +249,7 @@ export class AdminHandlers {
         } else {
           HandlerUtils.sendError(
             client,
-            "Commands: item, gold, xp, heal, spawn, announce, tp, goto",
+            "Commands: item, gold, xp, heal, spawn, announce, tp, goto, ct, dt",
           );
         }
         break;

@@ -229,9 +229,10 @@ export class BankSystem {
 
   private getNextIndex(items: InventoryEntry[]): number {
     const used = new Set(items.map((i) => i.slotIndex));
-    for (let i = 0; i < 1000; i++) {
+    // Bug #55: Cap at 50 (actual bank size limit) instead of 1000
+    for (let i = 0; i < 50; i++) {
       if (!used.has(i)) return i;
     }
-    return 999;
+    return 49;
   }
 }

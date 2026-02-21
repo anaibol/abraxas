@@ -155,7 +155,8 @@ export class NpcSpawner {
 
   /** Spawn a single NPC at a random walkable tile. */
   spawnNpc(type: NpcType, map: TileMap, ownerId?: string): Npc | undefined {
-    for (let attempt = 0; attempt < 20; attempt++) {
+    // Bug #39: Increased from 20 to 50 attempts for smaller/crowded maps
+    for (let attempt = 0; attempt < 50; attempt++) {
       const rx = Math.floor(Math.random() * map.width);
       const ry = Math.floor(Math.random() * map.height);
       if (map.collision[ry]?.[rx] !== 0) continue;

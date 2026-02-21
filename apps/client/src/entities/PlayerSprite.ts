@@ -197,8 +197,8 @@ export class PlayerSprite {
     }
     this.updateHeadPosition();
 
-    const nameColor =
-      role === "ADMIN" ? "#ff4444" : role === "GM" ? "#44ff44" : isLocal ? "#ffffff" : "#cccccc";
+    const isGM = role === "ADMIN" || role === "GM";
+    const nameColor = isGM ? "#44ff44" : isLocal ? "#ffffff" : "#cccccc";
     this.nameText = scene.add.text(0, TILE_SIZE / 2 + 6, name, {
       ...GAME_TEXT_STYLE,
       color: nameColor,

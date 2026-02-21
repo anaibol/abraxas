@@ -183,7 +183,8 @@ export const Minimap: FC<MinimapProps> = ({
     return () => cancelAnimationFrame(rafId);
   }, [map, size, markers]);
 
-  const handleCanvasClick = (e: MouseEvent<HTMLCanvasElement>) => {
+  const handleContextMenu = (e: MouseEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
     if (!isGM || !onGMClick) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const relX = e.clientX - rect.left;
@@ -221,13 +222,13 @@ export const Minimap: FC<MinimapProps> = ({
         width: `${size}px`,
         height: `${size}px`,
         zIndex: 40,
-        pointerEvents: isGM ? "auto" : "none",
-        cursor: isGM ? "crosshair" : undefined,
+        pointerEvents: "auto",
+        cursor: isGM ? "crosshair" : "default",
       }}
     >
       <canvas
         ref={canvasRef}
-        onClick={handleCanvasClick}
+        onContextMenu={handleContextMenu}
         style={{ display: "block", width: "100%", height: "100%" }}
       />
     </div>

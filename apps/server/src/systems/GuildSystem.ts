@@ -75,7 +75,8 @@ export class GuildSystem {
     // Resolve target by name
     let targetSessionId: string | undefined;
     for (const [sid, p] of this.state.players) {
-      if (p.name === targetName) {
+      // Bug #81: Case-insensitive match to prevent wrong-player invites
+      if (p.name.toLowerCase() === targetName.toLowerCase()) {
         targetSessionId = sid;
         break;
       }

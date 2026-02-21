@@ -20,12 +20,18 @@ export class MovementSystem {
   ) {}
 
   /** Instantly moves an entity to the target tile, updating the spatial grid. */
-  teleport(entity: Entity, tileX: number, tileY: number): void {
+  teleport(entity: Entity, tileX: number, tileY: number, map?: TileMap): boolean {
+    // Bug #70: Validate bounds and collision
+    if (map) {
+      if (tileX < 0 || tileX >= map.width || tileY < 0 || tileY >= map.height) return false;
+      if (map.collision[tileY]?.[tileX] === 1) return false;
+    }
     const oldX = entity.tileX;
     const oldY = entity.tileY;
     entity.tileX = tileX;
     entity.tileY = tileY;
     this.spatial.updatePosition(entity, oldX, oldY);
+    return true;
   }
 
   /**

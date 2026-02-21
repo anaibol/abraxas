@@ -4,6 +4,9 @@ import { HandlerUtils } from "../handlers/HandlerUtils";
 import type { GameState } from "../schema/GameState";
 import { Group } from "../schema/Group";
 
+// Bug #88: Named constant for group size cap
+const MAX_GROUP_SIZE = 5;
+
 export class SocialSystem {
   private invitations = new Map<
     string,
@@ -82,12 +85,14 @@ export class SocialSystem {
     const group = this.state.groups.get(groupId);
     const player = this.state.players.get(client.sessionId);
 
-    if (!group || !player) {
+    // Bug #86: Verify the inviter is still in the group
+    if (!group || !player || !group.memberIds.includes(invite.inviterSessionId)) {
       this.clearInvitation(client.sessionId);
+      HandlerUtils.sendError(client, "social.invite_expired");
       return;
     }
 
-    if (group.memberIds.length >= 5) {
+    if (group.memberIds.length >= MAX_GROUP_SIZE) {
       HandlerUtils.sendError(client, "social.group_full");
       this.clearInvitation(client.sessionId);
       return;
