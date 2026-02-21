@@ -3,6 +3,7 @@ import Phaser from "phaser";
 import type { Drop } from "../../../server/src/schema/Drop";
 import type { EffectManager } from "../managers/EffectManager";
 import { FONTS, getGameTextResolution } from "../ui/tokens";
+import { RENDER_LAYERS } from "../utils/depth";
 
 
 // ─── Texture keys ────────────────────────────────────────────────────────────

@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { WelcomeData, TILE_SIZE } from "@abraxas/shared";
+import { RENDER_LAYERS } from "../utils/depth";
 
 // ── Seeded deterministic hash (fast integer) ─────────────────────────────────
 function tileHash(x: number, y: number, seed: number): number {
@@ -238,12 +239,12 @@ export class MapBaker {
 
 		const img = this.scene.add.image(0, 0, TEX_MAP_BG);
 		img.setOrigin(0, 0);
-		img.setDepth(0);
+		img.setDepth(RENDER_LAYERS.BACKGROUND);
 
 		// ── Water ripple overlay (animated in update) ────────────────────────
 		if (this.waterTiles.length > 0) {
 			this.waterOverlay = this.scene.add.graphics();
-			this.waterOverlay.setDepth(0.5);
+			this.waterOverlay.setDepth(RENDER_LAYERS.WATER_OVERLAY);
 		}
 	}
 
@@ -340,7 +341,7 @@ export class MapBaker {
 		sprite.setAlpha(0.95);
 		
 		// Sort the tree based on its geometric base Y
-		sprite.setDepth(cy / TILE_SIZE);
+		sprite.setDepth(RENDER_LAYERS.Y_SORT_BASE + cy / TILE_SIZE);
 		
 		this.treeSprites.push(sprite);
 	}
