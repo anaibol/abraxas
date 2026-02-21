@@ -1101,8 +1101,6 @@
       "complete_quest": "Complete quest",
       "goodbye": "Goodbye",
       "hello_traveler": "Hello, traveler!",
-      "greeting_merchant": "Welcome, traveler! Take a look at my wares.",
-      "greeting_banker": "Your gold is safe with us. How can I assist you?",
       "accept_prompt": "Do you accept this quest?",
       "reward_prompt": "Great work on {{title}}! Here is your reward."
     }
@@ -1278,6 +1276,17 @@
     "tutorial_talk": {
       "title": "The Adventure Begins",
       "description": "Welcome to the world of Abraxas! Talk to the merchant in town to learn the ropes."
+    }
+  },
+  "npc": {
+    "merchant": {
+      "greet_1": "Welcome! Browse my finest wares.",
+      "greet_2": "Ah, a customer! What catches your eye?",
+      "greet_3": "Step right up! Everything has a price."
+    },
+    "banker": {
+      "greet_1": "Your gold is safe with us. How may I assist you?",
+      "greet_2": "Welcome to the Royal Vault. Deposits or withdrawals?"
     }
   }
 }
