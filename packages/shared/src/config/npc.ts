@@ -27,6 +27,13 @@ export const NPC_APPEARANCE: Record<string, { bodyId: number; headId: number }> 
   decoy: { bodyId: 6, headId: 0 }, // 51×35 stout creature
 };
 
+/** NPC types that support dialogue interaction (click to talk). */
+export const FRIENDLY_NPC_TYPES: ReadonlySet<string> = new Set<string>(
+  Object.entries(_NPC_STATS)
+    .filter(([, v]) => v?.interactable)
+    .map(([k]) => k),
+);
+
 const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
   orc: {
     hp: 120,

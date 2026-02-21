@@ -255,6 +255,9 @@ export interface NpcStats extends CharStats {
   // ── Feature 34: Elite/Rare spawn timer ───────────────────────────────────
   /** How long after death before this rare NPC respawns (ms). Requires rareSpawn=true. */
   rareSpawnIntervalMs?: number;
+
+  /** When true, players can click this NPC to open a dialogue window. */
+  interactable?: boolean;
 }
 
 /** Stats for player classes — extends CharStats with a required mana pool. */

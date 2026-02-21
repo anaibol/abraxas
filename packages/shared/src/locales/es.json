@@ -1084,6 +1084,8 @@
       "complete_quest": "Completar misión",
       "goodbye": "Adiós",
       "hello_traveler": "¡Hola, viajero!",
+      "greeting_merchant": "¡Bienvenido, viajero! Echa un vistazo a mis mercancías.",
+      "greeting_banker": "Tu oro está seguro con nosotros. ¿En qué puedo ayudarte?",
       "accept_prompt": "¿Aceptas esta misión?",
       "reward_prompt": "¡Gran trabajo con {{title}}! Aquí tienes tu recompensa."
     },

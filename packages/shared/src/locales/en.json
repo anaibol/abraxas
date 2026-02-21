@@ -1101,6 +1101,8 @@
       "complete_quest": "Complete quest",
       "goodbye": "Goodbye",
       "hello_traveler": "Hello, traveler!",
+      "greeting_merchant": "Welcome, traveler! Take a look at my wares.",
+      "greeting_banker": "Your gold is safe with us. How can I assist you?",
       "accept_prompt": "Do you accept this quest?",
       "reward_prompt": "Great work on {{title}}! Here is your reward."
     }

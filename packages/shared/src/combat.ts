@@ -24,14 +24,6 @@ export interface WindupAction {
   targetSessionId?: string;
 }
 
-export interface EntityCombatState {
-  lastGcdMs: number;
-  lastMeleeMs: number;
-  spellCooldowns: Map<string, number>;
-  bufferedAction: BufferedAction | null;
-  windupAction: WindupAction | null;
-}
-
 export interface DamageResult {
   damage: number;
   dodged: boolean;

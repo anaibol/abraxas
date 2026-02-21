@@ -180,7 +180,7 @@ export class QuestSystem {
     }
 
     return {
-      text: "ui.dialogue.hello_traveler",
+      text: `ui.dialogue.greeting_${npcType}`,
       options: [{ text: "ui.dialogue.goodbye", action: "close" }],
     };
   }

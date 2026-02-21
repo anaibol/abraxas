@@ -1082,6 +1082,8 @@
       "complete_quest": "Terminer la Quête",
       "goodbye": "Au revoir",
       "hello_traveler": "Bonjour voyageur !",
+      "greeting_merchant": "Bienvenue, voyageur ! Jetez un œil à mes marchandises.",
+      "greeting_banker": "Votre or est en sécurité chez nous. Comment puis-je vous aider ?",
       "accept_prompt": "Acceptez-vous cette quête ?",
       "reward_prompt": "Beau travail sur {{title}} ! Voici votre récompense."
     },
