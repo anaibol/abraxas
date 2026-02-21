@@ -113,9 +113,6 @@ export class SpatialLookup {
 
     for (let y = minY; y <= maxY; y++) {
       for (let x = minX; x <= maxX; x++) {
-        // Quick check for Manhattan distance
-        if (Math.abs(x - cx) + Math.abs(y - cy) > radius) continue;
-
         const key = this.getKey(x, y);
         const cell = this.grid.get(key);
         if (cell) {
@@ -154,7 +151,7 @@ export class SpatialLookup {
 
     for (const entity of entities) {
       if (entity.isPlayer() && entity.isAttackable()) {
-        const dist = MathUtils.manhattanDist({ x: cx, y: cy }, entity.getPosition());
+        const dist = MathUtils.chebyshevDist({ x: cx, y: cy }, entity.getPosition());
         if (dist < minDist) {
           minDist = dist;
           nearest = entity;

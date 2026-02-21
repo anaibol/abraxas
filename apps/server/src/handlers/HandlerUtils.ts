@@ -49,7 +49,7 @@ export class HandlerUtils {
     range: number,
     errorKey: string,
   ): boolean {
-    const dist = MathUtils.manhattanDist({ x: a.tileX, y: a.tileY }, { x: b.tileX, y: b.tileY });
+    const dist = MathUtils.chebyshevDist({ x: a.tileX, y: a.tileY }, { x: b.tileX, y: b.tileY });
     if (dist > range) {
       HandlerUtils.sendHint(client, errorKey);
       return false;

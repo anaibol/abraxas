@@ -245,15 +245,16 @@ export class CombatSystem {
 
     const isRanged = stats.attackRange > 1;
 
+    const targetAtStart = this.spatial.findEntityAtTile(targetTileX, targetTileY);
+    if (!targetAtStart || !targetAtStart.alive || !this.canAttack(attacker, targetAtStart)) {
+      sendToClient?.(ServerMessageType.InvalidTarget, { reason: "dead_or_invalid" });
+      return false;
+    }
+
     if (isRanged) {
-      const target = this.spatial.findEntityAtTile(targetTileX, targetTileY);
-      if (!target || !target.alive || !this.canAttack(attacker, target)) {
-        sendToClient?.(ServerMessageType.InvalidTarget, { reason: "dead_or_invalid" });
-        return false;
-      }
-      const dist = MathUtils.manhattanDist(attacker.getPosition(), {
-        x: target.tileX,
-        y: target.tileY,
+      const dist = MathUtils.chebyshevDist(attacker.getPosition(), {
+        x: targetAtStart.tileX,
+        y: targetAtStart.tileY,
       });
       if (dist > stats.attackRange) {
         sendToClient?.(ServerMessageType.InvalidTarget, { reason: "out_of_range" });
@@ -267,6 +268,7 @@ export class CombatSystem {
       attackerSessionId: attacker.sessionId,
       targetTileX,
       targetTileY,
+      targetSessionId: targetAtStart.sessionId,
     };
 
     attacker.lastGcdMs = now;
@@ -377,7 +379,7 @@ export class CombatSystem {
     }
 
     if (ability.rangeTiles > 0) {
-      const dist = MathUtils.manhattanDist(caster.getPosition(), {
+      const dist = MathUtils.chebyshevDist(caster.getPosition(), {
         x: targetTileX,
         y: targetTileY,
       });
@@ -444,6 +446,7 @@ export class CombatSystem {
       resourceCosts: resourceCosts.length > 0 ? resourceCosts : undefined,
       cooldownAbilityId: abilityId,
       cooldownMs: ability.cooldownMs,
+      targetSessionId: this.spatial.findEntityAtTile(targetTileX, targetTileY)?.sessionId,
     };
 
     this.activeWindups.set(caster.sessionId, windup);
@@ -503,7 +506,7 @@ export class CombatSystem {
     if (target && target.alive && this.canAttack(attacker, target)) {
       const stats = attacker.getStats();
       if (!stats) return;
-      const dist = MathUtils.manhattanDist(attacker.getPosition(), {
+      const dist = MathUtils.chebyshevDist(attacker.getPosition(), {
         x: target.tileX,
         y: target.tileY,
       });
@@ -781,10 +784,13 @@ export class CombatSystem {
       }
     } else {
       const target = this.spatial.findEntityAtTile(windup.targetTileX, windup.targetTileY);
+      if (!target || !target.alive) {
+        console.log(`[Combat] ${attacker.name} -> Empty/Dead Tile (${windup.abilityId}) at ${windup.targetTileX},${windup.targetTileY}`);
+      }
       if (target && target.alive) {
         const valid = this.isValidTarget(attacker, target, ability);
         if (valid) {
-          const dist = MathUtils.manhattanDist(attacker.getPosition(), {
+          const dist = MathUtils.chebyshevDist(attacker.getPosition(), {
             x: target.tileX,
             y: target.tileY,
           });

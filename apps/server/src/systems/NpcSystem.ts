@@ -1,6 +1,7 @@
 import {
   ABILITIES,
   AGGRO_RANGE,
+  type BarkTrigger,
   type BroadcastFn,
   type ClassStats,
   DIRECTION_DELTA,
@@ -205,7 +206,7 @@ export class NpcSystem {
       }
     }
 
-    const distToSpawn = MathUtils.manhattanDist(npc.getPosition(), {
+    const distToSpawn = MathUtils.chebyshevDist(npc.getPosition(), {
       x: npc.spawnX,
       y: npc.spawnY,
     });
@@ -229,7 +230,7 @@ export class NpcSystem {
     const nx = npc.tileX + dx;
     const ny = npc.tileY + dy;
     if (
-      MathUtils.manhattanDist({ x: nx, y: ny }, { x: npc.spawnX, y: npc.spawnY }) <=
+      MathUtils.chebyshevDist({ x: nx, y: ny }, { x: npc.spawnX, y: npc.spawnY }) <=
       PATROL_TETHER_RADIUS
     ) {
       this.movementSystem.tryMove(npc, dir, map, now, tickCount, roomId);
@@ -264,7 +265,7 @@ export class NpcSystem {
     if (this.checkAndFlee(npc)) return;
 
     const stats = NPC_STATS[npc.npcType];
-    const dist = MathUtils.manhattanDist(npc.getPosition(), target.getPosition());
+    const dist = MathUtils.chebyshevDist(npc.getPosition(), target.getPosition());
     const aggroRange = this.getAggroRange(npc);
     const maxLeash = npc.ownerId ? aggroRange * 2 : aggroRange * LEASH_MULTIPLIER;
 
@@ -297,7 +298,7 @@ export class NpcSystem {
     if (this.checkAndFlee(npc)) return;
 
     const stats = NPC_STATS[npc.npcType];
-    const dist = MathUtils.manhattanDist(npc.getPosition(), target.getPosition());
+    const dist = MathUtils.chebyshevDist(npc.getPosition(), target.getPosition());
     if (dist > stats.attackRange) {
       npc.state = NpcState.CHASE;
       return;
@@ -320,7 +321,7 @@ export class NpcSystem {
       return;
     }
 
-    const dist = MathUtils.manhattanDist(npc.getPosition(), threat.getPosition());
+    const dist = MathUtils.chebyshevDist(npc.getPosition(), threat.getPosition());
     if (dist > this.getAggroRange(npc)) {
       npc.targetId = "";
       npc.state = npc.ownerId ? NpcState.FOLLOW : NpcState.RETURN;
@@ -348,7 +349,7 @@ export class NpcSystem {
       }
     }
 
-    const dist = MathUtils.manhattanDist(npc.getPosition(), { x: npc.spawnX, y: npc.spawnY });
+    const dist = MathUtils.chebyshevDist(npc.getPosition(), { x: npc.spawnX, y: npc.spawnY });
     if (dist === 0) {
       npc.hp = npc.maxHp;
       npc.state = NpcState.IDLE;
@@ -377,7 +378,7 @@ export class NpcSystem {
     }
 
     // Leash to owner if too far
-    const distToOwner = MathUtils.manhattanDist(npc.getPosition(), owner.getPosition());
+    const distToOwner = MathUtils.chebyshevDist(npc.getPosition(), owner.getPosition());
     if (distToOwner > 15) {
       const safe = findSafeSpawn(owner.tileX, owner.tileY, map, this.spatial);
       if (safe) {
@@ -651,7 +652,7 @@ export class NpcSystem {
    * Attempts to broadcast an NPC bark to all nearby clients.
    * Rate-limited by BARK_COOLDOWN_MS per NPC.
    */
-  tryBark(npc: Npc, trigger: import("@abraxas/shared").BarkTrigger, broadcast: BroadcastFn, now?: number): void {
+  tryBark(npc: Npc, trigger: BarkTrigger, broadcast: BroadcastFn, now?: number): void {
     const stats = NPC_STATS[npc.npcType];
     const lines = stats.barks?.[trigger];
     if (!lines || lines.length === 0) return;

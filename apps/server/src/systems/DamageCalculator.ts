@@ -155,6 +155,7 @@ export class DamageCalculator {
         aSec.critChance,
         aSec.critMultiplier,
       );
+      console.log(`[Combat] Magical Damage Calc: base ${ability.baseDamage}, scaling ${scalingStatValue}, ratio ${ability.scalingRatio}, defenderInt ${defenderInt} -> Damage: ${spellRes.damage}`);
       result = {
         damage: spellRes.damage,
         crit: spellRes.crit,

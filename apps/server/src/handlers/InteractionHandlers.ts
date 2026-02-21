@@ -138,13 +138,13 @@ export class InteractionHandlers {
       });
   }
 
-  /** Returns true if the player is within `range` Manhattan tiles of any living NPC with the given type. */
+  /** Returns true if the player is within `range` Chebyshev tiles of any living NPC with the given type. */
   static isNearNpcType(ctx: RoomContext, player: Player, npcType: string, range = 3): boolean {
     return [...ctx.state.npcs.values()].some(
       (n) =>
         n.npcType === npcType &&
         n.alive &&
-        MathUtils.manhattanDist({ x: player.tileX, y: player.tileY }, { x: n.tileX, y: n.tileY }) <=
+        MathUtils.chebyshevDist({ x: player.tileX, y: player.tileY }, { x: n.tileX, y: n.tileY }) <=
           range,
     );
   }

@@ -189,8 +189,12 @@ export class GameEventHandler {
       return;
     }
 
+    console.log(`[Combat] Client received damage: target=${data.targetSessionId}, amount=${data.amount}, type=${data.type}`);
     this.effectManager.showDamage(data.targetSessionId, data.amount, data.type);
     const sprite = this.spriteManager.getSprite(data.targetSessionId);
+    if (sprite) {
+      sprite.updateHpMana(data.hpAfter, 0);
+    }
     const opts = sprite ? { sourceX: sprite.renderX, sourceY: sprite.renderY } : undefined;
 
     if (this.isSelf(data.targetSessionId)) {

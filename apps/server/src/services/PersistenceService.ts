@@ -1,4 +1,4 @@
-import type { EquipmentData, InventoryEntry } from "@abraxas/shared";
+import type { EquipmentData, InventoryEntry, ItemAffix } from "@abraxas/shared";
 import { type ClassType, Direction, ItemRarity } from "@abraxas/shared";
 import { prisma } from "../database/db";
 import { type DropType, EquipSlot, ItemRarity as PrismaItemRarity, type Prisma } from "../generated/prisma";
@@ -304,7 +304,7 @@ export class PersistenceService {
     itemId?: string;
     quantity: number;
     goldAmount: number;
-    instanceData?: { rarity: ItemRarity; nameOverride?: string; affixes: import("@abraxas/shared").ItemAffix[] };
+    instanceData?: { rarity: ItemRarity; nameOverride?: string; affixes: ItemAffix[] };
   }) {
     let itemInstanceId = data.itemId;
 
