@@ -59,6 +59,8 @@ export class PlayerSprite {
   public classType: string;
   public isLocal: boolean;
   private maxHp: number = 1;
+  private displayedHpRatio: number = 1;
+  private hpTween: Phaser.Tweens.Tween | null = null;
   private pixelsPerSecond: number;
 
   private resolver: AoGrhResolver;
@@ -1107,7 +1109,24 @@ export class PlayerSprite {
 
   updateHpMana(hp: number, _mana: number) {
     if (hp === undefined || this.maxHp === undefined || this.maxHp === 0) return;
-    this.drawHpBar(Math.min(1, Math.max(0, hp / this.maxHp)));
+    const targetRatio = Math.min(1, Math.max(0, hp / this.maxHp));
+
+    if (this.displayedHpRatio === targetRatio) return;
+
+    if (this.hpTween) {
+      this.hpTween.stop();
+    }
+
+    // Smoothly animate the health bar to the new value
+    this.hpTween = this.uiContainer.scene.tweens.add({
+      targets: this,
+      displayedHpRatio: targetRatio,
+      duration: 250,
+      ease: "Sine.easeOut",
+      onUpdate: () => {
+        this.drawHpBar(this.displayedHpRatio);
+      }
+    });
   }
 
   setHpBarVisibility(visible: boolean) {
