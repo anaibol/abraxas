@@ -13,15 +13,73 @@ type BurstConfig = {
   scale: { start: number; end: number };
   lifespan: { min: number; max: number };
   angle?: { min: number; max: number };
-  gravityY?: number;
   radius?: number;
   blendMode?: number;
   rotate?: { start: number; end: number };
   alpha?: { start: number; end: number };
-  drag?: number;
-  accelerationX?: { min: number; max: number };
-  accelerationY?: { min: number; max: number };
+
+  // ── Physics ──────────────────────────────────────────────────────────────
+  gravityX?: number;
+  gravityY?: number;
+  accelerationX?: Phaser.Types.GameObjects.Particles.EmitterOpOnEmitType;
+  accelerationY?: Phaser.Types.GameObjects.Particles.EmitterOpOnEmitType;
+  maxVelocityX?: number;
+  maxVelocityY?: number;
+  bounce?: number;
+  bounds?: { x: number; y: number; width: number; height: number };
+  collideBottom?: boolean;
+
+  // ── Color interpolation (overrides `colors` tint when set) ───────────────
+  color?: number[];       // lifecycle color gradient, e.g. [0xffffff, 0xff8800, 0xff2200, 0x331100]
+  colorEase?: string;     // easing for color transitions, e.g. "Quad.Out"
+
+  // ── Easing curves ────────────────────────────────────────────────────────
+  scaleEase?: string;     // e.g. "Cubic.Out" for non-linear scale
+  alphaEase?: string;     // e.g. "Sine.In" for natural fade
+
+  // ── Independent axes ─────────────────────────────────────────────────────
+  scaleX?: { start: number; end: number };
+  scaleY?: { start: number; end: number };
+  speedX?: { min: number; max: number };
+  speedY?: { min: number; max: number };
+
+  // ── Zones ────────────────────────────────────────────────────────────────
+  emitZone?: Phaser.Types.GameObjects.Particles.EmitZoneData;
+  deathZone?: Phaser.Types.GameObjects.Particles.DeathZoneObject;
+
+  // ── Attraction / Implosion ───────────────────────────────────────────────
+  moveToX?: number;
+  moveToY?: number;
+
+  // ── Callbacks ────────────────────────────────────────────────────────────
+  onEmit?: Phaser.Types.GameObjects.Particles.ParticleEmitterCallback;
+  onDeath?: Phaser.Types.GameObjects.Particles.ParticleDeathCallback;
+
+  // ── Misc ─────────────────────────────────────────────────────────────────
+  hold?: number;          // ms to hold at end of life before recycling
 };
+
+// ── Element-based physics presets ─────────────────────────────────────────────
+// Spread these into BurstConfig to get physically correct defaults per element.
+
+const PHYSICS = {
+  /** Hot particles rise (buoyancy), affected by thermals */
+  FIRE: { gravityY: -65, accelerationY: { min: -20, max: -80 }, maxVelocityY: 200 } as Partial<BurstConfig>,
+  /** Cold particles drift slowly, lateral air resistance */
+  ICE: { gravityY: 12, accelerationX: { min: -15, max: 15 }, maxVelocityX: 60 } as Partial<BurstConfig>,
+  /** Holy particles float upward gently */
+  HOLY: { gravityY: -40, accelerationY: { min: -5, max: -20 } } as Partial<BurstConfig>,
+  /** Dark particles sink, heavy */
+  DARK: { gravityY: 30, maxVelocityY: 80 } as Partial<BurstConfig>,
+  /** Poison bubbles up slowly */
+  POISON: { gravityY: -20, accelerationY: { min: -10, max: 10 }, bounce: 0.3 } as Partial<BurstConfig>,
+  /** Earth debris falls with strong gravity, bounces on ground */
+  EARTH: { gravityY: 180, bounce: 0.4, collideBottom: true } as Partial<BurstConfig>,
+  /** Lightning — no gravity, extreme speed */
+  LIGHTNING: { gravityY: 0, maxVelocityX: 400, maxVelocityY: 400 } as Partial<BurstConfig>,
+  /** Smoke rises and decelerates, volumetric expansion */
+  SMOKE: { gravityY: -14, maxVelocityY: 50, scaleEase: "Cubic.Out", alphaEase: "Sine.In" } as Partial<BurstConfig>,
+} as const;
 
 // ── Procedural texture keys ───────────────────────────────────────────────────
 
@@ -61,8 +119,8 @@ const SPELL_FX: Record<string, FxRecipe> = {
   ice_bolt: {
     rings: [{ color: 0x44ddff, start: 4, end: 40, duration: 198, alpha: 0.85, width: 1 }],
     bursts: [
-      { tex: "SHARD", colors: [0x88eeff, 0x44aaff, 0xccffff, 0xffffff], count: 11, speed: { min: 80, max: 190 }, scale: { start: 0.45, end: 0.0 }, lifespan: { min: 180, max: 372 }, rotate: { start: 0, end: 360 } },
-      { tex: "CIRCLE", colors: [0xffffff, 0xaaeeff], count: 7, speed: { min: 15, max: 55 }, scale: { start: 0.2, end: 0.0 }, lifespan: { min: 330, max: 570 }, gravityY: -28, radius: 10 },
+      { tex: "SHARD", colors: [], color: [0xffffff, 0x88eeff, 0x44aaff, 0x224488], count: 11, speed: { min: 80, max: 190 }, scale: { start: 0.45, end: 0.0 }, lifespan: { min: 180, max: 372 }, rotate: { start: 0, end: 360 }, ...PHYSICS.ICE },
+      { tex: "CIRCLE", colors: [], color: [0xffffff, 0xaaeeff, 0x4488cc], count: 7, speed: { min: 15, max: 55 }, scale: { start: 0.2, end: 0.0 }, scaleEase: "Sine.Out", lifespan: { min: 330, max: 570 }, ...PHYSICS.ICE, gravityY: -28, radius: 10 },
     ],
   },
   arcane_surge: {
@@ -72,7 +130,7 @@ const SPELL_FX: Record<string, FxRecipe> = {
       { color: 0xffffff, start: 5, end: 42, duration: 186, alpha: 0.7, width: 1, delay: 60 },
     ],
     bursts: [
-      { tex: "CIRCLE", colors: [0xaa44ff, 0xcc88ff, 0xffccff, 0xffffff], count: 17, speed: { min: 70, max: 200 }, scale: { start: 0.52, end: 0.0 }, lifespan: { min: 210, max: 450 }, gravityY: -32, radius: 5 },
+      { tex: "CIRCLE", colors: [], color: [0xffffff, 0xcc88ff, 0xaa44ff, 0x330066], colorEase: "Quad.Out", count: 17, speed: { min: 70, max: 200 }, scale: { start: 0.52, end: 0.0 }, scaleEase: "Cubic.Out", lifespan: { min: 210, max: 450 }, gravityY: -32, radius: 5 },
     ],
   },
   mana_shield: {
@@ -108,7 +166,7 @@ const SPELL_FX: Record<string, FxRecipe> = {
   enrage: {
     flash: { color: 0xff4400, size: 28, duration: 72 },
     rings: [{ color: 0xff4400, start: 5, end: 52, duration: 276, alpha: 0.85, width: 2 }],
-    bursts: [{ tex: "CIRCLE", colors: [0xff2200, 0xff8800, 0xffcc00], count: 16, speed: { min: 70, max: 165 }, scale: { start: 0.45, end: 0.0 }, lifespan: { min: 240, max: 492 }, radius: 13 }],
+    bursts: [{ tex: "CIRCLE", colors: [], color: [0xffffff, 0xff8800, 0xff2200, 0x440000], colorEase: "Quad.Out", count: 16, speed: { min: 70, max: 165 }, scale: { start: 0.45, end: 0.0 }, scaleEase: "Cubic.Out", lifespan: { min: 240, max: 492 }, ...PHYSICS.FIRE, radius: 13 }],
   },
   // ── Priest / Holy ──
   holy_nova: {
@@ -117,15 +175,15 @@ const SPELL_FX: Record<string, FxRecipe> = {
       { color: 0xffffcc, start: 5, end: 60, duration: 270, alpha: 0.9, width: 2 },
       { color: 0xffcc88, start: 5, end: 60, duration: 285, alpha: 0.5, width: 1, delay: 100 },
     ],
-    bursts: [{ tex: "STAR", colors: [0xffffff, 0xffff88, 0xffee44, 0xffcc00], count: 16, speed: { min: 40, max: 140 }, scale: { start: 0.45, end: 0.0 }, lifespan: { min: 240, max: 510 }, rotate: { start: 0, end: 360 }, gravityY: -30 }],
+    bursts: [{ tex: "STAR", colors: [], color: [0xffffff, 0xffff88, 0xffcc00, 0x886600], colorEase: "Sine.Out", count: 16, speed: { min: 40, max: 140 }, scale: { start: 0.45, end: 0.0 }, lifespan: { min: 240, max: 510 }, rotate: { start: 0, end: 360 }, ...PHYSICS.HOLY }],
   },
   heal: {
     flash: { color: 0x44ff88, size: 20, duration: 72 },
     rings: [{ color: 0x33dd66, start: 5, end: 42, duration: 228, alpha: 0.85, width: 1 }],
     bursts: [
-      { tex: "CROSS", colors: [0x44ff88, 0xffffff, 0xaaffcc], count: 12, speed: { min: 20, max: 80 }, scale: { start: 0.42, end: 0.0 }, lifespan: { min: 300, max: 570 }, rotate: { start: 0, end: 360 }, gravityY: -48, radius: 9 },
-      { tex: "CIRCLE", colors: [0x33dd66, 0x88ffaa], count: 8, speed: { min: 15, max: 50 }, scale: { start: 0.26, end: 0.0 }, lifespan: { min: 360, max: 660 }, gravityY: -55, radius: 13 },
-      { tex: "STAR", colors: [0xffffff, 0xaaffcc], count: 4, speed: { min: 25, max: 55 }, scale: { start: 0.29, end: 0.0 }, lifespan: { min: 420, max: 720 }, rotate: { start: 0, end: 360 }, gravityY: -60, radius: 11 },
+      { tex: "CROSS", colors: [], color: [0xffffff, 0x88ffcc, 0x44ff88, 0x228844], count: 12, speed: { min: 20, max: 80 }, scale: { start: 0.42, end: 0.0 }, lifespan: { min: 300, max: 570 }, rotate: { start: 0, end: 360 }, ...PHYSICS.HOLY, gravityY: -48, radius: 9 },
+      { tex: "CIRCLE", colors: [0x33dd66, 0x88ffaa], count: 8, speed: { min: 15, max: 50 }, scale: { start: 0.26, end: 0.0 }, scaleEase: "Sine.Out", lifespan: { min: 360, max: 660 }, ...PHYSICS.HOLY, gravityY: -55, radius: 13 },
+      { tex: "STAR", colors: [0xffffff, 0xaaffcc], count: 4, speed: { min: 25, max: 55 }, scale: { start: 0.29, end: 0.0 }, lifespan: { min: 420, max: 720 }, rotate: { start: 0, end: 360 }, ...PHYSICS.HOLY, gravityY: -60, radius: 11 },
     ],
   },
   divine_shield: {
@@ -134,12 +192,12 @@ const SPELL_FX: Record<string, FxRecipe> = {
       { color: 0xffdd44, start: 5, end: 48, duration: 252, alpha: 0.9, width: 2 },
       { color: 0xffee88, start: 5, end: 50, duration: 342, alpha: 0.7, width: 1, delay: 100 },
     ],
-    bursts: [{ tex: "STAR", colors: [0xffffff, 0xffff44, 0xffcc00], count: 10, speed: { min: 15, max: 60 }, scale: { start: 0.36, end: 0.0 }, lifespan: { min: 360, max: 660 }, rotate: { start: 0, end: 360 }, gravityY: -42, radius: 16 }],
+    bursts: [{ tex: "STAR", colors: [], color: [0xffffff, 0xffff88, 0xffcc00, 0x886600], count: 10, speed: { min: 15, max: 60 }, scale: { start: 0.36, end: 0.0 }, lifespan: { min: 360, max: 660 }, rotate: { start: 0, end: 360 }, ...PHYSICS.HOLY, gravityY: -42, radius: 16 }],
   },
   holy_strike: {
     flash: { color: 0xffffaa, size: 18, duration: 80 },
     rings: [{ color: 0xffdd44, start: 4, end: 35, duration: 180, alpha: 0.85, width: 1 }],
-    bursts: [{ tex: "STAR", colors: [0xffffff, 0xffff88, 0xffcc00], count: 8, speed: { min: 50, max: 130 }, scale: { start: 0.36, end: 0.0 }, lifespan: { min: 150, max: 330 }, rotate: { start: 0, end: 360 } }],
+    bursts: [{ tex: "STAR", colors: [], color: [0xffffff, 0xffff88, 0xffcc00], count: 8, speed: { min: 50, max: 130 }, scale: { start: 0.36, end: 0.0 }, lifespan: { min: 150, max: 330 }, rotate: { start: 0, end: 360 }, ...PHYSICS.HOLY }],
   },
   // ── Rogue ──
   smoke_bomb: {
@@ -149,15 +207,15 @@ const SPELL_FX: Record<string, FxRecipe> = {
       { color: 0x222222, start: 5, end: 70, duration: 408, alpha: 0.45, width: 1, delay: 100 },
     ],
     bursts: [
-      { tex: "SMOKE", colors: [0x222222, 0x333333, 0x444444, 0x555555], count: 20, speed: { min: 20, max: 70 }, scale: { start: 0.78, end: 0.13 }, lifespan: { min: 360, max: 840 }, gravityY: -18, radius: 18, blendMode: 0 /* NORMAL */, alpha: { start: 0.7, end: 0 } },
+      { tex: "SMOKE", colors: [], color: [0x666666, 0x444444, 0x333333, 0x111111], count: 20, speed: { min: 20, max: 70 }, scale: { start: 0.78, end: 0.13 }, ...PHYSICS.SMOKE, lifespan: { min: 360, max: 840 }, gravityY: -18, radius: 18, blendMode: 0, alpha: { start: 0.7, end: 0 } },
     ],
   },
   hemorrhage: {
     flash: { color: 0xdd2222, size: 16, duration: 80 },
     rings: [{ color: 0xcc1111, start: 4, end: 36, duration: 192, alpha: 0.85, width: 1 }],
     bursts: [
-      { tex: "CIRCLE", colors: [0xff2222, 0xdd0000, 0x880000], count: 11, speed: { min: 50, max: 140 }, scale: { start: 0.39, end: 0.0 }, lifespan: { min: 150, max: 312 }, gravityY: 55, radius: 5 },
-      { tex: "CIRCLE", colors: [0xff4444, 0xcc0000], count: 6, speed: { min: 30, max: 80 }, scale: { start: 0.23, end: 0.0 }, lifespan: { min: 240, max: 468 }, angle: { min: 210, max: 330 }, gravityY: 120 },
+      { tex: "CIRCLE", colors: [], color: [0xff4444, 0xdd0000, 0x880000, 0x220000], count: 11, speed: { min: 50, max: 140 }, scale: { start: 0.39, end: 0.0 }, lifespan: { min: 150, max: 312 }, gravityY: 55, radius: 5 },
+      { tex: "CIRCLE", colors: [0xff4444, 0xcc0000], count: 6, speed: { min: 30, max: 80 }, scale: { start: 0.23, end: 0.0 }, lifespan: { min: 240, max: 468 }, angle: { min: 210, max: 330 }, gravityY: 120, ...PHYSICS.EARTH, bounce: 0.2 },
     ],
   },
   backstab: {
@@ -210,8 +268,8 @@ const SPELL_FX: Record<string, FxRecipe> = {
   fire_breath: {
     rings: [{ color: 0xff4400, start: 5, end: 72, duration: 312, alpha: 0.85, width: 3 }],
     bursts: [
-      { tex: "CIRCLE", colors: [0xff2200, 0xff7700, 0xffcc00, 0xffee88], count: 24, speed: { min: 60, max: 185 }, scale: { start: 0.59, end: 0.0 }, lifespan: { min: 240, max: 552 }, gravityY: -35, radius: 27 },
-      { tex: "SMOKE", colors: [0x883300, 0x441100], count: 9, speed: { min: 20, max: 62 }, scale: { start: 0.72, end: 0.13 }, lifespan: { min: 360, max: 750 }, gravityY: -22, radius: 24, blendMode: 0, alpha: { start: 0.52, end: 0 } },
+      { tex: "CIRCLE", colors: [], color: [0xffffff, 0xffcc00, 0xff4400, 0x441100], colorEase: "Quad.Out", count: 24, speed: { min: 60, max: 185 }, scale: { start: 0.59, end: 0.0 }, scaleEase: "Cubic.Out", lifespan: { min: 240, max: 552 }, ...PHYSICS.FIRE, radius: 27 },
+      { tex: "SMOKE", colors: [0x883300, 0x441100], count: 9, speed: { min: 20, max: 62 }, scale: { start: 0.72, end: 0.13 }, lifespan: { min: 360, max: 750 }, ...PHYSICS.SMOKE, gravityY: -22, radius: 24, blendMode: 0, alpha: { start: 0.52, end: 0 } },
     ],
   },
   frost_breath: {
@@ -274,7 +332,7 @@ const SPELL_FX: Record<string, FxRecipe> = {
     bursts: [
       { tex: "SHARD", colors: [0x44FF88, 0xAAFFCC, 0xFFFFFF], count: 12, speed: { min: 100, max: 240 }, scale: { start: 0.36, end: 0.0 }, lifespan: { min: 108, max: 228 }, angle: { min: 0, max: 360 }, rotate: { start: 0, end: 180 } },
       { tex: "CIRCLE", colors: [0x44FF88, 0x88FFCC], count: 6, speed: { min: 30, max: 80 }, scale: { start: 0.23, end: 0.0 }, lifespan: { min: 180, max: 360 }, gravityY: -40,
-      drag: 0.05, radius: 10 },
+      maxVelocityY: 60, radius: 10 },
     ],
   },
   // ── Necromancer ──
@@ -285,7 +343,7 @@ const SPELL_FX: Record<string, FxRecipe> = {
     ],
     bursts: [
       { tex: "SMOKE", colors: [0x110022, 0x330033, 0x550055], count: 14, speed: { min: 15, max: 55 }, scale: { start: 0.65, end: 0.07 }, lifespan: { min: 420, max: 900 }, gravityY: -40,
-      drag: 0.05, radius: 13, blendMode: 0, alpha: { start: 0.65, end: 0 } },
+      maxVelocityY: 50, radius: 13, blendMode: 0, alpha: { start: 0.65, end: 0 } },
       { tex: "CIRCLE", colors: [0xCC44FF, 0x8800CC, 0x4400AA], count: 9, speed: { min: 30, max: 90 }, scale: { start: 0.36, end: 0.0 }, lifespan: { min: 240, max: 510 }, gravityY: -60, radius: 9 },
     ],
   },
@@ -574,37 +632,94 @@ export class EffectManager {
     });
   }
 
-  /** One-shot particle burst at world pixel position. */
+  /** One-shot particle burst at world pixel position. Forwards all BurstConfig physics/visual properties to Phaser 4. */
   private burst(px: number, py: number, textureKey: string, cfg: BurstConfig) {
     const scaledCount = Math.max(1, Math.round(cfg.count * this.particleMultiplier()));
+
+    // ── Scale: wrap in easing config when scaleEase is set ──
+    const scaleCfg = cfg.scaleX || cfg.scaleY
+      ? undefined // handled per-axis below
+      : cfg.scaleEase
+        ? { start: cfg.scale.start, end: cfg.scale.end, ease: cfg.scaleEase }
+        : cfg.scale;
+
+    // ── Alpha: wrap in easing config when alphaEase is set ──
+    const alphaCfg = cfg.alphaEase
+      ? { start: (cfg.alpha ?? { start: 1, end: 0 }).start, end: (cfg.alpha ?? { start: 1, end: 0 }).end, ease: cfg.alphaEase }
+      : cfg.alpha ?? { start: 1, end: 0 };
+
     const emitterCfg: Phaser.Types.GameObjects.Particles.ParticleEmitterConfig = {
       speed: cfg.speed,
-      scale: cfg.scale,
       lifespan: cfg.lifespan,
       angle: cfg.angle ?? { min: 0, max: 360 },
-      tint: cfg.colors,
+      gravityX: cfg.gravityX ?? 0,
       gravityY: cfg.gravityY ?? 0,
       x: cfg.radius ? { min: -cfg.radius, max: cfg.radius } : 0,
       y: cfg.radius ? { min: -cfg.radius, max: cfg.radius } : 0,
       blendMode: cfg.blendMode ?? Phaser.BlendModes.ADD,
-      alpha: cfg.alpha ?? { start: 1, end: 0 },
+      alpha: alphaCfg,
       rotate: cfg.rotate,
       advance: 0,
     };
-    // Physics: drag decelerates particles over time (0–1, fraction of speed lost per frame)
-    if (cfg.drag != null) {
-      (emitterCfg as Record<string, unknown>).decelerate = true;
-      emitterCfg.speedX = cfg.speed;
-      emitterCfg.speedY = cfg.speed;
-      // Use moveToX/Y trick: Phaser doesn't expose drag directly on explode,
-      // so we apply gravityY to approximate drag + buoyancy.
+
+    // ── Scale (uniform or per-axis) ──
+    if (cfg.scaleX || cfg.scaleY) {
+      if (cfg.scaleX) emitterCfg.scaleX = cfg.scaleEase
+        ? { start: cfg.scaleX.start, end: cfg.scaleX.end, ease: cfg.scaleEase }
+        : cfg.scaleX;
+      if (cfg.scaleY) emitterCfg.scaleY = cfg.scaleEase
+        ? { start: cfg.scaleY.start, end: cfg.scaleY.end, ease: cfg.scaleEase }
+        : cfg.scaleY;
+    } else if (scaleCfg) {
+      emitterCfg.scale = scaleCfg;
     }
-    if (cfg.accelerationX) emitterCfg.accelerationX = cfg.accelerationX;
-    if (cfg.accelerationY) emitterCfg.accelerationY = cfg.accelerationY;
+
+    // ── Color: lifecycle interpolation vs random tint pick ──
+    if (cfg.color) {
+      emitterCfg.color = cfg.color;
+      if (cfg.colorEase) emitterCfg.colorEase = cfg.colorEase;
+    } else {
+      emitterCfg.tint = cfg.colors;
+    }
+
+    // ── Independent speed axes ──
+    if (cfg.speedX) emitterCfg.speedX = cfg.speedX;
+    if (cfg.speedY) emitterCfg.speedY = cfg.speedY;
+
+    // ── Acceleration ──
+    if (cfg.accelerationX != null) emitterCfg.accelerationX = cfg.accelerationX;
+    if (cfg.accelerationY != null) emitterCfg.accelerationY = cfg.accelerationY;
+
+    // ── Velocity limits ──
+    if (cfg.maxVelocityX != null) emitterCfg.maxVelocityX = cfg.maxVelocityX;
+    if (cfg.maxVelocityY != null) emitterCfg.maxVelocityY = cfg.maxVelocityY;
+
+    // ── Bounce + Bounds ──
+    if (cfg.bounce != null) emitterCfg.bounce = cfg.bounce;
+    if (cfg.bounds) {
+      emitterCfg.bounds = cfg.bounds;
+      if (cfg.collideBottom !== false) emitterCfg.collideBottom = cfg.collideBottom ?? true;
+    }
+
+    // ── Zones ──
+    if (cfg.emitZone) emitterCfg.emitZone = cfg.emitZone;
+    if (cfg.deathZone) emitterCfg.deathZone = cfg.deathZone;
+
+    // ── Point attraction ──
+    if (cfg.moveToX != null) emitterCfg.moveToX = cfg.moveToX;
+    if (cfg.moveToY != null) emitterCfg.moveToY = cfg.moveToY;
+
+    // ── Hold (keep particle alive after alpha reaches 0) ──
+    if (cfg.hold != null) emitterCfg.hold = cfg.hold;
+
+    // ── Callbacks ──
+    if (cfg.onEmit) emitterCfg.emitCallback = cfg.onEmit;
+    if (cfg.onDeath) emitterCfg.deathCallback = cfg.onDeath;
+
     const emitter = this.scene.add.particles(px, py, textureKey, emitterCfg);
     emitter.setDepth(15);
     emitter.explode(scaledCount);
-    this.scene.time.delayedCall(cfg.lifespan.max + 120, () => emitter.destroy());
+    this.scene.time.delayedCall(cfg.lifespan.max + (cfg.hold ?? 0) + 120, () => emitter.destroy());
   }
 
   /**
@@ -770,26 +885,32 @@ export class EffectManager {
     this.ring(px, py, 0xff4400, 5, 42, 220, 0.9, 3);
     this.scene.time.delayedCall(25, () => this.ring(px, py, 0xff8800, 10, 60, 300, 0.45, 2));
 
-    // ── 2. Core fireball blast — hot gas rises (buoyancy, negative gravity) ──
+    // ── 2. Core fireball blast — hot gas with color lifecycle (white→orange→red→dark) ──
     this.burst(px, py, TEX.CIRCLE, {
-      colors: [0xff2200, 0xff6600, 0xffbb00, 0xffee88],
+      colors: [],   // overridden by `color`
+      color: [0xffffff, 0xffcc44, 0xff6600, 0xff2200, 0x331100],
+      colorEase: "Quad.Out",
       count: 14,
       speed: { min: 60, max: 180 },
       scale: { start: 0.46, end: 0.0 },
-      lifespan: { min: 120, max: 280 },
-      gravityY: -70,          // hot gas rises fast (buoyancy)
+      scaleEase: "Cubic.Out",
+      lifespan: { min: 120, max: 300 },
+      ...PHYSICS.FIRE,
       radius: 5,
     });
 
-    // ── 3. Heavy embers — parabolic arcs (strong downward gravity) ────────
+    // ── 3. Heavy embers — parabolic arcs, bounce off ground ────────────
     this.burst(px, py, TEX.SPARK, {
       colors: [0xff6600, 0xffaa00, 0xffdd44],
       count: 10,
       speed: { min: 80, max: 200 },
       scale: { start: 0.28, end: 0.0 },
-      lifespan: { min: 250, max: 480 },
-      gravityY: 140,           // heavy embers arc downward like real sparks
-      angle: { min: 200, max: 340 },  // launch mostly upward & outward
+      lifespan: { min: 250, max: 500 },
+      ...PHYSICS.EARTH,
+      gravityY: 140,
+      bounce: 0.3,
+      bounds: { x: px - 80, y: py - 100, width: 160, height: 110 },
+      angle: { min: 200, max: 340 },
       radius: 4,
     });
 
@@ -800,12 +921,13 @@ export class EffectManager {
     // ── 5. Delayed secondary sparks — lighter, with gentle float ─────────
     this.scene.time.delayedCall(40, () => {
       this.burst(px, py, TEX.SPARK, {
-        colors: [0xff4400, 0xff8800, 0xffcc00],
+        colors: [],
+        color: [0xffee88, 0xff8800, 0x441100],
         count: 6,
         speed: { min: 30, max: 90 },
         scale: { start: 0.22, end: 0.0 },
         lifespan: { min: 180, max: 360 },
-        gravityY: 60,            // gentle fall
+        gravityY: 60,
         radius: 10,
       });
     });
@@ -844,15 +966,18 @@ export class EffectManager {
     this.ring(px, py, 0x44ccff, 5, 72, 360, 0.9, 4);
     this.scene.time.delayedCall(54, () => this.ring(px, py, 0xffffff, 5, 57, 300, 0.6, 2));
     
-    // Lingering deep cold particles
+    // Lingering deep cold particles — drift laterally with ICE physics
     this.burst(px, py, TEX.CIRCLE, {
-      colors: [0x88ddff, 0xffffff],
+      colors: [],
+      color: [0xffffff, 0xaaddff, 0x4488cc, 0x223355],
+      colorEase: "Sine.InOut",
       count: 8,
       speed: { min: 10, max: 40 },
       scale: { start: 0.26, end: 0.0 },
+      scaleEase: "Sine.Out",
       lifespan: { min: 288, max: 540 },
-      gravityY: 15, // Falling snow
-      drag: 0.05,
+      ...PHYSICS.ICE,
+      gravityY: 15,
       radius: 35,
     });
   }
@@ -907,7 +1032,7 @@ export class EffectManager {
       scale: { start: 0.31, end: 0.0 },
       lifespan: { min: 108, max: 252 },
       gravityY: 150,
-      drag: 0.05,
+      maxVelocityY: 120,
     });
   }
 
@@ -1169,7 +1294,7 @@ export class EffectManager {
       rotate: { start: 0, end: 720 },
       radius: 7,
       gravityY: -40,
-      drag: 0.05,
+      maxVelocityY: 80,
     });
     // Golden cross-shaped sparks
     this.burst(px, py, TEX.CROSS, {
@@ -1750,8 +1875,8 @@ export class EffectManager {
       speed: { min: 12, max: 40 },
       scale: { start: 0.2, end: 0.72 },
       lifespan: { min: 400, max: 800 },
+      ...PHYSICS.SMOKE,
       gravityY: -14,
-      drag: 0.06,
       radius: 8,
       blendMode: Phaser.BlendModes.NORMAL,
       alpha: { start: 0.55, end: 0 },

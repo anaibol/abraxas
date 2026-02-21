@@ -256,8 +256,16 @@ export interface NpcStats extends CharStats {
   /** How long after death before this rare NPC respawns (ms). Requires rareSpawn=true. */
   rareSpawnIntervalMs?: number;
 
-  /** When true, players can click this NPC to open a dialogue window. */
-  interactable?: boolean;
+  /** Per-NPC dialogue configuration. When set, players can click to talk. */
+  dialogue?: NpcDialogue;
+}
+
+/** Per-NPC dialogue configuration. */
+export interface NpcDialogue {
+  /** Pool of greeting locale keys — one is picked randomly each interaction. */
+  greetings: string[];
+  /** Extra dialogue options shown alongside the standard "Goodbye". */
+  options?: { text: string; action: string; response?: string }[];
 }
 
 /** Stats for player classes — extends CharStats with a required mana pool. */

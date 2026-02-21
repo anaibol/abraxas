@@ -1,5 +1,5 @@
 import type { Direction, NpcEntityState, PlayerEntityState, WelcomeData } from "@abraxas/shared";
-import { AudioAssets, CLASS_STATS, DIRECTION_DELTA, i18n, MathUtils, TILE_SIZE, VIEWPORT_TILES_X, VIEWPORT_TILES_Y } from "@abraxas/shared";
+import { AudioAssets, CLASS_STATS, DIRECTION_DELTA, FRIENDLY_NPC_TYPES, i18n, MathUtils, TILE_SIZE, VIEWPORT_TILES_X, VIEWPORT_TILES_Y } from "@abraxas/shared";
 import { Callbacks, type Room } from "@colyseus/sdk";
 import Phaser from "phaser";
 import type { Drop } from "../../../server/src/schema/Drop";
@@ -81,6 +81,7 @@ export class GameScene extends Phaser.Scene {
 
   private muteKey?: Phaser.Input.Keyboard.Key;
   private debugKey?: Phaser.Input.Keyboard.Key;
+  private pendingCooldownCb?: (abilityId: string, durationMs: number) => void;
 
   private handleVisibilityChange = () => {
     if (document.visibilityState === "visible") {
@@ -207,7 +208,7 @@ export class GameScene extends Phaser.Scene {
         if (targetNpc) {
           if (targetNpc.npcType === "horse") {
             this.network.sendTame(targetNpc.id);
-          } else {
+          } else if (FRIENDLY_NPC_TYPES.has(targetNpc.npcType)) {
             this.network.sendInteract(targetNpc.id);
           }
         }
@@ -306,7 +307,7 @@ export class GameScene extends Phaser.Scene {
           }
 
           unsub(
-            $state.listen<Player, "equipMountId">(player, "equipMountId", (newMount, oldMount) => {
+            $state.listen<Player, "equipMountId">(player, "equipMountId", (newMount: string | undefined, oldMount: string | undefined) => {
               if (newMount && newMount !== oldMount) {
                 const sprite = this.spriteManager.getSprite(sessionId);
                 const opts = sprite ? { sourceX: sprite.renderX, sourceY: sprite.renderY } : undefined;
@@ -316,7 +317,7 @@ export class GameScene extends Phaser.Scene {
           );
 
           unsub(
-            $state.listen<Player, "speedOverride">(player, "speedOverride", (newVal) => {
+            $state.listen<Player, "speedOverride">(player, "speedOverride", (newVal: number) => {
               if (newVal > 0) {
                 this.inputHandler.setSpeed(newVal);
               } else {
@@ -406,6 +407,11 @@ export class GameScene extends Phaser.Scene {
     );
     this.gameEventHandler.setupListeners();
 
+    // Apply any cooldown callback that was registered before create() ran
+    if (this.pendingCooldownCb) {
+      this.gameEventHandler.setCooldownCallback(this.pendingCooldownCb);
+    }
+
     this.ambientOverlay = this.add.graphics();
     this.ambientOverlay.setDepth(2000); // Above everything but UI
     this.ambientOverlay.setScrollFactor(0);
@@ -432,6 +438,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   public setCooldownCallback(cb: (abilityId: string, durationMs: number) => void) {
+    this.pendingCooldownCb = cb;
     if (this.gameEventHandler) {
       this.gameEventHandler.setCooldownCallback(cb);
     }
@@ -494,6 +501,7 @@ export class GameScene extends Phaser.Scene {
     this.inputHandler.update(time, () => this.getMouseTile(), this.canAct());
     this.spriteManager.update(delta);
     this.lightManager.update(time);
+    this.mapBaker.update(time);
 
     if (this.inputHandler.targeting) {
       this.updateTargetingOverlay();
@@ -508,7 +516,6 @@ export class GameScene extends Phaser.Scene {
     const localSprite = this.spriteManager.getSprite(this.room.sessionId);
     if (localSprite) {
       this.cameras.main.centerOn(localSprite.renderX, localSprite.renderY);
-      this.dropManager.updateLabels(localSprite.predictedTileX, localSprite.predictedTileY);
     }
 
     if (gameSettings.get().showDebugOverlay && localSprite) {

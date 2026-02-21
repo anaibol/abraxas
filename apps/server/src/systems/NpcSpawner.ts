@@ -69,6 +69,10 @@ export class NpcSpawner {
     const npc = new Npc();
     npc.sessionId = crypto.randomUUID();
     npc.npcType = type;
+    npc.name = type
+      .split("_")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
     npc.tileX = tileX;
     npc.tileY = tileY;
     npc.spawnX = tileX;

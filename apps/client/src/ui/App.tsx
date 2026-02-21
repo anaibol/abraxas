@@ -485,6 +485,8 @@ function AppContent() {
               },
             );
 
+            gameScene.setCooldownCallback(addCooldown);
+
             const preloaderScene = new PreloaderScene();
 
             phaserGameRef.current = new Phaser.Game({

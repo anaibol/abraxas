@@ -209,6 +209,11 @@ export class PlayerSprite {
     });
     this.nameText.setOrigin(0.5, 0);
 
+    // NPCs: hide name by default, reveal on hover
+    if (isNpc) {
+      this.nameText.setVisible(false);
+    }
+
     this.hpBarGfx = scene.add.graphics();
     this.hpBarGfx.setVisible(false); // Hide health bar by default
     this.drawHpBar(1.0);
@@ -232,6 +237,12 @@ export class PlayerSprite {
       new Phaser.Geom.Rectangle(-TILE_SIZE / 2, -TILE_SIZE, TILE_SIZE, TILE_SIZE * 2),
       Phaser.Geom.Rectangle.Contains,
     );
+
+    // Show NPC name on hover
+    if (isNpc) {
+      this.container.on("pointerover", () => this.nameText.setVisible(true));
+      this.container.on("pointerout", () => this.nameText.setVisible(false));
+    }
     this.resolver.ensureAnimation(scene, bodyGrhId, "body");
   }
 
@@ -979,7 +990,7 @@ export class PlayerSprite {
 
   /** Redraws the HP bar Graphics with a border, dark track, coloured fill, and highlight strip. */
   private drawHpBar(hpRatio: number) {
-    const barW = Math.min(TILE_SIZE - 4, this.bodyWidth);
+    const barW = TILE_SIZE - 4;
     const barH = 4;
     const bx = -barW / 2;
     const by = TILE_SIZE / 2 + 1;
