@@ -127,7 +127,7 @@ export class EffectResolver {
       if (target.hp <= 0) {
         onDeath(target, attacker.sessionId);
       }
-    } else if (ability.effect === "damage" || ability.baseDamage > 0) {
+    } else if (ability.effect === "damage") {
       const damageRes = this.dmg.calcAbilityDamage(
         attacker,
         target,
@@ -305,7 +305,8 @@ export class EffectResolver {
         target.entityType === EntityType.NPC &&
         target.alive
       ) {
-        const goldGain = Math.floor(Math.random() * 40) + 10;
+        // B18: Cap pickpocket gold gain and scale with level
+        const goldGain = Math.floor(Math.random() * 20) + 5 + Math.floor(attacker.level * 0.5);
         attacker.gold += goldGain;
         broadcast(ServerMessageType.Notification, {
           message: "game.pickpocket_success",

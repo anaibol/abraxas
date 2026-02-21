@@ -127,6 +127,9 @@ export class MessageHandler {
     const speaker = HandlerUtils.getActivePlayer(this.ctx, client);
     if (!speaker) return;
 
+    // S4: Reject oversized audio chunks (max 64KB)
+    if (!data || data.byteLength > 65_536) return;
+
     for (const [sessionId, player] of this.ctx.state.players) {
       if (sessionId === client.sessionId) continue;
       if (MathUtils.dist(speaker.getPosition(), player.getPosition()) > VOICE_RANGE) continue;

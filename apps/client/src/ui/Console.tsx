@@ -157,7 +157,7 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
       <HStack
         gap="0"
         bg="rgba(0,0,0,0.3)"
-        borderBottom="1px solid rgba(255,255,255,0.1)"
+        borderBottom="1px solid var(--chakra-colors-game-borderLight)"
         overflow="hidden"
       >
         {TABS.map((tab) => (
@@ -217,7 +217,7 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
       {isChatOpen && gmHints.length > 0 && (
         <Box
           bg="rgba(8, 6, 18, 0.96)"
-          borderTop="1px solid rgba(212, 168, 67, 0.35)"
+          borderTop="1px solid var(--chakra-colors-game-borderLight)"
           px="10px"
           py="4px"
         >

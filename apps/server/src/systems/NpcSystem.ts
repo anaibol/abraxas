@@ -432,8 +432,9 @@ export class NpcSystem {
       return;
     }
 
-    // Recalculate if target moved or path is empty
-    if (npc.pathTargetTileX !== tx || npc.pathTargetTileY !== ty || npc.path.length === 0) {
+    // P-6: Only recalculate if the target actually moved. When path is empty
+    // but target hasn't moved (unreachable), skip — the naive fallback below handles it.
+    if (npc.pathTargetTileX !== tx || npc.pathTargetTileY !== ty) {
       npc.pathTargetTileX = tx;
       npc.pathTargetTileY = ty;
       npc.path = Pathfinder.findPath(

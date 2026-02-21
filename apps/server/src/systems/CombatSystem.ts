@@ -65,12 +65,11 @@ export class CombatSystem {
     const windup = this.activeWindups.get(sessionId);
     if (windup && windup.type === "ability") {
       this.activeWindups.delete(sessionId);
+      // B24: Scope notification to the interrupted entity
       broadcast(ServerMessageType.Notification, {
         message: "game.cast_interrupted",
+        templateData: { targetSessionId: sessionId },
       });
-      // Assuming a hypothetical CastInterrupted message exists, or just clear it silently.
-      // We will clear it silently for now if the client doesn't explicitly support it,
-      // but it stops the cast from resolving.
     }
   }
 
@@ -684,7 +683,7 @@ export class CombatSystem {
     // AoE abilities with rangeTiles === 0 target a radius around the caster.
     if (ability.rangeTiles === 0) {
       const aoeRadius = ability.aoeRadius;
-      if (aoeRadius > 0) {
+      if (aoeRadius != null && aoeRadius > 0) {
         // Play the main AoE effect once at the caster tile — not once per victim.
         broadcast(ServerMessageType.CastHit, {
           sessionId: attacker.sessionId,
@@ -722,7 +721,7 @@ export class CombatSystem {
     }
 
     const aoeRadius = ability.aoeRadius;
-    if (aoeRadius > 0) {
+    if (aoeRadius != null && aoeRadius > 0) {
       // Play the main AoE effect once at the intended target tile regardless of hits.
       broadcast(ServerMessageType.CastHit, {
         sessionId: attacker.sessionId,

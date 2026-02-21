@@ -14,6 +14,7 @@ import type { NetworkManager } from "../network/NetworkManager";
 import { CameraController } from "../systems/CameraController";
 import { DropManager } from "../systems/DropManager";
 import { InputHandler } from "../systems/InputHandler";
+import { MapBaker } from "../systems/MapBaker";
 import { WeatherManager } from "../managers/WeatherManager";
 import type { WeatherType } from "../managers/WeatherManager";
 import { LightManager } from "../managers/LightManager";
@@ -64,6 +65,7 @@ export class GameScene extends Phaser.Scene {
   private lightManager!: LightManager;
   private ambientOverlay!: Phaser.GameObjects.Graphics;
   private dropManager!: DropManager;
+  private mapBaker!: MapBaker;
 
   private collisionGrid: number[][] = [];
   private stateUnsubscribers: (() => void)[] = [];
@@ -147,6 +149,9 @@ export class GameScene extends Phaser.Scene {
     // Round camera scroll to whole pixels — prevents sub-pixel shimmer
     // when the camera is manually positioned each frame.
     this.cameras.main.setRoundPixels(true);
+
+    // Bake the tile map (grass, walls, trees, water) as the scene background
+    this.mapBaker = new MapBaker(this, this.welcome);
 
     // Hook into inner-map warp command to flash the screen
     this.network.onWarp = (data) => {
