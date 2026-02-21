@@ -4,34 +4,13 @@ import { AoGrhResolver } from "../assets/AoGrhResolver";
 import { FONTS, getGameTextResolution } from "../ui/tokens";
 
 export class PreloaderScene extends Phaser.Scene {
-  private label!: Phaser.GameObjects.Text;
-
   constructor() {
     super({ key: "PreloaderScene" });
   }
 
   preload() {
-    const { width, height } = this.cameras.main;
-    const barW = 320;
-    const barH = 20;
-    const barX = (width - barW) / 2;
-    const barY = height / 2;
-
-    const bg = this.add.rectangle(width / 2, barY, barW, barH, 0x222222);
-    bg.setStrokeStyle(1, 0x666666);
-    const fill = this.add.rectangle(barX + 2, barY, 0, barH - 4, 0x44aaff);
-    fill.setOrigin(0, 0.5);
-
-    this.label = this.add.text(width / 2, barY - 24, "Loading indices...", {
-      fontSize: "14px",
-      color: "#cccccc",
-      fontFamily: FONTS.display,
-      resolution: getGameTextResolution(),
-    });
-    this.label.setOrigin(0.5);
-
     this.load.on("progress", (v: number) => {
-      fill.width = (barW - 4) * v;
+      window.dispatchEvent(new CustomEvent("abraxas-loading", { detail: { progress: v } }));
     });
 
     this.load.json("idx-graficos", "indices/graficos.json");
@@ -93,7 +72,9 @@ export class PreloaderScene extends Phaser.Scene {
       fxIds,
     );
 
-    this.label.setText(`Loading ${neededPngs.size} graphics...`);
+    const count = neededPngs.size;
+    const textMsg = `Loading ${count} graphics...`;
+    window.dispatchEvent(new CustomEvent("abraxas-loading", { detail: { text: textMsg } }));
 
     for (const pngNum of neededPngs) {
       this.load.image(`ao-${pngNum}`, `graficos/${pngNum}.webp`);

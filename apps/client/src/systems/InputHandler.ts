@@ -40,6 +40,7 @@ export class InputHandler {
   private onPttStart?: () => void;
   private onPttEnd?: () => void;
   private onTargetingCancelled?: () => void;
+  private isSpellOnCooldown?: (spellId: string) => boolean;
   private pttKey!: Phaser.Input.Keyboard.Key;
 
   targeting: TargetingState | null = null;
@@ -71,6 +72,7 @@ export class InputHandler {
     onPttEnd?: () => void,
     onRightClickTile?: (tileX: number, tileY: number, screenX: number, screenY: number) => void,
     onTargetingCancelled?: () => void,
+    isSpellOnCooldown?: (spellId: string) => boolean,
   ) {
     this.scene = scene;
     this.network = network;
@@ -82,6 +84,7 @@ export class InputHandler {
     this.onPttEnd = onPttEnd;
     this.onRightClickTile = onRightClickTile;
     this.onTargetingCancelled = onTargetingCancelled;
+    this.isSpellOnCooldown = isSpellOnCooldown;
 
     const stats = CLASS_STATS[classType];
     const speed = stats.speedTilesPerSecond;
@@ -208,6 +211,11 @@ export class InputHandler {
       if (leftClicked) {
         const mouseTile = getMouseTile();
         if (this.targeting.mode === "spell") {
+          // Prevent casting if the spell is still on cooldown
+          if (this.isSpellOnCooldown?.(this.targeting.spellId)) {
+            // Optional: emit a short error sound or notification here
+            return;
+          }
           this.network.sendCast(this.targeting.spellId, mouseTile.x, mouseTile.y);
         } else {
           this.network.sendAttack(mouseTile.x, mouseTile.y);
@@ -236,6 +244,7 @@ export class InputHandler {
   }
 
   private handleSpellKey(spellId: string, rangeTiles: number) {
+    if (this.isSpellOnCooldown?.(spellId)) return;
     if (rangeTiles > 0) {
       this.enterTargeting({ mode: "spell", spellId, rangeTiles });
     } else {

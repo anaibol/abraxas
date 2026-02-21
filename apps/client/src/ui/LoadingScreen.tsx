@@ -90,6 +90,8 @@ export function LoadingScreen() {
   const tipsRaw = t("loading.tips", { returnObjects: true });
   const tips = Array.isArray(tipsRaw) ? tipsRaw.map(String) : [];
   const [tipIndex, setTipIndex] = useState(() => Math.floor(Math.random() * 7));
+  const [loadingText, setLoadingText] = useState("");
+  const [loadingProgress, setLoadingProgress] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -97,6 +99,16 @@ export function LoadingScreen() {
     }, 4000);
     return () => clearInterval(interval);
   }, [tips.length]);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const ce = e as CustomEvent;
+      if (ce.detail?.text !== undefined) setLoadingText(ce.detail.text);
+      if (ce.detail?.progress !== undefined) setLoadingProgress(ce.detail.progress);
+    };
+    window.addEventListener("abraxas-loading", handler);
+    return () => window.removeEventListener("abraxas-loading", handler);
+  }, []);
 
   return (
     <Flex
@@ -141,13 +153,19 @@ export function LoadingScreen() {
           mb="8"
         />
 
+        {loadingProgress > 0 && (
+          <Box w="300px" h="4px" bg={`${HEX.goldDark}44`} mx="auto" mb="6" borderRadius="full" overflow="hidden">
+            <Box h="100%" bg={HEX.gold} w={`${loadingProgress * 100}%`} transition="width 0.1s" />
+          </Box>
+        )}
+
         <Flex direction="column" gap="1" maxW="400px">
           <Text
             textStyle={T.formLabel}
             color={T.goldDark}
             fontFamily={T.display}
           >
-            {t("loading.searching")}
+            {loadingText || t("loading.searching")}
           </Text>
           <Text
             textStyle={T.bodyText}

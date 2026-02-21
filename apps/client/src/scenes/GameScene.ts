@@ -19,6 +19,7 @@ import type { WeatherType } from "../managers/WeatherManager";
 import { LightManager } from "../managers/LightManager";
 import { gameSettings } from "../settings/gameSettings";
 import type { PlayerState } from "../ui/sidebar/types";
+import { RENDER_LAYERS } from "../utils/depth";
 
 type StateCallback = (state: PlayerState) => void;
 type KillFeedCallback = (killer: string, victim: string) => void;
@@ -415,7 +416,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     this.ambientOverlay = this.add.graphics();
-    this.ambientOverlay.setDepth(2000); // Above everything but UI
+    this.ambientOverlay.setDepth(RENDER_LAYERS.AMBIENT_DARKNESS);
     this.ambientOverlay.setScrollFactor(0);
 
     unsub(
@@ -632,9 +633,9 @@ export class GameScene extends Phaser.Scene {
     this.targetingRangeTiles = rangeTiles;
     this.input.setDefaultCursor("crosshair");
     this.rangeOverlay = this.add.graphics();
-    this.rangeOverlay.setDepth(1);
+    this.rangeOverlay.setDepth(RENDER_LAYERS.TARGETING_TILE);
     this.tileHighlight = this.add.graphics();
-    this.tileHighlight.setDepth(2);
+    this.tileHighlight.setDepth(RENDER_LAYERS.TARGETING_TILE + 1);
   }
 
   private onExitTargeting() {
