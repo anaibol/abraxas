@@ -8,7 +8,7 @@ import { FONTS, getGameTextResolution } from "../ui/tokens";
 const TEX_COIN_GLOW = "drop-coin-glow";
 const TEX_SPARK = "drop-spark";
 const TEX_STAR = "drop-star";
-const TEX_COIN_FACE = "drop-coin-face";
+
 
 interface DropVisual {
   container: Phaser.GameObjects.Container;
@@ -296,16 +296,6 @@ export class DropManager {
       g.destroy();
     }
 
-    if (!this.scene.textures.exists(TEX_COIN_FACE)) {
-      // Used as a particle to mimic a small coin tumbling in the burst
-      const g = this.scene.add.graphics();
-      g.fillStyle(0xffcc00, 1);
-      g.fillCircle(4, 4, 4);
-      g.fillStyle(0xffffcc, 0.7);
-      g.fillCircle(2, 2, 1.5);
-      g.generateTexture(TEX_COIN_FACE, 8, 8);
-      g.destroy();
-    }
   }
 
   /** Circle color for a drop based on item type and rarity — like Diablo 2. */

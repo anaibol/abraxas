@@ -4,7 +4,6 @@ import { Callbacks, type Room } from "@colyseus/sdk";
 import Phaser from "phaser";
 import type { Drop } from "../../../server/src/schema/Drop";
 import type { GameState } from "../../../server/src/schema/GameState";
-import type { InventoryItem } from "../../../server/src/schema/InventoryItem";
 import type { Player } from "../../../server/src/schema/Player";
 import { SoundManager } from "../assets/SoundManager";
 import { GameEventHandler } from "../handlers/GameEventHandler";
@@ -21,7 +20,6 @@ import type { WeatherType } from "../managers/WeatherManager";
 import { LightManager } from "../managers/LightManager";
 import { gameSettings } from "../settings/gameSettings";
 import type { PlayerState } from "../ui/sidebar/types";
-import { schemaListen, schemaOnAdd, schemaOnChange, schemaOnRemove } from "../utils/colyseusHelpers";
 
 type StateCallback = (state: PlayerState) => void;
 type KillFeedCallback = (killer: string, victim: string) => void;
@@ -44,6 +42,29 @@ type NpcRightClickCallback = (
   screenY: number,
 ) => void;
 export type GMMapClickCallback = (tileX: number, tileY: number) => void;
+
+/**
+ * Typed subset of Colyseus StateCallbackStrategy scoped to Player.
+ * Colyseus's PublicPropNames<T> resolves to `never` for nested Schema instances,
+ * so we define this interface to keep player listener call sites type-safe.
+ */
+interface PlayerCallbacks {
+  listen<K extends keyof Player & string>(
+    instance: Player, property: K,
+    handler: (current: Player[K], previous: Player[K]) => void,
+    immediate?: boolean,
+  ): () => void;
+  onChange(instance: unknown, handler: () => void): () => void;
+  onAdd<K extends keyof Player & string>(
+    instance: Player, property: K,
+    handler: (value: unknown, key: string) => void,
+    immediate?: boolean,
+  ): () => void;
+  onRemove<K extends keyof Player & string>(
+    instance: Player, property: K,
+    handler: (value: unknown, key: string) => void,
+  ): () => void;
+}
 
 export class GameScene extends Phaser.Scene {
   private network: NetworkManager;
@@ -277,6 +298,8 @@ export class GameScene extends Phaser.Scene {
           }
           this.pushSidebarUpdate(player);
 
+          const $player = $state as unknown as PlayerCallbacks;
+
           // React sidebar sync: use per-field listen() so that movement
           // (tileX/tileY changes every step) does NOT trigger React re-renders.
           // Only the fields actually displayed in the sidebar are observed here.
@@ -304,11 +327,11 @@ export class GameScene extends Phaser.Scene {
             "equipRingId",
             "equipMountId",
           ] as const) {
-            unsub(schemaListen($state, player, field, () => this.pushSidebarUpdate(player)));
+            unsub($player.listen(player, field, () => this.pushSidebarUpdate(player)));
           }
 
           unsub(
-            schemaListen($state, player, "equipMountId", (newMount: string | undefined, oldMount: string | undefined) => {
+            $player.listen(player, "equipMountId", (newMount, oldMount) => {
               if (newMount && newMount !== oldMount) {
                 const sprite = this.spriteManager.getSprite(sessionId);
                 const opts = sprite ? { sourceX: sprite.renderX, sourceY: sprite.renderY } : undefined;
@@ -318,7 +341,7 @@ export class GameScene extends Phaser.Scene {
           );
 
           unsub(
-            schemaListen($state, player, "speedOverride", (newVal: number) => {
+            $player.listen(player, "speedOverride", (newVal) => {
               if (newVal > 0) {
                 this.inputHandler.setSpeed(newVal);
               } else {
@@ -330,11 +353,11 @@ export class GameScene extends Phaser.Scene {
 
           // Inventory: item add/remove and per-item quantity changes
           unsub(
-            schemaOnAdd<Player, "inventory", InventoryItem>($state, player, "inventory", (item) => {
+            $player.onAdd(player, "inventory", (item) => {
               this.pushSidebarUpdate(player);
-              unsub(schemaOnChange($state, item, () => this.pushSidebarUpdate(player)));
+              unsub($player.onChange(item, () => this.pushSidebarUpdate(player)));
             }),
-            schemaOnRemove<Player, "inventory", InventoryItem>($state, player, "inventory", () => this.pushSidebarUpdate(player)),
+            $player.onRemove(player, "inventory", () => this.pushSidebarUpdate(player)),
           );
         }
       }),

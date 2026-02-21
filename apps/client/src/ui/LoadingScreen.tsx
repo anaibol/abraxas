@@ -1,6 +1,6 @@
 import { Box, Flex, Text } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { HEX, T } from "./tokens";
 
@@ -14,6 +14,76 @@ const spin = keyframes`
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 `;
+
+/* ── keep the ::after styles in a stable ref so emotion never remounts ── */
+const orbitCss = {
+  "&::after": {
+    content: '""',
+    position: "absolute" as const,
+    top: "-3px",
+    left: "50%",
+    transform: "translateX(-50%)",
+    w: "6px",
+    h: "6px",
+    borderRadius: "full",
+    bg: HEX.gold,
+    boxShadow: `0 0 8px ${HEX.gold}, 0 0 16px ${HEX.gold}88`,
+  },
+};
+
+/** Isolated from parent re-renders so the spin animation never restarts. */
+const Spinner = memo(function Spinner() {
+  return (
+    <Box pos="relative" mb="12" w="120px" h="120px">
+      {/* Glow backdrop */}
+      <Box
+        pos="absolute"
+        inset="-20px"
+        borderRadius="full"
+        bg={`radial-gradient(circle, ${HEX.gold}18 0%, transparent 70%)`}
+        animation={`${pulse} 4s infinite ease-in-out`}
+      />
+      {/* Orbiting ring */}
+      <Box
+        pos="absolute"
+        inset="-6px"
+        border="1px solid"
+        borderColor={`${HEX.gold}44`}
+        borderRadius="full"
+        animation={`${spin} 2.5s linear infinite`}
+        css={orbitCss}
+      />
+      {/* Inner circle */}
+      <Box
+        pos="absolute"
+        inset="0"
+        borderRadius="full"
+        border="1px solid"
+        borderColor={`${HEX.goldDim}33`}
+      />
+      {/* Letter */}
+      <Box
+        pos="absolute"
+        inset="0"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+      >
+        <Text
+          fontSize="54px"
+          fontFamily={T.display}
+          fontWeight="700"
+          color={T.gold}
+          textShadow={`0 0 24px ${HEX.gold}aa, 0 0 48px ${HEX.goldDim}66`}
+          lineHeight="1"
+          userSelect="none"
+        >
+          A
+        </Text>
+      </Box>
+    </Box>
+  );
+});
 
 export function LoadingScreen() {
   const { t } = useTranslation();
@@ -48,67 +118,7 @@ export function LoadingScreen() {
         animation={`${pulse} 8s infinite ease-in-out`}
       />
 
-      <Box pos="relative" mb="12" w="120px" h="120px">
-        {/* Glow backdrop */}
-        <Box
-          pos="absolute"
-          inset="-20px"
-          borderRadius="full"
-          bg={`radial-gradient(circle, ${HEX.gold}18 0%, transparent 70%)`}
-          animation={`${pulse} 4s infinite ease-in-out`}
-        />
-        {/* Orbiting ring */}
-        <Box
-          pos="absolute"
-          inset="-6px"
-          border="1px solid"
-          borderColor={`${HEX.gold}44`}
-          borderRadius="full"
-          animation={`${spin} 2.5s linear infinite`}
-          css={{
-            "&::after": {
-              content: '""',
-              position: "absolute",
-              top: "-3px",
-              left: "50%",
-              transform: "translateX(-50%)",
-              w: "6px",
-              h: "6px",
-              borderRadius: "full",
-              bg: HEX.gold,
-              boxShadow: `0 0 8px ${HEX.gold}, 0 0 16px ${HEX.gold}88`,
-            },
-          }}
-        />
-        {/* Inner circle */}
-        <Box
-          pos="absolute"
-          inset="0"
-          borderRadius="full"
-          border="1px solid"
-          borderColor={`${HEX.goldDim}33`}
-        />
-        {/* Letter */}
-        <Box
-          pos="absolute"
-          inset="0"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-        >
-          <Text
-            fontSize="54px"
-            fontFamily={T.display}
-            fontWeight="700"
-            color={T.gold}
-            textShadow={`0 0 24px ${HEX.gold}aa, 0 0 48px ${HEX.goldDim}66`}
-            lineHeight="1"
-            userSelect="none"
-          >
-            A
-          </Text>
-        </Box>
-      </Box>
+      <Spinner />
 
       <Box textAlign="center" zIndex="1" px="10">
         <Text
