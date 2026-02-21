@@ -1,8 +1,8 @@
-import { ITEMS, i18n, TILE_SIZE } from "@abraxas/shared";
+import { ITEMS, TILE_SIZE } from "@abraxas/shared";
 import Phaser from "phaser";
 import type { Drop } from "../../../server/src/schema/Drop";
 import type { EffectManager } from "../managers/EffectManager";
-import { FONTS, getGameTextResolution } from "../ui/tokens";
+
 
 // ─── Texture keys ────────────────────────────────────────────────────────────
 const TEX_COIN_GLOW = "drop-coin-glow";
@@ -14,7 +14,7 @@ interface DropVisual {
   tweens: Phaser.Tweens.Tween[];
   emitter: Phaser.GameObjects.Particles.ParticleEmitter;
   glowEmitter?: Phaser.GameObjects.Particles.ParticleEmitter;
-  label: Phaser.GameObjects.Text;
+
   color: number;
   tileX: number;
   tileY: number;
@@ -33,12 +33,7 @@ export class DropManager {
     return this.visuals.size;
   }
 
-  updateLabels(playerTileX: number, playerTileY: number) {
-    for (const [, v] of this.visuals) {
-      const dist = Math.abs(v.tileX - playerTileX) + Math.abs(v.tileY - playerTileY);
-      v.label.setVisible(dist <= 5);
-    }
-  }
+
 
   addDrop(drop: Drop, id: string) {
     const px = drop.tileX * TILE_SIZE + TILE_SIZE / 2;
@@ -130,22 +125,7 @@ export class DropManager {
     });
     emitter.setDepth(6);
 
-    // ── Label ─────────────────────────────────────────────────────────────────
-    const labelStr = this.dropLabelText(drop);
-    const labelColor = this.dropLabelColor(drop);
-    const label = this.scene.add
-      .text(px, py + 12, labelStr, {
-        fontSize: "10px",
-        color: labelColor,
-        stroke: "#000000",
-        strokeThickness: 3,
-        fontFamily: FONTS.mono,
-        fontStyle: "normal",
-        resolution: getGameTextResolution(),
-      })
-      .setOrigin(0.5, 0)
-      .setDepth(7)
-      .setVisible(false);
+
 
     // ── Landing effect ────────────────────────────────────────────────────────
     const ageMs = Date.now() - drop.spawnedAt;
@@ -158,7 +138,6 @@ export class DropManager {
       tweens,
       emitter,
       glowEmitter,
-      label,
       color,
       tileX: drop.tileX,
       tileY: drop.tileY,
@@ -170,7 +149,7 @@ export class DropManager {
     const visual = this.visuals.get(id);
     if (!visual) return;
 
-    const { container, tweens, emitter, glowEmitter, label, color, isGold } = visual;
+    const { container, tweens, emitter, glowEmitter, color, isGold } = visual;
 
     // ── Pickup burst ──────────────────────────────────────────────────────────
     const px = container.x;
@@ -228,7 +207,7 @@ export class DropManager {
     tweens.forEach((t) => t.stop());
     emitter.destroy();
     glowEmitter?.destroy();
-    label.destroy();
+
     container.destroy(true); // destroys children
     this.visuals.delete(id);
   }
@@ -319,48 +298,5 @@ export class DropManager {
     }
   }
 
-  /** CSS color string for the drop name label, matching Diablo 2 rarity conventions. */
-  private dropLabelColor(drop: Drop): string {
-    if (drop.itemType === "gold") return "#ffcc00";
-    const item = ITEMS[drop.itemId];
-    if (!item) return "#ffffff";
-    if (item.slot === "consumable") {
-      const e = item.consumeEffect;
-      if (e?.healHp && !e?.healMana) return "#ff6666";
-      if (e?.healMana && !e?.healHp) return "#6699ff";
-      return "#aaffaa";
-    }
-    switch (item.rarity) {
-      case "COMMON":
-        return "#dddddd";
-      case "UNCOMMON":
-        return "#6699ff";
-      case "RARE":
-        return "#ffbb44";
-      default:
-        return "#ffffff";
-    }
-  }
 
-  /** Human-readable label for a drop — "Iron Sword", "42 Gold", "Health Potion (x3)", etc. */
-  private dropLabelText(drop: Drop): string {
-    if (drop.itemType === "gold") return `${drop.goldAmount} Gold`;
-    const item = ITEMS[drop.itemId];
-    if (!item) return drop.itemId;
-    // Resolve i18n key → actual name; fall back to humanising the item ID
-    let name: string;
-    try {
-      const translated = i18n.t(item.name);
-      name = translated !== item.name ? translated : "";
-    } catch {
-      name = "";
-    }
-    if (!name) {
-      name = drop.itemId
-        .split("_")
-        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(" ");
-    }
-    return drop.quantity > 1 ? `${name} (${drop.quantity})` : name;
-  }
 }
