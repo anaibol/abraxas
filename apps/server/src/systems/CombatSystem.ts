@@ -253,8 +253,9 @@ export class CombatSystem {
     }
 
     // Class restriction: players may only use abilities assigned to their class
-    if (caster instanceof Player) {
-      const classStats = caster.getStats();
+    if (caster.entityType === EntityType.PLAYER) {
+      const pc = caster as Player;
+      const classStats = pc.getStats();
       if (classStats && !classStats.abilities.includes(abilityId)) {
         logger.debug({ intent: "try_cast", result: "fail", reason: "class_restricted", abilityId });
         sendToClient?.(ServerMessageType.Notification, {
@@ -263,8 +264,8 @@ export class CombatSystem {
         return false;
       }
 
-      if (ability.requiredLevel && caster.level < ability.requiredLevel) {
-        logger.debug({ intent: "try_cast", result: "fail", reason: "level_req", level: caster.level, required: ability.requiredLevel });
+      if (ability.requiredLevel && pc.level < ability.requiredLevel) {
+        logger.debug({ intent: "try_cast", result: "fail", reason: "level_req", level: pc.level, required: ability.requiredLevel });
         sendToClient?.(ServerMessageType.Notification, {
           message: "game.skill_locked",
         });
@@ -291,44 +292,45 @@ export class CombatSystem {
 
     if (ability.rangeTiles > 0) this.faceToward(caster, targetTileX, targetTileY);
 
-    if (caster instanceof Player) {
-      if (ability.manaCost && caster.mana < ability.manaCost) {
-        logger.debug({ intent: "try_cast", result: "fail", reason: "no_mana", has: caster.mana, needs: ability.manaCost });
+    if (caster.entityType === EntityType.PLAYER) {
+      const pc = caster as Player;
+      if (ability.manaCost && pc.mana < ability.manaCost) {
+        logger.debug({ intent: "try_cast", result: "fail", reason: "no_mana", has: pc.mana, needs: ability.manaCost });
         sendToClient?.(ServerMessageType.Notification, {
           message: "game.not_enough_mana",
         });
         return false;
       }
-      if (ability.soulCost && caster.souls < ability.soulCost) {
-        logger.debug({ intent: "try_cast", result: "fail", reason: "no_souls", has: caster.souls, needs: ability.soulCost });
+      if (ability.soulCost && pc.souls < ability.soulCost) {
+        logger.debug({ intent: "try_cast", result: "fail", reason: "no_souls", has: pc.souls, needs: ability.soulCost });
         sendToClient?.(ServerMessageType.Notification, {
           message: "game.not_enough_souls",
         });
         return false;
       }
-      if (ability.rageCost && caster.rage < ability.rageCost) {
-        logger.debug({ intent: "try_cast", result: "fail", reason: "no_rage", has: caster.rage, needs: ability.rageCost });
+      if (ability.rageCost && pc.rage < ability.rageCost) {
+        logger.debug({ intent: "try_cast", result: "fail", reason: "no_rage", has: pc.rage, needs: ability.rageCost });
         sendToClient?.(ServerMessageType.Notification, {
           message: "game.not_enough_rage",
         });
         return false;
       }
-      if (ability.energyCost && caster.energy < ability.energyCost) {
-        logger.debug({ intent: "try_cast", result: "fail", reason: "no_energy", has: caster.energy, needs: ability.energyCost });
+      if (ability.energyCost && pc.energy < ability.energyCost) {
+        logger.debug({ intent: "try_cast", result: "fail", reason: "no_energy", has: pc.energy, needs: ability.energyCost });
         sendToClient?.(ServerMessageType.Notification, {
           message: "game.not_enough_energy",
         });
         return false;
       }
-      if (ability.focusCost && caster.focus < ability.focusCost) {
-        logger.debug({ intent: "try_cast", result: "fail", reason: "no_focus", has: caster.focus, needs: ability.focusCost });
+      if (ability.focusCost && pc.focus < ability.focusCost) {
+        logger.debug({ intent: "try_cast", result: "fail", reason: "no_focus", has: pc.focus, needs: ability.focusCost });
         sendToClient?.(ServerMessageType.Notification, {
           message: "game.not_enough_focus",
         });
         return false;
       }
-      if (ability.holyPowerCost && caster.holyPower < ability.holyPowerCost) {
-        logger.debug({ intent: "try_cast", result: "fail", reason: "no_holy_power", has: caster.holyPower, needs: ability.holyPowerCost });
+      if (ability.holyPowerCost && pc.holyPower < ability.holyPowerCost) {
+        logger.debug({ intent: "try_cast", result: "fail", reason: "no_holy_power", has: pc.holyPower, needs: ability.holyPowerCost });
         sendToClient?.(ServerMessageType.Notification, {
           message: "game.not_enough_holy_power",
         });
@@ -359,25 +361,26 @@ export class CombatSystem {
     }
 
     let comboPointsSpent = 0;
-    if (caster instanceof Player) {
-      caster.mana -= ability.manaCost;
-      if (ability.soulCost) caster.souls -= ability.soulCost;
-      if (ability.rageCost) caster.rage -= ability.rageCost;
-      if (ability.energyCost) caster.energy -= ability.energyCost;
-      if (ability.focusCost) caster.focus -= ability.focusCost;
-      if (ability.holyPowerCost) caster.holyPower -= ability.holyPowerCost;
+    if (caster.entityType === EntityType.PLAYER) {
+      const pc = caster as Player;
+      pc.mana -= ability.manaCost;
+      if (ability.soulCost) pc.souls -= ability.soulCost;
+      if (ability.rageCost) pc.rage -= ability.rageCost;
+      if (ability.energyCost) pc.energy -= ability.energyCost;
+      if (ability.focusCost) pc.focus -= ability.focusCost;
+      if (ability.holyPowerCost) pc.holyPower -= ability.holyPowerCost;
 
       // Handle Combo Points
       if (ability.comboPointsGain) {
-        caster.comboPoints = Math.min(caster.maxComboPoints, caster.comboPoints + ability.comboPointsGain);
+        pc.comboPoints = Math.min(pc.maxComboPoints, pc.comboPoints + ability.comboPointsGain);
       }
       if (ability.comboPointsCost) {
-        comboPointsSpent = Math.min(caster.comboPoints, ability.comboPointsCost);
+        comboPointsSpent = Math.min(pc.comboPoints, ability.comboPointsCost);
         // Sometimes cost specifies 5, but we can spend 1-5. We just empty all we can up to the cost.
         if (ability.comboDamageMultiplier) {
-          comboPointsSpent = caster.comboPoints; // Spend ALL for finishing moves
+          comboPointsSpent = pc.comboPoints; // Spend ALL for finishing moves
         }
-        caster.comboPoints = Math.max(0, caster.comboPoints - comboPointsSpent);
+        pc.comboPoints = Math.max(0, pc.comboPoints - comboPointsSpent);
       }
     }
 

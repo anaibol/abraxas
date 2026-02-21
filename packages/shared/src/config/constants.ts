@@ -17,3 +17,8 @@ export const KILL_GOLD_BONUS = 25; // Added from ArenaRoom context
 /** Canonical viewport dimensions in tiles — same for every player regardless of screen size. */
 export const VIEWPORT_TILES_X = 20;
 export const VIEWPORT_TILES_Y = 14;
+
+/** Tile radius used for server-side NPC Area-of-Interest filtering per client.
+ *  Covers the full viewport plus a ~3-tile buffer so entities walking into frame
+ *  are already streamed before they become visible. */
+export const NPC_VIEW_RADIUS = 20;

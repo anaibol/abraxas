@@ -1,4 +1,5 @@
 import {
+  EntityType,
   type BroadcastFn,
   type PlayerBuffState,
   ServerMessageType,
@@ -196,8 +197,8 @@ export class BuffSystem {
       // B005: After expiring buffs that may have boosted maxHP/maxMana, clamp current values.
       if (s.buffs.length !== buffsBefore) {
         if (entity.hp > entity.maxHp) entity.hp = entity.maxHp;
-        if (entity instanceof Player && entity.mana > entity.maxMana) {
-          entity.mana = entity.maxMana;
+        if (entity.entityType === EntityType.PLAYER && (entity as Player).mana > (entity as Player).maxMana) {
+          (entity as Player).mana = (entity as Player).maxMana;
         }
       }
 

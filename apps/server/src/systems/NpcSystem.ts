@@ -176,8 +176,8 @@ export class NpcSystem {
     let typeToSummon: NpcType = "skeleton";
     if (abilityId === "summon_skeleton") typeToSummon = "skeleton";
     else if (abilityId === "summon_zombie") typeToSummon = "zombie";
-    else if (caster instanceof Npc) {
-      const npcStats = NPC_STATS[caster.npcType];
+    else if (caster.entityType === EntityType.NPC) {
+      const npcStats = NPC_STATS[(caster as Npc).npcType];
       if (npcStats?.summonType) typeToSummon = npcStats.summonType;
     }
 
@@ -201,7 +201,7 @@ export class NpcSystem {
 
     // Attempt to spawn at target tile
     const safe = findSafeSpawn(x, y, this.currentMap, this.spatial);
-    const casterLevel = caster instanceof Npc || caster instanceof Player ? caster.level : 1;
+    const casterLevel = caster.level;
 
     if (safe) {
       this.spawnNpcAt(typeToSummon, this.currentMap, safe.x, safe.y, caster.sessionId, casterLevel);
