@@ -1083,8 +1083,6 @@
       "complete_quest": "Completa Missione",
       "goodbye": "Addio",
       "hello_traveler": "Benvenuto, viaggiatore!",
-      "greeting_merchant": "Benvenuto, viaggiatore! Dai un'occhiata alle mie merci.",
-      "greeting_banker": "Il tuo oro è al sicuro con noi. Come posso aiutarti?",
       "accept_prompt": "Accetti questa missione?",
       "reward_prompt": "Ottimo lavoro con {{title}}! Ecco la tua ricompensa."
     },
@@ -1277,6 +1275,17 @@
     "tutorial_talk": {
       "title": "L'Avventura Inizia",
       "description": "Benvenuto nel mondo di Abraxas! Parla con il mercante in città per imparare le basi."
+    }
+  },
+  "npc": {
+    "merchant": {
+      "greet_1": "Benvenuto! Dai un'occhiata alle mie migliori merci.",
+      "greet_2": "Ah, un cliente! Cosa ti attira?",
+      "greet_3": "Fatti avanti! Tutto ha un prezzo."
+    },
+    "banker": {
+      "greet_1": "Il tuo oro è al sicuro con noi. Come posso aiutarti?",
+      "greet_2": "Benvenuto al Caveau Reale. Depositi o prelievi?"
     }
   }
 }

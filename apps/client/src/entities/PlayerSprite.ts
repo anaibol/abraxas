@@ -196,7 +196,7 @@ export class PlayerSprite {
           `ao-${headStatic.grafico}`,
           `grh-${headStatic.id}`,
         );
-        this.headSprite.setOrigin(0.5, 1);
+        this.headSprite.setOrigin(0.5, 0);
       }
     }
     this.updateHeadPosition();
@@ -538,7 +538,7 @@ export class PlayerSprite {
         (id) => this.resolver.getHelmetEntry(id),
         null,
         0,
-        1,
+        0,
       );
       if (newHelmetAoId) this.updateHeadPosition();
     }

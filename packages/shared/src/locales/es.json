@@ -1084,8 +1084,6 @@
       "complete_quest": "Completar misión",
       "goodbye": "Adiós",
       "hello_traveler": "¡Hola, viajero!",
-      "greeting_merchant": "¡Bienvenido, viajero! Echa un vistazo a mis mercancías.",
-      "greeting_banker": "Tu oro está seguro con nosotros. ¿En qué puedo ayudarte?",
       "accept_prompt": "¿Aceptas esta misión?",
       "reward_prompt": "¡Gran trabajo con {{title}}! Aquí tienes tu recompensa."
     },
@@ -1278,6 +1276,17 @@
     "tutorial_talk": {
       "title": "La Aventura Comienza",
       "description": "¡Bienvenido al mundo de Abraxas! Habla con el mercader del pueblo para aprender lo básico."
+    }
+  },
+  "npc": {
+    "merchant": {
+      "greet_1": "¡Bienvenido! Echa un vistazo a mis mejores productos.",
+      "greet_2": "¡Ah, un cliente! ¿Qué te llama la atención?",
+      "greet_3": "¡Acércate! Todo tiene su precio."
+    },
+    "banker": {
+      "greet_1": "Tu oro está seguro con nosotros. ¿En qué puedo ayudarte?",
+      "greet_2": "Bienvenido a la Bóveda Real. ¿Depósitos o retiros?"
     }
   }
 }

@@ -14,6 +14,7 @@
       "dependencies": {
         "@abraxas/shared": "workspace:*",
         "@chakra-ui/react": "^3.33.0",
+        "@colyseus/schema": "^4.0.14",
         "@colyseus/sdk": "^0.17.34",
         "@emotion/react": "^11.14.0",
         "i18next": "^25.8.13",
@@ -67,9 +68,6 @@
         "i18next": "^25.8.13",
       },
     },
-  },
-  "overrides": {
-    "@colyseus/schema": "^4.0.14",
   },
   "packages": {
     "@abraxas/client": ["@abraxas/client@workspace:apps/client"],

@@ -22,9 +22,6 @@
     "asset:auto": "bun apps/client/scripts/asset-master.ts auto",
     "asset:reconcile": "bun scripts/reconcile-assets.ts"
   },
-  "overrides": {
-    "@colyseus/schema": "^4.0.14"
-  },
   "devDependencies": {
     "@types/express": "^5.0.6"
   }

@@ -1082,8 +1082,6 @@
       "complete_quest": "Terminer la Quête",
       "goodbye": "Au revoir",
       "hello_traveler": "Bonjour voyageur !",
-      "greeting_merchant": "Bienvenue, voyageur ! Jetez un œil à mes marchandises.",
-      "greeting_banker": "Votre or est en sécurité chez nous. Comment puis-je vous aider ?",
       "accept_prompt": "Acceptez-vous cette quête ?",
       "reward_prompt": "Beau travail sur {{title}} ! Voici votre récompense."
     },
@@ -1276,6 +1274,17 @@
     "tutorial_talk": {
       "title": "L'aventure Commence",
       "description": "Bienvenue dans le monde d'Abraxas ! Parlez au marchand en ville pour apprendre les bases."
+    }
+  },
+  "npc": {
+    "merchant": {
+      "greet_1": "Bienvenue ! Admirez mes plus belles marchandises.",
+      "greet_2": "Ah, un client ! Qu'est-ce qui attire votre regard ?",
+      "greet_3": "Approchez ! Tout a un prix."
+    },
+    "banker": {
+      "greet_1": "Votre or est en sécurité chez nous. Comment puis-je vous aider ?",
+      "greet_2": "Bienvenue à la Chambre Forte Royale. Dépôts ou retraits ?"
     }
   }
 }

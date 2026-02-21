@@ -173,40 +173,16 @@ export function SpellsTab({
                   {(() => {
                     const progress = getCooldownProgress(spell.id);
                     if (progress <= 0) return null;
-                    // progress: 1.0 = fully on cooldown, 0.0 = ready
-                    // Sweep reveals clockwise from 12 o'clock
                     const revealedDeg = (1 - progress) * 360;
-                    const cd = (cooldowns as Record<string, { expiresAt: number }>)[spell.id];
-                    const remainingSec = cd ? Math.ceil((cd.expiresAt - Date.now()) / 1000) : 0;
                     return (
-                      <>
-                        <Box
-                          position="absolute"
-                          inset="0"
-                          borderRadius="2px"
-                          style={{
-                            background: `conic-gradient(from 0deg, transparent ${revealedDeg}deg, rgba(0,0,0,0.7) ${revealedDeg}deg)`,
-                          }}
-                        />
-                        {remainingSec > 0 && (
-                          <Text
-                            position="absolute"
-                            top="50%"
-                            left="50%"
-                            transform="translate(-50%, -50%)"
-                            fontSize="13px"
-                            fontWeight="800"
-                            color="white"
-                            style={{
-                              textShadow: "0 0 4px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,1)",
-                            }}
-                            zIndex={1}
-                            lineHeight="1"
-                          >
-                            {remainingSec}
-                          </Text>
-                        )}
-                      </>
+                      <Box
+                        position="absolute"
+                        inset="0"
+                        borderRadius="2px"
+                        style={{
+                          background: `conic-gradient(from 0deg, transparent ${revealedDeg}deg, rgba(0,0,0,0.7) ${revealedDeg}deg)`,
+                        }}
+                      />
                     );
                   })()}
                   {/* Keybind badge */}
