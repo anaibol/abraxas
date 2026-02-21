@@ -12,6 +12,7 @@ import type { InventorySystem } from "../systems/InventorySystem";
 import type { MovementSystem } from "../systems/MovementSystem";
 import type { NpcSystem } from "../systems/NpcSystem";
 import type { QuestSystem } from "../systems/QuestSystem";
+import type { BuffSystem } from "../systems/BuffSystem";
 import type { SocialSystem } from "../systems/SocialSystem";
 import type { TradeSystem } from "../systems/TradeSystem";
 
@@ -32,6 +33,7 @@ export interface RoomContext {
     trade: TradeSystem;
     bank: BankSystem;
     npc: NpcSystem;
+    buff: BuffSystem;
   };
   services: {
     chat: ChatService;

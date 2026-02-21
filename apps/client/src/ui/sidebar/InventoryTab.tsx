@@ -81,8 +81,8 @@ export function InventoryTab({
           })}
         </Flex>
       )}
-      <Grid templateColumns="repeat(4, 1fr)" gap="1">
-        {Array.from({ length: 24 }, (_, i) => {
+      <Grid templateColumns="repeat(5, 1fr)" gap="1">
+        {Array.from({ length: 20 }, (_, i) => {
           const invItem = state.inventory?.find((it) => it.slotIndex === i);
           const def = invItem ? ITEMS[invItem.itemId] : null;
           const isSelected = !!invItem && invItem.itemId === selectedItemId;

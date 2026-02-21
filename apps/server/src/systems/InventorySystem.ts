@@ -334,8 +334,6 @@ export class InventorySystem {
     for (const slotKey of Object.values(EQUIP_SLOT_MAP)) {
       const item = (player as Pick<Player, EquipSlotKey>)[slotKey];
       if (!item) continue;
-      // Bug #43: Ensure equipment is actually an InventoryItem object before pushing
-      if (typeof item !== "object" || !("itemId" in item)) continue;
 
       if (basicItems.has(item.itemId)) {
         basicKept.add(item.itemId);

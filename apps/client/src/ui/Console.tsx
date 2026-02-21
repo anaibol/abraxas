@@ -143,8 +143,8 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
       w={{ base: "55vw", md: "420px" }}
       maxW={{ base: "240px", md: "420px" }}
       h={{ base: "130px", md: "240px" }}
-      bg="rgba(12, 10, 18, 0.85)"
-      backdropFilter="blur(16px)"
+      bg="rgba(12, 10, 18, 0.5)"
+      backdropFilter="blur(8px)"
       borderWidth="1px"
       borderStyle="solid"
       borderColor="var(--chakra-colors-game-goldDim)"
@@ -177,7 +177,7 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
             letterSpacing={{ base: "0", md: "1px" }}
             bg={activeChannel === tab.id ? "rgba(255,255,255,0.1)" : "transparent"}
             color={activeChannel === tab.id ? tab.color : "#666"}
-            borderBottom={activeChannel === tab.id ? `2px solid ${tab.color}` : "none"}
+            borderBottom={activeChannel === tab.id ? `2px solid ${tab.color}` : "2px solid transparent"}
             onClick={() => setActiveChannel(tab.id)}
             pointerEvents="auto"
             _hover={{ color: tab.color }}

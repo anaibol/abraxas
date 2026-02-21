@@ -89,6 +89,18 @@ export class NpcSystem {
     this.spawner.spawnSummon(caster, abilityId, x, y, this.currentMap);
   }
 
+  public getNpc(sessionId: string): Npc | undefined {
+    return this.state.npcs.get(sessionId);
+  }
+
+  public despawnNpc(sessionId: string): void {
+    const npc = this.state.npcs.get(sessionId);
+    if (!npc) return;
+    this.combatSystem.removeEntity(npc.sessionId);
+    this.spatial.removeFromGrid(npc);
+    this.state.npcs.delete(npc.sessionId);
+  }
+
   tick(map: TileMap, now: number, tickCount: number, roomId: string, broadcast: BroadcastFn): void {
     // Store references for use in state handlers
     this.currentMap = map;

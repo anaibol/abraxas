@@ -176,6 +176,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
           trade: this.trade,
           bank: this.bankSystem,
           npc: this.npcSystem,
+          buff: this.buffSystem,
         },
         services: {
           chat: chatService,

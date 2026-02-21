@@ -18,6 +18,7 @@ export class GuildSystem {
 
   /** O(1) reverse lookup: dbId → sessionId. Updated on join/leave. */
   private dbIdToSessionId = new Map<string, string>();
+  private executingGuildCreates = new Set<string>();
 
   constructor(
     private state: GameState,
@@ -43,8 +44,12 @@ export class GuildSystem {
       return;
     }
 
+    if (this.executingGuildCreates.has(player.dbId)) return;
+    this.executingGuildCreates.add(player.dbId);
+
     if (player.gold < 1000) {
       // e.g. 1000 gold to create a guild
+      this.executingGuildCreates.delete(player.dbId);
       HandlerUtils.sendError(client, "Not enough gold to create a guild.");
       return;
     }
@@ -58,6 +63,8 @@ export class GuildSystem {
     } catch (e) {
       player.gold += 1000;
       HandlerUtils.sendError(client, "Failed to create guild. Name might be taken.");
+    } finally {
+      this.executingGuildCreates.delete(player.dbId);
     }
   }
 

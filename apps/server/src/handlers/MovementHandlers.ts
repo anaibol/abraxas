@@ -12,6 +12,15 @@ export class MovementHandlers {
     const player = HandlerUtils.getActivePlayer(ctx, client);
     if (!player || !player.alive || player.stunned) return;
 
+    if (player.spawnProtection) {
+      player.spawnProtection = false;
+      ctx.systems.buff.clearSpawnProtection(client.sessionId);
+    }
+
+    if (player.spawnProtection) {
+      ctx.systems.buff.clearSpawnProtection(client.sessionId);
+    }
+
     const result = ctx.systems.movement.tryMove(
       player,
       data.direction,

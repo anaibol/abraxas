@@ -26,6 +26,11 @@ export class CombatHandlers {
   ): void {
     const player = HandlerUtils.getActivePlayer(ctx, client);
     if (!player) return;
+
+    if (player.spawnProtection) {
+      player.spawnProtection = false;
+      ctx.systems.buff.clearSpawnProtection(client.sessionId);
+    }
     const { targetX, targetY } = HandlerUtils.resolveTarget(player, data);
     ctx.systems.combat.tryAttack(
       player,
@@ -44,6 +49,11 @@ export class CombatHandlers {
   ): void {
     const player = HandlerUtils.getActivePlayer(ctx, client);
     if (!player) return;
+
+    if (player.spawnProtection) {
+      player.spawnProtection = false;
+      ctx.systems.buff.clearSpawnProtection(client.sessionId);
+    }
     const { targetX, targetY } = HandlerUtils.resolveTarget(player, data);
     ctx.systems.combat.tryCast(
       player,
