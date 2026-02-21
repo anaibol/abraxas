@@ -21,6 +21,7 @@ export interface WindupAction {
   /** Ability ID + cooldown length — applied on successful resolution only. */
   cooldownAbilityId?: string;
   cooldownMs?: number;
+  targetSessionId?: string;
 }
 
 export interface EntityCombatState {
