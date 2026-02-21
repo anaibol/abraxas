@@ -16,6 +16,11 @@ export interface WindupAction {
   targetTileY: number;
   abilityId?: string;
   comboPointsSpent?: number;
+  /** Resources spent at cast start — refunded on interrupt/cancel. */
+  resourceCosts?: { field: string; amount: number }[];
+  /** Ability ID + cooldown length — applied on successful resolution only. */
+  cooldownAbilityId?: string;
+  cooldownMs?: number;
 }
 
 export interface EntityCombatState {

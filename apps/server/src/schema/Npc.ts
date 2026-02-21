@@ -66,4 +66,12 @@ export class Npc extends Char {
   getAbility(abilityId: string): Ability | undefined {
     return ABILITIES[abilityId];
   }
+
+  isPlayer(): this is never {
+    return false;
+  }
+
+  isNpc(): this is Npc {
+    return true;
+  }
 }

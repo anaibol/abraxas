@@ -101,8 +101,10 @@ export class InventorySystem {
     return false;
   }
 
-  removeItem(player: Player, itemId: string, quantity: number = 1): boolean {
-    const item = player.inventory.find((i) => i.itemId === itemId);
+  removeItem(player: Player, itemId: string, quantity: number = 1, slotIndex?: number): boolean {
+    const item = player.inventory.find((i) =>
+      i.itemId === itemId && (slotIndex === undefined || i.slotIndex === slotIndex),
+    );
     if (!item) return false;
     if (item.quantity > quantity) {
       item.quantity -= quantity;

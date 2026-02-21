@@ -175,6 +175,15 @@ export class BankSystem {
           create: { characterId: player.dbId },
         });
 
+        // Bug #52: Delete old ItemInstances linked to bank slots before deleting slots
+        const oldSlots = await tx.bankSlot.findMany({
+          where: { bankId: bank.id },
+          select: { itemId: true },
+        });
+        const oldItemIds = oldSlots.map((s) => s.itemId).filter(Boolean) as string[];
+        if (oldItemIds.length > 0) {
+          await tx.itemInstance.deleteMany({ where: { id: { in: oldItemIds } } });
+        }
         // Delete old slots
         await tx.bankSlot.deleteMany({ where: { bankId: bank.id } });
 

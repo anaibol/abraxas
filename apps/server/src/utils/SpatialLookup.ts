@@ -6,16 +6,6 @@ import type { Player } from "../schema/Player";
 /** Union of all concrete entity types that live in the game world. */
 export type Entity = Player | Npc;
 
-/** Q4: Type guard — narrows Entity to Player based on entityType enum. */
-export function isPlayer(e: Entity): e is Player {
-  return e.entityType === EntityType.PLAYER;
-}
-
-/** Q4: Type guard — narrows Entity to Npc based on entityType enum. */
-export function isNpc(e: Entity): e is Npc {
-  return e.entityType === EntityType.NPC;
-}
-
 // ── Spatial hash grid ─────────────────────────────────────────────────────
 
 export class SpatialLookup {

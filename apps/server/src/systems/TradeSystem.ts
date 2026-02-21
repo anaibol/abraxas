@@ -14,6 +14,8 @@ import type { InventorySystem } from "./InventorySystem";
 export class TradeSystem {
   private activeTrades = new Map<string, TradeState>();
   private pendingRequests = new Map<string, string>(); // targetSessionId -> requesterSessionId
+  /** Bug #47: Prevents concurrent executeTrade calls for the same trade. */
+  private executingTrades = new Set<string>();
 
   constructor(private inventorySystem: InventorySystem) {}
 
@@ -134,29 +136,37 @@ export class TradeSystem {
   }
 
   async executeTrade(trade: TradeState, players: { get: (id: string) => Player | undefined }) {
-    const alice = players.get(trade.alice.sessionId);
-    const bob = players.get(trade.bob.sessionId);
+    // Bug #47: Prevent concurrent execution of the same trade
+    if (this.executingTrades.has(trade.tradeId)) return false;
+    this.executingTrades.add(trade.tradeId);
 
-    if (!alice || !bob) return false;
+    try {
+      const alice = players.get(trade.alice.sessionId);
+      const bob = players.get(trade.bob.sessionId);
 
-    // Validate Alice has everything
-    if (!this.validateOffer(alice, trade.alice.offer)) return false;
-    // Validate Bob has everything
-    if (!this.validateOffer(bob, trade.bob.offer)) return false;
+      if (!alice || !bob) return false;
 
-    // Validate Inventory Space
-    if (!this.hasSpaceFor(alice, trade.alice.offer, trade.bob.offer)) return false;
-    if (!this.hasSpaceFor(bob, trade.bob.offer, trade.alice.offer)) return false;
+      // Validate Alice has everything
+      if (!this.validateOffer(alice, trade.alice.offer)) return false;
+      // Validate Bob has everything
+      if (!this.validateOffer(bob, trade.bob.offer)) return false;
 
-    // Transfer from Alice to Bob
-    this.transfer(alice, bob, trade.alice.offer);
-    // Transfer from Bob to Alice
-    this.transfer(bob, alice, trade.bob.offer);
+      // Validate Inventory Space
+      if (!this.hasSpaceFor(alice, trade.alice.offer, trade.bob.offer)) return false;
+      if (!this.hasSpaceFor(bob, trade.bob.offer, trade.alice.offer)) return false;
 
-    this.cleanup(trade.alice.sessionId);
-    this.cleanup(trade.bob.sessionId);
+      // Transfer from Alice to Bob
+      this.transfer(alice, bob, trade.alice.offer);
+      // Transfer from Bob to Alice
+      this.transfer(bob, alice, trade.bob.offer);
 
-    return true;
+      this.cleanup(trade.alice.sessionId);
+      this.cleanup(trade.bob.sessionId);
+
+      return true;
+    } finally {
+      this.executingTrades.delete(trade.tradeId);
+    }
   }
 
   private hasSpaceFor(
@@ -216,7 +226,8 @@ export class TradeSystem {
       to.gold += offer.gold;
     }
     for (const item of offer.items) {
-      if (this.inventorySystem.removeItem(from, item.itemId, item.quantity)) {
+      // Bug #48: Pass slotIndex for correct item disambiguation
+      if (this.inventorySystem.removeItem(from, item.itemId, item.quantity, item.slotIndex)) {
         this.inventorySystem.addItem(to, item.itemId, item.quantity, {
           rarity: item.rarity!,
           nameOverride: item.nameOverride,
@@ -232,6 +243,15 @@ export class TradeSystem {
       this.cleanup(trade.alice.sessionId);
       this.cleanup(trade.bob.sessionId);
       return trade;
+    }
+    // Bug #49: Clean up pending requests on disconnect/cancel
+    this.pendingRequests.delete(sessionId);
+    // Also remove any pending request where this player is the requester
+    for (const [target, requester] of this.pendingRequests) {
+      if (requester === sessionId) {
+        this.pendingRequests.delete(target);
+        break;
+      }
     }
     return null;
   }

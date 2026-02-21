@@ -6,7 +6,7 @@ import {
   calcMeleeDamage,
   calcRangedDamage,
   DamageSchool,
-  EntityType,
+
   GCD_MS,
   MathUtils,
   ServerMessageType,
@@ -14,7 +14,6 @@ import {
 } from "@abraxas/shared";
 import { logger } from "../logger";
 import type { GameState } from "../schema/GameState";
-import type { Npc } from "../schema/Npc";
 import type { Player } from "../schema/Player";
 import type { Entity, SpatialLookup } from "../utils/SpatialLookup";
 import type { BuffSystem } from "./BuffSystem";
@@ -64,6 +63,15 @@ export class CombatSystem {
   private interruptCast(sessionId: string, broadcast: BroadcastFn) {
     const windup = this.activeWindups.get(sessionId);
     if (windup && windup.type === "ability") {
+      // Bug #1: Refund resources that were deducted at cast start
+      if (windup.resourceCosts) {
+        const entity = this.spatial.findEntityBySessionId(sessionId);
+        if (entity?.isPlayer()) {
+          for (const rc of windup.resourceCosts) {
+            (entity as unknown as Record<string, number>)[rc.field] += rc.amount;
+          }
+        }
+      }
       this.activeWindups.delete(sessionId);
       // B24: Scope notification to the interrupted entity
       broadcast(ServerMessageType.Notification, {
@@ -300,9 +308,9 @@ export class CombatSystem {
     }
 
     // Class restriction: players may only use abilities assigned to their class
-    if (caster.entityType === EntityType.PLAYER) {
-      const pc = caster as Player;
-      const classStats = pc.getStats();
+    if (caster.isPlayer()) {
+
+      const classStats = caster.getStats();
       if (classStats && !classStats.abilities.includes(abilityId)) {
         logger.debug({ intent: "try_cast", result: "fail", reason: "class_restricted", abilityId });
         sendToClient?.(ServerMessageType.Notification, {
@@ -311,12 +319,12 @@ export class CombatSystem {
         return false;
       }
 
-      if (ability.requiredLevel && pc.level < ability.requiredLevel) {
+      if (ability.requiredLevel && caster.level < ability.requiredLevel) {
         logger.debug({
           intent: "try_cast",
           result: "fail",
           reason: "level_req",
-          level: pc.level,
+          level: caster.level,
           required: ability.requiredLevel,
         });
         sendToClient?.(ServerMessageType.Notification, {
@@ -350,16 +358,15 @@ export class CombatSystem {
 
     if (ability.rangeTiles > 0) this.faceToward(caster, targetTileX, targetTileY);
 
-    if (caster.entityType === EntityType.PLAYER) {
-      const pc = caster as Player;
+    if (caster.isPlayer()) {
       for (const rc of RESOURCE_COSTS) {
         const cost = ability[rc.costKey];
-        if (cost && pc[rc.field] < cost) {
+        if (cost && caster[rc.field] < cost) {
           logger.debug({
             intent: "try_cast",
             result: "fail",
             reason: rc.reason,
-            has: pc[rc.field],
+            has: caster[rc.field],
             needs: cost,
           });
           sendToClient?.(ServerMessageType.Notification, { message: rc.msg });
@@ -397,12 +404,15 @@ export class CombatSystem {
     }
 
     let comboPointsSpent = 0;
-    if (caster.entityType === EntityType.PLAYER) {
-      const pc = caster as Player;
-      // Deduct all resource costs
+    const resourceCosts: { field: string; amount: number }[] = [];
+    if (caster.isPlayer()) {
+      // Deduct all resource costs (stored for refund on interrupt)
       for (const rc of RESOURCE_COSTS) {
         const cost = ability[rc.costKey];
-        if (cost) pc[rc.field] -= cost;
+        if (cost) {
+          caster[rc.field] -= cost;
+          resourceCosts.push({ field: rc.field, amount: cost });
+        }
       }
 
       // Handle Combo Points
@@ -419,7 +429,7 @@ export class CombatSystem {
     }
 
     caster.lastGcdMs = now;
-    caster.spellCooldowns.set(abilityId, now + ability.cooldownMs);
+    // Bug #2: Defer cooldown to resolution — store it on the windup instead
     // Prevent an instant auto-attack following an ability — treat the ability cast as consuming the melee timer too
     this.lastMeleeMs.set(caster.sessionId, now);
 
@@ -431,6 +441,9 @@ export class CombatSystem {
       targetTileX,
       targetTileY,
       comboPointsSpent,
+      resourceCosts: resourceCosts.length > 0 ? resourceCosts : undefined,
+      cooldownAbilityId: abilityId,
+      cooldownMs: ability.cooldownMs,
     };
 
     this.activeWindups.set(caster.sessionId, windup);
@@ -458,6 +471,11 @@ export class CombatSystem {
     if (windup.type === "melee" || windup.type === "ranged") {
       this.resolveAutoAttack(attacker, windup, broadcast, onDeath, now);
     } else {
+      // Bug #2: Apply cooldown only on successful resolution
+      if (windup.cooldownAbilityId && windup.cooldownMs) {
+        attacker.spellCooldowns.set(windup.cooldownAbilityId, now + windup.cooldownMs);
+      }
+
       // Spell Echo: Next spell casts twice
       if (
         attacker.entityType === EntityType.PLAYER &&
@@ -802,20 +820,20 @@ export class CombatSystem {
 
   private sameFaction(a: Entity, b: Entity): boolean {
     // Check for owner-pet or pet-pet relation
-    const aOwnerId = a.entityType === EntityType.NPC ? (a as Npc).ownerId : undefined;
-    const bOwnerId = b.entityType === EntityType.NPC ? (b as Npc).ownerId : undefined;
+    const aOwnerId = a.isNpc() ? a.ownerId : undefined;
+    const bOwnerId = b.isNpc() ? b.ownerId : undefined;
 
     if (aOwnerId && aOwnerId === b.sessionId) return true;
     if (bOwnerId && bOwnerId === a.sessionId) return true;
     if (aOwnerId && bOwnerId && aOwnerId === bOwnerId) return true;
 
-    if (a.entityType === EntityType.PLAYER && b.entityType === EntityType.PLAYER) {
-      if ((a as Player).groupId && (a as Player).groupId === (b as Player).groupId) return true;
-      if ((a as Player).guildId && (a as Player).guildId === (b as Player).guildId) return true;
+    if (a.isPlayer() && b.isPlayer()) {
+      if (a.groupId && a.groupId === b.groupId) return true;
+      if (a.guildId && a.guildId === b.guildId) return true;
       return false;
     }
-    if (a.entityType === EntityType.NPC && b.entityType === EntityType.NPC) {
-      return (a as Npc).npcType === (b as Npc).npcType;
+    if (a.isNpc() && b.isNpc()) {
+      return a.npcType === b.npcType;
     }
     return false;
   }
@@ -828,8 +846,8 @@ export class CombatSystem {
       this.isInSafeZone(target.tileX, target.tileY)
     )
       return false;
-    if (attacker.entityType === EntityType.PLAYER && target.entityType === EntityType.PLAYER) {
-      if (!(attacker as Player).pvpEnabled || !(target as Player).pvpEnabled) return false;
+    if (attacker.isPlayer() && target.isPlayer()) {
+      if (!attacker.pvpEnabled || !target.pvpEnabled) return false;
     }
     return true;
   }

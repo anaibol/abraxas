@@ -406,15 +406,17 @@ export class GameScene extends Phaser.Scene {
     this.weatherManager.updateWeather(this.room.state.weather as WeatherType);
 
     // Debug overlay — always created, visibility driven by settings + F3 key
-    this.debugText = this.add.text(10, 10, "", {
+    // NOTE: we do NOT use setScrollFactor(0) because Phaser still applies the
+    // camera zoom to scroll-factor-0 objects, pushing them off-screen when the
+    // camera zoom > 1.  Instead we reposition the text every frame in update().
+    this.debugText = this.add.text(0, 0, "", {
       fontSize: "16px",
       color: "#ffffff",
       stroke: "#000000",
       strokeThickness: 4,
       fontFamily: "'Courier New', Courier, monospace",
     });
-    this.debugText.setScrollFactor(0);
-    this.debugText.setDepth(100);
+    this.debugText.setDepth(3000);
     this.debugText.setVisible(gameSettings.get().showDebugOverlay);
 
     this.settingsUnsub = gameSettings.subscribe((s) => {
@@ -504,6 +506,16 @@ export class GameScene extends Phaser.Scene {
     }
 
     if (this.debugText?.visible && localSprite) {
+      // Pin the debug text to the camera's top-left corner in world coords.
+      // This avoids setScrollFactor(0) which misbehaves with camera zoom > 1.
+      const cam = this.cameras.main;
+      const margin = 10 / cam.zoom;
+      this.debugText.setPosition(
+        cam.worldView.x + margin,
+        cam.worldView.y + margin,
+      );
+      this.debugText.setScale(1 / cam.zoom);
+
       // Count particle emitters (persistent + transient)
       const allObjs = this.children.list;
       const emitterCount = allObjs.filter(
