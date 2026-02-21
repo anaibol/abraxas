@@ -118,7 +118,6 @@
     "invalid_target": "Objetivo inválido",
     "invalid_target_los": "Objetivo fuera de línea de visión",
     "invalid_target_out_of_range": "Objetivo fuera de alcance",
-    "invalid_target_dead_or_invalid": "Objetivo no válido",
     "invalid_target_safe_zone": "Objetivo en zona segura",
     "invalid_target_friendly_fire": "Objetivo aliado",
     "invalid_target_pvp_disabled": "Modo PvP desactivado",
@@ -151,7 +150,8 @@
     "tame_failed": "¡El animal se escapó! Tu lazo ha sido consumido.",
     "safe_zone": "Zona Segura",
     "dodged": "Esquivado",
-    "parried": "Parado"
+    "parried": "Parado",
+    "invalid_target_invalid": "Objetivo no válido"
   },
   "social": {
     "already_in_group": "El jugador ya está en un grupo",

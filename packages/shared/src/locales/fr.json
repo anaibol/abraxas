@@ -117,7 +117,6 @@
     "invalid_target": "Cible invalide",
     "invalid_target_los": "Cible hors de vue",
     "invalid_target_out_of_range": "Cible hors de portée",
-    "invalid_target_dead_or_invalid": "Cible invalide",
     "invalid_target_safe_zone": "Cible en zone sûre",
     "invalid_target_friendly_fire": "Cible alliée",
     "invalid_target_pvp_disabled": "Mode PvP désactivé",
@@ -150,7 +149,8 @@
     "tame_failed": "L'animal s'est échappé ! Votre lasso a été consommé.",
     "safe_zone": "Zone de Sécurité",
     "dodged": "Esquivé",
-    "parried": "Paré"
+    "parried": "Paré",
+    "invalid_target_invalid": "Cible invalide"
   },
   "social": {
     "already_in_group": "Le joueur est déjà dans un groupe",

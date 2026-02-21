@@ -36,6 +36,7 @@ import { useGameKeyboard } from "../hooks/useGameKeyboard";
 import { useGameSettings } from "../hooks/useGameSettings";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useRoomListeners } from "../hooks/useRoomListeners";
+import { CooldownProvider } from "../contexts/CooldownContext";
 import { AudioManager } from "../managers/AudioManager";
 import { NetworkManager } from "../network/NetworkManager";
 import { GameScene } from "../scenes/GameScene";
@@ -614,7 +615,8 @@ export function App() {
 
   return (
     <ChakraProvider value={system}>
-      <Toaster toaster={toaster}>
+      <CooldownProvider>
+        <Toaster toaster={toaster}>
         {(toast) => (
           <ToastRoot
             key={toast.id}
@@ -980,6 +982,7 @@ export function App() {
           onCancel={() => setDropDialog(null)}
         />
       )}
+      </CooldownProvider>
     </ChakraProvider>
   );
 }

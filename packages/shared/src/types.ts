@@ -487,7 +487,7 @@ export enum ServerMessageType {
 export type InvalidTargetReason =
   | "los"
   | "out_of_range"
-  | "dead_or_invalid"
+  | "invalid"
   | "dead"
   | "friendly_fire"
   | "safe_zone"

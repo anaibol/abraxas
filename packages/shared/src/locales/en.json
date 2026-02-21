@@ -118,7 +118,6 @@
     "invalid_target": "Invalid target",
     "invalid_target_los": "Target not in line of sight",
     "invalid_target_out_of_range": "Target out of range",
-    "invalid_target_dead_or_invalid": "Invalid target",
     "invalid_target_safe_zone": "Target in Safe Zone",
     "invalid_target_friendly_fire": "Friendly target",
     "invalid_target_pvp_disabled": "PvP Mode disabled",
@@ -151,7 +150,8 @@
     "tame_failed": "The animal broke free! Your lasso was consumed.",
     "safe_zone": "Safe Zone",
     "dodged": "Dodged",
-    "parried": "Parried"
+    "parried": "Parried",
+    "invalid_target_invalid": "Invalid target"
   },
   "social": {
     "already_in_group": "Player is already in a group",

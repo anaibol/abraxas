@@ -117,7 +117,6 @@
     "invalid_target": "Obiettivo non valido",
     "invalid_target_los": "Bersaglio non in linea di vista",
     "invalid_target_out_of_range": "Bersaglio fuori portata",
-    "invalid_target_dead_or_invalid": "Bersaglio non valido",
     "invalid_target_safe_zone": "Bersaglio in zona sicura",
     "invalid_target_friendly_fire": "Bersaglio alleato",
     "invalid_target_pvp_disabled": "Modalità PvP disattivata",
@@ -150,7 +149,8 @@
     "tame_failed": "L'animale è scappato! Il tuo laccio è stato consumato.",
     "safe_zone": "Zona Sicura",
     "dodged": "Schivato",
-    "parried": "Parato"
+    "parried": "Parato",
+    "invalid_target_invalid": "Bersaglio non valido"
   },
   "social": {
     "already_in_group": "Il giocatore è già in un gruppo",
