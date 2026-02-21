@@ -34,8 +34,6 @@ WORKDIR /app
 # Only what's needed at runtime
 COPY --from=base /app/apps/server/dist/server.js ./server.js
 COPY --from=base /app/apps/client/dist/ apps/client/dist/
-COPY --from=base /app/node_modules/.prisma/ node_modules/.prisma/
-COPY --from=base /app/node_modules/@prisma/ node_modules/@prisma/
 COPY --from=base /app/apps/server/prisma/ prisma/
 
 ENV NODE_ENV=production

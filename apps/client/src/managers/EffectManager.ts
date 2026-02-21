@@ -1268,7 +1268,6 @@ export class EffectManager {
     });
   }
 
-  // ── Public API ────────────────────────────────────────────────────────────
 
   // ── Recipe-based effect player ───────────────────────────────────────────────
 
@@ -1423,14 +1422,6 @@ export class EffectManager {
     if (PER_SPELL[spellId]) return PER_SPELL[spellId];
     const spell = ABILITIES[spellId];
     if (!spell) return 0xaaaaff;
-    // The following code snippet was provided by the user, but it is syntactically incorrect
-    // and references a 'sprite' variable that is not available in this function's scope.
-    // To make the file syntactically correct as per the instructions,
-    // I am inserting the provided snippet as a comment.
-    // if (sprite.classType === "MAGE" || sprite.classType === "CLERIC") {
-    //   // Light blue for mages, soft yellow/gold for clerics
-    //   color = sprite.classType === "MAGE" ? 0x88bbff : 0xffffaa;
-    // }
     if (spell.effect === "heal" || spell.effect === "aoe_heal") return 0x44ff88;
     if (spell.effect === "stun") return 0xffff44;
     if (spell.effect === "debuff") return 0xcc44ff;

@@ -3,7 +3,7 @@ import { ABILITIES } from "@abraxas/shared";
 import Phaser from "phaser";
 import { PlayerSprite } from "../entities/PlayerSprite";
 import type { GameScene } from "../scenes/GameScene";
-import type { CameraController } from "../systems/CameraController";
+
 
 // ── Item #45: Per-sprite glow tracking ────────────────────────────────────────
 interface ActiveGlow {
@@ -30,7 +30,6 @@ export class SpriteManager {
 
   constructor(
     private scene: GameScene,
-    _cameraController: CameraController,
     private getSessionId: () => string,
   ) {}
 
@@ -52,8 +51,6 @@ export class SpriteManager {
       sprite.setHpBarVisibility(false);
     }
     this.sprites.set(sessionId, sprite);
-    // Camera centering is handled each frame in GameScene.update() via
-    // cameraController.centerOn(localSprite.targetX, localSprite.targetY).
   }
 
   syncPlayer(player: PlayerEntityState, sessionId: string) {
@@ -100,9 +97,7 @@ export class SpriteManager {
     this.removeEntity(sessionId);
   }
 
-  removeNpc(id: string) {
-    this.removeEntity(id);
-  }
+
 
   private removeEntity(id: string) {
     const sprite = this.sprites.get(id);

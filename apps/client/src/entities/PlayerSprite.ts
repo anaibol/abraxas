@@ -232,10 +232,6 @@ export class PlayerSprite {
       new Phaser.Geom.Rectangle(-TILE_SIZE / 2, -TILE_SIZE, TILE_SIZE, TILE_SIZE * 2),
       Phaser.Geom.Rectangle.Contains,
     );
-    if (!isLocal) {
-      // Health bar is now permanent. Hover listeners removed.
-    }
-
     this.resolver.ensureAnimation(scene, bodyGrhId, "body");
   }
 

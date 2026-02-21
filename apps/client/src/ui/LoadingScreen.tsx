@@ -71,6 +71,7 @@ export function LoadingScreen() {
               position: "absolute",
               top: "-3px",
               left: "50%",
+              transform: "translateX(-50%)",
               w: "6px",
               h: "6px",
               borderRadius: "full",

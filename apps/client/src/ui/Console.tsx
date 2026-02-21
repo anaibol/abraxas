@@ -143,13 +143,12 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
       w={{ base: "55vw", md: "420px" }}
       maxW={{ base: "240px", md: "420px" }}
       h={{ base: "130px", md: "240px" }}
-      bg="rgba(12, 10, 18, 0.5)"
-      backdropFilter="blur(8px)"
-      borderWidth="1px"
-      borderStyle="solid"
-      borderColor="var(--chakra-colors-game-goldDim)"
-      borderRadius="12px"
-      boxShadow={`0 10px 50px rgba(0,0,0,0.8), 0 0 0 1px ${HEX.border}`}
+      bg="rgba(12, 10, 18, 0.65)"
+      backdropFilter="blur(6px)"
+      borderWidth="0"
+      borderTop="1px solid rgba(255,255,255,0.06)"
+      borderRadius="2px"
+      boxShadow="0 8px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.03)"
       color="white"
       fontFamily={T.display}
       fontSize="14px"
@@ -163,7 +162,7 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
       <HStack
         gap="0"
         bg="rgba(0,0,0,0.3)"
-        borderBottom="1px solid var(--chakra-colors-game-goldDim)"
+        borderBottom="1px solid rgba(255,255,255,0.06)"
         overflow="hidden"
       >
         {TABS.map((tab) => (
@@ -223,7 +222,7 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
       {isChatOpen && gmHints.length > 0 && (
         <Box
           bg="rgba(8, 6, 18, 0.96)"
-          borderTop="1px solid var(--chakra-colors-game-goldDim)"
+          borderTop="1px solid rgba(255,255,255,0.06)"
           px="10px"
           py="4px"
         >

@@ -4,6 +4,7 @@ import { Callbacks, type Room } from "@colyseus/sdk";
 import Phaser from "phaser";
 import type { Drop } from "../../../server/src/schema/Drop";
 import type { GameState } from "../../../server/src/schema/GameState";
+import type { InventoryItem } from "../../../server/src/schema/InventoryItem";
 import type { Player } from "../../../server/src/schema/Player";
 import { SoundManager } from "../assets/SoundManager";
 import { GameEventHandler } from "../handlers/GameEventHandler";
@@ -20,6 +21,7 @@ import type { WeatherType } from "../managers/WeatherManager";
 import { LightManager } from "../managers/LightManager";
 import { gameSettings } from "../settings/gameSettings";
 import type { PlayerState } from "../ui/sidebar/types";
+import { schemaListen, schemaOnAdd, schemaOnChange, schemaOnRemove } from "../utils/colyseusHelpers";
 
 type StateCallback = (state: PlayerState) => void;
 type KillFeedCallback = (killer: string, victim: string) => void;
@@ -80,7 +82,7 @@ export class GameScene extends Phaser.Scene {
 
   private muteKey?: Phaser.Input.Keyboard.Key;
   private debugKey?: Phaser.Input.Keyboard.Key;
-  private settingsUnsub?: () => void;
+
   private handleVisibilityChange = () => {
     if (document.visibilityState === "visible") {
       const sm = this.sound as unknown as Record<string, unknown>;
@@ -173,7 +175,7 @@ export class GameScene extends Phaser.Scene {
       }
     };
 
-    this.spriteManager = new SpriteManager(this, this.cameraController, () => this.room.sessionId);
+    this.spriteManager = new SpriteManager(this, () => this.room.sessionId);
     this.effectManager = new EffectManager(this, this.spriteManager);
     this.dropManager = new DropManager(this, this.effectManager);
 
@@ -249,7 +251,7 @@ export class GameScene extends Phaser.Scene {
     const npcOnChangeUnsubs = new Map<string, () => void>();
 
     unsub(
-      $state.onAdd("players", (player, sessionId) => {
+      $state.onAdd("players", (player: Player, sessionId: string) => {
         const pState = player as unknown as PlayerEntityState;
         this.spriteManager.addPlayer(pState, sessionId);
         this.spriteManager.syncPlayer(pState, sessionId);
@@ -302,12 +304,11 @@ export class GameScene extends Phaser.Scene {
             "equipRingId",
             "equipMountId",
           ] as const) {
-            // @ts-expect-error Colyseus listen expects PublicPropNames
-            unsub($state.listen(player as unknown as Player, field as keyof Player, () => this.pushSidebarUpdate(player)));
+            unsub(schemaListen($state, player, field, () => this.pushSidebarUpdate(player)));
           }
 
           unsub(
-            $state.listen(player as unknown as Player, "equipMountId", (newMount: string | undefined, oldMount: string | undefined) => {
+            schemaListen($state, player, "equipMountId", (newMount: string | undefined, oldMount: string | undefined) => {
               if (newMount && newMount !== oldMount) {
                 const sprite = this.spriteManager.getSprite(sessionId);
                 const opts = sprite ? { sourceX: sprite.renderX, sourceY: sprite.renderY } : undefined;
@@ -317,7 +318,7 @@ export class GameScene extends Phaser.Scene {
           );
 
           unsub(
-            $state.listen(player as unknown as Player, "speedOverride", (newVal: number) => {
+            schemaListen($state, player, "speedOverride", (newVal: number) => {
               if (newVal > 0) {
                 this.inputHandler.setSpeed(newVal);
               } else {
@@ -329,12 +330,11 @@ export class GameScene extends Phaser.Scene {
 
           // Inventory: item add/remove and per-item quantity changes
           unsub(
-            $state.onAdd(player as unknown as Player, "inventory", (item: unknown) => {
+            schemaOnAdd<Player, "inventory", InventoryItem>($state, player, "inventory", (item) => {
               this.pushSidebarUpdate(player);
-              // @ts-expect-error Colyseus onChange expects Schema type
-              unsub($state.onChange(item as object, () => this.pushSidebarUpdate(player)));
+              unsub(schemaOnChange($state, item, () => this.pushSidebarUpdate(player)));
             }),
-            $state.onRemove(player as unknown as Player, "inventory", () => this.pushSidebarUpdate(player)),
+            schemaOnRemove<Player, "inventory", InventoryItem>($state, player, "inventory", () => this.pushSidebarUpdate(player)),
           );
         }
       }),
@@ -424,10 +424,6 @@ export class GameScene extends Phaser.Scene {
     // Debug overlay visibility is driven by settings + F3 key
     // React Chakra component Listens to `abraxas-debug-update` events, so we no longer render it in Phaser
 
-    this.settingsUnsub = gameSettings.subscribe(() => {
-      // Used to toggle debug text visibility, now handled by React DebugOverlay
-    });
-
     this.debugKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.F3);
     this.debugKey?.on("down", () => {
       const current = gameSettings.get().showDebugOverlay;
@@ -435,8 +431,6 @@ export class GameScene extends Phaser.Scene {
     });
 
     document.addEventListener("visibilitychange", this.handleVisibilityChange);
-
-    this.onReady?.(this.soundManager);
   }
 
   public setCooldownCallback(cb: (abilityId: string, durationMs: number) => void) {
@@ -515,7 +509,7 @@ export class GameScene extends Phaser.Scene {
     // The sprite movement is delta-time corrected, so this is frame-rate independent.
     const localSprite = this.spriteManager.getSprite(this.room.sessionId);
     if (localSprite) {
-      this.cameraController.centerOn(localSprite.renderX, localSprite.renderY);
+      this.cameras.main.centerOn(localSprite.renderX, localSprite.renderY);
       this.dropManager.updateLabels(localSprite.predictedTileX, localSprite.predictedTileY);
     }
 
@@ -556,7 +550,7 @@ export class GameScene extends Phaser.Scene {
     this.inputHandler.destroy();
     if (this.muteKey) this.input.keyboard?.removeKey(this.muteKey);
     if (this.debugKey) this.input.keyboard?.removeKey(this.debugKey);
-    this.settingsUnsub?.();
+
     this.soundManager.stopMusic();
   }
 
@@ -660,10 +654,7 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  // B34: Delegate to shared MathUtils.isInSafeZone
-  private isInSafeZone(x: number, y: number): boolean {
-    return MathUtils.isInSafeZone(x, y, this.welcome.safeZones);
-  }
+
 
   private pushSidebarUpdate(player: Player): void {
     this.onStateUpdate({
@@ -686,7 +677,7 @@ export class GameScene extends Phaser.Scene {
       pvpEnabled: player.pvpEnabled,
       spawnProtection: player.spawnProtection,
       meditating: player.meditating,
-      inSafeZone: this.isInSafeZone(player.tileX, player.tileY),
+      inSafeZone: MathUtils.isInSafeZone(player.tileX, player.tileY, this.welcome.safeZones),
       guildId: player.guildId,
       inventory: this.buildInventory(player),
       equipment: {
