@@ -24,7 +24,7 @@ export class SpriteManager {
 
   constructor(
     private scene: GameScene,
-    private cameraController: CameraController,
+    _cameraController: CameraController,
     private getSessionId: () => string,
   ) {}
 
@@ -41,7 +41,8 @@ export class SpriteManager {
       isLocal,
     );
     this.sprites.set(sessionId, sprite);
-    if (isLocal) this.cameraController.follow(sprite);
+    // Camera centering is handled each frame in GameScene.update() via
+    // cameraController.centerOn(localSprite.targetX, localSprite.targetY).
   }
 
   syncPlayer(player: PlayerEntityState, sessionId: string) {

@@ -1,5 +1,5 @@
 import type { Direction, NpcEntityState, PlayerEntityState, WelcomeData } from "@abraxas/shared";
-import { AudioAssets, CLASS_STATS, DIRECTION_DELTA, ITEMS, i18n, TILE_SIZE, ServerMessageType } from "@abraxas/shared";
+import { AudioAssets, CLASS_STATS, DIRECTION_DELTA, i18n, TILE_SIZE } from "@abraxas/shared";
 import { Callbacks, type Room } from "@colyseus/sdk";
 import Phaser from "phaser";
 import type { Drop } from "../../../server/src/schema/Drop";
@@ -14,7 +14,6 @@ import type { NetworkManager } from "../network/NetworkManager";
 import { CameraController } from "../systems/CameraController";
 import { DropManager } from "../systems/DropManager";
 import { InputHandler } from "../systems/InputHandler";
-import { MapBaker } from "../systems/MapBaker";
 import { WeatherManager } from "../managers/WeatherManager";
 import type { WeatherType } from "../managers/WeatherManager";
 import { LightManager } from "../managers/LightManager";
@@ -64,6 +63,7 @@ export class GameScene extends Phaser.Scene {
   private weatherManager!: WeatherManager;
   private lightManager!: LightManager;
   private ambientOverlay!: Phaser.GameObjects.Graphics;
+  private dropManager!: DropManager;
 
   private collisionGrid: number[][] = [];
   private stateUnsubscribers: (() => void)[] = [];
@@ -76,22 +76,6 @@ export class GameScene extends Phaser.Scene {
 
   private muteKey?: Phaser.Input.Keyboard.Key;
   private debugText?: Phaser.GameObjects.Text;
-
-  // Map baking — chunks are baked lazily one per update() tick as the camera approaches them
-  private bakedChunks = new Set<string>();
-  private chunkBakeQueue: Array<{ cx: number; cy: number }> = [];
-  private dropVisuals = new Map<
-    string,
-    {
-      arc: Phaser.GameObjects.Arc;
-      tween: Phaser.Tweens.Tween;
-      emitter: Phaser.GameObjects.Particles.ParticleEmitter;
-      label: Phaser.GameObjects.Text;
-      color: number;
-      tileX: number;
-      tileY: number;
-    }
-  >();
   private handleVisibilityChange = () => {
     if (document.visibilityState === "visible") {
       const webAudio: any = this.sound;
@@ -159,6 +143,9 @@ export class GameScene extends Phaser.Scene {
     this.cameraController = new CameraController(this.cameras.main);
     this.cameraController.applyFixedZoom();
     this.scale.on("resize", () => this.cameraController.applyFixedZoom());
+    // Round camera scroll to whole pixels — prevents sub-pixel shimmer
+    // when the camera is manually positioned each frame.
+    this.cameras.main.setRoundPixels(true);
 
     // Hook into inner-map warp command to flash the screen
     this.network.onWarp = (data) => {
@@ -169,6 +156,7 @@ export class GameScene extends Phaser.Scene {
 
     this.spriteManager = new SpriteManager(this, this.cameraController, () => this.room.sessionId);
     this.effectManager = new EffectManager(this, this.spriteManager);
+    this.dropManager = new DropManager(this, this.effectManager);
 
     // Spawn visual indicators for all map teleporters
     if (this.welcome.warps) {
@@ -281,6 +269,8 @@ export class GameScene extends Phaser.Scene {
             "gold",
             "stealthed",
             "stunned",
+            "spawnProtection",
+            "meditating",
             "level",
             "xp",
             "maxXp",
@@ -352,6 +342,13 @@ export class GameScene extends Phaser.Scene {
         npcOnChangeUnsubs.get(id)?.();
         npcOnChangeUnsubs.delete(id);
         this.spriteManager.removePlayer(id);
+      }),
+      // Drops: render bobbing coloured circles with sparkle emitters
+      $state.onAdd("drops", (drop, id) => {
+        this.dropManager.addDrop(drop as unknown as Drop, id);
+      }),
+      $state.onRemove("drops", (_drop, id) => {
+        this.dropManager.removeDrop(id);
       }),
     );
 
@@ -475,12 +472,41 @@ export class GameScene extends Phaser.Scene {
       this.updateTargetingOverlay();
     }
 
+    // Keep camera centred on the local player's actual rendered position.
+    // spriteManager.update(delta) already ran above, so renderX/renderY is the
+    // exact pixel the container was placed at this frame — perfectly in sync.
+    // Using renderX/renderY (not targetX/targetY) means the camera follows the
+    // visible sprite, not the destination tile that the sprite hasn't arrived at yet.
+    // The sprite movement is delta-time corrected, so this is frame-rate independent.
     const localSprite = this.spriteManager.getSprite(this.room.sessionId);
+    if (localSprite) {
+      this.cameraController.centerOn(localSprite.renderX, localSprite.renderY);
+      this.dropManager.updateLabels(localSprite.predictedTileX, localSprite.predictedTileY);
+    }
+
     if (this.debugText && localSprite) {
+      // Count particle emitters (persistent + transient)
+      const allObjs = this.children.list;
+      const emitterCount = allObjs.filter(
+        (o) => o instanceof Phaser.GameObjects.Particles.ParticleEmitter,
+      ).length;
+      const graphicsCount = allObjs.filter(
+        (o) => o instanceof Phaser.GameObjects.Graphics,
+      ).length;
+      const textCount = allObjs.filter(
+        (o) => o instanceof Phaser.GameObjects.Text,
+      ).length;
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const drawCalls: number = (this.game.renderer as any)?.drawCount ?? -1;
+
       this.debugText.setText(
         `X: ${localSprite.predictedTileX}  Y: ${localSprite.predictedTileY}\n` +
-        `FPS: ${this.game.loop.actualFps.toFixed(1)}  \u03B4: ${delta.toFixed(1)}ms\n` +
-        `Tweens: ${this.tweens.getTweens().length}`,
+        `FPS: ${this.game.loop.actualFps.toFixed(1)}  δ: ${delta.toFixed(1)}ms\n` +
+        `GO: ${allObjs.length}  Tweens: ${this.tweens.getTweens().length}  DrawCalls: ${drawCalls}\n` +
+        `Sprites: ${this.spriteManager.getAllSprites().size}  StateNPCs: ${this.room.state.npcs.size}  StatePlayers: ${this.room.state.players.size}\n` +
+        `Drops: ${this.dropManager.count}  Particles: ${emitterCount}  Graphics: ${graphicsCount}  Texts: ${textCount}\n` +
+        `Lights: ${this.lightManager.getLightCount()}/48`,
       );
     }
   }
@@ -616,6 +642,8 @@ export class GameScene extends Phaser.Scene {
       xp: player.xp,
       maxXp: player.maxXp,
       pvpEnabled: player.pvpEnabled,
+      spawnProtection: player.spawnProtection,
+      meditating: player.meditating,
       inSafeZone: this.isInSafeZone(player.tileX, player.tileY),
       guildId: player.guildId,
       inventory: this.buildInventory(player),
