@@ -291,7 +291,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         for (const n of this.map.npcs ?? []) {
           this.npcSystem.spawnNpcAt(n.type, this.map, n.x, n.y);
         }
-        const npcCount = this.map.npcCount ?? 0;
+        const npcCount = this.map.npcCount;
         if (npcCount > 0) {
           this.npcSystem.spawnNpcs(npcCount, this.map);
         }

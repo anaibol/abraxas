@@ -65,7 +65,7 @@ export class CombatSystem {
         const entity = this.spatial.findEntityBySessionId(sessionId);
         if (entity?.isPlayer()) {
           for (const rc of windup.resourceCosts) {
-            (entity as unknown as Record<string, number>)[rc.field] += rc.amount;
+            entity[rc.field as PlayerResourceField] += rc.amount;
           }
         }
       }
@@ -829,6 +829,8 @@ export class CombatSystem {
 
   private canAttack(attacker: Entity, target: Entity): boolean {
     if (attacker.sessionId === target.sessionId) return false;
+    // GMs/admins are fully invulnerable — nobody can attack them
+    if (target.isPlayer() && (target.role === "ADMIN" || target.role === "GM")) return false;
     if (this.sameFaction(attacker, target)) return false;
     if (
       MathUtils.isInSafeZone(attacker.tileX, attacker.tileY, this.map.safeZones) ||

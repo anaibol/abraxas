@@ -53,27 +53,30 @@ export class DamageCalculator {
   /** Derives secondary combat stats (crit, dodge, parry, etc.) from base stats + buffs. */
   getSecondaryStats(entity: Entity, now: number): SecondaryStats {
     const stats = entity.getStats();
+    if (!stats) {
+      return { hitRating: 0.95, critChance: 0.05, critMultiplier: 1.5, armorPen: 0, dodgeChance: 0.05, parryChance: 0.05, blockChance: 0 };
+    }
     return {
       hitRating:
-        (stats?.hitRating ?? 0.95) +
+        stats.hitRating +
         this.buffSystem.getBuffBonus(entity.sessionId, StatType.HIT_RATING, now) / 100,
       critChance:
-        (stats?.critChance ?? 0.05) +
+        stats.critChance +
         this.buffSystem.getBuffBonus(entity.sessionId, StatType.CRIT_CHANCE, now) / 100,
       critMultiplier:
-        (stats?.critMultiplier ?? 1.5) +
+        stats.critMultiplier +
         this.buffSystem.getBuffBonus(entity.sessionId, StatType.CRIT_MULTIPLIER, now) / 100,
       armorPen:
-        (stats?.armorPen ?? 0) +
+        stats.armorPen +
         this.buffSystem.getBuffBonus(entity.sessionId, StatType.ARMOR_PEN, now) / 100,
       dodgeChance:
-        (stats?.dodgeChance ?? 0.05) +
+        stats.dodgeChance +
         this.buffSystem.getBuffBonus(entity.sessionId, StatType.DODGE_CHANCE, now) / 100,
       parryChance:
-        (stats?.parryChance ?? 0.05) +
+        stats.parryChance +
         this.buffSystem.getBuffBonus(entity.sessionId, StatType.PARRY_CHANCE, now) / 100,
       blockChance:
-        (stats?.blockChance ?? 0) +
+        stats.blockChance +
         this.buffSystem.getBuffBonus(entity.sessionId, StatType.BLOCK_CHANCE, now) / 100,
     };
   }

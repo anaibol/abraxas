@@ -11,8 +11,23 @@ export const CLASS_APPEARANCE: Record<string, { bodyId: number; headId: number }
   DRUID: { bodyId: 70, headId: 8 },
 };
 
+/** Default secondary combat stats — spread into every class/NPC entry. */
+const SEC: Pick<
+  ClassStats,
+  "critChance" | "critMultiplier" | "hitRating" | "armorPen" | "dodgeChance" | "parryChance" | "blockChance"
+> = {
+  critChance: 0.05,
+  critMultiplier: 1.5,
+  hitRating: 0.95,
+  armorPen: 0,
+  dodgeChance: 0.05,
+  parryChance: 0.05,
+  blockChance: 0,
+};
+
 export const CLASS_STATS: Record<string, ClassStats> = {
   WARRIOR: {
+    ...SEC,
     hp: 240,
     mana: 60,
     str: 25,
@@ -38,6 +53,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     ],
   },
   MAGE: {
+    ...SEC,
     hp: 140,
     mana: 160,
     str: 6,
@@ -67,6 +83,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     ],
   },
   RANGER: {
+    ...SEC,
     hp: 160,
     mana: 90,
     str: 10,
@@ -92,6 +109,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     ],
   },
   ROGUE: {
+    ...SEC,
     hp: 150,
     mana: 80,
     str: 14,
@@ -117,6 +135,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     ],
   },
   CLERIC: {
+    ...SEC,
     hp: 220,
     mana: 120,
     str: 20,
@@ -132,6 +151,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     abilities: ["holy_strike", "heal", "divine_shield", "holy_nova", "curse", "smite"],
   },
   PALADIN: {
+    ...SEC,
     hp: 230,
     mana: 100,
     str: 22,
@@ -147,6 +167,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     abilities: ["judgment", "lay_on_hands", "consecration", "aura_of_protection", "holy_bolt"],
   },
   NECROMANCER: {
+    ...SEC,
     hp: 120,
     mana: 200,
     str: 4,
@@ -171,6 +192,7 @@ export const CLASS_STATS: Record<string, ClassStats> = {
     ],
   },
   DRUID: {
+    ...SEC,
     hp: 180,
     mana: 140,
     str: 10,

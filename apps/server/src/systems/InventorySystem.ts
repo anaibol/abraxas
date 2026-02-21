@@ -82,7 +82,7 @@ export class InventorySystem {
 
         if (instanceData) {
           item.rarity = instanceData.rarity;
-          item.nameOverride = instanceData.nameOverride ?? "";
+          item.nameOverride = instanceData.nameOverride || "";
           instanceData.affixes.forEach((a) => {
             const s = new ItemAffixSchema();
             s.affixType = a.type;

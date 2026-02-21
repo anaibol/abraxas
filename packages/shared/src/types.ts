@@ -178,7 +178,7 @@ export interface TileMap {
   spawns: { x: number; y: number }[];
   newbieSpawns?: { x: number; y: number }[];
   safeZones?: { x: number; y: number; w: number; h: number }[];
-  npcCount?: number;
+  npcCount: number;
   merchantCount?: number;
   npcs?: { type: NpcType; x: number; y: number }[];
   warps?: Warp[];
@@ -198,14 +198,14 @@ export interface CharStats {
   attackWindupMs: number;
   armor: number;
 
-  // Secondary Offensive/Defensive Stats
-  critChance?: number;
-  critMultiplier?: number;
-  hitRating?: number;
-  armorPen?: number;
-  dodgeChance?: number;
-  parryChance?: number;
-  blockChance?: number;
+  // Secondary Offensive/Defensive Stats (defaults provided by stat builders)
+  critChance: number;
+  critMultiplier: number;
+  hitRating: number;
+  armorPen: number;
+  dodgeChance: number;
+  parryChance: number;
+  blockChance: number;
 
   abilities: string[];
   passive?: boolean;
@@ -312,7 +312,7 @@ export type Ability = {
   buffStat?: StatType;
   buffAmount?: number;
   summonType?: string;
-  leechRatio?: number;
+  leechRatio: number;
   dotDamage?: number;
   dotIntervalMs?: number;
   dotDurationMs?: number;
@@ -405,6 +405,7 @@ export interface PlayerEntityState extends BaseEntityState {
   meditating: boolean;
   guildId?: string;
   pvpEnabled: boolean;
+  role?: string;
   type?: never;
 }
 

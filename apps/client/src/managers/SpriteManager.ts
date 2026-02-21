@@ -45,6 +45,7 @@ export class SpriteManager {
       player.classType,
       player.name,
       isLocal,
+      player.role,
     );
     this.sprites.set(sessionId, sprite);
     // Camera centering is handled each frame in GameScene.update() via

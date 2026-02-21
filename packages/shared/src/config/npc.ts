@@ -542,6 +542,13 @@ export const NPC_STATS: Record<NpcType, NpcStats> = Object.fromEntries(
       fleesWhenLow: false,
       abilityCastChance: 0.4,
       rareSpawn: false,
+      critChance: 0.05,
+      critMultiplier: 1.5,
+      hitRating: 0.95,
+      armorPen: 0,
+      dodgeChance: 0.05,
+      parryChance: 0,
+      blockChance: 0,
       ...v,
     } as NpcStats;
     return [k, stats];

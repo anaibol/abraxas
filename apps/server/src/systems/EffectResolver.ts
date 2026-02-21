@@ -113,8 +113,8 @@ export class EffectResolver {
       });
 
       this.applyRageOnHit(attacker, target);
-      if (attacker.alive && (ability.leechRatio ?? 0) > 0) {
-        const healBack = Math.max(1, Math.round(damageRes.damage * (ability.leechRatio ?? 0)));
+      if (attacker.alive && ability.leechRatio > 0) {
+        const healBack = Math.max(1, Math.round(damageRes.damage * ability.leechRatio));
         attacker.hp = Math.min(attacker.maxHp, attacker.hp + healBack);
         broadcast(ServerMessageType.Heal, {
           sessionId: attacker.sessionId,
@@ -271,10 +271,11 @@ export class EffectResolver {
         headId = appearance?.headId || 0;
       }
 
+      // Bug #15: Use empty stat instead of HP/0 — this buff is purely cosmetic
       this.buffSystem.addBuff(
         attacker.sessionId,
         ability.id,
-        StatType.HP,
+        "",
         0,
         ability.durationMs ?? 30000,
         now,
@@ -312,7 +313,7 @@ export class EffectResolver {
         targetY: attacker.tileY,
       });
       // Compound effect: teleport abilities can deal AoE damage at the landing tile (e.g. leap)
-      if ((ability.aoeRadius ?? 0) > 0 && ability.baseDamage > 0) {
+      if (ability.aoeRadius > 0 && ability.baseDamage > 0) {
         const victims = this.spatial.findEntitiesInRadius(
           attacker.tileX,
           attacker.tileY,
@@ -352,9 +353,9 @@ export class EffectResolver {
         target.alive
       ) {
         const ppKey = `pp_${target.sessionId}`;
-        const lastPp = (attacker as unknown as Record<string, number>)[ppKey] ?? 0;
+        const lastPp = attacker.pickpocketTimers.get(ppKey) ?? 0;
         if (now - lastPp < 10_000) return; // 10s cooldown per target
-        (attacker as unknown as Record<string, number>)[ppKey] = now;
+        attacker.pickpocketTimers.set(ppKey, now);
 
         const goldGain = Math.floor(Math.random() * 40) + 10;
         attacker.gold += goldGain;

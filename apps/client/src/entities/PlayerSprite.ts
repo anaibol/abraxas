@@ -108,6 +108,7 @@ export class PlayerSprite {
     classType: string,
     name: string,
     isLocal: boolean,
+    role?: string,
   ) {
     this.sessionId = sessionId;
     this.classType = classType;
@@ -196,9 +197,11 @@ export class PlayerSprite {
     }
     this.updateHeadPosition();
 
+    const nameColor =
+      role === "ADMIN" ? "#ff4444" : role === "GM" ? "#44ff44" : isLocal ? "#ffffff" : "#cccccc";
     this.nameText = scene.add.text(0, TILE_SIZE / 2 + 6, name, {
       ...GAME_TEXT_STYLE,
-      color: isLocal ? "#ffffff" : "#cccccc",
+      color: nameColor,
     });
     this.nameText.setOrigin(0.5, 0);
 

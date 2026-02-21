@@ -147,6 +147,7 @@ export class NpcSystem {
 
   /** Finds the nearest attackable player within the NPC's aggro range, or null.
    *  Players standing inside a safe zone are excluded — NPCs should not aggro them.
+   *  GMs/admins are always excluded — they are fully invulnerable.
    */
   private scanForAggroTarget(npc: Npc): Player | null {
     // Bug #28: NPCs standing inside a safe zone should not aggro
@@ -154,7 +155,10 @@ export class NpcSystem {
       return null;
     }
     const candidate = this.spatial.findNearestPlayer(npc.tileX, npc.tileY, this.getAggroRange(npc));
-    if (candidate && MathUtils.isInSafeZone(candidate.tileX, candidate.tileY, this.currentMap?.safeZones)) {
+    if (!candidate) return null;
+    // GMs/admins are invulnerable — NPCs should never aggro them
+    if (candidate.role === "ADMIN" || candidate.role === "GM") return null;
+    if (MathUtils.isInSafeZone(candidate.tileX, candidate.tileY, this.currentMap?.safeZones)) {
       return null;
     }
     return candidate;

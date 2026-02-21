@@ -28,6 +28,8 @@ export abstract class Char extends Schema {
   spellCooldowns = new Map<string, number>();
   bufferedAction: BufferedAction | null = null;
   windupAction: WindupAction | null = null;
+  /** Per-target pickpocket cooldown timestamps. */
+  pickpocketTimers = new Map<string, number>();
 
   // Combat stats (common to players and NPCs)
   // B13: Use uint16 — stats can exceed 255 with equipment + buffs + level scaling
