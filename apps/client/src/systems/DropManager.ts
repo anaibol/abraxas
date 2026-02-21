@@ -45,7 +45,7 @@ export class DropManager {
     const py = drop.tileY * TILE_SIZE + TILE_SIZE / 2;
     const color = this.dropColor(drop);
     const isGold = drop.itemType === "gold";
-    const isRare = drop.itemType === "item" && ITEMS[drop.itemId]?.rarity === "rare";
+    const isRare = drop.itemType === "item" && ITEMS[drop.itemId]?.rarity === "RARE";
 
     this._ensureTextures();
 
@@ -318,11 +318,11 @@ export class DropManager {
       return 0xaaffaa; // other consumable — green
     }
     switch (item.rarity) {
-      case "common":
+      case "COMMON":
         return 0xdddddd;
-      case "uncommon":
+      case "UNCOMMON":
         return 0x4488ff;
-      case "rare":
+      case "RARE":
         return 0xffaa00;
       default:
         return 0xffffff;
@@ -341,11 +341,11 @@ export class DropManager {
       return "#aaffaa";
     }
     switch (item.rarity) {
-      case "common":
+      case "COMMON":
         return "#dddddd";
-      case "uncommon":
+      case "UNCOMMON":
         return "#6699ff";
-      case "rare":
+      case "RARE":
         return "#ffbb44";
       default:
         return "#ffffff";

@@ -153,6 +153,24 @@ export class NpcSystem {
     return 1; // Default level
   }
 
+  /** Q9: Shared summon cap — returns maxCompanions from stats if available, otherwise 1. */
+  private getSummonCap(entity: Entity): number {
+    const stats = entity.getStats();
+    if (stats && "maxCompanions" in stats) {
+      return (stats as ClassStats).maxCompanions;
+    }
+    return 1;
+  }
+
+  /** Q9: Counts live minions owned by the given sessionId. */
+  private countLiveMinions(ownerSessionId: string): number {
+    let count = 0;
+    for (const n of this.state.npcs.values()) {
+      if (n.ownerId === ownerSessionId && n.alive) count++;
+    }
+    return count;
+  }
+
   public spawnNpc(type: NpcType, map: TileMap, ownerId?: string): Npc | undefined {
     // Pick a random walkable tile then spiral to avoid any occupied cell
     for (let attempt = 0; attempt < 20; attempt++) {
@@ -185,20 +203,8 @@ export class NpcSystem {
     }
 
     // Check caps
-    const ownerStats = caster.getStats();
-    let cap = 1;
-    if (ownerStats && "maxCompanions" in ownerStats) {
-      cap = (ownerStats as ClassStats).maxCompanions;
-    }
-
-    let liveMinions = 0;
-    this.state.npcs.forEach((n) => {
-      if (n.ownerId === caster.sessionId && n.alive) liveMinions++;
-    });
-
-    if (liveMinions >= cap) {
-      // Find oldest summon and kill it to make room? Or just block?
-      // Blocking for now as is traditional.
+    const cap = this.getSummonCap(caster);
+    if (this.countLiveMinions(caster.sessionId) >= cap) {
       return;
     }
 
@@ -790,19 +796,10 @@ export class NpcSystem {
     const stats = NPC_STATS[summoner.npcType];
     if (!stats.summonType) return;
 
-    // Use dynamic limit if summoner is a Player's companion, otherwise fallback to 3
-    let cap = 3;
+    // Q9: Use shared cap/count helpers
     const owner = summoner.ownerId ? this.spatial.findEntityBySessionId(summoner.ownerId) : null;
-    if (owner && owner.getStats() && "maxCompanions" in owner.getStats()!) {
-      cap = (owner.getStats() as import("@abraxas/shared").ClassStats).maxCompanions;
-    }
-
-    // Count how many minions this specific summoner has alive to enforce the cap.
-    let liveMinions = 0;
-    this.state.npcs.forEach((n) => {
-      if (n.ownerId === summoner.sessionId && n.alive) liveMinions++;
-    });
-    if (liveMinions >= cap) return;
+    const cap = this.getSummonCap(owner ?? summoner);
+    if (this.countLiveMinions(summoner.sessionId) >= cap) return;
 
     // Try to place the minion in one of the four adjacent tiles.
     const dirs = [Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT];

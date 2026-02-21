@@ -1,4 +1,4 @@
-import { DropType, ItemRarity } from "../generated/prisma";
+import { DropType, ItemRarity } from "@abraxas/shared";
 import { ArraySchema, Schema, type } from "@colyseus/schema";
 import { ItemAffixSchema } from "./InventoryItem";
 

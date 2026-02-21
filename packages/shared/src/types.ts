@@ -24,13 +24,14 @@ export enum DropType {
   GOLD = "gold",
 }
 
-export enum ItemRarity {
-  COMMON = "COMMON",
-  UNCOMMON = "UNCOMMON",
-  RARE = "RARE",
-  EPIC = "EPIC",
-  LEGENDARY = "LEGENDARY",
-}
+export const ItemRarity = {
+  COMMON: "COMMON",
+  UNCOMMON: "UNCOMMON",
+  RARE: "RARE",
+  EPIC: "EPIC",
+  LEGENDARY: "LEGENDARY",
+} as const;
+export type ItemRarity = (typeof ItemRarity)[keyof typeof ItemRarity];
 
 export enum StatType {
   STR = "str",

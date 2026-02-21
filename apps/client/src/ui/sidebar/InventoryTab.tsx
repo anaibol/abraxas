@@ -6,9 +6,9 @@ import { HEX, T } from "../tokens";
 import type { PlayerState } from "./types";
 
 const RARITY_COLORS: Record<string, string> = {
-  common: HEX.goldMuted,
-  uncommon: "#33aa44",
-  rare: "#3355cc",
+  COMMON: HEX.goldMuted,
+  UNCOMMON: "#33aa44",
+  RARE: "#3355cc",
 };
 
 const ITEM_ICONS: Record<string, string> = {
