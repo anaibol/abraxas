@@ -1486,80 +1486,6 @@ export class EffectManager {
     });
   }
 
-  // ── Paladin ─────────────────────────────────────────────────────────────
-
-  private fx_consecration(px: number, py: number) {
-    // Holy fire burns the ground around the paladin
-    this.ring(px, py, 0xffcc00, 5, 48, 480, 0.85, 4);
-    this.scene.time.delayedCall(80, () => this.ring(px, py, 0xff6600, 5, 36, 380, 0.6, 3));
-    this.burst(px, py, TEX.CIRCLE, {
-      colors: [0xff6600, 0xffcc00, 0xffffff, 0xffee44],
-      count: 32,
-      speed: { min: 50, max: 145 },
-      scale: { start: 0.65, end: 0 },
-      lifespan: { min: 400, max: 840 },
-      gravityY: -32,
-      radius: 30,
-    });
-    this.burst(px, py, TEX.STAR, {
-      colors: [0xffffff, 0xffee44],
-      count: 14,
-      speed: { min: 25, max: 72 },
-      scale: { start: 0.5, end: 0 },
-      lifespan: { min: 500, max: 920 },
-      rotate: { start: 0, end: 360 },
-      gravityY: -42,
-      radius: 24,
-    });
-  }
-
-  private fx_bear_form(px: number, py: number) {
-    // Heavy earthy transformation — brown burst + ring
-    this.flash(px, py, 0x8B5E3C, 40, 150);
-    this.ring(px, py, 0x8B5E3C, 6, 52, 500, 0.8, 4);
-    this.burst(px, py, TEX.SMOKE, {
-      colors: [0x6B4226, 0xA07040, 0x5C3A1C],
-      count: 30,
-      speed: { min: 30, max: 95 },
-      scale: { start: 1.0, end: 0.1 },
-      lifespan: { min: 500, max: 1100 },
-      gravityY: -18,
-      radius: 32,
-      blendMode: Phaser.BlendModes.NORMAL,
-      alpha: { start: 0.7, end: 0 },
-    });
-    this.burst(px, py, TEX.CIRCLE, {
-      colors: [0x8B5E3C, 0xD2A679, 0xFFEECC],
-      count: 16,
-      speed: { min: 50, max: 130 },
-      scale: { start: 0.55, end: 0 },
-      lifespan: { min: 350, max: 700 },
-      radius: 18,
-    });
-  }
-
-  private fx_cat_form(px: number, py: number) {
-    // Quick agility burst — green shards shooting outward
-    this.ring(px, py, 0x44FF88, 4, 40, 360, 0.8, 3);
-    this.burst(px, py, TEX.SHARD, {
-      colors: [0x44FF88, 0xAAFFCC, 0xFFFFFF],
-      count: 24,
-      speed: { min: 100, max: 240 },
-      scale: { start: 0.55, end: 0 },
-      lifespan: { min: 180, max: 380 },
-      angle: { min: 0, max: 360 },
-      rotate: { start: 0, end: 180 },
-    });
-    this.burst(px, py, TEX.CIRCLE, {
-      colors: [0x44FF88, 0x88FFCC],
-      count: 12,
-      speed: { min: 30, max: 80 },
-      scale: { start: 0.35, end: 0 },
-      lifespan: { min: 300, max: 600 },
-      gravityY: -40,
-      radius: 16,
-    });
-  }
 
   private fx_tree_form(px: number, py: number) {
     // Rooted transformation — rising green nature mist
@@ -1588,42 +1514,7 @@ export class EffectManager {
     });
   }
 
-  private fx_summon(px: number, py: number) {
-    // Dark necrotic column of smoke rising from the ground
-    this.ring(px, py, 0x220033, 5, 40, 480, 0.7, 4);
-    this.scene.time.delayedCall(80, () => this.ring(px, py, 0x8844CC, 5, 30, 380, 0.4, 2));
-    this.burst(px, py, TEX.SMOKE, {
-      colors: [0x110022, 0x330033, 0x550055],
-      count: 28,
-      speed: { min: 15, max: 55 },
-      scale: { start: 1.0, end: 0.1 },
-      lifespan: { min: 700, max: 1500 },
-      gravityY: -40,
-      radius: 20,
-      blendMode: Phaser.BlendModes.NORMAL,
-      alpha: { start: 0.65, end: 0 },
-    });
-    this.burst(px, py, TEX.CIRCLE, {
-      colors: [0xCC44FF, 0x8800CC, 0x4400AA],
-      count: 18,
-      speed: { min: 30, max: 90 },
-      scale: { start: 0.55, end: 0 },
-      lifespan: { min: 400, max: 850 },
-      gravityY: -60,
-      radius: 14,
-    });
-  }
 
-  private fx_default(px: number, py: number) {
-    this.ring(px, py, 0xaaaaff, 4, 32, 320, 0.7, 2);
-    this.burst(px, py, TEX.CIRCLE, {
-      colors: [0xffffff, 0xaaaaff],
-      count: 18,
-      speed: { min: 40, max: 105 },
-      scale: { start: 0.5, end: 0 },
-      lifespan: { min: 300, max: 620 },
-    });
-  }
 
   // ── Non-spell game-event effects ─────────────────────────────────────────
 
