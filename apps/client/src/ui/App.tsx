@@ -128,6 +128,7 @@ export function App() {
   const [quests, setQuests] = useState<PlayerQuestState[]>([]);
   const [dialogueData, setDialogueData] = useState<{
     npcId: string;
+    npcType: string;
     text: string;
     options: { text: string; action: string; data?: unknown }[];
   } | null>(null);
@@ -726,6 +727,7 @@ export function App() {
             {dialogueData && (
               <QuestDialogue
                 npcId={dialogueData.npcId}
+                npcType={dialogueData.npcType}
                 text={dialogueData.text}
                 options={dialogueData.options}
                 onAction={(action, data) => networkRef.current?.getRoom().send(action, data)}

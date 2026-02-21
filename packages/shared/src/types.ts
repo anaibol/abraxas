@@ -627,6 +627,7 @@ export type ServerMessages = {
   [ServerMessageType.QuestAvailable]: { npcId: string; questIds: string[] };
   [ServerMessageType.OpenDialogue]: {
     npcId: string;
+    npcType: string;
     text: string;
     options: { text: string; action: string; data?: unknown }[];
   };

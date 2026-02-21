@@ -150,10 +150,10 @@ export class QuestSystem {
     if (availableQuests.length > 0) {
       const questId = availableQuests[0];
       return {
-        text: "dialogue.accept_prompt",
+        text: "ui.dialogue.accept_prompt",
         options: [
-          { text: "dialogue.accept_quest", action: "quest_accept", data: { questId } },
-          { text: "dialogue.maybe_later", action: "close" },
+          { text: "ui.dialogue.accept_quest", action: "quest_accept", data: { questId } },
+          { text: "ui.dialogue.maybe_later", action: "close" },
         ],
       };
     }
@@ -163,10 +163,10 @@ export class QuestSystem {
       const questDef = QUESTS[state.questId];
       if (questDef?.npcId === npcType) {
         return {
-          text: "dialogue.reward_prompt",
+          text: "ui.dialogue.reward_prompt",
           options: [
             {
-              text: "dialogue.complete_quest",
+              text: "ui.dialogue.complete_quest",
               action: "quest_complete",
               data: { questId: state.questId },
             },
@@ -176,8 +176,8 @@ export class QuestSystem {
     }
 
     return {
-      text: "dialogue.hello_traveler",
-      options: [{ text: "dialogue.goodbye", action: "close" }],
+      text: "ui.dialogue.hello_traveler",
+      options: [{ text: "ui.dialogue.goodbye", action: "close" }],
     };
   }
 }
