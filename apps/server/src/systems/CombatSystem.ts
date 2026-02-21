@@ -501,7 +501,9 @@ export class CombatSystem {
     onDeath: (entity: Entity, killerSessionId?: string) => void,
     now: number,
   ): void {
-    const target = this.spatial.findEntityAtTile(windup.targetTileX, windup.targetTileY);
+    let target = windup.targetSessionId
+      ? this.spatial.findEntityBySessionId(windup.targetSessionId)
+      : this.spatial.findEntityAtTile(windup.targetTileX, windup.targetTileY);
 
     if (target && target.alive && this.canAttack(attacker, target)) {
       const stats = attacker.getStats();
@@ -783,7 +785,10 @@ export class CombatSystem {
         );
       }
     } else {
-      const target = this.spatial.findEntityAtTile(windup.targetTileX, windup.targetTileY);
+      let target = windup.targetSessionId
+        ? this.spatial.findEntityBySessionId(windup.targetSessionId)
+        : this.spatial.findEntityAtTile(windup.targetTileX, windup.targetTileY);
+
       if (!target || !target.alive) {
         console.log(`[Combat] ${attacker.name} -> Empty/Dead Tile (${windup.abilityId}) at ${windup.targetTileX},${windup.targetTileY}`);
       }
