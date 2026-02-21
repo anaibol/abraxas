@@ -1,30 +1,30 @@
 import type { NpcStats, NpcType } from "../types";
 
 export const NPC_APPEARANCE: Record<string, { bodyId: number; headId: number }> = {
-  orc: { bodyId: 30, headId: 0 },
-  skeleton: { bodyId: 35, headId: 0 },
-  goblin: { bodyId: 45, headId: 0 },
-  wolf: { bodyId: 65, headId: 0 },
-  merchant: { bodyId: 5, headId: 0 },
-  spider: { bodyId: 10, headId: 0 },
-  ghost: { bodyId: 15, headId: 0 },
-  lich: { bodyId: 70, headId: 0 },
-  banker: { bodyId: 5, headId: 0 },
-  zombie: { bodyId: 40, headId: 0 },
-  troll: { bodyId: 25, headId: 0 },
-  bat: { bodyId: 50, headId: 0 },
-  dark_knight: { bodyId: 3, headId: 0 },
-  horse: { bodyId: 65, headId: 0 },
-  skeleton_archer: { bodyId: 35, headId: 0 },
-  vampire: { bodyId: 70, headId: 0 },
-  gargoyle: { bodyId: 50, headId: 0 },
-  elephant: { bodyId: 80, headId: 0 },
-  dragon: { bodyId: 85, headId: 0 },
-  bear: { bodyId: 75, headId: 0 },
-  mana_spring: { bodyId: 1, headId: 0 },
-  explosive_trap: { bodyId: 3, headId: 0 },
-  phantom_pet: { bodyId: 65, headId: 0 },
-  decoy: { bodyId: 45, headId: 0 },
+  orc: { bodyId: 74, headId: 0 }, // 64×64 green orc/ogre
+  skeleton: { bodyId: 13, headId: 0 }, // 31×25 skeleton creature
+  goblin: { bodyId: 14, headId: 0 }, // 25×32 classic green goblin
+  wolf: { bodyId: 7, headId: 0 }, // 80×54 dire wolf/beast
+  merchant: { bodyId: 4, headId: 0 }, // 24×46 robed NPC
+  spider: { bodyId: 10, headId: 0 }, // 75×50 large spider
+  ghost: { bodyId: 15, headId: 0 }, // 28×51 spectral knight
+  lich: { bodyId: 76, headId: 0 }, // 57×98 tall stone golem/lich
+  banker: { bodyId: 4, headId: 0 }, // 24×46 robed NPC
+  zombie: { bodyId: 40, headId: 0 }, // 25×45 shambling humanoid
+  troll: { bodyId: 141, headId: 0 }, // 140×170 massive rock giant
+  bat: { bodyId: 9, headId: 0 }, // 32×25 brown bat
+  dark_knight: { bodyId: 152, headId: 0 }, // 48×64 dark armored creature
+  horse: { bodyId: 59, headId: 0 }, // 32×25 small creature
+  skeleton_archer: { bodyId: 149, headId: 0 }, // 27×52 tall skeletal archer
+  vampire: { bodyId: 83, headId: 0 }, // 50×75 winged demon
+  gargoyle: { bodyId: 68, headId: 0 }, // 32×25 grey winged gargoyle
+  elephant: { bodyId: 150, headId: 0 }, // 52×35 large beast
+  dragon: { bodyId: 82, headId: 0 }, // 285×232 massive dragon
+  bear: { bodyId: 72, headId: 0 }, // 64×64 brown bear
+  mana_spring: { bodyId: 144, headId: 0 }, // 15×15 sparkle/star
+  explosive_trap: { bodyId: 144, headId: 0 }, // 15×15 sparkle/star
+  phantom_pet: { bodyId: 143, headId: 0 }, // 18×26 fairy/sprite
+  decoy: { bodyId: 6, headId: 0 }, // 51×35 stout creature
 };
 
 const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
