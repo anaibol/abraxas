@@ -75,7 +75,7 @@ export function QuestLog({ quests }: QuestLogProps) {
                 </VStack>
                 {q.status === "COMPLETED" && (
                   <Text textStyle={T.statLabel} color="#00ff00" mt="2" textAlign="center" fontWeight="700">
-                    {t("ui.quests.turn_in_hint", { name: t(`npcs.${def.npcId}`) })}
+                    {t("ui.quests.turn_in_hint", { name: t(`npcs.${def.npcType}`) })}
                   </Text>
                 )}
               </Box>
@@ -119,7 +119,7 @@ export function QuestLog({ quests }: QuestLogProps) {
                     fontWeight="600"
                     letterSpacing="1px"
                   >
-                    {t("ui.quests.see_npc", { name: t(`npcs.${def.npcId}`) })}
+                    {t("ui.quests.see_npc", { name: t(`npcs.${def.npcType}`) })}
                   </Text>
                 </Flex>
                 <Text textStyle={T.bodyMuted} color="whiteAlpha.600" fontStyle="italic">

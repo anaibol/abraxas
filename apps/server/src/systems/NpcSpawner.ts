@@ -19,7 +19,7 @@ import { findSafeSpawn } from "../utils/spawnUtils";
 // ── Types ──────────────────────────────────────────────────────────────
 
 export type RespawnEntry = {
-  npcId: NpcType;
+  npcType: NpcType;
   deadAt: number;
   spawnX: number;
   spawnY: number;
@@ -45,7 +45,7 @@ export class NpcSpawner {
       this.spawnNpc(type, map);
     }
 
-    const mapHasMerchant = map.npcs?.some((n) => n.id === "merchant");
+    const mapHasMerchant = map.npcs?.some((n) => n.type === "merchant");
     if (!mapHasMerchant && map.spawns.length > 0) {
       // Bug #38: Use findSafeSpawn instead of hardcoded offset that could land on a wall
       const merchantSpot = findSafeSpawn(map.spawns[0].x + 2, map.spawns[0].y, map, this.spatial)
@@ -129,8 +129,8 @@ export class NpcSpawner {
   }
 
   /** Determine the spawn level for an NPC type based on its stat definition. */
-  calculateSpawnLevel(npcId: NpcType, _map: TileMap): number {
-    const stats = NPC_STATS[npcId];
+  calculateSpawnLevel(npcType: NpcType, _map: TileMap): number {
+    const stats = NPC_STATS[npcType];
     if (stats.minLevel !== undefined && stats.maxLevel !== undefined) {
       return Math.floor(Math.random() * (stats.maxLevel - stats.minLevel + 1)) + stats.minLevel;
     } else if (stats.minLevel !== undefined) {
@@ -173,7 +173,7 @@ export class NpcSpawner {
       }
     }
 
-    logger.error({ intent: "spawn_npc", result: "failed", npcId: type });
+    logger.error({ intent: "spawn_npc", result: "failed", npcType: type });
     return undefined;
   }
 
@@ -253,9 +253,9 @@ export class NpcSpawner {
   }
 
   /** Queue an NPC for respawn after the standard delay. */
-  queueRespawn(npcId: NpcType, spawnX: number, spawnY: number): void {
+  queueRespawn(npcType: NpcType, spawnX: number, spawnY: number): void {
     this.respawns.push({
-      npcId,
+      npcType,
       deadAt: Date.now(),
       spawnX,
       spawnY,

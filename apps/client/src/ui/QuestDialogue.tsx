@@ -1,4 +1,5 @@
 import { Box, Text, VStack } from "@chakra-ui/react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAudio } from "../contexts/AudioContext";
 import { Button } from "./components/Button";
@@ -22,6 +23,11 @@ interface QuestDialogueProps {
 export function QuestDialogue({ npcId, text, options, onAction, onClose }: QuestDialogueProps) {
   const { t } = useTranslation();
   const { playQuestAccept, playQuestComplete, playUIClick, playUIHover } = useAudio();
+
+  // Local state so hint responses can replace the displayed text
+  const [displayText, setDisplayText] = useState(text);
+  const [displayOptions, setDisplayOptions] = useState(options);
+
   return (
     <ModalOverlay
       onClose={onClose}
@@ -50,8 +56,13 @@ export function QuestDialogue({ npcId, text, options, onAction, onClose }: Quest
 
         {/* Body */}
         <Box p="6">
+          {/* NPC speech */}
+          <Text color="whiteAlpha.800" fontSize="14px" mb="4" fontStyle="italic">
+            &ldquo;{displayText}&rdquo;
+          </Text>
+
           <VStack align="stretch" gap="2">
-            {options.map((opt, i) => (
+            {displayOptions.map((opt, i) => (
               <Button
                 key={i}
                 disableSound={true}
@@ -71,6 +82,15 @@ export function QuestDialogue({ npcId, text, options, onAction, onClose }: Quest
 
                   if (opt.action === "close") {
                     onClose();
+                  } else if (opt.action === "hint") {
+                    // Show the NPC response text in-place, swap to Goodbye only
+                    const response = (opt.data as { response?: string })?.response;
+                    if (response) {
+                      setDisplayText(t(response));
+                      setDisplayOptions([{ text: t("ui.dialogue.goodbye"), action: "close" }]);
+                    } else {
+                      onClose();
+                    }
                   } else {
                     onAction(opt.action, opt.data);
                     onClose();
@@ -92,3 +112,4 @@ export function QuestDialogue({ npcId, text, options, onAction, onClose }: Quest
     </ModalOverlay>
   );
 }
+

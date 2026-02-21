@@ -7477,27 +7477,27 @@
   "npcCount": 20,
   "npcs": [
     {
-      "id": "dark_knight",
+      "type": "dark_knight",
       "x": 30,
       "y": 8
     },
     {
-      "id": "skeleton",
+      "type": "skeleton",
       "x": 40,
       "y": 10
     },
     {
-      "id": "lich",
+      "type": "lich",
       "x": 44,
       "y": 34
     },
     {
-      "id": "dragon",
+      "type": "dragon",
       "x": 44,
       "y": 38
     },
     {
-      "id": "vampire",
+      "type": "vampire",
       "x": 50,
       "y": 50
     }
@@ -7513,13 +7513,13 @@
   ],
   "waypoints": [
     {
-      "id": "dungeon_gate",
+      "type": "dungeon_gate",
       "label": "Dungeon Gate",
       "x": 8,
       "y": 8
     },
     {
-      "id": "dungeon_depths",
+      "type": "dungeon_depths",
       "label": "The Depths",
       "x": 44,
       "y": 36

@@ -80862,17 +80862,17 @@
   "merchantCount": 5,
   "npcs": [
     {
-      "id": "horse",
+      "type": "horse",
       "x": 95,
       "y": 95
     },
     {
-      "id": "merchant",
+      "type": "merchant",
       "x": 100,
       "y": 95
     },
     {
-      "id": "banker",
+      "type": "banker",
       "x": 105,
       "y": 95
     }

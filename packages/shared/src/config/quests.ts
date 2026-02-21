@@ -5,7 +5,7 @@ export const QUESTS: Record<string, Quest> = {
     id: "slime_slayer",
     title: "quest.slime_slayer.title",
     description: "quest.slime_slayer.description",
-    npcId: "merchant",
+    npcType: "merchant",
     requirements: [{ type: "kill", target: "goblin", count: 5 }],
     rewards: {
       exp: 200,
@@ -17,7 +17,7 @@ export const QUESTS: Record<string, Quest> = {
     id: "tutorial_talk",
     title: "quest.tutorial_talk.title",
     description: "quest.tutorial_talk.description",
-    npcId: "merchant",
+    npcType: "merchant",
     requirements: [{ type: "talk", target: "merchant", count: 1 }],
     rewards: {
       exp: 100,

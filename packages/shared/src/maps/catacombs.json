@@ -20423,322 +20423,322 @@
   ],
   "npcs": [
     {
-      "id": "zombie",
+      "type": "zombie",
       "x": 32,
       "y": 81
     },
     {
-      "id": "gargoyle",
+      "type": "gargoyle",
       "x": 50,
       "y": 80
     },
     {
-      "id": "vampire",
+      "type": "vampire",
       "x": 51,
       "y": 80
     },
     {
-      "id": "skeleton",
+      "type": "skeleton",
       "x": 87,
       "y": 78
     },
     {
-      "id": "zombie",
+      "type": "zombie",
       "x": 33,
       "y": 81
     },
     {
-      "id": "spider",
+      "type": "spider",
       "x": 52,
       "y": 80
     },
     {
-      "id": "vampire",
+      "type": "vampire",
       "x": 86,
       "y": 78
     },
     {
-      "id": "zombie",
+      "type": "zombie",
       "x": 83,
       "y": 78
     },
     {
-      "id": "skeleton",
+      "type": "skeleton",
       "x": 34,
       "y": 80
     },
     {
-      "id": "spider",
+      "type": "spider",
       "x": 81,
       "y": 79
     },
     {
-      "id": "spider",
+      "type": "spider",
       "x": 83,
       "y": 80
     },
     {
-      "id": "gargoyle",
+      "type": "gargoyle",
       "x": 34,
       "y": 78
     },
     {
-      "id": "spider",
+      "type": "spider",
       "x": 85,
       "y": 79
     },
     {
-      "id": "ghost",
+      "type": "ghost",
       "x": 50,
       "y": 79
     },
     {
-      "id": "gargoyle",
+      "type": "gargoyle",
       "x": 81,
       "y": 77
     },
     {
-      "id": "ghost",
+      "type": "ghost",
       "x": 33,
       "y": 79
     },
     {
-      "id": "gargoyle",
+      "type": "gargoyle",
       "x": 87,
       "y": 77
     },
     {
-      "id": "zombie",
+      "type": "zombie",
       "x": 86,
       "y": 77
     },
     {
-      "id": "zombie",
+      "type": "zombie",
       "x": 82,
       "y": 79
     },
     {
-      "id": "ghost",
+      "type": "ghost",
       "x": 87,
       "y": 80
     },
     {
-      "id": "gargoyle",
+      "type": "gargoyle",
       "x": 43,
       "y": 75
     },
     {
-      "id": "gargoyle",
+      "type": "gargoyle",
       "x": 16,
       "y": 76
     },
     {
-      "id": "spider",
+      "type": "spider",
       "x": 62,
       "y": 76
     },
     {
-      "id": "spider",
+      "type": "spider",
       "x": 79,
       "y": 78
     },
     {
-      "id": "spider",
+      "type": "spider",
       "x": 84,
       "y": 79
     },
     {
-      "id": "vampire",
+      "type": "vampire",
       "x": 51,
       "y": 79
     },
     {
-      "id": "skeleton_archer",
+      "type": "skeleton_archer",
       "x": 51,
       "y": 78
     },
     {
-      "id": "skeleton_archer",
+      "type": "skeleton_archer",
       "x": 11,
       "y": 63
     },
     {
-      "id": "spider",
+      "type": "spider",
       "x": 10,
       "y": 63
     },
     {
-      "id": "ghost",
+      "type": "ghost",
       "x": 13,
       "y": 76
     },
     {
-      "id": "skeleton",
+      "type": "skeleton",
       "x": 87,
       "y": 79
     },
     {
-      "id": "spider",
+      "type": "spider",
       "x": 63,
       "y": 62
     },
     {
-      "id": "gargoyle",
+      "type": "gargoyle",
       "x": 16,
       "y": 77
     },
     {
-      "id": "spider",
+      "type": "spider",
       "x": 59,
       "y": 75
     },
     {
-      "id": "skeleton_archer",
+      "type": "skeleton_archer",
       "x": 63,
       "y": 75
     },
     {
-      "id": "spider",
+      "type": "spider",
       "x": 39,
       "y": 61
     },
     {
-      "id": "ghost",
+      "type": "ghost",
       "x": 43,
       "y": 62
     },
     {
-      "id": "skeleton",
+      "type": "skeleton",
       "x": 46,
       "y": 75
     },
     {
-      "id": "zombie",
+      "type": "zombie",
       "x": 46,
       "y": 61
     },
     {
-      "id": "ghost",
+      "type": "ghost",
       "x": 62,
       "y": 61
     },
     {
-      "id": "skeleton",
+      "type": "skeleton",
       "x": 39,
       "y": 62
     },
     {
-      "id": "gargoyle",
+      "type": "gargoyle",
       "x": 39,
       "y": 59
     },
     {
-      "id": "spider",
+      "type": "spider",
       "x": 63,
       "y": 58
     },
     {
-      "id": "skeleton",
+      "type": "skeleton",
       "x": 44,
       "y": 75
     },
     {
-      "id": "skeleton",
+      "type": "skeleton",
       "x": 10,
       "y": 75
     },
     {
-      "id": "vampire",
+      "type": "vampire",
       "x": 61,
       "y": 62
     },
     {
-      "id": "skeleton",
+      "type": "skeleton",
       "x": 61,
       "y": 74
     },
     {
-      "id": "zombie",
+      "type": "zombie",
       "x": 72,
       "y": 75
     },
     {
-      "id": "skeleton",
+      "type": "skeleton",
       "x": 11,
       "y": 62
     },
     {
-      "id": "vampire",
+      "type": "vampire",
       "x": 56,
       "y": 89
     },
     {
-      "id": "spider",
+      "type": "spider",
       "x": 13,
       "y": 75
     },
     {
-      "id": "zombie",
+      "type": "zombie",
       "x": 43,
       "y": 89
     },
     {
-      "id": "skeleton",
+      "type": "skeleton",
       "x": 38,
       "y": 62
     },
     {
-      "id": "ghost",
+      "type": "ghost",
       "x": 14,
       "y": 62
     },
     {
-      "id": "zombie",
+      "type": "zombie",
       "x": 59,
       "y": 74
     },
     {
-      "id": "skeleton",
+      "type": "skeleton",
       "x": 63,
       "y": 74
     },
     {
-      "id": "ghost",
+      "type": "ghost",
       "x": 47,
       "y": 62
     },
     {
-      "id": "skeleton_archer",
+      "type": "skeleton_archer",
       "x": 41,
       "y": 62
     },
     {
-      "id": "vampire",
+      "type": "vampire",
       "x": 24,
       "y": 56
     },
     {
-      "id": "spider",
+      "type": "spider",
       "x": 42,
       "y": 89
     },
     {
-      "id": "lich",
+      "type": "lich",
       "x": 71,
       "y": 75
     },
     {
-      "id": "dark_knight",
+      "type": "dark_knight",
       "x": 24,
       "y": 58
     },
     {
-      "id": "lich",
+      "type": "lich",
       "x": 61,
       "y": 59
     },
     {
-      "id": "dark_knight",
+      "type": "dark_knight",
       "x": 77,
       "y": 57
     }

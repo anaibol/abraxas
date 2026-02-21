@@ -137,7 +137,7 @@ export class QuestSystem {
   getAvailableQuests(charId: string, npcId: string): string[] {
     const quests = this.charQuests.get(charId) ?? new Map();
     return Object.values(QUESTS)
-      .filter((q) => q.npcId === npcId && !quests.has(q.id))
+      .filter((q) => q.npcType === npcId && !quests.has(q.id))
       .map((q) => q.id);
   }
 
@@ -165,7 +165,7 @@ export class QuestSystem {
     for (const state of this.getCharQuestStates(charId)) {
       if (state.status !== "COMPLETED") continue;
       const questDef = QUESTS[state.questId];
-      if (questDef?.npcId === npcId) {
+      if (questDef?.npcType === npcId) {
         return {
           text: "ui.dialogue.reward_prompt",
           options: [

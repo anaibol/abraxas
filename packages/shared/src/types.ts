@@ -136,7 +136,7 @@ export type Quest = {
   id: string;
   title: string;
   description: string;
-  npcId: string;
+  npcType: string;
   requirements: QuestRequirement[];
   rewards: QuestReward;
 };
@@ -180,7 +180,7 @@ export interface TileMap {
   safeZones?: { x: number; y: number; w: number; h: number }[];
   npcCount: number;
   merchantCount?: number;
-  npcs?: { id: NpcType; x: number; y: number }[];
+  npcs?: { type: NpcType; x: number; y: number }[];
   warps?: Warp[];
   waypoints?: FastTravelWaypoint[];
 }
@@ -422,8 +422,8 @@ export interface PlayerEntityState extends BaseEntityState {
 
 export interface NpcEntityState extends BaseEntityState {
 
-  /** The NPC species (e.g. "orc", "wolf") — maps to Npc.npcId on the server */
-  npcId: NpcType;
+  /** The NPC species (e.g. "orc", "wolf") — maps to Npc.npcType on the server */
+  npcType: NpcType;
   classType?: never;
 }
 
@@ -868,7 +868,7 @@ export interface WorldEvent {
   /** Broadcast description when the event begins. */
   description: string;
   /** NPC types + count to spawn when the event starts. */
-  spawns: { npcId: NpcType; count: number }[];
+  spawns: { npcType: NpcType; count: number }[];
   /** How long the event lasts (ms). */
   durationMs: number;
   /** How often the event recurs (ms between event ends and next start). */

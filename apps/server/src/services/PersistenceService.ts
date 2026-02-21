@@ -344,13 +344,13 @@ export class PersistenceService {
 
   static async loadPersistentNpcs(mapId: string) {
     const rows = await prisma.npc.findMany({ where: { mapId } });
-    return rows.map((r) => ({ ...r, npcId: r.npcType }));
+    return rows;
   }
 
   static async savePersistentNpcs(
     mapId: string,
     npcs: {
-      npcId: string;
+      npcType: string;
       tileX: number;
       tileY: number;
       spawnX: number;
@@ -366,7 +366,7 @@ export class PersistenceService {
     return prisma.npc.createMany({
       data: npcs.map((n) => ({
         mapId,
-        npcType: n.npcId,
+        npcType: n.npcType,
         tileX: n.tileX,
         tileY: n.tileY,
         spawnX: n.spawnX,

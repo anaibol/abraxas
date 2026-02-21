@@ -680,7 +680,7 @@ export class NpcSystem {
         queueEntry.rareRespawnAt = respawnAt;
       } else {
         this.rareRespawnQueue.push({
-          npcId: npc.npcType,
+          npcType: npc.npcType,
           rareRespawnAt: respawnAt,
           spawnX: npc.spawnX,
           spawnY: npc.spawnY,
@@ -708,7 +708,7 @@ export class NpcSystem {
    * from the map on death; we track pending rare respawns in a side array.
    */
   private rareRespawnQueue: {
-    npcId: NpcType;
+    npcType: NpcType;
     rareRespawnAt: number;
     spawnX: number;
     spawnY: number;
@@ -716,7 +716,7 @@ export class NpcSystem {
 
   /** Register a rare NPC so its respawn timer can be polled. Call after map load. */
   registerRareNpc(type: NpcType, spawnX: number, spawnY: number, rareRespawnAt: number = 0): void {
-    this.rareRespawnQueue.push({ npcId: type, rareRespawnAt, spawnX, spawnY });
+    this.rareRespawnQueue.push({ npcType: type, rareRespawnAt, spawnX, spawnY });
   }
 
   tickRareSpawns(map: TileMap, now: number, broadcast: BroadcastFn): void {

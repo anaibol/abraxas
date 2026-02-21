@@ -1,4 +1,4 @@
-import { ITEMS, TILE_SIZE, i18n } from "@abraxas/shared";
+import { ITEMS, TILE_SIZE, i18n, getItemEmoji } from "@abraxas/shared";
 import Phaser from "phaser";
 import type { Drop } from "../../../server/src/schema/Drop";
 import type { EffectManager } from "../managers/EffectManager";
@@ -72,9 +72,18 @@ export class DropManager {
     if (isGold) {
       container.add(this._buildCoinVisual(drop.goldAmount ?? 1));
     } else {
-      // Plain circle for non-gold drops
-      const arc = this.scene.add.circle(0, 0, isRare ? 7 : 6, color);
-      container.add(arc);
+      // Emoji for non-gold drops
+      const emojiStr = getItemEmoji(drop.itemId) || "📦";
+      const emojiText = this.scene.add.text(0, -2, emojiStr, {
+        fontSize: isRare ? "18px" : "16px",
+        fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
+        resolution: getGameTextResolution(),
+      }).setOrigin(0.5);
+      
+      // Optional: Add a subtle glow behind the emoji based on rarity
+      const glow = this.scene.add.circle(0, 0, isRare ? 12 : 10, color, isRare ? 0.3 : 0.2);
+      
+      container.add([glow, emojiText]);
     }
 
     // ── Bob tween ─────────────────────────────────────────────────────────────

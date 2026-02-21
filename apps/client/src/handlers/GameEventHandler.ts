@@ -131,7 +131,7 @@ export class GameEventHandler {
     } else {
       const npc = this.room.state.npcs.get(data.sessionId);
       if (npc) {
-        this.soundManager.playNpcAttack(npc.npcId, opts);
+        this.soundManager.playNpcAttack(npc.npcType, opts);
       } else {
         const player = this.room.state.players.get(data.sessionId);
         this.soundManager.playAttack(player?.equipWeaponId ?? undefined, opts);

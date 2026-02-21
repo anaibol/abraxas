@@ -198,17 +198,17 @@ export class GameScene extends Phaser.Scene {
       (rangeTiles) => this.onEnterTargeting(rangeTiles),
       () => this.onExitTargeting(),
       (tileX, tileY) => {
-        let targetNpc: { id: string; npcId: string } | undefined;
+        let targetNpc: { id: string; npcType: string } | undefined;
         for (const [id, npc] of this.room.state.npcs) {
           if (npc.tileX === tileX && npc.tileY === tileY) {
-            targetNpc = { id, npcId: npc.npcId };
+            targetNpc = { id, npcType: npc.npcType };
             break;
           }
         }
         if (targetNpc) {
-          if (targetNpc.npcId === "horse") {
+          if (targetNpc.npcType === "horse") {
             this.network.sendTame(targetNpc.id);
-          } else if (FRIENDLY_NPC_TYPES.has(targetNpc.npcId)) {
+          } else if (FRIENDLY_NPC_TYPES.has(targetNpc.npcType)) {
             this.network.sendInteract(targetNpc.id);
           }
         }
@@ -231,7 +231,7 @@ export class GameScene extends Phaser.Scene {
         }
         for (const [id, npc] of this.room.state.npcs) {
           if (npc.tileX === tileX && npc.tileY === tileY && npc.alive) {
-            this.onNpcRightClick?.(id, i18n.t(`npc.${npc.npcId}`, npc.npcId), npc.npcId, screenX, screenY);
+            this.onNpcRightClick?.(id, i18n.t(`npc.${npc.npcType}`, npc.npcType), npc.npcType, screenX, screenY);
             return;
           }
         }
@@ -417,13 +417,20 @@ export class GameScene extends Phaser.Scene {
     this.ambientOverlay.setScrollFactor(0);
 
     unsub(
-      $state.listen("timeOfDay", (val) => this.updateAmbientLighting(val)),
-      $state.listen("weather", (val) => this.weatherManager.updateWeather(val as WeatherType)),
+      $state.listen("timeOfDay", (val) => {
+        this.updateAmbientLighting(val);
+        window.dispatchEvent(new CustomEvent("abraxas-world-update", { detail: { timeOfDay: val, weather: this.room.state.weather } }));
+      }),
+      $state.listen("weather", (val) => {
+        this.weatherManager.updateWeather(val as WeatherType);
+        window.dispatchEvent(new CustomEvent("abraxas-world-update", { detail: { timeOfDay: this.room.state.timeOfDay, weather: val } }));
+      }),
     );
 
     // Initial state
     this.updateAmbientLighting(this.room.state.timeOfDay);
     this.weatherManager.updateWeather(this.room.state.weather as WeatherType);
+    window.dispatchEvent(new CustomEvent("abraxas-world-update", { detail: { timeOfDay: this.room.state.timeOfDay, weather: this.room.state.weather } }));
 
     // Debug overlay visibility is driven by settings + F3 key
     // React Chakra component Listens to `abraxas-debug-update` events, so we no longer render it in Phaser

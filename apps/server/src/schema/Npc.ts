@@ -10,7 +10,7 @@ import { type } from "@colyseus/schema";
 import { Char } from "./Char";
 
 export class Npc extends Char {
-  @type("string") npcId: NpcType = "orc";
+  @type("string") npcType: NpcType = "orc";
   @type("uint8") spellCastPercent = 0;
 
   constructor() {

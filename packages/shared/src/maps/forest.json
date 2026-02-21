@@ -9877,17 +9877,17 @@
   "npcCount": 30,
   "npcs": [
     {
-      "id": "merchant",
+      "type": "merchant",
       "x": 8,
       "y": 8
     },
     {
-      "id": "bear",
+      "type": "bear",
       "x": 25,
       "y": 15
     },
     {
-      "id": "wolf",
+      "type": "wolf",
       "x": 50,
       "y": 20
     }
@@ -9910,13 +9910,13 @@
   ],
   "waypoints": [
     {
-      "id": "forest_shrine",
+      "type": "forest_shrine",
       "label": "Forest Shrine",
       "x": 10,
       "y": 10
     },
     {
-      "id": "crossroads",
+      "type": "crossroads",
       "label": "Crossroads",
       "x": 40,
       "y": 30

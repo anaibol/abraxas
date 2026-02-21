@@ -124,7 +124,11 @@ export class ItemHandlers {
         if (x < 0 || x >= ctx.map.width || y < 0 || y >= ctx.map.height) return false;
         if (ctx.map.collision[y]?.[x] === 1) return false;
         for (const drop of ctx.state.drops.values()) {
-          if (drop.tileX === x && drop.tileY === y) return false;
+          if (drop.tileX === x && drop.tileY === y) {
+            if (drop.itemType !== "item" || drop.itemId !== itemId) {
+              return false;
+            }
+          }
         }
         return true;
       }) ?? { x: player.tileX, y: player.tileY };

@@ -12,6 +12,7 @@ import { GroupTab } from "./sidebar/GroupTab";
 import { GuildTab } from "./sidebar/GuildTab";
 import { InventoryTab } from "./sidebar/InventoryTab";
 import { SidebarFooter } from "./sidebar/SidebarFooter";
+import { WorldStatus } from "./sidebar/WorldStatus";
 import { SpellsTab } from "./sidebar/SpellsTab";
 import type { SidebarProps } from "./sidebar/types";
 import { GoldDivider } from "./components/PanelHeader";
@@ -122,10 +123,12 @@ export function Sidebar({
 
       <GoldDivider />
 
-      {/* Gold display */}
+      {/* Gold & World Status */}
       <Flex
-        justify="center"
+        justify="space-between"
+        align="center"
         py="1.5"
+        px="3"
         bg={T.darkest}
         borderBottom="1px solid"
         borderBottomColor={T.border}
@@ -134,6 +137,7 @@ export function Sidebar({
           {state.gold}
           {t("sidebar.inventory.gold_abbr")}
         </Text>
+        <WorldStatus />
       </Flex>
 
       {/* Tabs */}
