@@ -222,7 +222,8 @@ export class EffectResolver {
         [StatType.RAGE, StatType.ENERGY, StatType.FOCUS, StatType.HOLY_POWER].includes(buffStat) &&
         target.entityType === EntityType.PLAYER
       ) {
-        const pt = target as Player;        if (buffStat === StatType.RAGE) pt.rage = Math.min(pt.maxRage, pt.rage + buffAmount);
+        const pt = target as Player;
+        if (buffStat === StatType.RAGE) pt.rage = Math.min(pt.maxRage, pt.rage + buffAmount);
         if (buffStat === StatType.ENERGY)
           pt.energy = Math.min(pt.maxEnergy, pt.energy + buffAmount);
         if (buffStat === StatType.FOCUS) pt.focus = Math.min(pt.maxFocus, pt.focus + buffAmount);
@@ -314,7 +315,7 @@ export class EffectResolver {
         (attacker as unknown as Record<string, number>)[ppKey] = now;
 
         const goldGain = Math.floor(Math.random() * 40) + 10;
-        attacker.gold += goldGain;
+        (attacker as Player).gold += goldGain;
         broadcast(ServerMessageType.Notification, {
           message: "game.pickpocket_success",
           templateData: { amount: goldGain, target: target.name },
