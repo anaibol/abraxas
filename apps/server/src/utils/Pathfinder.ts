@@ -44,12 +44,8 @@ export class Pathfinder {
       return [];
     }
 
-    // Quick bounds check for target
-    if (targetX < 0 || targetY < 0 || targetX >= map.width || targetY >= map.height) {
-      return [];
-    }
-    // Cannot path to a blocked tile
-    if (map.collision[targetY]?.[targetX] !== 0) {
+    // Quick bounds and collision check for target
+    if (!MathUtils.isTileWalkable(targetX, targetY, map)) {
       return [];
     }
 
@@ -110,18 +106,13 @@ export class Pathfinder {
         const nx = current.x + dir.dx;
         const ny = current.y + dir.dy;
 
-        // Bounds check
-        if (nx < 0 || ny < 0 || nx >= map.width || ny >= map.height) {
+        // Bounds and collision check (static map)
+        if (!MathUtils.isTileWalkable(nx, ny, map)) {
           continue;
         }
 
         const neighborKey = `${nx},${ny}`;
         if (closedSet.has(neighborKey)) {
-          continue;
-        }
-
-        // Collision check (static map)
-        if (map.collision[ny]?.[nx] !== 0) {
           continue;
         }
 

@@ -15,6 +15,7 @@ import type { GameState } from "../schema/GameState";
 import { Npc } from "../schema/Npc";
 import type { Entity, SpatialLookup } from "../utils/SpatialLookup";
 import { findSafeSpawn } from "../utils/spawnUtils";
+import { isTileValidForMove } from "../utils/mapUtils";
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -233,9 +234,7 @@ export class NpcSpawner {
       const { dx, dy } = DIRECTION_DELTA[dir];
       const tx = summoner.tileX + dx;
       const ty = summoner.tileY + dy;
-      if (tx < 0 || ty < 0 || tx >= currentMap.width || ty >= currentMap.height) continue;
-      if (currentMap.collision[ty]?.[tx] !== 0) continue;
-      if (this.spatial.isTileOccupied(tx, ty)) continue;
+      if (!isTileValidForMove(tx, ty, currentMap, this.spatial)) continue;
       this.spawnNpcAt(stats.summonType, currentMap, tx, ty, summoner.sessionId);
       return;
     }

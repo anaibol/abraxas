@@ -1107,7 +1107,7 @@ export class PlayerSprite {
 
   updateHpMana(hp: number, _mana: number) {
     if (hp === undefined || this.maxHp === undefined || this.maxHp === 0) return;
-    this.drawHpBar(Math.max(0, hp / this.maxHp));
+    this.drawHpBar(Math.min(1, Math.max(0, hp / this.maxHp)));
   }
 
   setHpBarVisibility(visible: boolean) {

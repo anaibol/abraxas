@@ -9,9 +9,10 @@ import {
 } from "@abraxas/shared";
 import type { Client } from "@colyseus/core";
 import { spiralSearch } from "../utils/spawnUtils";
-import { HandlerUtils } from "./HandlerUtils";
 import type { RoomContext } from "./RoomContext";
 import { logger } from "../logger";
+import { MathUtils } from "@abraxas/shared";
+import { HandlerUtils } from "./HandlerUtils";
 
 export class ItemHandlers {
   static handlePickup(
@@ -139,8 +140,7 @@ export class ItemHandlers {
 
     if (ctx.systems.inventory.removeItem(player, data.itemId, qty)) {
       const tile = spiralSearch(player.tileX, player.tileY, 20, (x, y) => {
-        if (x < 0 || x >= ctx.map.width || y < 0 || y >= ctx.map.height) return false;
-        if (ctx.map.collision[y]?.[x] === 1) return false;
+        if (!MathUtils.isTileWalkable(x, y, ctx.map)) return false;
         for (const drop of ctx.state.drops.values()) {
           if (drop.tileX === x && drop.tileY === y) {
             if (drop.itemType !== "item" || drop.itemId !== itemId) {

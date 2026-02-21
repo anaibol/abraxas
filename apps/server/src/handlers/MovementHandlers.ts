@@ -2,6 +2,7 @@ import { type ClientMessages, type ClientMessageType, ServerMessageType } from "
 import type { Client } from "@colyseus/core";
 import { HandlerUtils } from "./HandlerUtils";
 import type { RoomContext } from "./RoomContext";
+import { MathUtils } from "@abraxas/shared";
 
 export class MovementHandlers {
   static handleMove(
@@ -59,13 +60,7 @@ export class MovementHandlers {
 
     const { tileX, tileY } = data;
 
-    if (
-      tileX < 0 ||
-      tileX >= ctx.map.width ||
-      tileY < 0 ||
-      tileY >= ctx.map.height ||
-      ctx.map.collision[tileY]?.[tileX] === 1
-    ) {
+    if (!MathUtils.isTileWalkable(tileX, tileY, ctx.map)) {
       HandlerUtils.sendError(client, "gm.invalid_tile");
       return;
     }
