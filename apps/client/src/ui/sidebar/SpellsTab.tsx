@@ -216,7 +216,7 @@ export function SpellsTab({
                       color={noMana ? "#882222" : T.arcane}
                       fontWeight="700"
                     >
-                      {spell.manaCost}mp
+                      {spell.manaCost}{t("ui.spells.mana_unit")}
                     </Text>
                     <Text textStyle={T.badgeText} color={T.goldDark}>
                       ·
@@ -230,7 +230,7 @@ export function SpellsTab({
                           ·
                         </Text>
                         <Text textStyle={T.badgeText} color={T.goldDark}>
-                          {spell.cooldownMs / 1000}s cd
+                          {spell.cooldownMs / 1000}{t("ui.spells.cooldown_unit")}
                         </Text>
                       </>
                     )}

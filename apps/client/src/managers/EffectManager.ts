@@ -1274,8 +1274,9 @@ export class EffectManager {
       return;
     }
     
-    const color = type === "magic" ? "#bb44ff" : type === "dot" ? "#44cc44" : "#ff4444";
-    const prefix = type === "dot" ? "🐾" : type === "magic" ? "✦" : "⚔";
+    // Use red for all damage (physical, magic, dot) as per user request
+    const color = "#ff4444";
+    const prefix = "-";
     const size = type === "dot" ? "11px" : "14px";
     this.floatText(sprite.renderX, sprite.renderY - 30, `${prefix}${amount}`, color, size);
   }

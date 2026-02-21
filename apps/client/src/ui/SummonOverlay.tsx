@@ -1,6 +1,7 @@
 import { NPC_TYPES } from "@abraxas/shared";
 import { Box, SimpleGrid, Text } from "@chakra-ui/react";
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "./components/Button";
 import { ModalOverlay } from "./components/ModalOverlay";
 import { PanelHeader } from "./components/PanelHeader";
@@ -12,6 +13,7 @@ interface SummonOverlayProps {
 }
 
 export function SummonOverlay({ onSummon, onClose }: SummonOverlayProps) {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -44,13 +46,13 @@ export function SummonOverlay({ onSummon, onClose }: SummonOverlayProps) {
         flexDirection: "column",
       }}
     >
-        <PanelHeader title="Summon Creature" onClose={onClose} />
+        <PanelHeader title={t("ui.summon.title")} onClose={onClose} />
 
         <Box mb="4">
           <input
             ref={inputRef}
             type="text"
-            placeholder="Search creatures..."
+            placeholder={t("ui.summon.search")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{
@@ -90,14 +92,14 @@ export function SummonOverlay({ onSummon, onClose }: SummonOverlayProps) {
                   onClose();
                 }}
               >
-                {type.replace(/_/g, " ")}
+                {t(`npcs.${type}`, { defaultValue: type.replace(/_/g, " ") })}
               </Button>
             ))}
           </SimpleGrid>
 
           {filtered.length === 0 && (
             <Text color="#888" textAlign="center" py="6">
-              No creatures found.
+              {t("ui.summon.empty")}
             </Text>
           )}
         </Box>

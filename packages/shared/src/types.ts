@@ -484,6 +484,15 @@ export enum ServerMessageType {
   GuildUpdate = "guild_update",
 }
 
+export type InvalidTargetReason =
+  | "los"
+  | "out_of_range"
+  | "dead_or_invalid"
+  | "dead"
+  | "friendly_fire"
+  | "safe_zone"
+  | "pvp_disabled";
+
 export enum ChatChannel {
   Global = "global",
   Group = "group",
@@ -582,7 +591,7 @@ export type ServerMessages = {
     templateData?: Record<string, unknown>;
   };
   [ServerMessageType.ItemUsed]: { sessionId: string; itemId: string };
-  [ServerMessageType.InvalidTarget]: { reason?: "los" | "out_of_range" | "dead_or_invalid" | "dead" | "friendly_fire" | "safe_zone" | "pvp_disabled" };
+  [ServerMessageType.InvalidTarget]: { reason?: InvalidTargetReason };
   [ServerMessageType.LevelUp]: { sessionId: string; level: number };
   [ServerMessageType.OpenShop]: { npcId: string; inventory: string[] };
   [ServerMessageType.BuyItem]: { itemId: string; quantity: number };

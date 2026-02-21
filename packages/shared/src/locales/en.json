@@ -756,25 +756,7 @@
     },
     "thunderstorm": {
       "name": "Thunderstorm",
-    "thunderstorm": {
-      "name": "Thunderstorm",
       "desc": "Call down lightning at a location, hitting all nearby enemies."
-    },
-    "mana_shield": {
-      "name": "Mana Shield",
-      "desc": "Convert mana into a protective arcane shell (+armor for 6s)."
-    },
-    "frost_nova": {
-      "name": "Frost Nova",
-      "desc": "Explosion of frost that damages all enemies around you."
-    },
-    "arcane_surge": {
-      "name": "Arcane Surge",
-      "desc": "Channel immense arcane power into a devastating bolt."
-    },
-    "multi_shot": {
-      "name": "Multi Shot",
-      "desc": "Loose a volley of arrows hitting enemies in a small area."
     },
     "poison_arrow": {
       "name": "Poison Arrow",
@@ -828,6 +810,30 @@
       "name": "Holy Nova",
       "desc": "An explosion of light that heals allies and damages foes."
     },
+    "bear_form": {
+      "name": "Bear Form",
+      "desc": "Channel the spirit of nature to transform into a bear, massively increasing your HP."
+    },
+    "cat_form": {
+      "name": "Cat Form",
+      "desc": "Transform into a swift cat, increasing Agility and Movement Speed."
+    },
+    "tree_form": {
+      "name": "Tree Form",
+      "desc": "Take the form of an ancient tree, boosting Intelligence and Mana regeneration."
+    },
+    "mimic": {
+      "name": "Mimic",
+      "desc": "Copy the appearance of any creature you can see."
+    },
+    "summon_zombie": {
+      "name": "Summon Zombie",
+      "desc": "Consume souls to raise a sturdy zombie minion."
+    },
+    "soul_blast": {
+      "name": "Soul Blast",
+      "desc": "Unleash collected souls in a devastating blast of necrotic energy."
+    },
     "curse": {
       "name": "Curse",
       "desc": "Afflict a target with a dark curse, reducing their attributes."
@@ -855,6 +861,26 @@
     "holy_bolt": {
       "name": "Holy Bolt",
       "desc": "Fiery bolt of light that strikes a target from afar."
+    },
+    "summon_skeleton": {
+      "name": "Summon Skeleton",
+      "desc": "Raise a loyal skeletal warrior to fight by your side."
+    },
+    "shadow_bolt": {
+      "name": "Shadow Bolt",
+      "desc": "A bolt of dark energy that strikes with necrotic force."
+    },
+    "soul_drain": {
+      "name": "Soul Drain",
+      "desc": "Drain the lifeforce of a target, healing yourself."
+    },
+    "banshee_wail": {
+      "name": "Banshee Wail",
+      "desc": "A terrifying scream that weakens the armor of all nearby foes."
+    },
+    "cleanse_paralysis": {
+      "name": "Cleanse Stun",
+      "desc": "Remove all stun and paralysis effects from an ally."
     },
     "detect_invisibility": {
       "name": "True Vision",
@@ -983,6 +1009,99 @@
     "acid_splash": {
       "name": "Acid Splash",
       "desc": "AoE damage that reduces enemy armor over time."
+    },
+    "mana_shield": {
+      "name": "Mana Shield",
+      "desc": "Convert mana into a protective arcane shell (+armor for 6s)."
+    },
+    "frost_nova": {
+      "name": "Frost Nova",
+      "desc": "Explosion of frost that damages all enemies around you."
+    },
+    "arcane_surge": {
+      "name": "Arcane Surge",
+      "desc": "Channel immense arcane power into a devastating bolt."
+    },
+    "multi_shot": {
+      "name": "Multi Shot",
+      "desc": "Loose a volley of arrows hitting enemies in a small area."
+    }
+  },
+  "item_slot": {
+    "weapon": "Weapon",
+    "armor": "Armor",
+    "shield": "Shield",
+    "helmet": "Helmet",
+    "ring": "Ring",
+    "consumable": "Consumable"
+  },
+  "item_rarity": {
+    "COMMON": "Common",
+    "UNCOMMON": "Uncommon",
+    "RARE": "Rare"
+  },
+  "ui": {
+    "summon": {
+      "title": "Summon Creature",
+      "search": "Search creatures...",
+      "empty": "No creatures found."
+    },
+    "map": {
+      "title": "WORLD MAP",
+      "current_pos": "YOU ARE HERE",
+      "help": "Use warps in the world to travel between zones. Press M or ESC to close."
+    },
+    "event": {
+      "enemies_slain": "Enemies slain"
+    },
+    "spells": {
+      "mana_unit": "mp",
+      "cooldown_unit": "s cd"
+    },
+    "merchant": {
+      "title": "MERCHANT ESTABLISHMENT",
+      "purse": "PURSE",
+      "tab_buy": "ACQUIRE",
+      "tab_sell": "LIQUIDATE",
+      "no_items_sell": "Your chests contain no tradable merchandise",
+      "unit_price": "Unit Price",
+      "quantity": "QUANTITY",
+      "total_cost": "TOTAL COST",
+      "confirm_buy": "CONFIRM PURCHASE",
+      "confirm_sell": "LIQUIDATE ASSETS",
+      "value_label": "Value"
+    },
+    "bank": {
+      "title": "Royal Vault",
+      "subtitle": "Secure Asset Repository",
+      "inventory_label": "PERSONAL INVENTORY",
+      "vault_label": "VAULT STORAGE",
+      "held_in_bags": "In bags",
+      "stored_in_vault": "Stored in vault",
+      "quantity": "QUANTITY",
+      "deposit": "DEPOSIT",
+      "withdraw": "WITHDRAW",
+      "empty_selection": "Select an item to manage your assets"
+    },
+    "quests": {
+      "title": "QUESTS",
+      "no_active": "No active quests",
+      "available": "Available",
+      "see_npc": "See {{name}}",
+      "turn_in_hint": "Talk to {{name}} to turn in",
+      "kill_target": "Kill {{target}}s",
+      "talk_to_target": "Talk to {{target}}",
+      "accepted": "Quest accepted: {{title}}",
+      "completed": "Quest completed: {{title}} (+{{exp}} XP, +{{gold}} gold)"
+    },
+    "dialogue": {
+      "accept_quest": "Accept quest",
+      "maybe_later": "Maybe later",
+      "complete_quest": "Complete quest",
+      "goodbye": "Goodbye",
+      "hello_traveler": "Hello, traveler!",
+      "accept_prompt": "Do you accept this quest?",
+      "reward_prompt": "Great work on {{title}}! Here is your reward."
     }
   },
   "events": {
@@ -1023,338 +1142,6 @@
     "dungeon": {
       "name": "Catacombs",
       "desc": "Ancient ruins haunted by the undead and guarded by a fearsome dragon."
-    }
-  },
-  "ui": {
-    "summon": {
-      "title": "Summon Creature",
-      "search": "Search creatures...",
-      "empty": "No creatures found."
-    },
-    "map": {
-      "title": "WORLD MAP",
-      "current_pos": "YOU ARE HERE",
-      "help": "Use warps in the world to travel between zones. Press M or ESC to close."
-    },
-    "event": {
-      "enemies_slain": "Enemies slain"
-    },
-    "spells": {
-      "mana_unit": "mp",
-      "cooldown_unit": "s cd"
-    }
-  },
-    "poison_arrow": {
-      "name": "Poison Arrow",
-      "desc": "Arrow coated in toxin that poisons the target over 5s."
-    },
-    "evasion": {
-      "name": "Evasion",
-      "desc": "Drastically increase AGI and dodge chance for 5s."
-    },
-    "aimed_shot": {
-      "name": "Aimed Shot",
-      "desc": "A carefully aimed shot from across the entire battlefield."
-    },
-    "mark_target": {
-      "name": "Mark Target",
-      "desc": "Mark an enemy, reducing their armor for 8s."
-    },
-    "backstab": {
-      "name": "Backstab",
-      "desc": "A vicious stab dealing massive damage, doubled from stealth."
-    },
-    "stealth": {
-      "name": "Stealth",
-      "desc": "Vanish from sight, becoming invisible for 6s."
-    },
-    "envenom": {
-      "name": "Envenom",
-      "desc": "Coat your blade in venom, poisoning the target over 6s."
-    },
-    "smoke_bomb": {
-      "name": "Smoke Bomb",
-      "desc": "Throw a smoke bomb that stuns nearby enemies for 1.5s."
-    },
-    "hemorrhage": {
-      "name": "Hemorrhage",
-      "desc": "Drain life from a foe, healing yourself for half the damage."
-    },
-    "holy_strike": {
-      "name": "Holy Strike",
-      "desc": "A blessed melee blow that smites your enemy with holy light."
-    },
-    "heal": {
-      "name": "Heal",
-      "desc": "Channel divine energy to restore your own health."
-    },
-    "divine_shield": {
-      "name": "Divine Shield",
-      "desc": "Surround yourself in holy light, becoming invulnerable for 4s."
-    },
-    "holy_nova": {
-      "name": "Holy Nova",
-      "desc": "Burst of holy light that heals all nearby allies."
-    },
-    "bear_form": {
-      "name": "Bear Form",
-      "desc": "Channel the spirit of nature to transform into a bear, massively increasing your HP."
-    },
-    "cat_form": {
-      "name": "Cat Form",
-      "desc": "Transform into a swift cat, increasing Agility and Movement Speed."
-    },
-    "tree_form": {
-      "name": "Tree Form",
-      "desc": "Take the form of an ancient tree, boosting Intelligence and Mana regeneration."
-    },
-    "mimic": {
-      "name": "Mimic",
-      "desc": "Copy the appearance of any creature you can see."
-    },
-    "summon_zombie": {
-      "name": "Summon Zombie",
-      "desc": "Consume souls to raise a sturdy zombie minion."
-    },
-    "soul_blast": {
-      "name": "Soul Blast",
-      "desc": "Unleash collected souls in a devastating blast of necrotic energy."
-    },
-    "curse": {
-      "name": "Curse",
-      "desc": "Afflict an enemy with a dark curse, lowering their INT for 10s."
-    },
-    "smite": {
-      "name": "Smite",
-      "desc": "Launch a holy bolt at an enemy target."
-    },
-    "judgment": {
-      "name": "Judgment",
-      "desc": "A consecrated melee blow that sears enemies with divine force."
-    },
-    "lay_on_hands": {
-      "name": "Lay on Hands",
-      "desc": "Channel the Light to restore a large amount of your health."
-    },
-    "consecration": {
-      "name": "Consecration",
-      "desc": "Radiate holy fire, scorching all enemies in the area around you."
-    },
-    "aura_of_protection": {
-      "name": "Aura of Protection",
-      "desc": "Envelop yourself in divine plate, massively boosting armor for 8s."
-    },
-    "holy_bolt": {
-      "name": "Holy Bolt",
-      "desc": "Launch a concentrated bolt of divine light at a distant enemy."
-    },
-    "summon_skeleton": {
-      "name": "Summon Skeleton",
-      "desc": "Raise a loyal skeletal warrior to fight by your side."
-    },
-    "shadow_bolt": {
-      "name": "Shadow Bolt",
-      "desc": "A bolt of dark energy that strikes with necrotic force."
-    },
-    "soul_drain": {
-      "name": "Soul Drain",
-      "desc": "Drain the lifeforce of a target, healing yourself."
-    },
-    "banshee_wail": {
-      "name": "Banshee Wail",
-      "desc": "A terrifying scream that weakens the armor of all nearby foes."
-    },
-    "cleanse_paralysis": {
-      "name": "Cleanse Stun",
-      "desc": "Remove all stun and paralysis effects from an ally."
-    },
-    "detect_invisibility": {
-      "name": "True Sight",
-      "desc": "Briefly reveal all stealthed units in a large area."
-    },
-    "berserker_rage": {
-      "name": "Berserker Rage",
-      "desc": "Instantly gain 30 Rage."
-    },
-    "blink": {
-      "name": "Blink",
-      "desc": "Teleports the caster forward."
-    },
-    "elemental_infusion": {
-      "name": "Elemental Infusion",
-      "desc": "Boosts your INT for a short duration."
-    },
-    "spell_echo": {
-      "name": "Spell Echo",
-      "desc": "The next spell you cast will echo, triggering twice."
-    },
-    "mana_spring": {
-      "name": "Mana Spring",
-      "desc": "Summon a crystal that restores mana to nearby allies."
-    },
-    "polymorph": {
-      "name": "Polymorph",
-      "desc": "Transform the target into a sheep."
-    },
-    "entangling_roots": {
-      "name": "Entangling Roots",
-      "desc": "Roots enemies in place and deals nature damage."
-    },
-    "explosive_trap": {
-      "name": "Explosive Trap",
-      "desc": "Place a trap that explodes when stepped on."
-    },
-    "pet_bond": {
-      "name": "Pet Bond",
-      "desc": "Boosts AGI for the duration of the buff."
-    },
-    "eagle_eye": {
-      "name": "Eagle Eye",
-      "desc": "Massively increases your AGI for a duration."
-    },
-    "barrage": {
-      "name": "Barrage",
-      "desc": "Fire a rapid volley of arrows in a large area."
-    },
-    "shadowstep": {
-      "name": "Shadowstep",
-      "desc": "Teleport behind your target instantly."
-    },
-    "pickpocket": {
-      "name": "Pickpocket",
-      "desc": "Steal gold from an NPC."
-    },
-    "caltrops": {
-      "name": "Caltrops",
-      "desc": "Drop spikes that slow and damage enemies."
-    },
-    "fan_of_knives": {
-      "name": "Fan of Knives",
-      "desc": "Unleash a circle of blades around you."
-    },
-    "cleansing_rain": {
-      "name": "Cleansing Rain",
-      "desc": "Massive AoE healing shower."
-    },
-    "poison_bite": {
-      "name": "Poison Bite",
-      "desc": "Afflicts the target with a lingering poison."
-    },
-    "web_shot": {
-      "name": "Web Shot",
-      "desc": "Shoots a web that stuns the target."
-    },
-    "enrage": {
-      "name": "Enrage",
-      "desc": "Boosts strength for a short duration."
-    },
-    "fire_breath": {
-      "name": "Fire Breath",
-      "desc": "A short-range blast of fire."
-    },
-    "frost_breath": {
-      "name": "Frost Breath",
-      "desc": "A blast of frost that slows enemies."
-    },
-    "disease_bite": {
-      "name": "Disease Bite",
-      "desc": "Afflicts the target with a long-lasting disease."
-    },
-    "troll_regen": {
-      "name": "Troll Regeneration",
-      "desc": "Rapidly heals the caster."
-    },
-    "earthquake": {
-      "name": "Earthquake",
-      "desc": "Shakes the earth, stunning and damaging nearby enemies."
-    },
-    "leap": {
-      "name": "Leap",
-      "desc": "Jump to a target location, damaging and stunning enemies."
-    },
-    "execute": {
-      "name": "Execute",
-      "desc": "Deals massive damage to targets with low health."
-    },
-    "cleave": {
-      "name": "Cleave",
-      "desc": "A sweeping strike that hits multiple nearby targets."
-    },
-    "shield_wall": {
-      "name": "Shield Wall",
-      "desc": "Massively increases armor for a duration."
-    },
-    "meteor_strike": {
-      "name": "Meteor Strike",
-      "desc": "Calls down a meteor for massive AoE fire damage."
-    },
-    "chain_lightning": {
-      "name": "Chain Lightning",
-      "desc": "Discharges lightning that jumps between enemies."
-    },
-    "acid_splash": {
-      "name": "Acid Splash",
-      "desc": "AoE damage that reduces enemy armor over time."
-    }
-  },
-  "item_slot": {
-    "weapon": "Weapon",
-    "armor": "Armor",
-    "shield": "Shield",
-    "helmet": "Helmet",
-    "ring": "Ring",
-    "consumable": "Consumable"
-  },
-  "item_rarity": {
-    "COMMON": "Common",
-    "UNCOMMON": "Uncommon",
-    "RARE": "Rare"
-  },
-  "ui": {
-    "merchant": {
-      "title": "MERCHANT ESTABLISHMENT",
-      "purse": "PURSE",
-      "tab_buy": "ACQUIRE",
-      "tab_sell": "LIQUIDATE",
-      "no_items_sell": "Your coffers contain no tradable wares",
-      "unit_price": "Unit Price",
-      "quantity": "QUANTITY",
-      "total_cost": "TOTAL COST",
-      "confirm_buy": "CONFIRM PURCHASE",
-      "confirm_sell": "LIQUIDATE ASSETS",
-      "value_label": "Value"
-    },
-    "bank": {
-      "title": "Royal Vault",
-      "subtitle": "Secure Asset Repository",
-      "inventory_label": "PERSONAL INVENTORY",
-      "vault_label": "VAULT STORAGE",
-      "held_in_bags": "Held in bags",
-      "stored_in_vault": "Stored in vault",
-      "quantity": "QUANTITY",
-      "deposit": "DEPOSIT",
-      "withdraw": "WITHDRAW",
-      "empty_selection": "Select an item to manage your assets"
-    },
-    "quests": {
-      "title": "QUESTS",
-      "no_active": "No active quests",
-      "available": "Available",
-      "see_npc": "See {{name}}",
-      "turn_in_hint": "Talk to {{name}} to turn in",
-      "kill_target": "Kill {{target}}s",
-      "talk_to_target": "Talk to {{target}}",
-      "accepted": "Quest Accepted: {{title}}",
-      "completed": "Quest Completed: {{title}} (+{{exp}} XP, +{{gold}} Gold)"
-    },
-    "dialogue": {
-      "accept_quest": "Accept Quest",
-      "maybe_later": "Maybe later",
-      "complete_quest": "Complete Quest",
-      "goodbye": "Goodbye",
-      "hello_traveler": "Hello there, traveler!",
-      "accept_prompt": "Do you accept this quest?",
-      "reward_prompt": "Great job on {{title}}! Here is your reward."
     }
   },
   "scoreboard": {

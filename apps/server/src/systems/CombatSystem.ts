@@ -1,5 +1,9 @@
-import type { Ability, BroadcastFn, ServerMessages, TileMap, WindupAction } from "@abraxas/shared";
 import {
+  type Ability,
+  type BroadcastFn,
+  type ServerMessages,
+  type TileMap,
+  type WindupAction,
   ABILITIES,
   BUFFER_WINDOW_MS,
   calcHealAmount,
@@ -9,7 +13,10 @@ import {
   GCD_MS,
   MathUtils,
   ServerMessageType,
+  SPAWN_PROTECTION_MS,
   StatType,
+  TICK_MS,
+  type InvalidTargetReason,
 } from "@abraxas/shared";
 import { logger } from "../logger";
 import type { GameState } from "../schema/GameState";
@@ -885,24 +892,33 @@ export class CombatSystem {
     return this.getAttackFailureReason(attacker, target) === null;
   }
 
-  private getAttackFailureReason(attacker: Entity, target: Entity): string | null {
+  private getAttackFailureReason(attacker: Entity, target: Entity): InvalidTargetReason | null {
     if (!target.alive) return "dead";
     if (attacker.sessionId === target.sessionId) return "dead_or_invalid";
+
     // GMs/admins are fully invulnerable — nobody can attack them
     if (target.isPlayer() && (target.role === "ADMIN" || target.role === "GM"))
       return "dead_or_invalid";
+
     if (this.sameFaction(attacker, target)) return "friendly_fire";
-    if (
-      MathUtils.isInSafeZone(attacker.tileX, attacker.tileY, this.map.safeZones) ||
-      MathUtils.isInSafeZone(target.tileX, target.tileY, this.map.safeZones)
-    )
-      return "safe_zone";
-    // GMs/admins can attack anyone — skip PvP flag requirements
+
     const attackerIsGM =
       attacker.isPlayer() && (attacker.role === "ADMIN" || attacker.role === "GM");
-    if (!attackerIsGM && attacker.isPlayer() && target.isPlayer()) {
-      if (!attacker.pvpEnabled || !target.pvpEnabled) return "pvp_disabled";
+
+    // GMs/admins can attack anywhere — skip safe zone and PvP requirements
+    if (!attackerIsGM) {
+      if (
+        MathUtils.isInSafeZone(attacker.tileX, attacker.tileY, this.map.safeZones) ||
+        MathUtils.isInSafeZone(target.tileX, target.tileY, this.map.safeZones)
+      ) {
+        return "safe_zone";
+      }
+
+      if (attacker.isPlayer() && target.isPlayer()) {
+        if (!attacker.pvpEnabled || !target.pvpEnabled) return "pvp_disabled";
+      }
     }
+
     return null;
   }
 
@@ -910,7 +926,7 @@ export class CombatSystem {
     return this.getCastFailureReason(caster, target, ability) === null;
   }
 
-  private getCastFailureReason(caster: Entity, target: Entity, ability: Ability): string | null {
+  private getCastFailureReason(caster: Entity, target: Entity, ability: Ability): InvalidTargetReason | null {
     if (!target.alive) return "dead";
 
     // Self-target abilities (rangeTiles === 0) always target the caster.
@@ -922,7 +938,7 @@ export class CombatSystem {
     // Healing abilities
     if (ability.effect === "heal" || ability.effect === "aoe_heal") {
       const isFriendly = this.sameFaction(caster, target) || caster.sessionId === target.sessionId;
-      return isFriendly ? null : "dead_or_invalid";
+      return isFriendly ? null : "friendly_fire";
     }
 
     // Harmful abilities
@@ -932,8 +948,10 @@ export class CombatSystem {
       ability.buffStat === StatType.STUN;
 
     if (harmful) {
-      if (attacker.sessionId === target.sessionId) return true;
-      return this.sameFaction(attacker, target);
+      return this.getAttackFailureReason(caster, target);
+    } else {
+      if (caster.sessionId === target.sessionId) return null;
+      return this.sameFaction(caster, target) ? null : "friendly_fire";
     }
   }
 

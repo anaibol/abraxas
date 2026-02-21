@@ -1029,185 +1029,242 @@
   },
   "item_slot": {
     "weapon": "Arma",
-    "armor": "Armatura",
-    "shield": "Scudo",
-    "helmet": "Elmo",
-    "ring": "Anello",
-    "consumable": "Consumabile"
+    "armor": "Armadura",
+    "shield": "Escudo",
+    "helmet": "Casco",
+    "ring": "Anillo",
+    "consumable": "Consumible"
   },
   "item_rarity": {
-    "COMMON": "Comune",
-    "UNCOMMON": "Non comune",
+    "COMMON": "Común",
+    "UNCOMMON": "Poco común",
     "RARE": "Raro"
   },
   "ui": {
     "merchant": {
-      "title": "STABILIMENTO MERCANTILE",
-      "purse": "BORSA",
-      "tab_buy": "ACQUISTA",
-      "tab_sell": "LIQUIDA",
-      "no_items_sell": "I tuoi forzieri non contengono merci scambiabili",
-      "unit_price": "Prezzo Unitario",
-      "quantity": "QUANTITÀ",
-      "total_cost": "COSTO TOTALE",
-      "confirm_buy": "CONFERMA ACQUISTO",
-      "confirm_sell": "LIQUIDA ATTIVITÀ",
-      "value_label": "Valore"
+      "title": "ESTABLECIMIENTO MERCANTIL",
+      "purse": "BOLSA",
+      "tab_buy": "ADQUIRIR",
+      "tab_sell": "LIQUIDAR",
+      "no_items_sell": "Tus cofres no contienen mercancía negociable",
+      "unit_price": "Precio Unitario",
+      "quantity": "CANTIDAD",
+      "total_cost": "COSTO TOTAL",
+      "confirm_buy": "CONFIRMAR COMPRA",
+      "confirm_sell": "LIQUIDAR ACTIVOS",
+      "value_label": "Valor"
     },
     "bank": {
-      "title": "Caveau Reale",
-      "subtitle": "Deposito Asset Sicuro",
-      "inventory_label": "INVENTARIO PERSONALE",
-      "vault_label": "DEPOSITO NEL CAVEAU",
-      "held_in_bags": "Nelle borse",
-      "stored_in_vault": "Depositato nel caveau",
-      "quantity": "QUANTITÀ",
-      "deposit": "DEPOSITA",
-      "withdraw": "PRELEVA",
-      "empty_selection": "Seleziona un oggetto per gestire i tuoi asset"
+      "title": "Bóveda Royal",
+      "subtitle": "Repositorio Seguro de Activos",
+      "inventory_label": "INVENTARIO PERSONAL",
+      "vault_label": "ALMACENAMIENTO EN BÓVEDA",
+      "held_in_bags": "En las bolsas",
+      "stored_in_vault": "Almacenado en la bóveda",
+      "quantity": "CANTIDAD",
+      "deposit": "DEPOSITAR",
+      "withdraw": "RETIRAR",
+      "empty_selection": "Selecciona un objeto para gestionar tus activos"
     },
     "quests": {
-      "title": "MISSIONI",
-      "no_active": "Nessuna missione attiva",
-      "available": "Disponibili",
-      "see_npc": "Parla con {{name}}",
-      "turn_in_hint": "Parla con {{name}} per consegnare",
-      "kill_target": "Uccidi {{target}}",
-      "talk_to_target": "Parla con {{target}}",
-      "accepted": "Missione accettata: {{title}}",
-      "completed": "Missione completata: {{title}} (+{{exp}} PE, +{{gold}} Oro)"
+      "title": "MISIONES",
+      "no_active": "No hay misiones activas",
+      "available": "Disponibles",
+      "see_npc": "Ver a {{name}}",
+      "turn_in_hint": "Habla con {{name}} para entregar",
+      "kill_target": "Mata {{target}}s",
+      "talk_to_target": "Habla con {{target}}",
+      "accepted": "Misión aceptada: {{title}}",
+      "completed": "Misión completada: {{title}} (+{{exp}} PE, +{{gold}} oro)"
     },
     "dialogue": {
-      "accept_quest": "Accetta missione",
-      "maybe_later": "Forse più tardi",
-      "complete_quest": "Completa missione",
-      "goodbye": "Addio",
-      "hello_traveler": "Ciao, viaggiatore!",
-      "accept_prompt": "Accetti questa missione?",
-      "reward_prompt": "Ottimo lavoro su {{title}}! Ecco la tua ricompensa."
+      "accept_quest": "Aceptar misión",
+      "maybe_later": "Tal vez más tarde",
+      "complete_quest": "Completar misión",
+      "goodbye": "Adiós",
+      "hello_traveler": "¡Hola, viajero!",
+      "accept_prompt": "¿Aceptas esta misión?",
+      "reward_prompt": "¡Gran trabajo con {{title}}! Aquí tienes tu recompensa."
+    },
+    "summon": {
+      "title": "Invocar Criatura",
+      "search": "Buscar criaturas...",
+      "empty": "No se encontraron criaturas."
+    },
+    "map": {
+      "title": "MAPA MUNDIAL",
+      "current_pos": "ESTÁS AQUÍ",
+      "help": "Usa los portales en el mundo para viajar entre zonas. Presiona M o ESC para cerrar."
+    },
+    "event": {
+      "enemies_slain": "Enemigos derrotados"
+    },
+    "spells": {
+      "mana_unit": "mp",
+      "cooldown_unit": "s cd"
+    }
+  },
+  "events": {
+    "goblin_raid": {
+      "name": "Raid dei Goblin",
+      "desc": "Un'orda di goblin sta attaccando l'insediamento!"
+    },
+    "undead_surge": {
+      "name": "Ondata di Non-Morti",
+      "desc": "I morti risorgono dalle loro tombe — difendi i vivi!"
+    },
+    "dragon_sighting": {
+      "name": "Avvistamento del Dragone",
+      "desc": "Un temibile dragone è stato avvistato mentre volteggiava nei cieli!"
+    },
+    "troll_invasion": {
+      "name": "Invasione dei Troll",
+      "desc": "Un gruppo di guerra di troll sta assaltando l'insediamento!"
+    },
+    "spider_swarm": {
+      "name": "Sciame di Ragni",
+      "desc": "Migliaia di ragni giganti stanno emergendo da tane nascoste!"
+    },
+    "vampire_hunt": {
+      "name": "Caccia ai Vampiri",
+      "desc": "Antichi vampiri sono risorti — proteggi i vivi prima dell'alba!"
+    }
+  },
+  "maps": {
+    "arena": {
+      "name": "Arena",
+      "desc": "I terreni di partenza. Goblin, orchi e lupi vagano per le pianure."
+    },
+    "forest": {
+      "name": "Foresta Sussurrante",
+      "desc": "Una foresta fitta piena di lupi, orsi e spiriti inquieti."
+    },
+    "dungeon": {
+      "name": "Catacombe",
+      "desc": "Antiche rovine infestate da non-morti e sorvegliate da un temibile dragone."
     }
   },
   "scoreboard": {
-    "title": "Classifica",
-    "hold_tab_hint": "Tieni premuto TAB per vedere",
-    "you": "(tu)",
-    "top_npc_hunters": "Migliori Cacciatori di NPC",
-    "no_kills": "Nessuna uccisione registrata",
-    "top_levels": "Migliori Livelli",
-    "level_private": "Il livello è privato — solo tu puoi vedere il tuo",
-    "top_pvp": "Migliori Guerrieri PvP",
-    "no_pvp_kills": "Nessuna uccisione PvP registrata",
-    "online_players": "Giocatori Online",
-    "key_bindings": "Tasti",
-    "lv_prefix": "Liv.",
+    "title": "Marcador",
+    "hold_tab_hint": "Mantén TAB para ver",
+    "you": "(tú)",
+    "top_npc_hunters": "Mejores Cazadores de NPC",
+    "no_kills": "Sin bajas registradas aún",
+    "top_levels": "Mejores Niveles",
+    "level_private": "El nivel es privado — solo tú puedes ver el tuyo",
+    "top_pvp": "Mejores Guerreros PvP",
+    "no_pvp_kills": "Sin bajas PvP registradas aún",
+    "online_players": "Jugadores En Línea",
+    "key_bindings": "Controles",
+    "lv_prefix": "Nv.",
     "keybind_categories": {
-      "movement": "Movimento",
-      "combat": "Combattimento",
-      "items": "Oggetti",
-      "social": "Sociale",
-      "ui": "Interfaccia"
+      "movement": "Movimiento",
+      "combat": "Combate",
+      "items": "Objetos",
+      "social": "Social",
+      "ui": "UI"
     },
     "keybind_labels": {
-      "move": "Muovi",
-      "melee_attack": "Attacco corpo a corpo",
-      "ranged_attack": "Attacco a distanza",
-      "cast_spell": "Lancia incantesimo",
-      "select_tile": "Seleziona casella",
-      "pickup": "Raccogli oggetto",
-      "drop": "Lascia oggetto selezionato",
-      "open_chat": "Apri chat",
-      "close_chat": "Chiudi chat / Annulla",
-      "push_to_talk": "Premi per parlare (voce)",
-      "scoreboard": "Classifica",
-      "meditate": "Meditare (rigenerare mana)",
-      "toggle_music": "Attiva/disattiva musica"
+      "move": "Moverse",
+      "melee_attack": "Ataque cuerpo a cuerpo",
+      "ranged_attack": "Ataque a distancia",
+      "cast_spell": "Lanzar hechizo",
+      "select_tile": "Seleccionar casilla",
+      "pickup": "Recoger objeto",
+      "drop": "Soltar objeto seleccionado",
+      "open_chat": "Abrir chat",
+      "close_chat": "Cerrar chat / Cancelar",
+      "push_to_talk": "Pulsar para hablar (voz)",
+      "scoreboard": "Marcador",
+      "meditate": "Meditar (regenerar maná)",
+      "toggle_music": "Activar/desactivar música"
     }
   },
   "death": {
-    "you_died": "SEI MORTO",
-    "respawning": "Ricomparsa in {{count}}s"
+    "you_died": "HAS MUERTO",
+    "respawning": "Reapareciendo en {{count}}s"
   },
   "context_menu": {
-    "whisper": "💬 Sussurrare",
-    "add_friend": "➕ Aggiungi amico",
-    "group_invite": "⚔️ Invita nel gruppo",
-    "guild_invite": "🏰 Invita nella gilda",
-    "trade": "🤝 Scambiare",
-    "tame": "🐾 Addomesticare"
+    "whisper": "💬 Susurrar",
+    "add_friend": "➕ Añadir amigo",
+    "group_invite": "⚔️ Invitar al grupo",
+    "guild_invite": "🏰 Invitar al clan",
+    "trade": "🤝 Comerciar",
+    "tame": "🐾 Domar"
   },
   "kill_feed": {
-    "killed": "ha ucciso"
+    "killed": "mató a"
   },
   "loading": {
     "tips": [
-      "L'avventura ti aspetta...",
-      "Resta vigile.",
-      "Non voltare mai le spalle a un Ladro negli angoli bui dell'Arena.",
-      "I guerrieri preferiscono la forza, ma una mente concentrata può trapassare qualsiasi armatura.",
-      "I goblin sono codardi, ma i loro numeri possono sopraffare i disattenti.",
-      "Il Lich delle Profondità non è stato visto da secoli... fino ad ora.",
-      "Le pozioni sono preparate con l'essenza di elementali caduti."
+      "La aventura te espera...",
+      "Mantente alerta.",
+      "Nunca le des la espalda a un Pícaro en los rincones oscuros de la Arena.",
+      "Los guerreros prefieren la fuerza, pero una mente concentrada puede atravesar cualquier armadura.",
+      "Los goblins son cobardes, pero sus números pueden abrumar al desprevenido.",
+      "El Liche de las Profundidades no se ha visto en siglos... hasta ahora.",
+      "Las pociones se elaboran con la esencia de elementales caídos."
     ],
-    "connecting": "CONNESSIONE AD ABRAXAS",
-    "searching": "Ricerca del portale..."
+    "connecting": "CONECTANDO A ABRAXAS",
+    "searching": "Buscando portal..."
   },
   "trade": {
-    "title": "Scambio",
-    "confirmed_badge": "✓ CONFERMATO",
-    "nothing_offered": "Nulla offerto",
-    "your_offer": "La Tua Offerta",
-    "their_offer": "Offerta di {{name}}",
-    "offer_gold": "Offri Oro (hai {{gold}}g)",
+    "title": "Intercambio",
+    "confirmed_badge": "✓ CONFIRMADO",
+    "nothing_offered": "Nada ofrecido",
+    "your_offer": "Tu Oferta",
+    "their_offer": "Oferta de {{name}}",
+    "offer_gold": "Ofrecer Oro (tienes {{gold}}g)",
     "gold": "oro",
-    "add_items_hint": "Aggiungi oggetti (clic per aggiungere · clic sull'offerta per rimuovere)",
-    "offered_items": "Oggetti offerti (clic per rimuovere):",
-    "waiting_for": "✓ Hai confermato. In attesa di {{name}}…",
-    "cancel_trade": "Annulla Scambio",
-    "confirm_trade": "Conferma Scambio",
-    "cancel": "Annulla"
+    "add_items_hint": "Añadir objetos (clic para añadir · clic en oferta para eliminar)",
+    "offered_items": "Objetos ofrecidos (clic para eliminar):",
+    "waiting_for": "✓ Confirmado. Esperando a {{name}}…",
+    "cancel_trade": "Cancelar Intercambio",
+    "confirm_trade": "Confirmar Intercambio",
+    "cancel": "Cancelar"
   },
   "drop_dialog": {
-    "title": "Lascia Oggetto",
-    "quantity": "Quantità (1 – {{max}})",
-    "cancel": "Annulla",
-    "drop": "Lascia"
+    "title": "Soltar Objeto",
+    "quantity": "Cantidad (1 – {{max}})",
+    "cancel": "Cancelar",
+    "drop": "Soltar"
   },
   "console": {
-    "tab_all": "TUTTO",
-    "tab_global": "GLOBALE",
-    "tab_group": "GRUPPO",
-    "tab_guild": "GILDA",
-    "tab_whisper": "SUSSURRO",
+    "tab_all": "TODOS",
+    "tab_global": "GLOBAL",
+    "tab_group": "GRUPO",
+    "tab_guild": "CLAN",
+    "tab_whisper": "SUSURRO",
     "tab_system": "SISTEMA",
-    "tab_combat": "COMBATTIMENTO",
-    "placeholder_group": "Messaggio al Gruppo...",
-    "placeholder_default": "Scrivi un messaggio..."
+    "tab_combat": "COMBATE",
+    "placeholder_group": "Mensaje al Grupo...",
+    "placeholder_default": "Escribe un mensaje..."
   },
   "quest_status": {
-    "IN_PROGRESS": "In corso",
-    "COMPLETED": "Completata"
+    "IN_PROGRESS": "En Progreso",
+    "COMPLETED": "Completada"
   },
   "leaderboard": {
-    "title": "Classifica",
-    "tab_level": "Livello",
-    "tab_npc_kills": "Cacciatori",
+    "title": "Clasificación",
+    "tab_level": "Nivel",
+    "tab_npc_kills": "Cazadores",
     "tab_pvp_kills": "PvP",
-    "tab_gold": "Ricchezza",
-    "loading": "Caricamento...",
-    "refresh": "Aggiorna",
-    "error": "Impossibile caricare la classifica",
-    "try_again": "Riprova",
-    "empty": "Nessuna voce ancora",
-    "hint": "Top 10 giocatori per categoria — aggiornato alla disconnessione"
+    "tab_gold": "Riqueza",
+    "loading": "Cargando...",
+    "refresh": "Actualizar",
+    "error": "No se pudo cargar la clasificación",
+    "try_again": "Intentar de nuevo",
+    "empty": "Sin registros aún",
+    "hint": "Top 10 jugadores por categoría — actualizado al desconectarse"
   },
   "fast_travel": {
-    "title": "Viaggio Rapido",
-    "no_waypoints": "Nessun punto di viaggio scoperto.",
-    "esc_hint": "Premi ESC per chiudere"
+    "title": "Viaje Rápido",
+    "no_waypoints": "No se descubrieron puntos de viaje.",
+    "esc_hint": "Presiona ESC para cerrar"
   },
   "tooltip": {
-    "use_effect": "Effetto d'uso",
-    "cures_debuffs": "Cura Malus",
-    "class_required": "Classe Richiesta"
+    "use_effect": "Efecto de Uso",
+    "cures_debuffs": "Cura Estados Negativos",
+    "class_required": "Clase Requerida"
   }
 }

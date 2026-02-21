@@ -1042,7 +1042,7 @@
   },
   "ui": {
     "merchant": {
-      "title": "ESTABLECIMIENTO MERCANTIL",
+      "title": "ESTABLECIMIENTO COMERCIAL",
       "purse": "BOLSA",
       "tab_buy": "ADQUIRIR",
       "tab_sell": "LIQUIDAR",
@@ -1055,7 +1055,7 @@
       "value_label": "Valor"
     },
     "bank": {
-      "title": "Bóveda Royal",
+      "title": "Bóveda Real",
       "subtitle": "Repositorio Seguro de Activos",
       "inventory_label": "INVENTARIO PERSONAL",
       "vault_label": "ALMACENAMIENTO EN BÓVEDA",

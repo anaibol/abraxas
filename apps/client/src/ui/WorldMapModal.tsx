@@ -1,4 +1,5 @@
 import { type FC } from "react";
+import { useTranslation } from "react-i18next";
 import { FONTS } from "./tokens";
 
 interface ZoneInfo {
@@ -47,6 +48,7 @@ interface WorldMapModalProps {
 }
 
 export const WorldMapModal: FC<WorldMapModalProps> = ({ currentMapName, onClose }) => {
+  const { t } = useTranslation();
   // Normalize map name: "arena.test" → "arena", "forest" → "forest"
   const normalizedCurrentMap = currentMapName.split(".")[0];
 
@@ -95,7 +97,7 @@ export const WorldMapModal: FC<WorldMapModalProps> = ({ currentMapName, onClose 
               fontFamily: FONTS.display,
             }}
           >
-            🗺 WORLD MAP
+            🗺 {t("ui.map.title")}
           </div>
           <button
             onClick={onClose}
@@ -184,7 +186,7 @@ export const WorldMapModal: FC<WorldMapModalProps> = ({ currentMapName, onClose 
                         letterSpacing: "1px",
                       }}
                     >
-                      YOU ARE HERE
+                      {t("ui.map.current_pos")}
                     </div>
                   )}
 
@@ -211,7 +213,7 @@ export const WorldMapModal: FC<WorldMapModalProps> = ({ currentMapName, onClose 
                         textShadow: isCurrent ? `0 0 8px ${zone.color}66` : "none",
                       }}
                     >
-                      {zone.label}
+                      {t(`maps.${zone.id}.name`, { defaultValue: zone.label })}
                     </div>
                     <div
                       style={{
@@ -230,7 +232,7 @@ export const WorldMapModal: FC<WorldMapModalProps> = ({ currentMapName, onClose 
                         lineHeight: "1.5",
                       }}
                     >
-                      {zone.description}
+                      {t(`maps.${zone.id}.desc`, { defaultValue: zone.description })}
                     </div>
                   </div>
                 </div>
@@ -247,7 +249,7 @@ export const WorldMapModal: FC<WorldMapModalProps> = ({ currentMapName, onClose 
             textAlign: "center",
           }}
         >
-          Use warps in the world to travel between zones. Press M or ESC to close.
+          {t("ui.map.help")}
         </div>
       </div>
     </div>

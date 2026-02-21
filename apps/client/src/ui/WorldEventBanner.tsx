@@ -1,4 +1,5 @@
 import { type FC, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FONTS } from "./tokens";
 
 interface WorldEventBannerProps {
@@ -18,6 +19,7 @@ export const WorldEventBanner: FC<WorldEventBannerProps> = ({
   npcsDead,
   visible,
 }) => {
+  const { t } = useTranslation();
   const [secondsLeft, setSecondsLeft] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -102,7 +104,9 @@ export const WorldEventBanner: FC<WorldEventBannerProps> = ({
               textShadow: "0 0 8px rgba(255,68,68,0.6)",
             }}
           >
-            {eventName.toUpperCase()}
+            {t(`events.${eventName.toLowerCase().replace(/ /g, "_")}.name`, {
+              defaultValue: eventName,
+            }).toUpperCase()}
           </span>
           <span style={{ fontSize: "18px" }}>⚠️</span>
         </div>
@@ -116,7 +120,9 @@ export const WorldEventBanner: FC<WorldEventBannerProps> = ({
             fontStyle: "italic",
           }}
         >
-          {description}
+          {t(`events.${eventName.toLowerCase().replace(/ /g, "_")}.desc`, {
+            defaultValue: description,
+          })}
         </div>
 
         {/* Progress bar */}
@@ -131,7 +137,7 @@ export const WorldEventBanner: FC<WorldEventBannerProps> = ({
                 marginBottom: "3px",
               }}
             >
-              <span>Enemies slain</span>
+              <span>{t("ui.event.enemies_slain")}</span>
               <span>
                 {npcsDead} / {totalNpcs}
               </span>
