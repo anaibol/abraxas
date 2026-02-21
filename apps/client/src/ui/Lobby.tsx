@@ -593,14 +593,32 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                             {info.icon}
                           </Box>
                           <Box flex="1" minW={0}>
+                            <Flex align="center" gap="2">
                             <Text
                               fontSize="14px"
                               fontWeight="900"
-                              color={T.goldText}
+                              color={isAdmin ? "#4ade80" : T.goldText}
                               letterSpacing="1px"
                             >
                               {char.name}
                             </Text>
+                            {isAdmin && (
+                              <Badge
+                                px="1.5"
+                                py="0"
+                                borderRadius="4px"
+                                bg="rgba(74, 222, 128, 0.15)"
+                                color="#4ade80"
+                                border="1px solid rgba(74, 222, 128, 0.3)"
+                                fontSize="10px"
+                                fontFamily={T.display}
+                                fontWeight="700"
+                                flexShrink={0}
+                              >
+                                🛡️ GM
+                              </Badge>
+                            )}
+                            </Flex>
                             <Flex align="center" gap="2">
                               <Text
                                 fontSize="11px"
