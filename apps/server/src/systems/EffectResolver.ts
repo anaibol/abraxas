@@ -8,7 +8,6 @@ import {
   StatType,
 } from "@abraxas/shared";
 
-
 import type { Entity, SpatialLookup } from "../utils/SpatialLookup";
 import type { BuffSystem } from "./BuffSystem";
 import type { DamageCalculator } from "./DamageCalculator";
@@ -113,9 +112,7 @@ export class EffectResolver {
         glancing: damageRes.glancing,
       });
 
-      // B19: Apply rage + leech heal BEFORE death check — onDeath cleans up the entity
       this.applyRageOnHit(attacker, target);
-      // Bug #10: Only leech if attacker is still alive (could be dead from reflect/thorns)
       if (attacker.alive && (ability.leechRatio ?? 0) > 0) {
         const healBack = Math.max(1, Math.round(damageRes.damage * (ability.leechRatio ?? 0)));
         attacker.hp = Math.min(attacker.maxHp, attacker.hp + healBack);
@@ -151,7 +148,6 @@ export class EffectResolver {
           blocked: damageRes.blocked,
           glancing: damageRes.glancing,
         });
-        // Bug #9: Apply rage BEFORE death check so we don't touch a cleaned-up entity
         this.applyRageOnHit(attacker, target);
         if (target.hp <= 0) {
           onDeath(target, attacker.sessionId);
@@ -206,7 +202,8 @@ export class EffectResolver {
         target.sessionId,
         ability.id,
         ability.buffStat ?? StatType.ARMOR,
-        -(ability.buffAmount ?? 10),
+        // Bug #13: Use Math.abs to prevent double-negation if buffAmount is already negative
+        -Math.abs(ability.buffAmount ?? 10),
         ability.durationMs ?? 5000,
         now,
       );
@@ -279,7 +276,6 @@ export class EffectResolver {
         durationMs: ability.durationMs ?? 30000,
       });
     } else if (ability.effect === "teleport") {
-      // B15: Validate target tile is walkable before teleporting
       const tx = windup.targetTileX;
       const ty = windup.targetTileY;
       if (
@@ -288,7 +284,7 @@ export class EffectResolver {
         ty < 0 ||
         ty >= this.map.height ||
         this.map.collision[ty]?.[tx] === 1 ||
-        this.spatial.isTileOccupied(tx, ty)  // Bug #11: prevent teleporting onto occupied tiles
+        this.spatial.isTileOccupied(tx, ty)
       ) {
         return;
       }
@@ -309,7 +305,6 @@ export class EffectResolver {
         target.isNpc() &&
         target.alive
       ) {
-        // Bug #12: Per-target cooldown to prevent infinite gold farming
         const ppKey = `pp_${target.sessionId}`;
         const lastPp = (attacker as unknown as Record<string, number>)[ppKey] ?? 0;
         if (now - lastPp < 10_000) return; // 10s cooldown per target

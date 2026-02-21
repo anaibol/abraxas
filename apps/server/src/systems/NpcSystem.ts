@@ -5,7 +5,6 @@ import {
   type ClassStats,
   DIRECTION_DELTA,
   Direction,
-
   EXP_TABLE,
   MathUtils,
   NPC_RESPAWN_TIME_MS,
@@ -201,7 +200,6 @@ export class NpcSystem {
       }
     }
 
-    // Tether sanity check (B018): If already outside radius, head home.
     const distToSpawn = MathUtils.manhattanDist(npc.getPosition(), {
       x: npc.spawnX,
       y: npc.spawnY,
@@ -375,7 +373,6 @@ export class NpcSystem {
     // Leash to owner if too far
     const distToOwner = MathUtils.manhattanDist(npc.getPosition(), owner.getPosition());
     if (distToOwner > 15) {
-      // B009: always teleport to a safe tile near the owner, never their exact tile.
       const safe = findSafeSpawn(owner.tileX, owner.tileY, map, this.spatial);
       if (safe) {
         const oldX = npc.tileX;
@@ -424,7 +421,6 @@ export class NpcSystem {
       this.moveTowards(npc, owner.tileX, owner.tileY, map, now, tickCount, roomId);
     } else {
       npc.path = [];
-      // Naturally regenerate HP while following and resting (B008)
       if (tickCount % 25 === 0 && npc.hp < npc.maxHp) {
         npc.hp = Math.min(npc.maxHp, npc.hp + Math.ceil(npc.maxHp * 0.02));
       }
@@ -516,7 +512,6 @@ export class NpcSystem {
 
   private levelUp(npc: Npc, roomId: string, broadcast: BroadcastFn): void {
     npc.level++;
-    // D3: Use shared stat recalculation (resetHp=false to avoid full heal mid-combat)
     this.spawner.recalcNpcStats(npc, false);
 
     broadcast(ServerMessageType.LevelUp, {
@@ -547,7 +542,6 @@ export class NpcSystem {
       candidates.push(dx >= 0 ? Direction.RIGHT : Direction.LEFT);
     }
 
-    // Pick the first candidate that is actually walkable (B011)
     for (const dir of candidates) {
       const delta = DIRECTION_DELTA[dir];
       const nx = npc.tileX + delta.dx;
@@ -671,8 +665,6 @@ export class NpcSystem {
     const now = Date.now();
 
     if (stats.rareSpawnIntervalMs) {
-      // Bug #27: Update the queue entry directly — the NPC is deleted below
-      // so the forEach sync in tickRareSpawns would never see it.
       const respawnAt = now + stats.rareSpawnIntervalMs;
       const queueEntry = this.rareRespawnQueue.find((e) => e.npcType === npc.npcType);
       if (queueEntry) {

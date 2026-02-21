@@ -91,11 +91,10 @@ export class RespawnSystem {
       player.alive = true;
       player.stealthed = false;
       player.stunned = false;
-      // B10: Clear spell cooldowns from previous life
       player.spellCooldowns.clear();
-      // Bug #72: Reset GCD so player can act immediately on respawn
       player.lastGcdMs = 0;
 
+      // Bug #71: Add to spatial grid BEFORE broadcasting so players are findable immediately
       onRespawn?.(player);
       broadcast(ServerMessageType.Respawn, {
         sessionId: player.sessionId,

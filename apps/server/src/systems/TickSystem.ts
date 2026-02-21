@@ -207,8 +207,10 @@ export class TickSystem {
       );
 
       if (companions.length > 0) {
-        const playerExp = Math.ceil(stats.expReward * 0.5);
+        // Bug #75: Use floor for both shares so total never exceeds reward
         const companionExp = Math.max(1, Math.floor((stats.expReward * 0.5) / companions.length));
+        const totalCompanionExp = companionExp * companions.length;
+        const playerExp = stats.expReward - totalCompanionExp;
         this.opts.gainXp(player, playerExp);
         for (const comp of companions) {
           systems.npc.gainExp(comp, companionExp, this.opts.roomId, this.opts.broadcast);

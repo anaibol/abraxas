@@ -6,7 +6,6 @@ import {
   calcMeleeDamage,
   calcRangedDamage,
   DamageSchool,
-
   GCD_MS,
   MathUtils,
   ServerMessageType,
@@ -56,14 +55,12 @@ export class CombatSystem {
   private activeWindups = new Map<string, WindupAction>();
   /** Tracks when each entity last started an auto-attack, for attackCooldownMs enforcement. */
   private lastMeleeMs = new Map<string, number>();
-  /** B22: Only entities with pending buffered actions — avoids iterating all entities per tick. */
   private entitiesWithBufferedAction = new Set<string>();
 
   /** Helper to interrupt an entity's cast if they take damage. */
   private interruptCast(sessionId: string, broadcast: BroadcastFn) {
     const windup = this.activeWindups.get(sessionId);
     if (windup && windup.type === "ability") {
-      // Bug #1: Refund resources that were deducted at cast start
       if (windup.resourceCosts) {
         const entity = this.spatial.findEntityBySessionId(sessionId);
         if (entity?.isPlayer()) {
@@ -73,7 +70,6 @@ export class CombatSystem {
         }
       }
       this.activeWindups.delete(sessionId);
-      // B24: Scope notification to the interrupted entity
       broadcast(ServerMessageType.Notification, {
         message: "game.cast_interrupted",
         templateData: { targetSessionId: sessionId },
@@ -107,7 +103,6 @@ export class CombatSystem {
   /** Stores a buffered action and returns false (caller should propagate). */
   private bufferAction(entity: Entity, action: Entity["bufferedAction"]): false {
     entity.bufferedAction = action;
-    // B22: Track entities with buffered actions for efficient iteration
     this.entitiesWithBufferedAction.add(entity.sessionId);
     return false;
   }
@@ -124,7 +119,6 @@ export class CombatSystem {
     return true;
   }
 
-  // Compatible with ArenaRoom's expectation
   processWindups(
     now: number,
     broadcast: BroadcastFn,
@@ -146,7 +140,6 @@ export class CombatSystem {
     _onDeath: (entity: Entity, killerSessionId?: string) => void,
     _onSummon?: (caster: Entity, abilityId: string, x: number, y: number) => void,
   ) {
-    // B22: Only iterate entities that actually have a buffered action.
     for (const sessionId of this.entitiesWithBufferedAction) {
       const entity = this.spatial.findEntityBySessionId(sessionId);
       if (!entity || !entity.alive || !entity.bufferedAction) {
@@ -214,7 +207,7 @@ export class CombatSystem {
     if (this.buffSystem.isStunned(attacker.sessionId, now)) return false;
 
     const stats = attacker.getStats();
-    if (!stats) return false; // B2: guard against missing NPC stats
+    if (!stats) return false;
 
     const lastMelee = this.lastMeleeMs.get(attacker.sessionId) ?? 0;
     const meleeReady = now >= lastMelee + stats.attackCooldownMs;
@@ -429,8 +422,6 @@ export class CombatSystem {
     }
 
     caster.lastGcdMs = now;
-    // Bug #2: Defer cooldown to resolution — store it on the windup instead
-    // Prevent an instant auto-attack following an ability — treat the ability cast as consuming the melee timer too
     this.lastMeleeMs.set(caster.sessionId, now);
 
     const windup: WindupAction = {
@@ -471,7 +462,6 @@ export class CombatSystem {
     if (windup.type === "melee" || windup.type === "ranged") {
       this.resolveAutoAttack(attacker, windup, broadcast, onDeath, now);
     } else {
-      // Bug #2: Apply cooldown only on successful resolution
       if (windup.cooldownAbilityId && windup.cooldownMs) {
         attacker.spellCooldowns.set(windup.cooldownAbilityId, now + windup.cooldownMs);
       }
@@ -503,7 +493,7 @@ export class CombatSystem {
 
     if (target && target.alive && this.canAttack(attacker, target)) {
       const stats = attacker.getStats();
-      if (!stats) return; // B2: guard against undefined stats
+      if (!stats) return;
       const dist = MathUtils.manhattanDist(attacker.getPosition(), {
         x: target.tileX,
         y: target.tileY,
@@ -516,8 +506,6 @@ export class CombatSystem {
         return;
       }
 
-      // B002: Melee/ranged attacks also require Line of Sight at resolution time.
-      // Skip for point-blank (dist ≤ 1) to avoid false negatives when adjacent.
       if (
         dist > 1 &&
         !this.hasLineOfSight(attacker.getPosition(), { x: target.tileX, y: target.tileY })
@@ -601,7 +589,6 @@ export class CombatSystem {
         });
         target.hp -= result.damage;
         this.interruptCast(target.sessionId, broadcast);
-        // B043: Taking damage breaks stealth
         this.buffSystem.breakStealth(target.sessionId);
         broadcast(ServerMessageType.AttackHit, {
           sessionId: attacker.sessionId,

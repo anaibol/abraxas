@@ -34,7 +34,7 @@ function ItemGrid({ slots, selectedSlotIndex, onSelect }: ItemGridProps) {
       gap="2"
       bg="blackAlpha.400"
       p="3"
-      borderRadius="8px"
+      borderRadius="4px"
       border="1px solid"
       borderColor={T.border}
     >
@@ -118,30 +118,37 @@ export function BankWindow({
   return (
     <Box
       pos="fixed"
-      top="50%"
-      left="50%"
-      layerStyle={T.panelGlass}
-      animation="popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards"
-      p={{ base: "4", md: "8" }}
-      w={{ base: "calc(100vw - 24px)", md: "700px" }}
-      maxH="90dvh"
-      overflowY="auto"
-      fontFamily={T.display}
+      inset="0"
       zIndex="200"
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      bg="rgba(0,0,0,0.65)"
+      onClick={onClose}
     >
+      <Box
+        layerStyle={T.panelGlass}
+        animation="popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards"
+        p={{ base: "4", md: "8" }}
+        w={{ base: "calc(100vw - 24px)", md: "700px" }}
+        maxH="90dvh"
+        overflowY="auto"
+        fontFamily={T.display}
+        onClick={(e) => e.stopPropagation()}
+      >
       <Flex justify="space-between" align="center" mb="8">
         <Box>
           <Text
             color={T.gold}
-            fontSize="28px"
-            fontWeight="900"
-            letterSpacing="6px"
-            textShadow={`0 0 15px ${HEX.goldDark}`}
+            fontSize="15px"
+            fontWeight="700"
+            letterSpacing="3px"
             textTransform="uppercase"
+            textShadow={`0 0 15px ${HEX.goldDark}`}
           >
             {t("ui.bank.title")}
           </Text>
-          <Text color={T.goldDark} fontSize="12px" letterSpacing="4px" textTransform="uppercase">
+          <Text color={T.goldDark} fontSize="11px" letterSpacing="2px" textTransform="uppercase">
             {t("ui.bank.subtitle")}
           </Text>
         </Box>
@@ -195,7 +202,7 @@ export function BankWindow({
               bg="blackAlpha.600"
               border="1px solid"
               borderColor={T.gold}
-              borderRadius="8px"
+              borderRadius="4px"
               display="flex"
               alignItems="center"
               justifyContent="center"
@@ -286,6 +293,7 @@ export function BankWindow({
           </Flex>
         )}
       </Box>
+    </Box>
     </Box>
   );
 }

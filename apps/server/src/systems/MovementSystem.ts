@@ -98,11 +98,8 @@ export class MovementSystem {
 
     this.spatial.updatePosition(entity, posBefore.x, posBefore.y);
 
-    // Timing drift cap
-    entity.lastMoveMs += moveIntervalMs;
-    if (now - entity.lastMoveMs > moveIntervalMs) {
-      entity.lastMoveMs = now;
-    }
+    // Bug #68: Always set lastMoveMs to now to prevent drift after long idle
+    entity.lastMoveMs = now;
 
     logger.debug({
       room: roomId,

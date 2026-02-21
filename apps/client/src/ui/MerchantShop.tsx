@@ -43,34 +43,38 @@ export function MerchantShop({
   return (
     <Box
       pos="fixed"
-      top="50%"
-      left="50%"
-      layerStyle={T.panelGlass}
-      animation="popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards"
-      p={{ base: "4", md: "6" }}
-      w={{ base: "calc(100vw - 32px)", md: "550px" }}
-      maxH="85dvh"
-      overflowY="auto"
-      fontFamily={T.display}
+      inset="0"
       zIndex="200"
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      bg="rgba(0,0,0,0.65)"
+      onClick={onClose}
     >
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translate(-50%, -48%); }
-          to { opacity: 1; transform: translate(-50%, -50%); }
-        }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: ${HEX.goldDark}; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: ${HEX.gold}; }
-      `}</style>
+      <Box
+        layerStyle={T.panelGlass}
+        animation="popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards"
+        p={{ base: "4", md: "6" }}
+        w={{ base: "calc(100vw - 32px)", md: "550px" }}
+        maxH="85dvh"
+        overflowY="auto"
+        fontFamily={T.display}
+        onClick={(e) => e.stopPropagation()}
+        css={{
+          "&::-webkit-scrollbar": { width: "6px" },
+          "&::-webkit-scrollbar-track": { background: "transparent" },
+          "&::-webkit-scrollbar-thumb": { background: HEX.goldDark, borderRadius: "10px" },
+          "&::-webkit-scrollbar-thumb:hover": { background: HEX.gold },
+        }}
+      >
 
       <Flex justify="space-between" align="center" mb="6">
         <Text
           color={T.gold}
-          fontSize="24px"
+          fontSize="15px"
           fontWeight="700"
           letterSpacing="3px"
+          textTransform="uppercase"
           textShadow={`0 0 10px ${HEX.goldDark}`}
         >
           {t("ui.merchant.title")}
@@ -315,6 +319,7 @@ export function MerchantShop({
           </Button>
         </Box>
       )}
+    </Box>
     </Box>
   );
 }

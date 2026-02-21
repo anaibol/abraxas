@@ -148,7 +148,6 @@ export class BuffSystem {
     const s = this.state.get(sessionId);
     if (!s) return;
     s.dots = [];
-    // Bug #22: Filter by negative amount (debuff) instead of hardcoded list
     s.buffs = s.buffs.filter((b) => b.amount >= 0);
   }
 
@@ -182,7 +181,6 @@ export class BuffSystem {
   ): void {
     for (const [sessionId, s] of this.state.entries()) {
       const entity = getEntity(sessionId);
-      // B025: Skip dead/missing entities — avoids one-extra-tick resource leak
       if (!entity || !entity.alive) continue;
 
       // Update stunned/stealthed/spawnProtection flags on the schema
@@ -200,7 +198,6 @@ export class BuffSystem {
       const buffsBefore = s.buffs.length;
       s.buffs = s.buffs.filter((b) => now < b.expiresAt);
 
-      // B005: After expiring buffs that may have boosted maxHP/maxMana, clamp current values.
       if (s.buffs.length !== buffsBefore) {
         if (entity.hp > entity.maxHp) entity.hp = entity.maxHp;
         if (
@@ -225,7 +222,6 @@ export class BuffSystem {
       s.dots = s.dots.filter((d) => now < d.expiresAt);
       for (const dot of s.dots) {
         if (now - dot.lastTickAt < dot.intervalMs) continue;
-        // Bug #21: Use `now` directly to prevent burst ticks on lag spikes
         dot.lastTickAt = now;
         entity.hp -= dot.damage;
 
@@ -238,8 +234,6 @@ export class BuffSystem {
 
         if (entity.hp <= 0) {
           entity.hp = 0;
-          // B8: Let onDeath handle alive=false + spatial removal
-          // to keep death logic consistent with other kill paths.
           onDeath(entity, dot.sourceSessionId);
           break;
         }
