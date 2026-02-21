@@ -137,6 +137,8 @@ export function Sidebar({
         </Text>
         <WorldStatus />
       </Flex>
+      {/* Tabs */}
+      <Flex borderBottom="2px solid" borderBottomColor={T.border}>
         {SIDEBAR_TABS.map(({ key, icon }) => (
           <Flex
             key={key}
