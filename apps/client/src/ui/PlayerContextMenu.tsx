@@ -144,7 +144,7 @@ export function PlayerContextMenu({
         gap="2"
       >
         <Box w="6px" h="6px" borderRadius="full" bg="green.400" flexShrink={0} />
-        <Text fontSize="13px" fontWeight="700" color={T.gold} letterSpacing="1px">
+        <Text textStyle={T.bodyText} fontWeight="700" color={T.gold} letterSpacing="1px">
           {target.name}
         </Text>
       </Flex>
@@ -157,9 +157,8 @@ export function PlayerContextMenu({
             px="3"
             py="1.5"
             cursor="pointer"
+            textStyle={T.formLabel}
             color={action.color}
-            fontSize="12px"
-            fontWeight="600"
             letterSpacing="0.5px"
             transition="all 0.1s"
             _hover={{ bg: T.raised }}

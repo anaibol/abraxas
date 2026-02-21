@@ -72,8 +72,7 @@ export class SpriteManager {
       player.equipHelmetId,
       player.equipMountId ?? "",
     );
-    const manaRatio = player.maxMana > 0 ? (player.mana ?? 0) / player.maxMana : 0.5;
-    sprite.setMeditating(player.meditating ?? false, manaRatio);
+    sprite.setMeditating(player.meditating ?? false, player.maxMana ?? 100);
     this.updateAlpha(sprite, player);
 
     // ── Item #50: Low-HP danger glow on local player ────────────────────────

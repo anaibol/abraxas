@@ -100,16 +100,13 @@ export function TradeWindow({
     <Box flex="1" minW="0">
       <Flex justify="space-between" align="center" mb="2">
         <Text
-          fontSize="12px"
-          letterSpacing="2px"
+          textStyle={T.formLabel}
           color={T.gold}
-          textTransform="uppercase"
-          fontWeight="700"
         >
           {label}
         </Text>
         {confirmed && (
-          <Text fontSize="11px" color="#44ff88" letterSpacing="1px" fontWeight="700">
+          <Text textStyle={T.statLabel} color="#44ff88" fontWeight="700">
             {t("trade.confirmed_badge")}
           </Text>
         )}
@@ -124,14 +121,14 @@ export function TradeWindow({
       >
         {gold > 0 && (
           <Flex align="center" gap="2" mb="1.5" p="1.5" bg={T.surface} borderRadius="2px">
-            <Text fontSize="13px">🪙</Text>
-            <Text fontSize="12px" color={T.gold} fontFamily={T.mono}>
+            <Text textStyle={T.bodyText}>🪙</Text>
+            <Text textStyle={T.bodyMuted} color={T.gold} fontFamily={T.mono}>
               {gold}g
             </Text>
           </Flex>
         )}
         {items.length === 0 && gold === 0 && (
-          <Text fontSize="12px" color={T.goldDark} textAlign="center" pt="3" fontStyle="italic">
+          <Text textStyle={T.bodyMuted} color={T.goldDark} textAlign="center" pt="3" fontStyle="italic">
             {t("trade.nothing_offered")}
           </Text>
         )}
@@ -147,12 +144,12 @@ export function TradeWindow({
               bg={T.surface}
               borderRadius="2px"
             >
-              <Text fontSize="13px">{def ? ITEM_ICONS[def.slot] || "✨" : "❓"}</Text>
-              <Text fontSize="12px" color={T.goldText} flex="1">
+              <Text textStyle={T.bodyText}>{def ? ITEM_ICONS[def.slot] || "✨" : "❓"}</Text>
+              <Text textStyle={T.bodyMuted} color={T.goldText} flex="1">
                 {def?.name ?? item.itemId}
               </Text>
               {item.quantity > 1 && (
-                <Text fontSize="11px" color={T.goldDark} fontFamily={T.mono}>
+                <Text textStyle={T.statLabel} color={T.goldDark} fontFamily={T.mono}>
                   ×{item.quantity}
                 </Text>
               )}
@@ -183,15 +180,12 @@ export function TradeWindow({
           textAlign="center"
         >
           <Text
-            fontSize="13px"
-            fontWeight="700"
+            textStyle={T.sectionLabel}
             color={T.gold}
-            letterSpacing="3px"
-            textTransform="uppercase"
           >
             {t("trade.title")}
           </Text>
-          <Text fontSize="12px" color={T.goldDark} mt="0.5">
+          <Text textStyle={T.bodyMuted} color={T.goldDark} mt="0.5">
             {me.name} ↔ {them.name}
           </Text>
         </Box>
@@ -216,10 +210,9 @@ export function TradeWindow({
         {/* Your gold input */}
         <Box px="4" pb="3" borderTop="1px solid" borderTopColor={T.raised}>
           <Text
-            fontSize="11px"
+            textStyle={T.statLabel}
             color={T.goldDark}
             letterSpacing="2px"
-            textTransform="uppercase"
             mt="3"
             mb="1.5"
           >
@@ -241,7 +234,7 @@ export function TradeWindow({
               _focus={{ borderColor: T.gold }}
               disabled={myConfirmed}
             />
-            <Text fontSize="12px" color={T.goldDark}>
+            <Text textStyle={T.bodyMuted} color={T.goldDark}>
               {t("trade.gold")}
             </Text>
           </HStack>
@@ -251,10 +244,9 @@ export function TradeWindow({
         {!myConfirmed && (
           <Box px="4" pb="3">
             <Text
-              fontSize="11px"
+              textStyle={T.statLabel}
               color={T.goldDark}
               letterSpacing="2px"
-              textTransform="uppercase"
               mb="1.5"
             >
               {t("trade.add_items_hint")}
@@ -274,7 +266,7 @@ export function TradeWindow({
             {/* Click items in offer to remove */}
             {offerItems.length > 0 && (
               <Box mt="2">
-                <Text fontSize="11px" color={T.goldDark} mb="1">
+                <Text textStyle={T.statLabel} color={T.goldDark} mb="1">
                   {t("trade.offered_items")}
                 </Text>
                 <HStack gap="1" flexWrap="wrap">
@@ -314,7 +306,7 @@ export function TradeWindow({
         <Flex px="4" pb="4" gap="3" borderTop="1px solid" borderTopColor={T.raised} pt="3">
           {myConfirmed ? (
             <VStack flex="1" gap="1" align="stretch">
-              <Text fontSize="12px" color="#44ff88" textAlign="center" fontWeight="700">
+              <Text textStyle={T.bodyMuted} color="#44ff88" textAlign="center" fontWeight="700">
                 {t("trade.waiting_for", { name: them.name })}
               </Text>
               <Button

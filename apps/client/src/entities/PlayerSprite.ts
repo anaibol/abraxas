@@ -931,12 +931,13 @@ export class PlayerSprite {
     g.destroy();
   }
 
-  setMeditating(meditating: boolean, manaRatio: number = 0.5) {
+  setMeditating(meditating: boolean, maxMana: number = 100) {
     const scene = this.container.scene;
     if (!scene) return;
 
-    // Compute mana tier: 0 = low (<33%), 1 = mid (33-66%), 2 = high (>66%)
-    const tier = manaRatio < 0.33 ? 0 : manaRatio < 0.66 ? 1 : 2;
+    // Compute mana tier based on total mana pool:
+    // 0 = low (<100 maxMana, e.g. warriors), 1 = mid (100-300), 2 = high (>300, e.g. mages)
+    const tier = maxMana < 100 ? 0 : maxMana < 300 ? 1 : 2;
 
     // If nothing changed, skip
     if (meditating === this.isMeditating && (!meditating || tier === this.meditationManaTier)) return;

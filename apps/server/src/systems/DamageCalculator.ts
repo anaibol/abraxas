@@ -180,6 +180,9 @@ export class DamageCalculator {
       }
     }
 
+    // Bug #20: Minimum 1 damage floor is intentional — prevents total immunity
+    // and ensures all attacks give visual feedback. Extreme level differences
+    // are gated by miss/dodge mechanics instead.
     result.damage = Math.max(1, Math.round(damage));
     return result;
   }

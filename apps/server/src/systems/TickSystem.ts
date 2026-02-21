@@ -223,6 +223,8 @@ export class TickSystem {
       }
     }
 
+    // Bug #97: DoT kills credit the DoT source as the killer — this is intentional.
+    // The player who applied the DoT should get quest/XP credit.
     void systems.quests
       .updateProgress(player.dbId, "kill", killedNpc.npcType, 1)
       .then((updates) => {

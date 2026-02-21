@@ -50,6 +50,9 @@ export class EffectResolver {
     suppressCastHit = false,
     onSummon?: (caster: Entity, abilityId: string, x: number, y: number) => void,
   ) {
+    // Bug #99: ability.effect is loosely typed as string. Unknown effects are silently
+    // skipped by the if/else chain below. A stricter union type would catch typos at compile
+    // time but requires a shared type change. For now, runtime validation is sufficient.
     if (target.isNpc() && target.npcType === "merchant") return;
 
     const isSelfCast = attacker.sessionId === target.sessionId;

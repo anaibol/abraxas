@@ -131,6 +131,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
   const [charSearch, setCharSearch] = useState("");
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [deletingCharId, setDeletingCharId] = useState<string | null>(null);
+  const [connectingCharId, setConnectingCharId] = useState<string | null>(null);
 
   const [token, setToken] = useState("");
   const [characters, setCharacters] = useState<CharacterSummary[]>([]);
@@ -181,6 +182,10 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
         setIsCheckingToken(false);
       });
   }, []);
+
+  useEffect(() => {
+    if (!connecting) setConnectingCharId(null);
+  }, [connecting]);
 
   const labelStyle = {
     fontSize: "12px",
@@ -602,19 +607,29 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                     const adminChar = char as AdminCharacterSummary;
                     const isConfirming = confirmDeleteId === char.id;
                     const isDeleting = deletingCharId === char.id;
+                    const isConnecting = connectingCharId === char.id;
                     return (
                       <Box
                         key={char.id}
                         p="3"
-                        bg={isConfirming ? "rgba(180, 40, 40, 0.12)" : "rgba(8, 8, 12, 0.4)"}
+                        bg={isConnecting
+                          ? `linear-gradient(90deg, rgba(8,8,12,0.4) 0%, ${HEX.gold}22 50%, rgba(8,8,12,0.4) 100%)`
+                          : isConfirming ? "rgba(180, 40, 40, 0.12)" : "rgba(8, 8, 12, 0.4)"}
+                        backgroundSize={isConnecting ? "200% 100%" : "auto"}
+                        animation={isConnecting ? `${shimmer} 1.5s ease-in-out infinite` : undefined}
                         border="1px solid"
-                        borderColor={isConfirming ? "rgba(180, 40, 40, 0.4)" : T.border}
+                        borderColor={isConnecting ? T.goldDim : isConfirming ? "rgba(180, 40, 40, 0.4)" : T.border}
                         borderRadius="8px"
-                        cursor={isConfirming ? "default" : "pointer"}
+                        cursor={isConfirming || connecting ? "default" : "pointer"}
+                        opacity={connecting && !isConnecting ? 0.4 : 1}
                         transition="all 0.2s"
-                        onClick={() => !isConfirming && onJoin(char.id, char.class, token)}
+                        onClick={() => {
+                          if (isConfirming || connecting) return;
+                          setConnectingCharId(char.id);
+                          onJoin(char.id, char.class, token);
+                        }}
                         _hover={
-                          isConfirming
+                          isConfirming || isConnecting
                             ? {}
                             : {
                                 bg: `${info.color}11`,
@@ -730,6 +745,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                           >
                             {t("sidebar.inventory.level")} {char.level}
                           </Badge>
+                          {!isConnecting && (
                           <Box
                             flexShrink={0}
                             color={T.goldDark}
@@ -744,6 +760,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                           >
                             <Trash2 size={14} />
                           </Box>
+                          )}
                         </Flex>
                         )}
                       </Box>
@@ -779,11 +796,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
               </Button>
             )}
 
-            {connecting && (
-              <Text fontSize="11px" color={T.goldMuted} textAlign="center" mt="3">
-                {t("lobby.connecting")}
-              </Text>
-            )}
+
 
             <Button
               mt="3"

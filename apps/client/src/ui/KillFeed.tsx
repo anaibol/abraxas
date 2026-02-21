@@ -40,7 +40,7 @@ export function KillFeed({ entries }: KillFeedProps) {
           borderRadius="2px"
           fontFamily={T.display}
         >
-          <Text fontSize="12px" color={T.goldText}>
+          <Text textStyle={T.bodyMuted} color={T.goldText}>
             <Text as="span" color={T.bloodBright} fontWeight="700">
               {entry.killerName}
             </Text>{" "}

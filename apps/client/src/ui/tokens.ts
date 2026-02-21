@@ -36,6 +36,8 @@ export const T = {
   statLabel: "statLabel",
   bodyText: "bodyText",
   bodyMuted: "bodyMuted",
+  heading: "heading",
+  headingLg: "headingLg",
   tabLabel: "tabLabel",
   codeText: "codeText",
   badgeText: "badgeText",
