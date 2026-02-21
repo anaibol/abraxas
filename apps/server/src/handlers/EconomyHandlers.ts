@@ -124,7 +124,7 @@ export class EconomyHandlers {
     client.send(ServerMessageType.BankSync, { items });
   }
 
-  static handleBankDeposit(
+  static async handleBankDeposit(
     ctx: RoomContext,
     client: Client,
     data: ClientMessages[ClientMessageType.BankDeposit],
@@ -133,15 +133,15 @@ export class EconomyHandlers {
     if (!player) return;
 
     if (
-      ctx.systems.bank.deposit(player, data.itemId, data.quantity, data.slotIndex, (msg: string) =>
+      await ctx.systems.bank.deposit(player, data.itemId, data.quantity, data.slotIndex, (msg: string) =>
         HandlerUtils.sendError(client, msg),
       )
     ) {
-      EconomyHandlers.syncBank(ctx, client, player);
+      await EconomyHandlers.syncBank(ctx, client, player);
     }
   }
 
-  static handleBankWithdraw(
+  static async handleBankWithdraw(
     ctx: RoomContext,
     client: Client,
     data: ClientMessages[ClientMessageType.BankWithdraw],
@@ -150,7 +150,7 @@ export class EconomyHandlers {
     if (!player) return;
 
     if (
-      ctx.systems.bank.withdraw(
+      await ctx.systems.bank.withdraw(
         player,
         data.itemId,
         data.quantity,
@@ -158,7 +158,7 @@ export class EconomyHandlers {
         (msg: string) => HandlerUtils.sendError(client, msg),
       )
     ) {
-      EconomyHandlers.syncBank(ctx, client, player);
+      await EconomyHandlers.syncBank(ctx, client, player);
     }
   }
 

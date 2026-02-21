@@ -1,55 +1,42 @@
 import type { ItemAffix } from "@abraxas/shared";
 import { type InventoryEntry, ITEMS, ItemRarity, type StatType } from "@abraxas/shared";
 import { prisma } from "../database/db";
+import { ItemRarity as PrismaItemRarity } from "../generated/prisma";
 import { logger } from "../logger";
 import type { Player } from "../schema/Player";
 import type { InventorySystem } from "./InventorySystem";
 
-export class BankSystem {
-  // Bug #54: In-memory cache is session-scoped — loaded on openBank, persisted on closeBank.
-  // Safe for single-server: no external writes can happen between open/close.
-  // Multi-server would need pub/sub invalidation (out of scope).
-  private activeBanks = new Map<string, InventoryEntry[]>();
+const MAX_BANK_SLOTS = 50;
 
+export class BankSystem {
   constructor(private inventory: InventorySystem) {}
 
+  /** Load bank items directly from DB. No in-memory cache. */
   async openBank(player: Player): Promise<InventoryEntry[]> {
-    if (this.activeBanks.has(player.sessionId)) {
-      return this.activeBanks.get(player.sessionId)!;
-    }
-
-    // Load from DB
     const dbBank = await prisma.bank.findUnique({
       where: { characterId: player.dbId },
       include: { slots: { include: { item: { include: { itemDef: true } } } } },
     });
 
-    const items: InventoryEntry[] =
+    return (
       dbBank?.slots.map((s) => ({
         itemId: s.item?.itemDef.code || "",
         quantity: s.qty,
         slotIndex: s.idx,
         rarity: s.item?.rarity ?? ItemRarity.COMMON,
-        affixes: s.item?.affixesJson || [],
-      })) || [];
-
-    this.activeBanks.set(player.sessionId, items);
-    return items;
+        affixes: (s.item?.affixesJson as ItemAffix[]) || [],
+      })) || []
+    );
   }
 
-  deposit(
+  /** Deposit an item from player inventory into the bank. Writes directly to DB. */
+  async deposit(
     player: Player,
     itemId: string,
     quantity: number,
     slotIndex: number,
     onError?: (msg: string) => void,
-  ): boolean {
-    const bankItems = this.activeBanks.get(player.sessionId);
-    if (!bankItems) {
-      onError?.("Bank not open");
-      return false;
-    }
-
+  ): Promise<boolean> {
     // Find item in player inventory
     const invItem = player.inventory.find((i) => i.slotIndex === slotIndex);
     if (!invItem || invItem.itemId !== itemId || invItem.quantity < quantity) {
@@ -60,184 +47,178 @@ export class BankSystem {
     const def = ITEMS[itemId];
     if (!def) return false;
 
-    // Capacity Check (Max 50 slots)
-    // For stackable items, it only takes a new slot if it doesn't already exist.
-    // For non-stackable, it takes 'quantity' new slots.
-    const currentSlots = bankItems.length;
-    let neededSlots = 0;
-    if (def.stackable) {
-      if (!bankItems.find((i) => i.itemId === itemId)) {
-        neededSlots = 1;
-      }
-    } else {
-      neededSlots = quantity;
-    }
-
-    if (currentSlots + neededSlots > 50) {
-      onError?.("game.bank_full");
-      return false;
-    }
-
-    // Move to bank
-    if (def.stackable) {
-      const existing = bankItems.find((i) => i.itemId === itemId);
-      if (existing) {
-        // Bug #53: Stackable items should never have unique affixes, so merging quantities is safe.
-        // If a stackable item somehow has affixes, the existing stack's affixes are preserved.
-        existing.quantity += quantity;
-      } else {
-        const nextIdx = this.getNextIndex(bankItems);
-        bankItems.push({
-          itemId,
-          quantity,
-          slotIndex: nextIdx,
-          rarity: invItem.rarity,
-          affixes: Array.from(invItem.affixes).map((a) => ({
-            type: a.affixType,
-            stat: a.stat,
-            value: a.value,
-          })),
-        });
-      }
-    } else {
-      // Bug #56: Non-stackable items create separate slots. Each copy inherits the
-      // source item's rarity/affixes, which is correct since they came from the same stack.
-      // Truly unique non-stackable items should always have qty=1 in inventory.
-      for (let i = 0; i < quantity; i++) {
-        const nextIdx = this.getNextIndex(bankItems);
-        bankItems.push({
-          itemId,
-          quantity: 1,
-          slotIndex: nextIdx,
-          rarity: invItem.rarity,
-          affixes: Array.from(invItem.affixes).map((a) => ({
-            type: a.affixType,
-            stat: a.stat,
-            value: a.value,
-          })),
-        });
-      }
-    }
-
-    // Remove from inventory
-    if (invItem.quantity > quantity) {
-      invItem.quantity -= quantity;
-    } else {
-      const idx = player.inventory.indexOf(invItem);
-      player.inventory.splice(idx, 1);
-    }
-
-    return true;
-  }
-
-  withdraw(
-    player: Player,
-    itemId: string,
-    quantity: number,
-    bankSlotIndex: number,
-    onError?: (msg: string) => void,
-  ): boolean {
-    const bankItems = this.activeBanks.get(player.sessionId);
-    if (!bankItems) {
-      onError?.("Bank not open");
-      return false;
-    }
-
-    const bankItem = bankItems.find((i) => i.slotIndex === bankSlotIndex);
-    if (!bankItem || bankItem.itemId !== itemId || bankItem.quantity < quantity) {
-      onError?.("Item not found in bank");
-      return false;
-    }
-
-    // Try add to inventory
-    const instanceData = {
-      rarity: bankItem.rarity,
-      affixes: bankItem.affixes || [],
-    };
-
-    if (this.inventory.addItem(player, itemId, quantity, instanceData, onError)) {
-      // Remove from bank
-      if (bankItem.quantity > quantity) {
-        bankItem.quantity -= quantity;
-      } else {
-        const idx = bankItems.indexOf(bankItem);
-        bankItems.splice(idx, 1);
-      }
-      return true;
-    }
-
-    return false;
-  }
-
-  async closeBank(player: Player) {
-    const items = this.activeBanks.get(player.sessionId);
-    if (!items) return;
-
     try {
-      // Bug #3 fix: Use explicit 30s timeout (default 5s is too short for 50-slot banks)
-      // and batch itemDef lookups to reduce round-trips.
       await prisma.$transaction(async (tx) => {
+        // Ensure bank exists
         const bank = await tx.bank.upsert({
           where: { characterId: player.dbId },
           update: {},
           create: { characterId: player.dbId },
         });
 
-        // Bug #52: Delete old ItemInstances linked to bank slots before deleting slots
-        const oldSlots = await tx.bankSlot.findMany({
+        // Load current bank slots
+        const currentSlots = await tx.bankSlot.findMany({
           where: { bankId: bank.id },
-          select: { itemId: true },
+          include: { item: { include: { itemDef: true } } },
         });
-        const oldItemIds = oldSlots.map((s) => s.itemId).filter(Boolean) as string[];
-        if (oldItemIds.length > 0) {
-          await tx.itemInstance.deleteMany({ where: { id: { in: oldItemIds } } });
+
+        // Capacity check
+        let neededSlots = 0;
+        if (def.stackable) {
+          const existingSlot = currentSlots.find((s) => s.item?.itemDef.code === itemId);
+          if (!existingSlot) neededSlots = 1;
+        } else {
+          neededSlots = quantity;
         }
-        // Delete old slots
-        await tx.bankSlot.deleteMany({ where: { bankId: bank.id } });
 
-        // Batch-resolve all itemDef codes in one query
-        const uniqueCodes = [...new Set(items.map((i) => i.itemId))];
-        const itemDefs = await tx.itemDef.findMany({
-          where: { code: { in: uniqueCodes } },
-        });
-        const defMap = new Map(itemDefs.map((d) => [d.code, d]));
-
-        // Create new slots
-        for (const item of items) {
-          const itemDef = defMap.get(item.itemId);
-          if (!itemDef) continue;
-
-          const instance = await tx.itemInstance.create({
-            data: {
-              itemDefId: itemDef.id,
-              rarity: item.rarity ?? ItemRarity.COMMON,
-              affixesJson: item.affixes ?? [],
-            },
-          });
-
-          await tx.bankSlot.create({
-            data: {
-              bankId: bank.id,
-              idx: item.slotIndex,
-              itemId: instance.id,
-              qty: item.quantity,
-            },
-          });
+        if (currentSlots.length + neededSlots > MAX_BANK_SLOTS) {
+          throw new Error("game.bank_full");
         }
-      }, { timeout: 30_000 });
+
+        if (def.stackable) {
+          const existingSlot = currentSlots.find((s) => s.item?.itemDef.code === itemId);
+          if (existingSlot) {
+            // Update existing stack quantity
+            await tx.bankSlot.update({
+              where: { id: existingSlot.id },
+              data: { qty: existingSlot.qty + quantity },
+            });
+          } else {
+            // Create new stack
+            const itemDef = await tx.itemDef.findUnique({ where: { code: itemId } });
+            if (!itemDef) throw new Error("Item def not found");
+
+            const usedIndices = new Set(currentSlots.map((s) => s.idx));
+            let nextIdx = 0;
+            while (usedIndices.has(nextIdx) && nextIdx < MAX_BANK_SLOTS) nextIdx++;
+
+            const instance = await tx.itemInstance.create({
+              data: {
+                itemDefId: itemDef.id,
+                rarity: (invItem.rarity ?? ItemRarity.COMMON) as PrismaItemRarity,
+                affixesJson: Array.from(invItem.affixes).map((a) => ({
+                  type: a.affixType,
+                  stat: a.stat,
+                  value: a.value,
+                })),
+              },
+            });
+
+            await tx.bankSlot.create({
+              data: { bankId: bank.id, idx: nextIdx, itemId: instance.id, qty: quantity },
+            });
+          }
+        } else {
+          // Non-stackable: create separate slots for each
+          const itemDef = await tx.itemDef.findUnique({ where: { code: itemId } });
+          if (!itemDef) throw new Error("Item def not found");
+
+          const usedIndices = new Set(currentSlots.map((s) => s.idx));
+          for (let i = 0; i < quantity; i++) {
+            let nextIdx = 0;
+            while (usedIndices.has(nextIdx) && nextIdx < MAX_BANK_SLOTS) nextIdx++;
+            usedIndices.add(nextIdx);
+
+            const instance = await tx.itemInstance.create({
+              data: {
+                itemDefId: itemDef.id,
+                rarity: (invItem.rarity ?? ItemRarity.COMMON) as PrismaItemRarity,
+                affixesJson: Array.from(invItem.affixes).map((a) => ({
+                  type: a.affixType,
+                  stat: a.stat,
+                  value: a.value,
+                })),
+              },
+            });
+
+            await tx.bankSlot.create({
+              data: { bankId: bank.id, idx: nextIdx, itemId: instance.id, qty: 1 },
+            });
+          }
+        }
+      });
+
+      // Success — remove from player inventory
+      if (invItem.quantity > quantity) {
+        invItem.quantity -= quantity;
+      } else {
+        const idx = player.inventory.indexOf(invItem);
+        player.inventory.splice(idx, 1);
+      }
+
+      return true;
     } catch (e) {
-      logger.error({ message: "Failed to persist bank", error: String(e) });
-    } finally {
-      this.activeBanks.delete(player.sessionId);
+      const msg = e instanceof Error ? e.message : String(e);
+      if (msg === "game.bank_full") {
+        onError?.(msg);
+      } else {
+        logger.error({ message: "Bank deposit failed", error: msg });
+        onError?.("Bank operation failed");
+      }
+      return false;
     }
   }
 
-  private getNextIndex(items: InventoryEntry[]): number {
-    const used = new Set(items.map((i) => i.slotIndex));
-    // Bug #55: Cap at 50 (actual bank size limit) instead of 1000
-    for (let i = 0; i < 50; i++) {
-      if (!used.has(i)) return i;
+  /** Withdraw an item from the bank into player inventory. Writes directly to DB. */
+  async withdraw(
+    player: Player,
+    itemId: string,
+    quantity: number,
+    bankSlotIndex: number,
+    onError?: (msg: string) => void,
+  ): Promise<boolean> {
+    try {
+      // Load the specific bank slot from DB
+      const bank = await prisma.bank.findUnique({
+        where: { characterId: player.dbId },
+        include: { slots: { include: { item: { include: { itemDef: true } } } } },
+      });
+
+      if (!bank) {
+        onError?.("Bank not open");
+        return false;
+      }
+
+      const bankSlot = bank.slots.find((s) => s.idx === bankSlotIndex);
+      if (!bankSlot || bankSlot.item?.itemDef.code !== itemId || bankSlot.qty < quantity) {
+        onError?.("Item not found in bank");
+        return false;
+      }
+
+      const instanceData = {
+        rarity: bankSlot.item?.rarity ?? ItemRarity.COMMON,
+        affixes: (bankSlot.item?.affixesJson as ItemAffix[]) || [],
+      };
+
+      // Try to add to inventory first
+      if (!this.inventory.addItem(player, itemId, quantity, instanceData, onError)) {
+        return false;
+      }
+
+      // Success — remove from bank in DB
+      if (bankSlot.qty > quantity) {
+        await prisma.bankSlot.update({
+          where: { id: bankSlot.id },
+          data: { qty: bankSlot.qty - quantity },
+        });
+      } else {
+        // Remove slot and its item instance
+        await prisma.bankSlot.delete({ where: { id: bankSlot.id } });
+        if (bankSlot.itemId) {
+          await prisma.itemInstance.delete({ where: { id: bankSlot.itemId } }).catch(() => {});
+        }
+      }
+
+      return true;
+    } catch (e) {
+      logger.error({ message: "Bank withdraw failed", error: String(e) });
+      onError?.("Bank operation failed");
+      return false;
     }
-    return 49;
+  }
+
+  /** No-op — bank is now persisted directly on each operation. */
+  async closeBank(_player: Player): Promise<void> {
+    // Nothing to do — data is already in DB
   }
 }
