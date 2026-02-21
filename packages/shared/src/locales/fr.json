@@ -897,6 +897,130 @@
     "detect_invisibility": {
       "name": "Vision Véritable",
       "desc": "Révèle brièvement toutes les unités camouflées dans une zone large."
+    },
+    "berserker_rage": {
+      "name": "Rage du Berzerker",
+      "desc": "Gagne instantanément 30 de Rage."
+    },
+    "blink": {
+      "name": "Transfert",
+      "desc": "Téléporte le lanceur vers l'avant."
+    },
+    "elemental_infusion": {
+      "name": "Infusion Élémentaire",
+      "desc": "Augmente l'INT pendant une courte durée."
+    },
+    "spell_echo": {
+      "name": "Écho de Sort",
+      "desc": "Le prochain sort que vous lancez résonnera, se déclenchant deux fois."
+    },
+    "mana_spring": {
+      "name": "Source de Mana",
+      "desc": "Invoque un cristal qui restaure le mana des alliés proches."
+    },
+    "polymorph": {
+      "name": "Métamorphose",
+      "desc": "Transforme la cible en mouton."
+    },
+    "entangling_roots": {
+      "name": "Racines Entrelacées",
+      "desc": "Enracine les ennemis sur place et inflige des dégâts de nature."
+    },
+    "explosive_trap": {
+      "name": "Piège Explosif",
+      "desc": "Place un piège qui explose lorsqu'on marche dessus."
+    },
+    "pet_bond": {
+      "name": "Lien Familier",
+      "desc": "Augmente l'AGI pendant la durée de l'effet."
+    },
+    "eagle_eye": {
+      "name": "Œil d'Aigle",
+      "desc": "Augmente massivement votre AGI pendant une durée."
+    },
+    "barrage": {
+      "name": "Barrage",
+      "desc": "Tire une rafale rapide de flèches dans une zone large."
+    },
+    "shadowstep": {
+      "name": "Pas de l'Ombre",
+      "desc": "Vous téléporte instantanément derrière votre cible."
+    },
+    "pickpocket": {
+      "name": "Vol à la Tire",
+      "desc": "Vole de l'or à un PNJ."
+    },
+    "caltrops": {
+      "name": "Chausse-trappes",
+      "desc": "Laisse tomber des pointes qui ralentissent et blessent les ennemis."
+    },
+    "fan_of_knives": {
+      "name": "Éventail de Couteaux",
+      "desc": "Lance un cercle de dagues autour de vous."
+    },
+    "cleansing_rain": {
+      "name": "Pluie Purificatrice",
+      "desc": "Douche de soins massive en zone."
+    },
+    "poison_bite": {
+      "name": "Morsure Envenimée",
+      "desc": "Afflige la cible d'un poison persistant."
+    },
+    "web_shot": {
+      "name": "Disparo de Telaraña",
+      "desc": "Tire une toile qui étourdit la cible."
+    },
+    "enrage": {
+      "name": "Enrager",
+      "desc": "Augmente la force pendant une courte durée."
+    },
+    "fire_breath": {
+      "name": "Souffle de Feu",
+      "desc": "Une rafale de feu à courte portée."
+    },
+    "frost_breath": {
+      "name": "Souffle de Givre",
+      "desc": "Une rafale de givre qui ralentit les ennemis."
+    },
+    "disease_bite": {
+      "name": "Morsure Maladive",
+      "desc": "Afflige la cible d'une maladie de longue durée."
+    },
+    "troll_regen": {
+      "name": "Régénération de Troll",
+      "desc": "Soigne rapidement le lanceur."
+    },
+    "earthquake": {
+      "name": "Tremblement de Terre",
+      "desc": "Secoue la terre, étourdissant et blessant les ennemis proches."
+    },
+    "leap": {
+      "name": "Bond",
+      "desc": "Saute vers un emplacement cible, blessant et étourdissant les ennemis."
+    },
+    "execute": {
+      "name": "Exécuter",
+      "desc": "Inflige des dégâts massifs aux cibles ayant peu de points de vie."
+    },
+    "cleave": {
+      "name": "Enchaînement",
+      "desc": "Une frappe large qui touche plusieurs cibles proches."
+    },
+    "shield_wall": {
+      "name": "Mur de Boucliers",
+      "desc": "Augmente massivement l'armure pendant une durée."
+    },
+    "meteor_strike": {
+      "name": "Frappe de Météore",
+      "desc": "Invoque un météore pour infliger des dégâts de feu massifs en zone."
+    },
+    "chain_lightning": {
+      "name": "Chaîne d'Éclairs",
+      "desc": "Décharge des éclairs qui sautent entre les ennemis."
+    },
+    "acid_splash": {
+      "name": "Éclaboussure d'Acide",
+      "desc": "Dégâts de zone qui réduisent l'armure ennemie au fil du temps."
     }
   },
   "item_slot": {

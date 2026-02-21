@@ -897,6 +897,130 @@
     "detect_invisibility": {
       "name": "True Sight",
       "desc": "Briefly reveal all stealthed units in a large area."
+    },
+    "berserker_rage": {
+      "name": "Berserker Rage",
+      "desc": "Instantly gain 30 Rage."
+    },
+    "blink": {
+      "name": "Blink",
+      "desc": "Teleports the caster forward."
+    },
+    "elemental_infusion": {
+      "name": "Elemental Infusion",
+      "desc": "Boosts your INT for a short duration."
+    },
+    "spell_echo": {
+      "name": "Spell Echo",
+      "desc": "The next spell you cast will echo, triggering twice."
+    },
+    "mana_spring": {
+      "name": "Mana Spring",
+      "desc": "Summon a crystal that restores mana to nearby allies."
+    },
+    "polymorph": {
+      "name": "Polymorph",
+      "desc": "Transform the target into a sheep."
+    },
+    "entangling_roots": {
+      "name": "Entangling Roots",
+      "desc": "Roots enemies in place and deals nature damage."
+    },
+    "explosive_trap": {
+      "name": "Explosive Trap",
+      "desc": "Place a trap that explodes when stepped on."
+    },
+    "pet_bond": {
+      "name": "Pet Bond",
+      "desc": "Boosts AGI for the duration of the buff."
+    },
+    "eagle_eye": {
+      "name": "Eagle Eye",
+      "desc": "Massively increases your AGI for a duration."
+    },
+    "barrage": {
+      "name": "Barrage",
+      "desc": "Fire a rapid volley of arrows in a large area."
+    },
+    "shadowstep": {
+      "name": "Shadowstep",
+      "desc": "Teleport behind your target instantly."
+    },
+    "pickpocket": {
+      "name": "Pickpocket",
+      "desc": "Steal gold from an NPC."
+    },
+    "caltrops": {
+      "name": "Caltrops",
+      "desc": "Drop spikes that slow and damage enemies."
+    },
+    "fan_of_knives": {
+      "name": "Fan of Knives",
+      "desc": "Unleash a circle of blades around you."
+    },
+    "cleansing_rain": {
+      "name": "Cleansing Rain",
+      "desc": "Massive AoE healing shower."
+    },
+    "poison_bite": {
+      "name": "Poison Bite",
+      "desc": "Afflicts the target with a lingering poison."
+    },
+    "web_shot": {
+      "name": "Web Shot",
+      "desc": "Shoots a web that stuns the target."
+    },
+    "enrage": {
+      "name": "Enrage",
+      "desc": "Boosts strength for a short duration."
+    },
+    "fire_breath": {
+      "name": "Fire Breath",
+      "desc": "A short-range blast of fire."
+    },
+    "frost_breath": {
+      "name": "Frost Breath",
+      "desc": "A blast of frost that slows enemies."
+    },
+    "disease_bite": {
+      "name": "Disease Bite",
+      "desc": "Afflicts the target with a long-lasting disease."
+    },
+    "troll_regen": {
+      "name": "Troll Regeneration",
+      "desc": "Rapidly heals the caster."
+    },
+    "earthquake": {
+      "name": "Earthquake",
+      "desc": "Shakes the earth, stunning and damaging nearby enemies."
+    },
+    "leap": {
+      "name": "Leap",
+      "desc": "Jump to a target location, damaging and stunning enemies."
+    },
+    "execute": {
+      "name": "Execute",
+      "desc": "Deals massive damage to targets with low health."
+    },
+    "cleave": {
+      "name": "Cleave",
+      "desc": "A sweeping strike that hits multiple nearby targets."
+    },
+    "shield_wall": {
+      "name": "Shield Wall",
+      "desc": "Massively increases armor for a duration."
+    },
+    "meteor_strike": {
+      "name": "Meteor Strike",
+      "desc": "Calls down a meteor for massive AoE fire damage."
+    },
+    "chain_lightning": {
+      "name": "Chain Lightning",
+      "desc": "Discharges lightning that jumps between enemies."
+    },
+    "acid_splash": {
+      "name": "Acid Splash",
+      "desc": "AoE damage that reduces enemy armor over time."
     }
   },
   "item_slot": {

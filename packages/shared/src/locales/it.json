@@ -897,6 +897,130 @@
     "detect_invisibility": {
       "name": "Vera Visione",
       "desc": "Rivela brevemente tutte le unità nascoste in un'ampia area."
+    },
+    "berserker_rage": {
+      "name": "Rabbia del Berserker",
+      "desc": "Guadagna istantaneamente 30 di Rabbia."
+    },
+    "blink": {
+      "name": "Traslazione",
+      "desc": "Teletrasporta l'incantatore in avanti."
+    },
+    "elemental_infusion": {
+      "name": "Infusione Elementale",
+      "desc": "Aumenta l'INT per una breve durata."
+    },
+    "spell_echo": {
+      "name": "Eco dell'Incantesimo",
+      "desc": "Il prossimo incantesimo lanciato risuonerà, attivandosi due volte."
+    },
+    "mana_spring": {
+      "name": "Sorgente di Mana",
+      "desc": "Evoca un cristallo che ripristina il mana agli alleati vicini."
+    },
+    "polymorph": {
+      "name": "Metamorfosi",
+      "desc": "Trasforma il bersaglio in una pecora."
+    },
+    "entangling_roots": {
+      "name": "Radici Intricanti",
+      "desc": "Radica i nemici sul posto e infligge danni da natura."
+    },
+    "explosive_trap": {
+      "name": "Trappola Esplosiva",
+      "desc": "Piazza una trappola che esplode quando calpestata."
+    },
+    "pet_bond": {
+      "name": "Legame Famiglio",
+      "desc": "Aumenta l'AGI per la durata del potenziamento."
+    },
+    "eagle_eye": {
+      "name": "Occhio d'Aquila",
+      "desc": "Aumenta massicciamente la tua AGI per una durata."
+    },
+    "barrage": {
+      "name": "Sbarramento",
+      "desc": "Spara una rapida raffica di frecce in una vasta area."
+    },
+    "shadowstep": {
+      "name": "Passo d'Ombra",
+      "desc": "Ti teletrasporta istantaneamente dietro il tuo bersaglio."
+    },
+    "pickpocket": {
+      "name": "Borseggiare",
+      "desc": "Ruba oro da un PNG."
+    },
+    "caltrops": {
+      "name": "Triboli",
+      "desc": "Lascia cadere punte che rallentano e danneggiano i nemici."
+    },
+    "fan_of_knives": {
+      "name": "Ventaglio di Coltelli",
+      "desc": "Lancia un cerchio di pugnali intorno a te."
+    },
+    "cleansing_rain": {
+      "name": "Pioggia Purificatrice",
+      "desc": "Pioggia di guarigione di massa in area."
+    },
+    "poison_bite": {
+      "name": "Morso Velenoso",
+      "desc": "Affligge il bersaglio con un veleno persistente."
+    },
+    "web_shot": {
+      "name": "Tiro di Ragnatela",
+      "desc": "Spara una ragnatela che stordisce il bersaglio."
+    },
+    "enrage": {
+      "name": "Infuriare",
+      "desc": "Aumenta la forza per una breve durata."
+    },
+    "fire_breath": {
+      "name": "Soffio di Fuoco",
+      "desc": "Una raffica di fuoco a corto raggio."
+    },
+    "frost_breath": {
+      "name": "Soffio di Gelo",
+      "desc": "Una raffica di gelo che rallenta i nemici."
+    },
+    "disease_bite": {
+      "name": "Morso Malaticcio",
+      "desc": "Affligge il bersaglio con una malattia di lunga durata."
+    },
+    "troll_regen": {
+      "name": "Rigenerazione dei Troll",
+      "desc": "Cura rapidamente l'incantatore."
+    },
+    "earthquake": {
+      "name": "Terremoto",
+      "desc": "Scuote la terra, stordendo e danneggiando i nemici vicini."
+    },
+    "leap": {
+      "name": "Balzo",
+      "desc": "Salta verso una posizione bersaglio, danneggiando e stordendo i nemici."
+    },
+    "execute": {
+      "name": "Esecuzione",
+      "desc": "Infligge danni massicci ai bersagli con salute bassa."
+    },
+    "cleave": {
+      "name": "Fendente",
+      "desc": "Un colpo ampio che colpisce più bersagli vicini."
+    },
+    "shield_wall": {
+      "name": "Muro di Scudi",
+      "desc": "Aumenta massicciamente l'armatura per una durata."
+    },
+    "meteor_strike": {
+      "name": "Colpo di Meteora",
+      "desc": "Evoca una meteora per infliggere massicci danni da fuoco in area."
+    },
+    "chain_lightning": {
+      "name": "Catena di Fulmini",
+      "desc": "Scarica fulmini che saltano tra i nemici."
+    },
+    "acid_splash": {
+      "name": "Spruzzo d'Acido",
+      "desc": "Danni ad area che riducono l'armatura nemica nel tempo."
     }
   },
   "item_slot": {

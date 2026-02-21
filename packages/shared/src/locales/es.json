@@ -897,6 +897,130 @@
     "detect_invisibility": {
       "name": "Visión Verdadera",
       "desc": "Revela brevemente todas las unidades ocultas en un área amplia."
+    },
+    "berserker_rage": {
+      "name": "Rage de Berserker",
+      "desc": "Gana instantáneamente 30 de Rage."
+    },
+    "blink": {
+      "name": "Parpadeo",
+      "desc": "Teletransporta al lanzador hacia adelante."
+    },
+    "elemental_infusion": {
+      "name": "Infusión Elemental",
+      "desc": "Aumenta la INT durante un corto periodo de tiempo."
+    },
+    "spell_echo": {
+      "name": "Eco del Hechizo",
+      "desc": "El siguiente hechizo que lances resonará, activándose dos veces."
+    },
+    "mana_spring": {
+      "name": "Manantial de Maná",
+      "desc": "Invoca un cristal que restaura maná a los aliados cercanos."
+    },
+    "polymorph": {
+      "name": "Polimorfia",
+      "desc": "Transforma al objetivo en una oveja."
+    },
+    "entangling_roots": {
+      "name": "Raíces Enredaderas",
+      "desc": "Enreda a los enemigos en el suelo e inflige daño de naturaleza."
+    },
+    "explosive_trap": {
+      "name": "Trampa Explosiva",
+      "desc": "Coloca una trampa que explota al ser pisada."
+    },
+    "pet_bond": {
+      "name": "Vínculo de Mascota",
+      "desc": "Aumenta la AGI durante la duración del efecto."
+    },
+    "eagle_eye": {
+      "name": "Ojo de Águila",
+      "desc": "Aumenta masivamente tu AGI durante una duración."
+    },
+    "barrage": {
+      "name": "Aluvión",
+      "desc": "Dispara una ráfaga rápida de flechas en una gran área."
+    },
+    "shadowstep": {
+      "name": "Paso de las Sombras",
+      "desc": "Te teletransporta detrás de tu objetivo instantáneamente."
+    },
+    "pickpocket": {
+      "name": "Robar",
+      "desc": "Roba oro de un NPC."
+    },
+    "caltrops": {
+      "name": "Abrojos",
+      "desc": "Suelta púas que ralentizan y dañan a los enemigos."
+    },
+    "fan_of_knives": {
+      "name": "Abanico de Cuchillos",
+      "desc": "Lanza un círculo de dagas a tu alrededor."
+    },
+    "cleansing_rain": {
+      "name": "Lluvia Purificadora",
+      "desc": "Ducha de sanación masiva en área."
+    },
+    "poison_bite": {
+      "name": "Mordedura Venenosa",
+      "desc": "Aflige al objetivo con un veneno persistente."
+    },
+    "web_shot": {
+      "name": "Disparo de Telaraña",
+      "desc": "Dispara una telaraña que aturde al objetivo."
+    },
+    "enrage": {
+      "name": "Enfurecer",
+      "desc": "Aumenta la fuerza durante una corta duración."
+    },
+    "fire_breath": {
+      "name": "Aliento de Fuego",
+      "desc": "Una ráfaga de fuego a corta distancia."
+    },
+    "frost_breath": {
+      "name": "Aliento de Escarcha",
+      "desc": "Una ráfaga de escarcha que ralentiza a los enemigos."
+    },
+    "disease_bite": {
+      "name": "Mordedura de Enfermedad",
+      "desc": "Aflige al objetivo con una enfermedad de larga duración."
+    },
+    "troll_regen": {
+      "name": "Regeneración de Trol",
+      "desc": "Cura rápidamente al lanzador."
+    },
+    "earthquake": {
+      "name": "Terremoto",
+      "desc": "Sacude la tierra, aturdiendo y dañando a los enemigos cercanos."
+    },
+    "leap": {
+      "name": "Salto",
+      "desc": "Salta a una ubicación objetivo, dañando y aturdiendo a los enemigos."
+    },
+    "execute": {
+      "name": "Ejecutar",
+      "desc": "Inflige un daño masivo a los objetivos con poca salud."
+    },
+    "cleave": {
+      "name": "Rajar",
+      "desc": "Un golpe amplio que golpea a varios objetivos cercanos."
+    },
+    "shield_wall": {
+      "name": "Muro de Escudos",
+      "desc": "Aumenta masivamente la armadura durante una duración."
+    },
+    "meteor_strike": {
+      "name": "Lluvia de Meteoritos",
+      "desc": "Invoca un meteorito para infligir un daño masivo de fuego en área."
+    },
+    "chain_lightning": {
+      "name": "Cadena de Rayos",
+      "desc": "Descarga rayos que saltan entre los enemigos."
+    },
+    "acid_splash": {
+      "name": "Salpicadura de Ácido",
+      "desc": "Daño en área que reduce la armadura del enemigo con el tiempo."
     }
   },
   "item_slot": {
