@@ -6,12 +6,24 @@ import type { Player } from "../schema/Player";
 /** Union of all concrete entity types that live in the game world. */
 export type Entity = Player | Npc;
 
+/** Q4: Type guard — narrows Entity to Player based on entityType enum. */
+export function isPlayer(e: Entity): e is Player {
+  return e.entityType === EntityType.PLAYER;
+}
+
+/** Q4: Type guard — narrows Entity to Npc based on entityType enum. */
+export function isNpc(e: Entity): e is Npc {
+  return e.entityType === EntityType.NPC;
+}
+
 // ── Spatial hash grid ─────────────────────────────────────────────────────
 
 export class SpatialLookup {
   // P-2: Numeric keys avoid per-lookup string allocation.
   private grid = new Map<number, Set<string>>();
   private static readonly MAP_WIDTH = 1024;
+  // P-3: Direct sessionId → Entity cache avoids two MapSchema lookups per call.
+  private entityCache = new Map<string, Entity>();
 
   constructor(private state: GameState) {
     for (const p of this.state.players.values()) this.addToGrid(p);
@@ -25,6 +37,7 @@ export class SpatialLookup {
   /** Clears and rebuilds the grid from the current state — call after devMode state restore. */
   rebuild(): void {
     this.grid.clear();
+    this.entityCache.clear();
     for (const p of this.state.players.values()) this.addToGrid(p);
     for (const n of this.state.npcs.values()) this.addToGrid(n);
   }
@@ -42,6 +55,7 @@ export class SpatialLookup {
       this.grid.set(key, cell);
     }
     cell.add(entity.sessionId);
+    this.entityCache.set(entity.sessionId, entity);
   }
 
   removeFromGrid(entity: Entity) {
@@ -53,6 +67,7 @@ export class SpatialLookup {
         this.grid.delete(key);
       }
     }
+    this.entityCache.delete(entity.sessionId);
   }
 
   updatePosition(entity: Entity, oldX: number, oldY: number) {
@@ -69,9 +84,8 @@ export class SpatialLookup {
   }
 
   findEntityBySessionId(sessionId: string): Entity | undefined {
-    if (this.state.players.has(sessionId)) return this.state.players.get(sessionId);
-    if (this.state.npcs.has(sessionId)) return this.state.npcs.get(sessionId);
-    return undefined;
+    // P-3: Use cache instead of two MapSchema lookups
+    return this.entityCache.get(sessionId);
   }
 
   findEntityAtTile(tx: number, ty: number): Entity | undefined {

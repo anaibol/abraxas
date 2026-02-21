@@ -140,7 +140,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
     if (!res.ok) return;
     const data = await res.json();
     setAdminCharacters(
-      (data.characters ?? []).map((c: any) => ({
+      (data.characters ?? []).map((c: { id: string; name: string; class: ClassType; level: number; account?: { email?: string } }) => ({
         id: c.id,
         name: c.name,
         class: c.class,

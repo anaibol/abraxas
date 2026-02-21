@@ -104,8 +104,7 @@ export class AdminHandlers {
         break;
       }
       case "spawn": {
-        const rawType: any = args[1];
-        const npcType: NpcType = rawType;
+        const npcType = args[1] as NpcType | undefined;
         if (!npcType) {
           HandlerUtils.sendError(client, "Usage: /gm spawn <npcType>");
           return;

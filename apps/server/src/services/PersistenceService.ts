@@ -36,7 +36,7 @@ const CHAR_INCLUDE = {
     },
   },
   companions: true,
-};
+} as const;
 
 /** Strictly typed Character with all relations included. */
 export type FullCharacter = Prisma.CharacterGetPayload<{
@@ -260,7 +260,7 @@ export class PersistenceService {
     itemId?: string;
     quantity: number;
     goldAmount: number;
-    instanceData?: { rarity: string; nameOverride?: string; affixes: any[] };
+    instanceData?: { rarity: string; nameOverride?: string; affixes: import("@abraxas/shared").ItemAffix[] };
   }) {
     let itemInstanceId = data.itemId;
 
@@ -272,7 +272,7 @@ export class PersistenceService {
             itemDefId: itemDef.id,
             rarity: data.instanceData.rarity.toUpperCase() as ItemRarity,
             nameOverride: data.instanceData.nameOverride,
-            affixesJson: data.instanceData.affixes as Prisma.JsonArray,
+            affixesJson: data.instanceData.affixes as unknown as Prisma.JsonArray,
           },
         });
         itemInstanceId = instance.id;

@@ -191,7 +191,7 @@ describe("Arena multiplayer smoke test", () => {
       expect(pB).toBeDefined();
       console.error(`[DEBUG_PLAYER] pA:`, JSON.stringify(pA.toJSON(), null, 2));
       console.error(
-        `[DEBUG_PROPS] pA.tileX=${pA.tileX}, pA.tileY=${pA.tileY}, pA.maxXp=${(pA as any).maxXp}, pA.xp=${pA.xp}`,
+        `[DEBUG_PROPS] pA.tileX=${pA.tileX}, pA.tileY=${pA.tileY}, pA.maxXp=${pA.maxXp}, pA.xp=${pA.xp}`,
       );
 
       // Assert spawn positions

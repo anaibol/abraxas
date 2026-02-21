@@ -101,7 +101,7 @@ export class TradeSystem {
         itemId: off.itemId,
         quantity: off.quantity,
         slotIndex: invItem.slotIndex,
-        rarity: invItem.rarity as ItemRarity,
+        rarity: invItem.rarity,
         nameOverride: invItem.nameOverride,
         affixes: Array.from(invItem.affixes).map((a) => ({
           type: a.affixType,

@@ -2,6 +2,7 @@ import {
   type BroadcastFn,
   EntityType,
   type ItemAffix,
+  ItemRarity,
   type JoinOptions,
   NPC_VIEW_RADIUS,
   type NpcType,
@@ -45,6 +46,7 @@ import { TickSystem } from "../systems/TickSystem";
 import { TradeSystem } from "../systems/TradeSystem";
 import { WorldEventSystem } from "../systems/WorldEventSystem";
 import { type Entity, SpatialLookup } from "../utils/SpatialLookup";
+import { toSharedRarity } from "../utils/rarityUtils";
 import { findSafeSpawn } from "../utils/spawnUtils";
 
 export class ArenaRoom extends Room<{ state: GameState }> {
@@ -234,7 +236,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         drop.spawnedAt = d.spawnedAt.getTime();
 
         if (d.item) {
-          drop.rarity = d.item.rarity || "common";
+          drop.rarity = toSharedRarity(d.item.rarity);
           drop.nameOverride = d.item.nameOverride || "";
           const affixes = (d.item.affixesJson as unknown as ItemAffix[]) || [];
           affixes.forEach((a) => {
@@ -514,32 +516,31 @@ export class ArenaRoom extends Room<{ state: GameState }> {
   }
 
   private onEntityDeath(entity: Entity, killerSessionId?: string) {
-    // Soul Harvest Passive: Necromancer nearby
-    this.state.players.forEach((player) => {
-      if (player.classType === "NECROMANCER" && player.alive) {
-        const dx = player.tileX - entity.tileX;
-        const dy = player.tileY - entity.tileY;
-        const distSq = dx * dx + dy * dy;
-        const HARVEST_RANGE = 5;
-        if (distSq <= HARVEST_RANGE * HARVEST_RANGE) {
-          const hpGain = Math.floor(player.maxHp * 0.05);
-          const manaGain = Math.floor(player.maxMana * 0.05);
-          player.hp = Math.min(player.maxHp, player.hp + hpGain);
-          player.mana = Math.min(player.maxMana, player.mana + manaGain);
+    // P-4: Soul Harvest Passive — use spatial lookup instead of iterating all players
+    const HARVEST_RANGE = 5;
+    const nearby = this.spatial.findEntitiesInRadius(
+      entity.tileX, entity.tileY, HARVEST_RANGE,
+    );
+    for (const ent of nearby) {
+      if (ent.entityType !== EntityType.PLAYER) continue;
+      const player = ent as Player;
+      if (player.classType !== "NECROMANCER" || !player.alive) continue;
 
-          // Add a soul
-          if (player.souls < player.maxSouls) {
-            player.souls++;
-          }
+      const hpGain = Math.floor(player.maxHp * 0.05);
+      const manaGain = Math.floor(player.maxMana * 0.05);
+      player.hp = Math.min(player.maxHp, player.hp + hpGain);
+      player.mana = Math.min(player.maxMana, player.mana + manaGain);
 
-          this.broadcast(ServerMessageType.Heal, {
-            sessionId: player.sessionId,
-            amount: hpGain,
-            hpAfter: player.hp,
-          });
-        }
+      if (player.souls < player.maxSouls) {
+        player.souls++;
       }
-    });
+
+      this.broadcast(ServerMessageType.Heal, {
+        sessionId: player.sessionId,
+        amount: hpGain,
+        hpAfter: player.hp,
+      });
+    }
 
     if (entity.entityType === EntityType.PLAYER)
       this.onPlayerDeath(entity as Player, killerSessionId);

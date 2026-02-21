@@ -13,7 +13,7 @@ export class Drop extends Schema {
   @type("uint16") tileY: number = 0;
 
   // Instance data for items
-  @type("string") rarity: string = ItemRarity.COMMON;
+  @type("string") rarity: ItemRarity = ItemRarity.COMMON;
   @type("string") nameOverride: string = "";
   @type([ItemAffixSchema]) affixes = new ArraySchema<ItemAffixSchema>();
 

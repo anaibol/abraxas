@@ -89,7 +89,7 @@ export class DropSystem {
     // Handle item drops
     if (drop.itemType === DropType.ITEM && drop.itemId) {
       const data = {
-        rarity: drop.rarity as ItemRarity,
+        rarity: drop.rarity,
         nameOverride: drop.nameOverride,
         affixes: Array.from(drop.affixes).map((a: ItemAffixSchema) => ({
           type: a.affixType,

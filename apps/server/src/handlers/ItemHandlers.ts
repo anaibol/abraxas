@@ -1,8 +1,10 @@
 import {
   type ClientMessages,
   type ClientMessageType,
+  type ItemRarity,
   ITEMS,
   ServerMessageType,
+  type StatType,
 } from "@abraxas/shared";
 import type { Client } from "@colyseus/core";
 import { spiralSearch } from "../utils/spawnUtils";
@@ -110,7 +112,7 @@ export class ItemHandlers {
     const instanceData = {
       rarity: item.rarity,
       nameOverride: item.nameOverride,
-      affixes: item.affixes.map((a) => ({ type: a.affixType, stat: a.stat, value: a.value })),
+      affixes: item.affixes.map((a) => ({ type: a.affixType, stat: a.stat as StatType, value: a.value })),
     };
 
     if (ctx.systems.inventory.removeItem(player, data.itemId, qty)) {
@@ -129,7 +131,7 @@ export class ItemHandlers {
         tile.y,
         itemId,
         qty,
-        instanceData as any,
+        instanceData,
       );
     }
   }
