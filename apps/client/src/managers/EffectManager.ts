@@ -913,8 +913,7 @@ export class EffectManager {
       radius: 4,
     });
 
-    // ── 4. Scorch decal + smoke ──────────────────────────────────────────
-    this.drawDecal(px, py, "fx-scorch", 3600, 1.0, 0.7);
+    // ── 4. Smoke ─────────────────────────────────────────────────────────
     this.createThickSmoke(px, py);
 
     // ── 5. Delayed secondary sparks — lighter, with gentle float ─────────
@@ -958,7 +957,6 @@ export class EffectManager {
 
   private fx_frost_nova(px: number, py: number) {
     // Utilize the realistic frost explosion
-    this.drawDecal(px, py, "fx-frost-patch", 4800, 1.4, 0.8);
     this.createFrostExplosion(px, py);
 
     // Initial shockwave
@@ -987,7 +985,6 @@ export class EffectManager {
     this.flash(px, py, 0xaaccff, 19, 48);
     
     // Add realistic earth shatter from the heavy impact
-    this.drawDecal(px, py, "fx-crater", 3000, 0.8, 0.85);
     this.createEarthShatter(px, py);
 
     this.burst(px, py, TEX.SPARK, {
@@ -1066,11 +1063,9 @@ export class EffectManager {
 
     this.scene.time.delayedCall(480, () => {
       // Impact effects
-      this.drawDecal(px, py, "fx-crater", 3000, 1.0, 0.85);
-    this.createEarthShatter(px, py);
+      this.createEarthShatter(px, py);
       this.createCampfire(px, py);
-      this.drawDecal(px, py, "fx-scorch", 3600, 1.2, 0.7);
-    this.createThickSmoke(px, py);
+      this.createThickSmoke(px, py);
       
       this.flash(px, py, 0xffffff, 64, 90);
       this.ring(px, py, 0xff4400, 8, 96, 360, 0.9, 4);
@@ -1173,7 +1168,6 @@ export class EffectManager {
   }
 
   private fx_earthquake(px: number, py: number) {
-    this.drawDecal(px, py, "fx-crater", 3000, 0.8, 0.85);
     this.createEarthShatter(px, py);
     
     // Multiple delayed rings for a shaking effect
@@ -1776,8 +1770,6 @@ export class EffectManager {
       },
       onComplete: () => {
         orb.destroy();
-        this.drawDecal(tx, ty, "fx-scorch", 9000, 2.0, 0.8);
-        this.drawDecal(tx, ty, "fx-crater", 9000, 1.5, 0.9);
         trail.destroy();
       },
     });
@@ -2138,8 +2130,6 @@ export class EffectManager {
       },
       onComplete: () => {
         orb.destroy();
-        this.drawDecal(px, py, "fx-scorch", 9000, 2.0, 0.8);
-        this.drawDecal(px, py, "fx-crater", 9000, 1.5, 0.9);
         trail.destroy();
       },
     });

@@ -445,6 +445,18 @@ export class GameScene extends Phaser.Scene {
   }
 
   private updateAmbientLighting(time: number) {
+    // ── Sync Lights2D ambient brightness to time of day ──
+    // 0 = midnight (very dark), 1 = noon (full brightness)
+    let brightness = 1.0;
+    if (time < 5 || time > 20) {
+      brightness = 0.15;
+    } else if (time >= 5 && time < 8) {
+      brightness = 0.15 + ((time - 5) / 3) * 0.85;
+    } else if (time >= 17 && time < 20) {
+      brightness = 1.0 - ((time - 17) / 3) * 0.85;
+    }
+    this.lightManager.setAmbientBrightness(brightness);
+
     if (!this.ambientOverlay || !this.cameras.main) return;
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
