@@ -1,4 +1,4 @@
-import { type PlayerQuestState, QUESTS, type Quest, type QuestType } from "@abraxas/shared";
+import { type PlayerQuestState, type NpcType, NPC_STATS, QUESTS, type Quest, type QuestType } from "@abraxas/shared";
 import { prisma } from "../database/db";
 
 export class QuestSystem {
@@ -179,9 +179,18 @@ export class QuestSystem {
       }
     }
 
+    const dialogue = NPC_STATS[npcType as NpcType]?.dialogue;
+    const greetings = dialogue?.greetings ?? ["ui.dialogue.hello_traveler"];
+    const text = greetings[Math.floor(Math.random() * greetings.length)];
+    const extraOptions = (dialogue?.options ?? []).map((o) => ({
+      text: o.text,
+      action: o.action,
+      data: o.response ? { response: o.response } : undefined,
+    }));
+
     return {
-      text: `ui.dialogue.greeting_${npcType}`,
-      options: [{ text: "ui.dialogue.goodbye", action: "close" }],
+      text,
+      options: [...extraOptions, { text: "ui.dialogue.goodbye", action: "close" }],
     };
   }
 }

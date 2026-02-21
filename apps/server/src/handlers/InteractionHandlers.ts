@@ -1,6 +1,7 @@
 import {
   type ClientMessages,
   type ClientMessageType,
+  FRIENDLY_NPC_TYPES,
   MathUtils,
   MERCHANT_INVENTORY,
   QUESTS,
@@ -25,6 +26,9 @@ export class InteractionHandlers {
 
     const npc = ctx.state.npcs.get(data.npcId);
     if (!npc) return;
+
+    // Only friendly NPCs (merchant, banker, etc.) support dialogue interaction
+    if (!FRIENDLY_NPC_TYPES.has(npc.npcType)) return;
 
     if (!HandlerUtils.assertInRange(client, player, npc, 3, "game.too_far")) return;
 

@@ -27,13 +27,6 @@ export const NPC_APPEARANCE: Record<string, { bodyId: number; headId: number }> 
   decoy: { bodyId: 6, headId: 0 }, // 51×35 stout creature
 };
 
-/** NPC types that support dialogue interaction (click to talk). */
-export const FRIENDLY_NPC_TYPES: ReadonlySet<string> = new Set<string>(
-  Object.entries(_NPC_STATS)
-    .filter(([, v]) => v?.interactable)
-    .map(([k]) => k),
-);
-
 const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
   orc: {
     hp: 120,
@@ -140,6 +133,13 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     armor: 100,
     abilities: [],
     passive: true,
+    dialogue: {
+      greetings: [
+        "npc.merchant.greet_1",
+        "npc.merchant.greet_2",
+        "npc.merchant.greet_3",
+      ],
+    },
     barks: {
       idle: ["Welcome, adventurer!", "Fine wares, fine prices!", "Step right up!"],
     },
@@ -339,6 +339,12 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
     armor: 100,
     abilities: [],
     passive: true,
+    dialogue: {
+      greetings: [
+        "npc.banker.greet_1",
+        "npc.banker.greet_2",
+      ],
+    },
     barks: {
       idle: [
         "Your gold is safe with us.",
@@ -563,6 +569,13 @@ export const NPC_STATS: Record<NpcType, NpcStats> = Object.fromEntries(
 ) as Record<NpcType, NpcStats>;
 
 export const NPC_TYPES: NpcType[] = Object.keys(_NPC_STATS) as NpcType[];
+
+/** NPC types that support dialogue interaction (click to talk). Derived from `dialogue` config. */
+export const FRIENDLY_NPC_TYPES: ReadonlySet<string> = new Set<string>(
+  Object.entries(_NPC_STATS)
+    .filter(([, v]) => v?.dialogue)
+    .map(([k]) => k),
+);
 
 export interface DropTableEntry {
   itemId: string;

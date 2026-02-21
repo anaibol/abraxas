@@ -146,7 +146,7 @@ const SPELL_FX: Record<string, FxRecipe> = {
       { color: 0xff6600, start: 5, end: 65, duration: 300, alpha: 0.85, width: 2 },
       { color: 0xffcc00, start: 5, end: 60, duration: 288, alpha: 0.5, width: 1, delay: 100 },
     ],
-    bursts: [{ tex: "CIRCLE", colors: [0xff6600, 0xffaa00, 0xffee44], count: 14, speed: { min: 40, max: 120 }, scale: { start: 0.42, end: 0.0 }, lifespan: { min: 210, max: 420 }, radius: 13 }],
+    bursts: [{ tex: "CIRCLE", colors: [], color: [0xffffff, 0xffcc00, 0xff6600, 0x442200], colorEase: "Quad.Out", count: 14, speed: { min: 40, max: 120 }, scale: { start: 0.42, end: 0.0 }, lifespan: { min: 210, max: 420 }, ...PHYSICS.FIRE, radius: 13 }],
   },
   whirlwind: {
     flash: { color: 0xcccccc, size: 22, duration: 80 },
@@ -226,8 +226,8 @@ const SPELL_FX: Record<string, FxRecipe> = {
   stealth: {
     rings: [{ color: 0x6644aa, start: 40, end: 5, duration: 240, alpha: 0.7, width: 1 }],
     bursts: [
-      { tex: "SMOKE", colors: [0x332255, 0x221133, 0x110022], count: 12, speed: { min: 10, max: 40 }, scale: { start: 0.52, end: 0.0 }, lifespan: { min: 300, max: 630 }, gravityY: -15, radius: 14, blendMode: 0, alpha: { start: 0.55, end: 0 } },
-      { tex: "CIRCLE", colors: [0x6644aa, 0x8866cc], count: 5, speed: { min: 15, max: 45 }, scale: { start: 0.2, end: 0.0 }, lifespan: { min: 240, max: 450 }, gravityY: -35, radius: 11 },
+      { tex: "SMOKE", colors: [], color: [0x332255, 0x221133, 0x110022, 0x000000], count: 12, speed: { min: 10, max: 40 }, scale: { start: 0.52, end: 0.0 }, ...PHYSICS.SMOKE, lifespan: { min: 300, max: 630 }, gravityY: -15, radius: 14, blendMode: 0, alpha: { start: 0.55, end: 0 } },
+      { tex: "CIRCLE", colors: [0x6644aa, 0x8866cc], count: 5, speed: { min: 15, max: 45 }, scale: { start: 0.2, end: 0.0 }, lifespan: { min: 240, max: 450 }, ...PHYSICS.DARK, gravityY: -35, radius: 11 },
     ],
   },
   evasion: {
@@ -260,8 +260,8 @@ const SPELL_FX: Record<string, FxRecipe> = {
   curse: {
     rings: [{ color: 0x8800aa, start: 5, end: 40, duration: 240, alpha: 0.8, width: 2 }],
     bursts: [
-      { tex: "SMOKE", colors: [0x440066, 0x220033, 0x110022], count: 11, speed: { min: 15, max: 55 }, scale: { start: 0.52, end: 0.0 }, lifespan: { min: 300, max: 660 }, gravityY: -22, radius: 13, blendMode: 0, alpha: { start: 0.6, end: 0 } },
-      { tex: "CIRCLE", colors: [0x8800aa, 0xcc44ff, 0xff88ff], count: 8, speed: { min: 30, max: 92 }, scale: { start: 0.33, end: 0.0 }, lifespan: { min: 210, max: 432 }, gravityY: -36, radius: 7 },
+      { tex: "SMOKE", colors: [], color: [0x440066, 0x330044, 0x220022, 0x110011], count: 11, speed: { min: 15, max: 55 }, scale: { start: 0.52, end: 0.0 }, ...PHYSICS.DARK, lifespan: { min: 300, max: 660 }, gravityY: -22, radius: 13, blendMode: 0, alpha: { start: 0.6, end: 0 } },
+      { tex: "CIRCLE", colors: [], color: [0xff88ff, 0xcc44ff, 0x8800aa, 0x330044], colorEase: "Quad.Out", count: 8, speed: { min: 30, max: 92 }, scale: { start: 0.33, end: 0.0 }, lifespan: { min: 210, max: 432 }, ...PHYSICS.DARK, gravityY: -36, radius: 7 },
     ],
   },
   // ── NPC effects ──
@@ -278,8 +278,8 @@ const SPELL_FX: Record<string, FxRecipe> = {
       { color: 0xffffff, start: 5, end: 52, duration: 264, alpha: 0.5, width: 1, delay: 85 },
     ],
     bursts: [
-      { tex: "SHARD", colors: [0x44ccff, 0x88eeff, 0xffffff], count: 15, speed: { min: 60, max: 165 }, scale: { start: 0.39, end: 0.0 }, lifespan: { min: 240, max: 456 }, rotate: { start: 0, end: 270 }, radius: 24 },
-      { tex: "SMOKE", colors: [0x88ccff, 0xaaddff], count: 8, speed: { min: 15, max: 47 }, scale: { start: 0.59, end: 0.13 }, lifespan: { min: 360, max: 672 }, gravityY: -16, radius: 27, blendMode: 0, alpha: { start: 0.42, end: 0 } },
+      { tex: "SHARD", colors: [], color: [0xffffff, 0x88eeff, 0x44aaff, 0x224466], count: 15, speed: { min: 60, max: 165 }, scale: { start: 0.39, end: 0.0 }, lifespan: { min: 240, max: 456 }, rotate: { start: 0, end: 270 }, ...PHYSICS.ICE, radius: 24 },
+      { tex: "SMOKE", colors: [0x88ccff, 0xaaddff], count: 8, speed: { min: 15, max: 47 }, scale: { start: 0.59, end: 0.13 }, ...PHYSICS.SMOKE, lifespan: { min: 360, max: 672 }, gravityY: -16, radius: 27, blendMode: 0, alpha: { start: 0.42, end: 0 } },
     ],
   },
   banshee_wail: {
@@ -288,15 +288,15 @@ const SPELL_FX: Record<string, FxRecipe> = {
       { color: 0xcc44ff, start: 5, end: 62, duration: 306, alpha: 0.55, width: 1, delay: 105 },
     ],
     bursts: [
-      { tex: "SMOKE", colors: [0xcc44ff, 0x880088, 0x4400aa], count: 13, speed: { min: 20, max: 68 }, scale: { start: 0.52, end: 0.0 }, lifespan: { min: 360, max: 750 }, gravityY: -22, radius: 33, blendMode: 0, alpha: { start: 0.62, end: 0 } },
-      { tex: "CIRCLE", colors: [0x8844cc, 0xcc44ff], count: 9, speed: { min: 30, max: 92 }, scale: { start: 0.33, end: 0.0 }, lifespan: { min: 240, max: 492 }, gravityY: -36, radius: 20 },
+      { tex: "SMOKE", colors: [], color: [0xcc44ff, 0x880088, 0x4400aa, 0x110022], count: 13, speed: { min: 20, max: 68 }, scale: { start: 0.52, end: 0.0 }, ...PHYSICS.DARK, lifespan: { min: 360, max: 750 }, gravityY: -22, radius: 33, blendMode: 0, alpha: { start: 0.62, end: 0 } },
+      { tex: "CIRCLE", colors: [], color: [0xff88ff, 0xcc44ff, 0x8844cc, 0x220044], colorEase: "Quad.Out", count: 9, speed: { min: 30, max: 92 }, scale: { start: 0.33, end: 0.0 }, lifespan: { min: 240, max: 492 }, ...PHYSICS.DARK, gravityY: -36, radius: 20 },
     ],
   },
   shadow_bolt: {
     rings: [{ color: 0x330044, start: 5, end: 42, duration: 222, alpha: 0.8, width: 2 }],
     bursts: [
-      { tex: "CIRCLE", colors: [0x220033, 0x550055, 0x8800aa, 0xff44ff], count: 16, speed: { min: 60, max: 178 }, scale: { start: 0.45, end: 0.0 }, lifespan: { min: 210, max: 432 }, radius: 4 },
-      { tex: "SMOKE", colors: [0x110022, 0x330033], count: 7, speed: { min: 15, max: 50 }, scale: { start: 0.59, end: 0.07 }, lifespan: { min: 300, max: 612 }, gravityY: -16, radius: 11, blendMode: 0, alpha: { start: 0.5, end: 0 } },
+      { tex: "CIRCLE", colors: [], color: [0xff44ff, 0x8800aa, 0x550055, 0x220033], colorEase: "Quad.Out", count: 16, speed: { min: 60, max: 178 }, scale: { start: 0.45, end: 0.0 }, lifespan: { min: 210, max: 432 }, ...PHYSICS.DARK, radius: 4 },
+      { tex: "SMOKE", colors: [0x110022, 0x330033], count: 7, speed: { min: 15, max: 50 }, scale: { start: 0.59, end: 0.07 }, ...PHYSICS.SMOKE, lifespan: { min: 300, max: 612 }, gravityY: -16, radius: 11, blendMode: 0, alpha: { start: 0.5, end: 0 } },
     ],
   },
   soul_drain: {
@@ -314,8 +314,8 @@ const SPELL_FX: Record<string, FxRecipe> = {
       { color: 0xff6600, start: 5, end: 36, duration: 228, alpha: 0.6, width: 1, delay: 80 },
     ],
     bursts: [
-      { tex: "CIRCLE", colors: [0xff6600, 0xffcc00, 0xffffff, 0xffee44], count: 16, speed: { min: 50, max: 145 }, scale: { start: 0.42, end: 0.0 }, lifespan: { min: 240, max: 504 }, gravityY: -32, radius: 19 },
-      { tex: "STAR", colors: [0xffffff, 0xffee44], count: 7, speed: { min: 25, max: 72 }, scale: { start: 0.33, end: 0.0 }, lifespan: { min: 300, max: 552 }, rotate: { start: 0, end: 360 }, gravityY: -42, radius: 15 },
+      { tex: "CIRCLE", colors: [], color: [0xffffff, 0xffcc00, 0xff6600, 0x441100], colorEase: "Quad.Out", count: 16, speed: { min: 50, max: 145 }, scale: { start: 0.42, end: 0.0 }, scaleEase: "Cubic.Out", lifespan: { min: 240, max: 504 }, ...PHYSICS.HOLY, gravityY: -32, radius: 19 },
+      { tex: "STAR", colors: [], color: [0xffffff, 0xffee44, 0xffcc00], count: 7, speed: { min: 25, max: 72 }, scale: { start: 0.33, end: 0.0 }, lifespan: { min: 300, max: 552 }, rotate: { start: 0, end: 360 }, ...PHYSICS.HOLY, gravityY: -42, radius: 15 },
     ],
   },
   // ── Druid ──
@@ -323,8 +323,8 @@ const SPELL_FX: Record<string, FxRecipe> = {
     flash: { color: 0x8B5E3C, size: 26, duration: 90 },
     rings: [{ color: 0x8B5E3C, start: 6, end: 52, duration: 300, alpha: 0.8, width: 2 }],
     bursts: [
-      { tex: "SMOKE", colors: [0x6B4226, 0xA07040, 0x5C3A1C], count: 15, speed: { min: 30, max: 95 }, scale: { start: 0.65, end: 0.07 }, lifespan: { min: 300, max: 660 }, gravityY: -18, radius: 20, blendMode: 0, alpha: { start: 0.7, end: 0 } },
-      { tex: "CIRCLE", colors: [0x8B5E3C, 0xD2A679, 0xFFEECC], count: 8, speed: { min: 50, max: 130 }, scale: { start: 0.36, end: 0.0 }, lifespan: { min: 210, max: 420 }, radius: 11 },
+      { tex: "SMOKE", colors: [], color: [0x8B5E3C, 0x6B4226, 0x5C3A1C, 0x2A1A0E], count: 15, speed: { min: 30, max: 95 }, scale: { start: 0.65, end: 0.07 }, ...PHYSICS.SMOKE, lifespan: { min: 300, max: 660 }, gravityY: -18, radius: 20, blendMode: 0, alpha: { start: 0.7, end: 0 } },
+      { tex: "CIRCLE", colors: [], color: [0xFFEECC, 0xD2A679, 0x8B5E3C, 0x442211], count: 8, speed: { min: 50, max: 130 }, scale: { start: 0.36, end: 0.0 }, lifespan: { min: 210, max: 420 }, ...PHYSICS.EARTH, gravityY: 60, radius: 11 },
     ],
   },
   cat_form: {
@@ -342,9 +342,8 @@ const SPELL_FX: Record<string, FxRecipe> = {
       { color: 0x8844CC, start: 5, end: 30, duration: 228, alpha: 0.4, width: 1, delay: 80 },
     ],
     bursts: [
-      { tex: "SMOKE", colors: [0x110022, 0x330033, 0x550055], count: 14, speed: { min: 15, max: 55 }, scale: { start: 0.65, end: 0.07 }, lifespan: { min: 420, max: 900 }, gravityY: -40,
-      maxVelocityY: 50, radius: 13, blendMode: 0, alpha: { start: 0.65, end: 0 } },
-      { tex: "CIRCLE", colors: [0xCC44FF, 0x8800CC, 0x4400AA], count: 9, speed: { min: 30, max: 90 }, scale: { start: 0.36, end: 0.0 }, lifespan: { min: 240, max: 510 }, gravityY: -60, radius: 9 },
+      { tex: "SMOKE", colors: [], color: [0x550055, 0x330033, 0x220022, 0x110011], count: 14, speed: { min: 15, max: 55 }, scale: { start: 0.65, end: 0.07 }, ...PHYSICS.DARK, lifespan: { min: 420, max: 900 }, gravityY: -40, maxVelocityY: 50, radius: 13, blendMode: 0, alpha: { start: 0.65, end: 0 } },
+      { tex: "CIRCLE", colors: [], color: [0xff88ff, 0xCC44FF, 0x8800CC, 0x330066], colorEase: "Quad.Out", count: 9, speed: { min: 30, max: 90 }, scale: { start: 0.36, end: 0.0 }, lifespan: { min: 240, max: 510 }, ...PHYSICS.DARK, gravityY: -60, radius: 9 },
     ],
   },
   // ── Default fallback ──
@@ -998,6 +997,7 @@ export class EffectManager {
       scale: { start: 0.31, end: 0.0 },
       lifespan: { min: 72, max: 180 },
       angle: { min: -55, max: 55 },
+      ...PHYSICS.LIGHTNING,
     });
     // Stun stars pop up above the impact
     this.scene.time.delayedCall(54, () => {
@@ -1026,11 +1026,12 @@ export class EffectManager {
     
     // An extra squirt of venom
     this.burst(px, py, TEX.CIRCLE, {
-      colors: [0x44ff44, 0x00aa00, 0x88ff00],
+      colors: [], color: [0x88ff00, 0x44ff44, 0x00aa00, 0x003300],
       count: 4,
       speed: { min: 50, max: 120 },
       scale: { start: 0.31, end: 0.0 },
       lifespan: { min: 108, max: 252 },
+      ...PHYSICS.POISON,
       gravityY: 150,
       maxVelocityY: 120,
     });
@@ -1074,14 +1075,19 @@ export class EffectManager {
       this.flash(px, py, 0xffffff, 64, 90);
       this.ring(px, py, 0xff4400, 8, 96, 360, 0.9, 4);
       
-      // Massive explosion sparks
+      // Massive explosion sparks — bounce off crater
       this.burst(px, py, TEX.SPARK, {
-        colors: [0xffffff, 0xffff44, 0xff6600],
+        colors: [],
+        color: [0xffffff, 0xffff44, 0xff6600, 0x441100],
+        colorEase: "Quad.Out",
         count: 17,
         speed: { min: 150, max: 350 },
         scale: { start: 0.52, end: 0.0 },
         lifespan: { min: 144, max: 360 },
-        gravityY: 100, // Sparks fall back heavily
+        ...PHYSICS.EARTH,
+        gravityY: 100,
+        bounce: 0.3,
+        bounds: { x: px - 100, y: py - 120, width: 200, height: 130 },
       });
     });
   }
@@ -1177,10 +1183,11 @@ export class EffectManager {
     
     // Screen shaking is handled by camera, but we emphasize it with heavy particles
     this.burst(px, py, TEX.SMOKE, {
-      colors: [0x553311, 0x442200],
+      colors: [], color: [0x885533, 0x553311, 0x442200, 0x221100],
       count: 14,
       speed: { min: 50, max: 150 },
       scale: { start: 0.52, end: 0.1 },
+      ...PHYSICS.SMOKE,
       lifespan: { min: 216, max: 432 },
       gravityY: 0,
       radius: 26,
@@ -1195,7 +1202,7 @@ export class EffectManager {
     this.ring(px, py, 0x228822, 5, 36, 312, 0.85, 3);
     this.createVines(px, py);
     this.burst(px, py, TEX.SMOKE, {
-      colors: [0x228822, 0x44AA44, 0x66CC66],
+      colors: [], color: [0x66CC66, 0x44AA44, 0x228822, 0x114411],
       count: 7,
       speed: { min: 15, max: 50 },
       scale: { start: 0.47, end: 0.05 },
@@ -1237,25 +1244,29 @@ export class EffectManager {
       this.ring(px, py, 0x880000, 5, 40, 380, 0.7, 3);
     });
     this.burst(px, py, TEX.SMOKE, {
-      colors: [0x330011, 0x110000, 0x220000, 0x440022],
+      colors: [], color: [0x440022, 0x330011, 0x220000, 0x110000],
       count: 15,
       speed: { min: 22, max: 85 },
       scale: { start: 0.65, end: 0.07 },
+      ...PHYSICS.SMOKE,
       lifespan: { min: 360, max: 900 },
       gravityY: -14,
       radius: 13,
       blendMode: Phaser.BlendModes.NORMAL,
       alpha: { start: 0.7, end: 0 },
     });
-    // Blood droplets falling downward
+    // Blood droplets falling downward — bounce off ground
     this.burst(px, py, TEX.CIRCLE, {
-      colors: [0xff2222, 0x880000, 0x440000],
+      colors: [], color: [0xff2222, 0x880000, 0x440000, 0x220000],
       count: 14,
       speed: { min: 50, max: 160 },
       scale: { start: 0.36, end: 0.0 },
       lifespan: { min: 180, max: 390 },
       radius: 6,
+      ...PHYSICS.EARTH,
       gravityY: 85,
+      bounce: 0.2,
+      bounds: { x: px - 60, y: py - 60, width: 120, height: 70 },
     });
     // Blood splatter arcing upward
     this.burst(px, py, TEX.CIRCLE, {
@@ -1286,24 +1297,26 @@ export class EffectManager {
     this.scene.time.delayedCall(160, () => this.ring(px, py, 0xffffff, 5, 36, 460, 0.5, 2));
     // Primary spinning gold stars
     this.burst(px, py, TEX.STAR, {
-      colors: [0xffff00, 0xffd700, 0xffffff, 0xffee88],
+      colors: [], color: [0xffffff, 0xffff88, 0xffd700, 0x886600],
+      colorEase: "Sine.Out",
       count: 25,
       speed: { min: 55, max: 200 },
       scale: { start: 0.52, end: 0.0 },
       lifespan: { min: 360, max: 720 },
       rotate: { start: 0, end: 720 },
       radius: 7,
+      ...PHYSICS.HOLY,
       gravityY: -40,
-      maxVelocityY: 80,
     });
     // Golden cross-shaped sparks
     this.burst(px, py, TEX.CROSS, {
-      colors: [0xffffff, 0xffff44],
+      colors: [], color: [0xffffff, 0xffff88, 0xffcc00],
       count: 7,
       speed: { min: 25, max: 80 },
       scale: { start: 0.42, end: 0.0 },
       lifespan: { min: 480, max: 840 },
       rotate: { start: 0, end: 360 },
+      ...PHYSICS.HOLY,
       gravityY: -50,
       radius: 18,
     });

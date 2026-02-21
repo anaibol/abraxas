@@ -744,9 +744,20 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       // for stationary players, so we still call it — but only when moved.
       const lastTile = this.lastPlayerTiles.get(client.sessionId);
       if (lastTile && lastTile.x === player.tileX && lastTile.y === player.tileY) {
-        // Player hasn't moved, but still do a lightweight remove pass for dead NPCs
         const currentSet = this.npcViewSets.get(client.sessionId);
         if (currentSet && client.view) {
+          // Add any newly spawned NPCs that are within range
+          const nearby = this.spatial.findEntitiesInRadius(player.tileX, player.tileY, NPC_VIEW_RADIUS);
+          for (const entity of nearby) {
+            if (entity.isNpc() && !currentSet.has(entity.sessionId)) {
+              const npc = this.state.npcs.get(entity.sessionId);
+              if (npc) {
+                client.view.add(npc);
+                currentSet.add(entity.sessionId);
+              }
+            }
+          }
+          // Remove dead/deleted NPCs
           for (const id of currentSet) {
             const npc = this.state.npcs.get(id);
             if (!npc || !npc.alive) {

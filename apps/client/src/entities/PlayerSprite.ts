@@ -154,7 +154,7 @@ export class PlayerSprite {
       );
     }
     this.bodyEntry = bodyEntryResult;
-    this.headEntry = this.resolver.getHeadEntry(appearance.headId);
+    this.headEntry = appearance.headId ? this.resolver.getHeadEntry(appearance.headId) : null;
 
     this.defaultBodyId = appearance.bodyId;
     this.defaultHeadId = appearance.headId;
@@ -196,7 +196,7 @@ export class PlayerSprite {
           `ao-${headStatic.grafico}`,
           `grh-${headStatic.id}`,
         );
-        this.headSprite.setOrigin(0.5, 0);
+        this.headSprite.setOrigin(0.5, 1);
       }
     }
     this.updateHeadPosition();
@@ -269,7 +269,7 @@ export class PlayerSprite {
     if (bodyEntryResult) {
       this.bodyEntry = bodyEntryResult;
     }
-    this.headEntry = this.resolver.getHeadEntry(hid);
+    this.headEntry = hid ? this.resolver.getHeadEntry(hid) : null;
 
     // Force re-render of current frame
     if (this.isMoving) {
@@ -538,7 +538,7 @@ export class PlayerSprite {
         (id) => this.resolver.getHelmetEntry(id),
         null,
         0,
-        0,
+        1,
       );
       if (newHelmetAoId) this.updateHeadPosition();
     }
