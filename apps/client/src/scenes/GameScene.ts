@@ -302,11 +302,11 @@ export class GameScene extends Phaser.Scene {
             "equipRingId",
             "equipMountId",
           ] as const) {
-            unsub($state.listen(player, field, () => this.pushSidebarUpdate(player)));
+            unsub($state.listen(player as any, field as any, () => this.pushSidebarUpdate(player)));
           }
 
           unsub(
-            $state.listen(player, "equipMountId", (newMount, oldMount) => {
+            $state.listen(player as any, "equipMountId", (newMount: any, oldMount: any) => {
               if (newMount && newMount !== oldMount) {
                 const sprite = this.spriteManager.getSprite(sessionId);
                 const opts = sprite ? { sourceX: sprite.renderX, sourceY: sprite.renderY } : undefined;
@@ -316,7 +316,7 @@ export class GameScene extends Phaser.Scene {
           );
 
           unsub(
-            $state.listen(player, "speedOverride", (newVal) => {
+            $state.listen(player as any, "speedOverride", (newVal: any) => {
               if (newVal > 0) {
                 this.inputHandler.setSpeed(newVal);
               } else {
@@ -328,11 +328,11 @@ export class GameScene extends Phaser.Scene {
 
           // Inventory: item add/remove and per-item quantity changes
           unsub(
-            $state.onAdd(player, "inventory", (item) => {
+            $state.onAdd(player as any, "inventory", (item: any) => {
               this.pushSidebarUpdate(player);
               unsub($state.onChange(item, () => this.pushSidebarUpdate(player)));
             }),
-            $state.onRemove(player, "inventory", () => this.pushSidebarUpdate(player)),
+            $state.onRemove(player as any, "inventory", () => this.pushSidebarUpdate(player)),
           );
         }
       }),
@@ -435,6 +435,12 @@ export class GameScene extends Phaser.Scene {
     document.addEventListener("visibilitychange", this.handleVisibilityChange);
 
     this.onReady?.(this.soundManager);
+  }
+
+  public setCooldownCallback(cb: (abilityId: string, durationMs: number) => void) {
+    if (this.gameEventHandler) {
+      this.gameEventHandler.setCooldownCallback(cb);
+    }
   }
 
   private updateAmbientLighting(time: number) {

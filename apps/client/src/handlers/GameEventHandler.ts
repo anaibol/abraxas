@@ -39,6 +39,12 @@ export class GameEventHandler {
     private lightManager?: LightManager,
   ) {}
 
+  private addCooldown?: (abilityId: string, durationMs: number) => void;
+
+  public setCooldownCallback(cb: (abilityId: string, durationMs: number) => void) {
+    this.addCooldown = cb;
+  }
+
   private maybeShake(intensity: number, durationMs: number) {
     const s = gameSettings.get();
     if (!s.screenShakeEnabled) return;
@@ -160,6 +166,13 @@ export class GameEventHandler {
       data.targetTileX,
       data.targetTileY,
     );
+
+    if (this.isSelf(data.sessionId) && this.addCooldown) {
+      const ability = ABILITIES[data.abilityId];
+      if (ability && ability.cooldownMs) {
+        this.addCooldown(data.abilityId, ability.cooldownMs);
+      }
+    }
   }
 
   private onCastHit(data: ServerMessages["cast_hit"]) {

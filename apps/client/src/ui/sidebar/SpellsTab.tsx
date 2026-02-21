@@ -3,6 +3,8 @@ import { Box, Flex, Text } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 import { useAudio } from "../../contexts/AudioContext";
 import { T } from "../tokens";
+import { useCooldown } from "../../contexts/CooldownContext";
+import { useState, useEffect } from "react";
 
 const SPELL_ICONS: Record<string, string> = {
   // Warrior
@@ -75,6 +77,20 @@ export function SpellsTab({
 }: SpellsTabProps) {
   const { t } = useTranslation();
   const { playUIClick, playUIHover } = useAudio();
+  const { getCooldownProgress } = useCooldown();
+
+  // Force re-renders every frame to smoothly animate cooldowns
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    let af: number;
+    const loop = () => {
+      setNow(Date.now());
+      af = requestAnimationFrame(loop);
+    };
+    af = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(af);
+  }, []);
+
   return (
     <Box p="2.5">
       {classSpells.length === 0 ? (
@@ -149,8 +165,22 @@ export function SpellsTab({
                   fontSize="22px"
                   flexShrink={0}
                   position="relative"
+                  overflow="hidden"
                 >
                   {SPELL_ICONS[spell.id] || "✨"}
+
+                  {/* Cooldown Overlay Overlay */}
+                  {getCooldownProgress(spell.id) > 0 && (
+                    <Box
+                      position="absolute"
+                      bottom="0"
+                      left="0"
+                      right="0"
+                      bg="rgba(0,0,0,0.6)"
+                      height={`${getCooldownProgress(spell.id) * 100}%`}
+                      transition="height 50ms linear"
+                    />
+                  )}
                   {/* Keybind badge */}
                   {spell.key && !isLocked && (
                     <Box

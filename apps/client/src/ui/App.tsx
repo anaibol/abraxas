@@ -36,7 +36,6 @@ import { useGameKeyboard } from "../hooks/useGameKeyboard";
 import { useGameSettings } from "../hooks/useGameSettings";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useRoomListeners } from "../hooks/useRoomListeners";
-import { CooldownProvider } from "../contexts/CooldownContext";
 import { AudioManager } from "../managers/AudioManager";
 import { NetworkManager } from "../network/NetworkManager";
 import { GameScene } from "../scenes/GameScene";
@@ -67,8 +66,9 @@ import { WorldMapModal } from "./WorldMapModal";
 import { system } from "./theme";
 import { toaster } from "./toaster";
 import { HEX, T } from "./tokens";
+import { CooldownProvider, useCooldown } from "../contexts/CooldownContext";
 
-export function App() {
+function AppContent() {
   const { setSoundManager } = useAudio();
   const { t } = useTranslation();
   const killFeedIdRef = useRef(0);
@@ -168,6 +168,7 @@ export function App() {
   } | null>(null);
   const [currentMapName, setCurrentMapName] = useState("arena");
   const { settings: gameSettingsState } = useGameSettings();
+  const { addCooldown } = useCooldown();
 
   const [room, setRoom] = useState<Room<GameState> | null>(null);
   const roomRef = useRef<Room<GameState> | null>(null);
@@ -508,7 +509,7 @@ export function App() {
         setJoinError(t("game.connection_failed_desc"));
       }
     },
-    [addConsoleMessage, resetConsoleMessages, t],
+    [addCooldown, addConsoleMessage, resetConsoleMessages, t],
   );
 
   const handleLogout = useCallback(() => {
@@ -615,8 +616,7 @@ export function App() {
 
   return (
     <ChakraProvider value={system}>
-      <CooldownProvider>
-        <Toaster toaster={toaster}>
+      <Toaster toaster={toaster}>
         {(toast) => (
           <ToastRoot
             key={toast.id}
@@ -982,7 +982,14 @@ export function App() {
           onCancel={() => setDropDialog(null)}
         />
       )}
-      </CooldownProvider>
     </ChakraProvider>
+  );
+}
+
+export function App() {
+  return (
+    <CooldownProvider>
+      <AppContent />
+    </CooldownProvider>
   );
 }
