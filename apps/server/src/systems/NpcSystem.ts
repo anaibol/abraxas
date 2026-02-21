@@ -26,6 +26,7 @@ import { findSafeSpawn } from "../utils/spawnUtils";
 import type { BuffSystem } from "./BuffSystem";
 import type { CombatSystem } from "./CombatSystem";
 import type { MovementSystem } from "./MovementSystem";
+import type { NpcSpawner } from "./NpcSpawner";
 
 /** Scan for targets every N ticks (~500 ms at 20 TPS). */
 const IDLE_SCAN_INTERVAL = 10;
@@ -45,15 +46,9 @@ const PATROL_TETHER_RADIUS = 8;
 /** Minimum ms between bark broadcasts per NPC (avoids bark spam). */
 const BARK_COOLDOWN_MS = 8_000;
 
-type RespawnEntry = {
-  npcType: NpcType;
-  deadAt: number;
-  spawnX: number;
-  spawnY: number;
-};
+
 
 export class NpcSystem {
-  private respawns: RespawnEntry[] = [];
   /** Cached map reference updated each tick; used by handlers that need map access. */
   private currentMap!: TileMap;
   /** Broadcast fn set at the top of each tick and reused by bark helpers. */
@@ -65,22 +60,13 @@ export class NpcSystem {
     private combatSystem: CombatSystem,
     private spatial: SpatialLookup,
     private buffSystem: BuffSystem,
+    public readonly spawner: NpcSpawner,
   ) {}
 
+  // ── Spawn delegates (forwarded to NpcSpawner) ────────────────────────
+
   spawnNpcs(count: number, map: TileMap): void {
-    // Exclude passive NPCs (merchants/bankers) and rare/boss NPCs from the
-    // random world-spawn pool. Rare NPCs must be placed via map.npcs entries.
-    const types = NPC_TYPES.filter((t) => !NPC_STATS[t].passive && !NPC_STATS[t].rareSpawn);
-
-    for (let i = 0; i < count; i++) {
-      const type = types[Math.floor(Math.random() * types.length)];
-      this.spawnNpc(type, map);
-    }
-
-    const mapHasMerchant = map.npcs?.some((n) => n.type === "merchant");
-    if (!mapHasMerchant && map.spawns.length > 0) {
-      this.spawnNpcAt("merchant" as NpcType, map, map.spawns[0].x + 2, map.spawns[0].y);
-    }
+    this.spawner.spawnNpcs(count, map);
   }
 
   public spawnNpcAt(
@@ -92,154 +78,22 @@ export class NpcSystem {
     forcedLevel?: number,
     persistenceData?: { isUnique: boolean; uniqueId?: string; dbId?: string },
   ): Npc {
-    const npc = new Npc();
-    npc.sessionId = crypto.randomUUID();
-    npc.npcType = type;
-    npc.tileX = tileX;
-    npc.tileY = tileY;
-    npc.spawnX = tileX;
-    npc.spawnY = tileY;
-
-    if (persistenceData) {
-      npc.isUnique = persistenceData.isUnique;
-      npc.uniqueId = persistenceData.uniqueId;
-      npc.dbId = persistenceData.dbId;
-    }
-
-    // Determine initial level
-    if (forcedLevel !== undefined) {
-      npc.level = forcedLevel;
-    } else {
-      npc.level = this.calculateSpawnLevel(type, map);
-    }
-
-    // D3: Use shared stat recalculation
-    this.recalcNpcStats(npc);
-
-    npc.alive = true;
-    npc.state = NpcState.IDLE;
-    npc.targetId = "";
-    npc.patrolStepsLeft = 0;
-    if (ownerId) {
-      npc.ownerId = ownerId;
-      npc.state = NpcState.FOLLOW;
-    }
-
-    this.state.npcs.set(npc.sessionId, npc);
-    this.spatial.addToGrid(npc);
-    return npc;
-  }
-
-  /** D3: Shared NPC stat scaling formula — called from spawnNpcAt and levelUp. */
-  private recalcNpcStats(npc: Npc): void {
-    const stats = NPC_STATS[npc.npcType];
-    if (!stats) return;
-    const scale = 1 + (npc.level - 1) * 0.1;
-    npc.maxHp = Math.ceil(stats.hp * scale);
-    npc.hp = npc.maxHp;
-    npc.str = Math.ceil(stats.str * scale);
-    npc.agi = Math.ceil(stats.agi * scale);
-    npc.intStat = Math.ceil(stats.int * scale);
-    npc.armor = Math.ceil(stats.armor * scale);
-  }
-
-  private calculateSpawnLevel(npcType: NpcType, _map: TileMap): number {
-    const stats = NPC_STATS[npcType];
-    if (stats.minLevel !== undefined && stats.maxLevel !== undefined) {
-      return Math.floor(Math.random() * (stats.maxLevel - stats.minLevel + 1)) + stats.minLevel;
-    } else if (stats.minLevel !== undefined) {
-      return stats.minLevel;
-    }
-    return 1; // Default level
-  }
-
-  /** Q9: Shared summon cap — returns maxCompanions from stats if available, otherwise 1. */
-  private getSummonCap(entity: Entity): number {
-    const stats = entity.getStats();
-    if (stats && "maxCompanions" in stats) {
-      return (stats as ClassStats).maxCompanions;
-    }
-    return 1;
-  }
-
-  /** Q9: Counts live minions owned by the given sessionId. */
-  private countLiveMinions(ownerSessionId: string): number {
-    let count = 0;
-    for (const n of this.state.npcs.values()) {
-      if (n.ownerId === ownerSessionId && n.alive) count++;
-    }
-    return count;
+    return this.spawner.spawnNpcAt(type, map, tileX, tileY, ownerId, forcedLevel, persistenceData);
   }
 
   public spawnNpc(type: NpcType, map: TileMap, ownerId?: string): Npc | undefined {
-    // Pick a random walkable tile then spiral to avoid any occupied cell
-    for (let attempt = 0; attempt < 20; attempt++) {
-      const rx = Math.floor(Math.random() * map.width);
-      const ry = Math.floor(Math.random() * map.height);
-      if (map.collision[ry]?.[rx] !== 0) continue;
-
-      const safe = findSafeSpawn(rx, ry, map, this.spatial);
-      if (safe) {
-        return this.spawnNpcAt(type, map, safe.x, safe.y, ownerId);
-      }
-    }
-
-    logger.error({ intent: "spawn_npc", result: "failed", npcType: type });
-    return undefined;
+    return this.spawner.spawnNpc(type, map, ownerId);
   }
 
   public spawnSummon(caster: Entity, abilityId: string, x: number, y: number): void {
-    const ability = ABILITIES[abilityId];
-    if (!ability) return;
-
-    // Determine what to summon: ability ID encodes the type, or fall back to
-    // the caster's configured summonType (used by NPC summoners).
-    let typeToSummon: NpcType = "skeleton";
-    if (abilityId === "summon_skeleton") typeToSummon = "skeleton";
-    else if (abilityId === "summon_zombie") typeToSummon = "zombie";
-    else if (caster.entityType === EntityType.NPC) {
-      const npcStats = NPC_STATS[(caster as Npc).npcType];
-      if (npcStats?.summonType) typeToSummon = npcStats.summonType;
-    }
-
-    // Check caps
-    const cap = this.getSummonCap(caster);
-    if (this.countLiveMinions(caster.sessionId) >= cap) {
-      return;
-    }
-
-    // Attempt to spawn at target tile
-    const safe = findSafeSpawn(x, y, this.currentMap, this.spatial);
-    const casterLevel = caster.level;
-
-    if (safe) {
-      this.spawnNpcAt(typeToSummon, this.currentMap, safe.x, safe.y, caster.sessionId, casterLevel);
-    } else {
-      // Find safe spot near caster instead
-      const fallback = findSafeSpawn(caster.tileX, caster.tileY, this.currentMap, this.spatial);
-      if (fallback) {
-        this.spawnNpcAt(
-          typeToSummon,
-          this.currentMap,
-          fallback.x,
-          fallback.y,
-          caster.sessionId,
-          casterLevel,
-        );
-      }
-    }
+    this.spawner.spawnSummon(caster, abilityId, x, y, this.currentMap);
   }
 
   tick(map: TileMap, now: number, tickCount: number, roomId: string, broadcast: BroadcastFn): void {
     // Store references for use in state handlers
     this.currentMap = map;
     this.broadcastFn = broadcast;
-    this.respawns = this.respawns.filter((r) => {
-      if (now - r.deadAt < NPC_RESPAWN_TIME_MS) return true;
-      const safe = findSafeSpawn(r.spawnX, r.spawnY, map, this.spatial);
-      safe ? this.spawnNpcAt(r.npcType, map, safe.x, safe.y) : this.spawnNpc(r.npcType, map);
-      return false;
-    });
+    this.spawner.processRespawns(map, now, NPC_RESPAWN_TIME_MS);
 
     this.state.npcs.forEach((npc) => {
       if (!npc.alive) return;
@@ -646,7 +500,7 @@ export class NpcSystem {
   private levelUp(npc: Npc, roomId: string, broadcast: BroadcastFn): void {
     npc.level++;
     // D3: Use shared stat recalculation
-    this.recalcNpcStats(npc);
+    this.spawner.recalcNpcStats(npc);
 
     broadcast(ServerMessageType.LevelUp, {
       sessionId: npc.sessionId,
@@ -751,7 +605,7 @@ export class NpcSystem {
 
     // If the chosen ability is a summon, actually spawn the minion server-side.
     if (didCast && ABILITIES[abilityId]?.effect === "summon") {
-      this.handleSummonCast(npc);
+      this.spawner.handleSummonCast(npc, this.currentMap);
     }
 
     return didCast;
@@ -792,37 +646,6 @@ export class NpcSystem {
     broadcast(ServerMessageType.NpcBark, { npcId: npc.sessionId, text });
   }
 
-  /**
-   * Called after a successful summon cast. Spawns one minion of the type
-   * configured on the summoner's NpcStats.summonType, adjacent to the summoner,
-   * up to MAX_SUMMONS total live summons.
-   */
-  private handleSummonCast(summoner: Npc): void {
-    const map = this.currentMap;
-    const stats = NPC_STATS[summoner.npcType];
-    if (!stats.summonType) return;
-
-    // Q9: Use shared cap/count helpers
-    const owner = summoner.ownerId ? this.spatial.findEntityBySessionId(summoner.ownerId) : null;
-    const cap = this.getSummonCap(owner ?? summoner);
-    if (this.countLiveMinions(summoner.sessionId) >= cap) return;
-
-    // Try to place the minion in one of the four adjacent tiles.
-    const dirs = [Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT];
-    for (const dir of dirs) {
-      const { dx, dy } = DIRECTION_DELTA[dir];
-      const tx = summoner.tileX + dx;
-      const ty = summoner.tileY + dy;
-      if (tx < 0 || ty < 0 || tx >= map.width || ty >= map.height) continue;
-      if (map.collision[ty]?.[tx] !== 0) continue;
-      if (this.spatial.isTileOccupied(tx, ty)) continue;
-      this.spawnNpcAt(stats.summonType, map, tx, ty, summoner.sessionId);
-      return;
-    }
-    // No adjacent tile free — fall back to a random spawn.
-    this.spawnNpc(stats.summonType, map, summoner.sessionId);
-  }
-
   handleDeath(npc: Npc): void {
     this.buffSystem.removePlayer(npc.sessionId);
     this.combatSystem.removeEntity(npc.sessionId);
@@ -830,9 +653,6 @@ export class NpcSystem {
     const stats = NPC_STATS[npc.npcType];
     const now = Date.now();
 
-    // Feature 34: Rare NPCs use a long custom respawn timer tracked on the NPC itself.
-    // They are NOT added to the generic respawn queue — WorldEventSystem or manual
-    // re-placement handles their reappearance.
     if (stats.rareSpawnIntervalMs) {
       npc.rareRespawnAt = now + stats.rareSpawnIntervalMs;
       logger.info({
@@ -842,12 +662,7 @@ export class NpcSystem {
         respawnAt: new Date(npc.rareRespawnAt).toISOString(),
       });
     } else {
-      this.respawns.push({
-        npcType: npc.npcType,
-        deadAt: now,
-        spawnX: npc.spawnX,
-        spawnY: npc.spawnY,
-      });
+      this.spawner.queueRespawn(npc.npcType, npc.spawnX, npc.spawnY);
     }
 
     this.state.npcs.delete(npc.sessionId);
@@ -881,7 +696,7 @@ export class NpcSystem {
         ? null
         : { x: entry.spawnX, y: entry.spawnY };
       const spawnTile = safe ?? { x: entry.spawnX, y: entry.spawnY };
-      this.spawnNpcAt(entry.npcType, map, spawnTile.x, spawnTile.y);
+      this.spawner.spawnNpcAt(entry.npcType, map, spawnTile.x, spawnTile.y);
       broadcast(ServerMessageType.Notification, {
         message: `A ${entry.npcType.replace("_", " ")} has been spotted in the world!`,
       });

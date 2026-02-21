@@ -34,11 +34,14 @@ import { PlayerService } from "../services/PlayerService";
 import { BankSystem } from "../systems/BankSystem";
 import { BuffSystem } from "../systems/BuffSystem";
 import { CombatSystem } from "../systems/CombatSystem";
+import { DamageCalculator } from "../systems/DamageCalculator";
 import { DropSystem } from "../systems/DropSystem";
+import { EffectResolver } from "../systems/EffectResolver";
 import { FriendsSystem } from "../systems/FriendsSystem";
 import { GuildSystem } from "../systems/GuildSystem";
 import { InventorySystem } from "../systems/InventorySystem";
 import { MovementSystem } from "../systems/MovementSystem";
+import { NpcSpawner } from "../systems/NpcSpawner";
 import { NpcSystem } from "../systems/NpcSystem";
 import { QuestSystem } from "../systems/QuestSystem";
 import { RespawnSystem } from "../systems/RespawnSystem";
@@ -107,19 +110,25 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       this.drops = new DropSystem(this.inventorySystem);
       this.spatial = new SpatialLookup(this.state);
       this.movement = new MovementSystem(this.spatial, this.buffSystem);
+      const dmg = new DamageCalculator(this.buffSystem);
+      const effects = new EffectResolver(dmg, this.buffSystem, this.spatial, this.map, this.roomMapName);
       this.combat = new CombatSystem(
         this.state,
         this.spatial,
         this.buffSystem,
         this.map,
         this.roomMapName,
+        dmg,
+        effects,
       );
+      const npcSpawner = new NpcSpawner(this.state, this.spatial);
       this.npcSystem = new NpcSystem(
         this.state,
         this.movement,
         this.combat,
         this.spatial,
         this.buffSystem,
+        npcSpawner,
       );
       this.social = new SocialSystem(this.state, (sid) => this.findClient(sid));
       this.guild = new GuildSystem(this.state, (sid) => this.findClient(sid));
