@@ -114,7 +114,7 @@ export class SpriteManager {
       id,
       npc.tileX,
       npc.tileY,
-      npc.npcType,
+      npc.npcId,
       npc.name,
       false,
     );

@@ -1,4 +1,4 @@
-import { type PlayerQuestState, type NpcType, NPC_STATS, QUESTS, type Quest, type QuestType } from "@abraxas/shared";
+import { type PlayerQuestState, type NpcId, NPC_STATS, QUESTS, type Quest, type QuestType } from "@abraxas/shared";
 import { prisma } from "../database/db";
 
 export class QuestSystem {
@@ -133,11 +133,11 @@ export class QuestSystem {
     return questDef;
   }
 
-  // Bug #93: Renamed from npcId to npcType — the param is actually the NPC type, not a session ID
-  getAvailableQuests(charId: string, npcType: string): string[] {
+  // Bug #93: Renamed from npcId to npcId — the param is actually the NPC type, not a session ID
+  getAvailableQuests(charId: string, npcId: string): string[] {
     const quests = this.charQuests.get(charId) ?? new Map();
     return Object.values(QUESTS)
-      .filter((q) => q.npcId === npcType && !quests.has(q.id))
+      .filter((q) => q.npcId === npcId && !quests.has(q.id))
       .map((q) => q.id);
   }
 
@@ -148,9 +148,9 @@ export class QuestSystem {
   getDialogueOptions(
     charId: string,
     _npcSessionId: string,
-    npcType: string,
+    npcId: string,
   ): { text: string; options: { text: string; action: string; data?: unknown }[] } {
-    const availableQuests = this.getAvailableQuests(charId, npcType);
+    const availableQuests = this.getAvailableQuests(charId, npcId);
     if (availableQuests.length > 0) {
       const questId = availableQuests[0];
       return {
@@ -165,7 +165,7 @@ export class QuestSystem {
     for (const state of this.getCharQuestStates(charId)) {
       if (state.status !== "COMPLETED") continue;
       const questDef = QUESTS[state.questId];
-      if (questDef?.npcId === npcType) {
+      if (questDef?.npcId === npcId) {
         return {
           text: "ui.dialogue.reward_prompt",
           options: [
@@ -179,7 +179,7 @@ export class QuestSystem {
       }
     }
 
-    const dialogue = NPC_STATS[npcType as NpcType]?.dialogue;
+    const dialogue = NPC_STATS[npcId as NpcId]?.dialogue;
     const greetings = dialogue?.greetings ?? ["ui.dialogue.hello_traveler"];
     const text = greetings[Math.floor(Math.random() * greetings.length)];
     const extraOptions = (dialogue?.options ?? []).map((o) => ({

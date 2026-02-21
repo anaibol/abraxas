@@ -10,9 +10,9 @@ import {
   MathUtils,
   NPC_RESPAWN_TIME_MS,
   NPC_STATS,
-  NPC_TYPES,
+  NPC_IDS,
   NpcState,
-  type NpcType,
+  type NpcId,
   ServerMessageType,
   type TileMap,
 } from "@abraxas/shared";
@@ -71,7 +71,7 @@ export class NpcSystem {
   }
 
   public spawnNpcAt(
-    type: NpcType,
+    type: NpcId,
     map: TileMap,
     tileX: number,
     tileY: number,
@@ -82,7 +82,7 @@ export class NpcSystem {
     return this.spawner.spawnNpcAt(type, map, tileX, tileY, ownerId, forcedLevel, persistenceData);
   }
 
-  public spawnNpc(type: NpcType, map: TileMap, ownerId?: string): Npc | undefined {
+  public spawnNpc(type: NpcId, map: TileMap, ownerId?: string): Npc | undefined {
     return this.spawner.spawnNpc(type, map, ownerId);
   }
 
@@ -144,7 +144,7 @@ export class NpcSystem {
    * global AGGRO_RANGE constant.
    */
   private getAggroRange(npc: Npc): number {
-    return NPC_STATS[npc.npcType].aggroRange ?? AGGRO_RANGE;
+    return NPC_STATS[npc.npcId].aggroRange ?? AGGRO_RANGE;
   }
 
   /** Finds the nearest attackable player within the NPC's aggro range, or null.
@@ -172,7 +172,7 @@ export class NpcSystem {
       return;
     }
 
-    const stats = NPC_STATS[npc.npcType];
+    const stats = NPC_STATS[npc.npcId];
     if (stats.passive) return;
     if (tickCount % IDLE_SCAN_INTERVAL !== 0) return;
 
@@ -245,7 +245,7 @@ export class NpcSystem {
 
   /** Returns true and transitions to FLEE if the NPC should flee. */
   private checkAndFlee(npc: Npc): boolean {
-    const stats = NPC_STATS[npc.npcType];
+    const stats = NPC_STATS[npc.npcId];
     if (stats.fleesWhenLow && npc.hp / npc.maxHp < FLEE_HP_THRESHOLD) {
       npc.state = NpcState.FLEE;
       return true;
@@ -269,7 +269,7 @@ export class NpcSystem {
 
     if (this.checkAndFlee(npc)) return;
 
-    const stats = NPC_STATS[npc.npcType];
+    const stats = NPC_STATS[npc.npcId];
     const dist = MathUtils.chebyshevDist(npc.getPosition(), target.getPosition());
     const aggroRange = this.getAggroRange(npc);
     const maxLeash = npc.ownerId ? aggroRange * 2 : aggroRange * LEASH_MULTIPLIER;
@@ -302,7 +302,7 @@ export class NpcSystem {
 
     if (this.checkAndFlee(npc)) return;
 
-    const stats = NPC_STATS[npc.npcType];
+    const stats = NPC_STATS[npc.npcId];
     const dist = MathUtils.chebyshevDist(npc.getPosition(), target.getPosition());
     if (dist > stats.attackRange) {
       npc.state = NpcState.CHASE;
@@ -530,7 +530,7 @@ export class NpcSystem {
     logger.info({
       intent: "npc_levelup",
       sessionId: npc.sessionId,
-      type: npc.npcType,
+      type: npc.npcId,
       level: npc.level,
       room: roomId,
     });
@@ -572,7 +572,7 @@ export class NpcSystem {
   }
 
   private tryUseAbility(npc: Npc, now: number, broadcast: BroadcastFn): boolean {
-    const stats = NPC_STATS[npc.npcType];
+    const stats = NPC_STATS[npc.npcId];
     if (!stats || !stats.abilities.length) return false;
     const target = this.spatial.findEntityBySessionId(npc.targetId);
     if (!target || !target.alive) return false;
@@ -633,17 +633,17 @@ export class NpcSystem {
   // ── Feature 29: Boss Phase ────────────────────────────────────────────────
   /** Transitions the boss into phase 2 if HP has crossed the threshold. */
   private updateBossPhase(npc: Npc, now: number, broadcast: BroadcastFn): void {
-    const stats = NPC_STATS[npc.npcType];
+    const stats = NPC_STATS[npc.npcId];
     if (!stats.bossPhaseThreshold || npc.bossPhase >= 1) return;
     if (npc.hp / npc.maxHp <= stats.bossPhaseThreshold) {
       npc.bossPhase = 1;
       npc.lastPhaseChangeAt = now;
       // Announce the transition
       broadcast(ServerMessageType.Notification, {
-        message: `${npc.npcType.replaceAll("_", " ").toUpperCase()} enrages! The battle intensifies!`,
+        message: `${npc.npcId.replaceAll("_", " ").toUpperCase()} enrages! The battle intensifies!`,
       });
       this.tryBark(npc, "low_hp", broadcast);
-      logger.info({ intent: "boss_phase_2", npcId: npc.sessionId, type: npc.npcType });
+      logger.info({ intent: "boss_phase_2", npcId: npc.sessionId, type: npc.npcId });
     }
   }
 
@@ -653,7 +653,7 @@ export class NpcSystem {
    * Rate-limited by BARK_COOLDOWN_MS per NPC.
    */
   tryBark(npc: Npc, trigger: BarkTrigger, broadcast: BroadcastFn, now?: number): void {
-    const stats = NPC_STATS[npc.npcType];
+    const stats = NPC_STATS[npc.npcId];
     const lines = stats.barks?.[trigger];
     if (!lines || lines.length === 0) return;
 
@@ -670,17 +670,17 @@ export class NpcSystem {
     this.buffSystem.removePlayer(npc.sessionId);
     this.combatSystem.removeEntity(npc.sessionId);
 
-    const stats = NPC_STATS[npc.npcType];
+    const stats = NPC_STATS[npc.npcId];
     const now = Date.now();
 
     if (stats.rareSpawnIntervalMs) {
       const respawnAt = now + stats.rareSpawnIntervalMs;
-      const queueEntry = this.rareRespawnQueue.find((e) => e.npcType === npc.npcType);
+      const queueEntry = this.rareRespawnQueue.find((e) => e.npcId === npc.npcId);
       if (queueEntry) {
         queueEntry.rareRespawnAt = respawnAt;
       } else {
         this.rareRespawnQueue.push({
-          npcType: npc.npcType,
+          npcId: npc.npcId,
           rareRespawnAt: respawnAt,
           spawnX: npc.spawnX,
           spawnY: npc.spawnY,
@@ -689,11 +689,11 @@ export class NpcSystem {
       logger.info({
         intent: "rare_npc_death",
         npcId: npc.sessionId,
-        type: npc.npcType,
+        type: npc.npcId,
         respawnAt: new Date(respawnAt).toISOString(),
       });
     } else {
-      this.spawner.queueRespawn(npc.npcType, npc.spawnX, npc.spawnY);
+      this.spawner.queueRespawn(npc.npcId, npc.spawnX, npc.spawnY);
     }
 
     this.state.npcs.delete(npc.sessionId);
@@ -708,15 +708,15 @@ export class NpcSystem {
    * from the map on death; we track pending rare respawns in a side array.
    */
   private rareRespawnQueue: {
-    npcType: NpcType;
+    npcId: NpcId;
     rareRespawnAt: number;
     spawnX: number;
     spawnY: number;
   }[] = [];
 
   /** Register a rare NPC so its respawn timer can be polled. Call after map load. */
-  registerRareNpc(type: NpcType, spawnX: number, spawnY: number, rareRespawnAt: number = 0): void {
-    this.rareRespawnQueue.push({ npcType: type, rareRespawnAt, spawnX, spawnY });
+  registerRareNpc(type: NpcId, spawnX: number, spawnY: number, rareRespawnAt: number = 0): void {
+    this.rareRespawnQueue.push({ npcId: type, rareRespawnAt, spawnX, spawnY });
   }
 
   tickRareSpawns(map: TileMap, now: number, broadcast: BroadcastFn): void {
@@ -727,11 +727,11 @@ export class NpcSystem {
       // falling back to the same occupied tile.
       const spawnTile = findSafeSpawn(entry.spawnX, entry.spawnY, map, this.spatial)
         ?? { x: entry.spawnX, y: entry.spawnY };
-      this.spawner.spawnNpcAt(entry.npcType, map, spawnTile.x, spawnTile.y);
+      this.spawner.spawnNpcAt(entry.npcId, map, spawnTile.x, spawnTile.y);
       broadcast(ServerMessageType.Notification, {
-        message: `A ${entry.npcType.replaceAll("_", " ")} has been spotted in the world!`,
+        message: `A ${entry.npcId.replaceAll("_", " ")} has been spotted in the world!`,
       });
-      logger.info({ intent: "rare_npc_respawn", type: entry.npcType });
+      logger.info({ intent: "rare_npc_respawn", type: entry.npcId });
     }
   }
 }

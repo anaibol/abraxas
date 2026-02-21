@@ -6,7 +6,7 @@ import {
   type ItemAffix,
   ItemRarity,
   ITEMS,
-  type NpcType,
+  type NpcId,
   STARTING_EQUIPMENT,
   type StatType,
 } from "@abraxas/shared";
@@ -130,7 +130,7 @@ export class PlayerService {
     // so the Room can read them after createPlayer.
     if (char.companions && char.companions.length > 0) {
       player.savedCompanions = char.companions.map((c) => ({
-        type: c.type as NpcType,
+        type: c.type as NpcId,
         level: c.level,
         exp: c.exp,
         hp: c.hp,

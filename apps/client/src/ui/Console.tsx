@@ -26,7 +26,7 @@ const GM_COMMANDS: { usage: string; desc: string }[] = [
   { usage: "/gm xp <amount>", desc: "Give yourself XP" },
   { usage: "/gm tp <x> <y>", desc: "Teleport to tile coordinates" },
   { usage: "/gm goto <name>", desc: "Teleport to a player" },
-  { usage: "/gm spawn <npcType>", desc: "Spawn an NPC in front of you" },
+  { usage: "/gm spawn <npcId>", desc: "Spawn an NPC in front of you" },
   { usage: "/gm announce <msg>", desc: "Broadcast a server message" },
 ];
 

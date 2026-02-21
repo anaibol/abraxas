@@ -1,4 +1,4 @@
-import { NPC_TYPES } from "@abraxas/shared";
+import { NPC_IDS } from "@abraxas/shared";
 import { Box, SimpleGrid, Text } from "@chakra-ui/react";
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -8,7 +8,7 @@ import { PanelHeader } from "./components/PanelHeader";
 import { T } from "./tokens";
 
 interface SummonOverlayProps {
-  onSummon: (npcType: string) => void;
+  onSummon: (npcId: string) => void;
   onClose: () => void;
 }
 
@@ -30,7 +30,7 @@ export function SummonOverlay({ onSummon, onClose }: SummonOverlayProps) {
     return () => window.removeEventListener("keydown", handleEsc);
   }, [onClose]);
 
-  const filtered = NPC_TYPES.filter((type) =>
+  const filtered = NPC_IDS.filter((type) =>
     type.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 

@@ -54,7 +54,7 @@ export class EffectResolver {
     // Bug #99: ability.effect is loosely typed as string. Unknown effects are silently
     // skipped by the if/else chain below. A stricter union type would catch typos at compile
     // time but requires a shared type change. For now, runtime validation is sufficient.
-    if (target.isNpc() && target.npcType === "merchant") return;
+    if (target.isNpc() && target.npcId === "merchant") return;
 
     const isSelfCast = attacker.sessionId === target.sessionId;
     if (!isSelfCast && this.buffSystem.isInvulnerable(target.sessionId, now)) return;
@@ -296,7 +296,7 @@ export class EffectResolver {
         bodyId = appearance?.bodyId || 0;
         headId = appearance?.headId || 0;
       } else if (target.isNpc()) {
-        const appearance = NPC_APPEARANCE[target.npcType];
+        const appearance = NPC_APPEARANCE[target.npcId];
         bodyId = appearance?.bodyId || 0;
         headId = appearance?.headId || 0;
       }

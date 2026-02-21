@@ -349,7 +349,7 @@ export class PersistenceService {
   static async savePersistentNpcs(
     mapId: string,
     npcs: {
-      npcType: string;
+      npcId: string;
       tileX: number;
       tileY: number;
       spawnX: number;
@@ -365,7 +365,7 @@ export class PersistenceService {
     return prisma.npc.createMany({
       data: npcs.map((n) => ({
         mapId,
-        npcType: n.npcType,
+        npcId: n.npcId,
         tileX: n.tileX,
         tileY: n.tileY,
         spawnX: n.spawnX,

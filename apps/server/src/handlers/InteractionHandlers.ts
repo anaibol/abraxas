@@ -1,7 +1,7 @@
 import {
   type ClientMessages,
   type ClientMessageType,
-  FRIENDLY_NPC_TYPES,
+  FRIENDLY_NPC_IDS,
   MathUtils,
   MERCHANT_INVENTORY,
   QUESTS,
@@ -28,12 +28,12 @@ export class InteractionHandlers {
     if (!npc) return;
 
     // Only friendly NPCs (merchant, banker, etc.) support dialogue interaction
-    if (!FRIENDLY_NPC_TYPES.has(npc.npcType)) return;
+    if (!FRIENDLY_NPC_IDS.has(npc.npcId)) return;
 
     if (!HandlerUtils.assertInRange(client, player, npc, 3, "game.too_far")) return;
 
     ctx.systems.quests
-      .updateProgress(player.dbId, "talk", npc.npcType, 1)
+      .updateProgress(player.dbId, "talk", npc.npcId, 1)
       .then((updatedQuests) => HandlerUtils.sendQuestUpdates(client, updatedQuests))
       .catch((err) => {
         logger.error({
@@ -42,9 +42,9 @@ export class InteractionHandlers {
         });
       });
 
-    if (npc.npcType === "merchant") {
+    if (npc.npcId === "merchant") {
       InteractionHandlers.openShop(ctx, client, npc);
-    } else if (npc.npcType === "banker") {
+    } else if (npc.npcId === "banker") {
       EconomyHandlers.openBank(ctx, client);
     } else {
       InteractionHandlers.openDialogue(ctx, client, player, npc);
@@ -57,8 +57,8 @@ export class InteractionHandlers {
   }
 
   static openDialogue(ctx: RoomContext, client: Client, player: Player, npc: Npc) {
-    const dialogue = ctx.systems.quests.getDialogueOptions(player.dbId, npc.sessionId, npc.npcType);
-    client.send(ServerMessageType.OpenDialogue, { npcId: npc.sessionId, npcType: npc.npcType, ...dialogue });
+    const dialogue = ctx.systems.quests.getDialogueOptions(player.dbId, npc.sessionId, npc.npcId);
+    client.send(ServerMessageType.OpenDialogue, { npcId: npc.sessionId, npcId: npc.npcId, ...dialogue });
   }
 
   static handleQuestAccept(
@@ -100,7 +100,7 @@ export class InteractionHandlers {
     if (!player) return;
 
     const questDef = QUESTS[data.questId];
-    if (questDef && !InteractionHandlers.isNearNpcType(ctx, player, questDef.npcId)) {
+    if (questDef && !InteractionHandlers.isNearNpcId(ctx, player, questDef.npcId)) {
       HandlerUtils.sendHint(client, "game.quest_near_npc");
       return;
     }
@@ -143,10 +143,10 @@ export class InteractionHandlers {
   }
 
   /** Returns true if the player is within `range` Chebyshev tiles of any living NPC with the given type. */
-  static isNearNpcType(ctx: RoomContext, player: Player, npcType: string, range = 3): boolean {
+  static isNearNpcId(ctx: RoomContext, player: Player, npcId: string, range = 3): boolean {
     return [...ctx.state.npcs.values()].some(
       (n) =>
-        n.npcType === npcType &&
+        n.npcId === npcId &&
         n.alive &&
         MathUtils.chebyshevDist({ x: player.tileX, y: player.tileY }, { x: n.tileX, y: n.tileY }) <=
           range,

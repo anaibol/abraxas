@@ -89,7 +89,7 @@ export class WorldEventSystem {
     schedule.activeNpcIds = [];
     for (const wave of event.spawns) {
       for (let i = 0; i < wave.count; i++) {
-        const npc = this.npcSystem.spawnNpc(wave.npcType, map);
+        const npc = this.npcSystem.spawnNpc(wave.npcId, map);
         if (npc) schedule.activeNpcIds.push(npc.sessionId);
       }
     }

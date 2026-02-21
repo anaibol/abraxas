@@ -1,4 +1,4 @@
-import { DIRECTION_DELTA, type NpcType, ServerMessageType } from "@abraxas/shared";
+import { DIRECTION_DELTA, type NpcId, ServerMessageType } from "@abraxas/shared";
 import type { Client } from "@colyseus/core";
 import { logger } from "../logger";
 import type { Player } from "../schema/Player";
@@ -104,9 +104,9 @@ export class AdminHandlers {
         break;
       }
       case "spawn": {
-        const npcType = args[1] as NpcType | undefined;
-        if (!npcType) {
-          HandlerUtils.sendError(client, "Usage: /gm spawn <npcType>");
+        const npcId = args[1] as NpcId | undefined;
+        if (!npcId) {
+          HandlerUtils.sendError(client, "Usage: /gm spawn <npcId>");
           return;
         }
         const delta = DIRECTION_DELTA[player.facing];
@@ -114,14 +114,14 @@ export class AdminHandlers {
         const spawnY = player.tileY + delta.dy;
 
         if (spawnX >= 0 && spawnX < ctx.map.width && spawnY >= 0 && spawnY < ctx.map.height) {
-          ctx.systems.npc.spawnNpcAt(npcType, ctx.map, spawnX, spawnY);
+          ctx.systems.npc.spawnNpcAt(npcId, ctx.map, spawnX, spawnY);
           client.send(ServerMessageType.Notification, {
-            message: `[GM] Spawned ${npcType} at ${spawnX},${spawnY}`,
+            message: `[GM] Spawned ${npcId} at ${spawnX},${spawnY}`,
           });
           logger.info({
             room: ctx.roomId,
             sessionId: client.sessionId,
-            message: `[GM] ${player.name} spawned ${npcType}`,
+            message: `[GM] ${player.name} spawned ${npcId}`,
           });
         } else {
           HandlerUtils.sendError(client, "Invalid spawn location");

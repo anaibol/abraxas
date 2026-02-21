@@ -1,5 +1,5 @@
 import type { Direction, NpcEntityState, PlayerEntityState, WelcomeData } from "@abraxas/shared";
-import { AudioAssets, CLASS_STATS, DIRECTION_DELTA, FRIENDLY_NPC_TYPES, i18n, MathUtils, TILE_SIZE, VIEWPORT_TILES_X, VIEWPORT_TILES_Y } from "@abraxas/shared";
+import { AudioAssets, CLASS_STATS, DIRECTION_DELTA, FRIENDLY_NPC_IDS, i18n, MathUtils, TILE_SIZE, VIEWPORT_TILES_X, VIEWPORT_TILES_Y } from "@abraxas/shared";
 import { Callbacks, type Room } from "@colyseus/sdk";
 import Phaser from "phaser";
 import type { Drop } from "../../../server/src/schema/Drop";
@@ -198,17 +198,17 @@ export class GameScene extends Phaser.Scene {
       (rangeTiles) => this.onEnterTargeting(rangeTiles),
       () => this.onExitTargeting(),
       (tileX, tileY) => {
-        let targetNpc: { id: string; npcType: string } | undefined;
+        let targetNpc: { id: string; npcId: string } | undefined;
         for (const [id, npc] of this.room.state.npcs) {
           if (npc.tileX === tileX && npc.tileY === tileY) {
-            targetNpc = { id, npcType: npc.npcType };
+            targetNpc = { id, npcId: npc.npcId };
             break;
           }
         }
         if (targetNpc) {
-          if (targetNpc.npcType === "horse") {
+          if (targetNpc.npcId === "horse") {
             this.network.sendTame(targetNpc.id);
-          } else if (FRIENDLY_NPC_TYPES.has(targetNpc.npcType)) {
+          } else if (FRIENDLY_NPC_IDS.has(targetNpc.npcId)) {
             this.network.sendInteract(targetNpc.id);
           }
         }
@@ -231,7 +231,7 @@ export class GameScene extends Phaser.Scene {
         }
         for (const [id, npc] of this.room.state.npcs) {
           if (npc.tileX === tileX && npc.tileY === tileY && npc.alive) {
-            this.onNpcRightClick?.(id, i18n.t(`npc.${npc.npcType}`, npc.npcType), npc.npcType, screenX, screenY);
+            this.onNpcRightClick?.(id, i18n.t(`npc.${npc.npcId}`, npc.npcId), npc.npcId, screenX, screenY);
             return;
           }
         }

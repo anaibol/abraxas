@@ -131,7 +131,7 @@ function AppContent() {
   const [quests, setQuests] = useState<PlayerQuestState[]>([]);
   const [dialogueData, setDialogueData] = useState<{
     npcId: string;
-    npcType: string;
+    npcId: string;
     text: string;
     options: { text: string; action: string; data?: unknown }[];
   } | null>(null);
@@ -792,7 +792,7 @@ function AppContent() {
             {dialogueData && (
               <QuestDialogue
                 npcId={dialogueData.npcId}
-                npcType={dialogueData.npcType}
+                npcId={dialogueData.npcId}
                 text={dialogueData.text}
                 options={dialogueData.options}
                 onAction={(action, data) => networkRef.current?.getRoom().send(action, data)}
@@ -895,7 +895,7 @@ function AppContent() {
           )}
           {showSummonOverlay && roomRef.current && (
             <SummonOverlay 
-              onSummon={(npcType) => networkRef.current?.sendChat(`/gm spawn ${npcType}`)} 
+              onSummon={(npcId) => networkRef.current?.sendChat(`/gm spawn ${npcId}`)} 
               onClose={() => setShowSummonOverlay(false)} 
             />
           )}

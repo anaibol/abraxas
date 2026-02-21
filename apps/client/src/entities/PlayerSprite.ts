@@ -632,12 +632,12 @@ export class PlayerSprite {
 
     // Use the NPC appearance of the mount type
     const mountItem = ITEMS[mountItemId];
-    if (!mountItem?.mountNpcType) return;
+    if (!mountItem?.mountNpcId) return;
 
     // Item 85: store speed bonus to choose gait style
     this.curMountSpeedBonus = mountItem.stats?.speedBonus ?? 0;
 
-    const mountAppearance = NPC_APPEARANCE[mountItem.mountNpcType];
+    const mountAppearance = NPC_APPEARANCE[mountItem.mountNpcId];
     if (!mountAppearance) return;
 
     const scene = this.container.scene;
