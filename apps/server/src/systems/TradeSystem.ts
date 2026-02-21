@@ -105,7 +105,7 @@ export class TradeSystem {
         nameOverride: invItem.nameOverride,
         affixes: Array.from(invItem.affixes).map((a) => ({
           type: a.affixType,
-          stat: a.stat as StatType,
+          stat: a.stat,
           value: a.value,
         })),
       });

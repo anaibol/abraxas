@@ -250,7 +250,7 @@ export class InventorySystem {
     };
 
     for (const slotKey of Object.values(EQUIP_SLOT_MAP)) {
-      const item = (player as Record<string, any>)[slotKey] as InventoryItem | undefined;
+      const item = (player as Pick<Player, EquipSlotKey>)[slotKey];
       if (!item) continue;
       const def = ITEMS[item.itemId];
       if (!def) continue;
@@ -337,7 +337,7 @@ export class InventorySystem {
         basicKept.add(item.itemId);
       } else {
         dropped.push(item);
-        (player as Record<string, any>)[slotKey] = undefined;
+        (player as Pick<Player, EquipSlotKey>)[slotKey] = undefined;
       }
     }
 

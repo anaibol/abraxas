@@ -183,7 +183,7 @@ export class PlayerService {
         rarity: item.rarity,
         affixes: Array.from(item.affixes).map((a): ItemAffix => ({
           type: a.affixType,
-          stat: a.stat as StatType,
+          stat: a.stat,
           value: a.value,
         })),
       });

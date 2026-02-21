@@ -1,9 +1,9 @@
-import { ItemRarity } from "@abraxas/shared";
+import { ItemRarity, type StatType } from "@abraxas/shared";
 import { ArraySchema, Schema, type } from "@colyseus/schema";
 
 export class ItemAffixSchema extends Schema {
   @type("string") affixType: string = "";
-  @type("string") stat: string = "";
+  @type("string") stat: StatType = "" as StatType;
   @type("int32") value: number = 0;
 }
 

@@ -93,7 +93,7 @@ export class DropSystem {
         nameOverride: drop.nameOverride,
         affixes: Array.from(drop.affixes).map((a: ItemAffixSchema) => ({
           type: a.affixType,
-          stat: a.stat as StatType,
+          stat: a.stat,
           value: a.value,
         })),
       };

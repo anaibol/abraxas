@@ -90,7 +90,7 @@ export class BankSystem {
           rarity: invItem.rarity,
           affixes: Array.from(invItem.affixes).map((a) => ({
             type: a.affixType,
-            stat: a.stat as StatType,
+            stat: a.stat,
             value: a.value,
           })),
         });
@@ -106,7 +106,7 @@ export class BankSystem {
           rarity: invItem.rarity,
           affixes: Array.from(invItem.affixes).map((a) => ({
             type: a.affixType,
-            stat: a.stat as StatType,
+            stat: a.stat,
             value: a.value,
           })),
         });

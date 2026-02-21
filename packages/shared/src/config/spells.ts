@@ -1104,7 +1104,7 @@ const _ABILITIES: Record<string, Partial<Ability>> = {
 
 export const ABILITIES: Record<string, Ability> = Object.fromEntries(
   Object.entries(_ABILITIES).map(([k, v]) => {
-    const rawAbility: any = {
+    const rawAbility: Ability = {
       rangeTiles: 1,
       manaCost: 0,
       baseDamage: 0,
