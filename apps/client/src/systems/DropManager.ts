@@ -9,7 +9,6 @@ const TEX_COIN_GLOW = "drop-coin-glow";
 const TEX_SPARK = "drop-spark";
 const TEX_STAR = "drop-star";
 
-
 interface DropVisual {
   container: Phaser.GameObjects.Container;
   tweens: Phaser.Tweens.Tween[];
@@ -295,7 +294,6 @@ export class DropManager {
       g.generateTexture(TEX_COIN_GLOW, 20, 20);
       g.destroy();
     }
-
   }
 
   /** Circle color for a drop based on item type and rarity — like Diablo 2. */
