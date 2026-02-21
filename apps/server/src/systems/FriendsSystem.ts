@@ -15,12 +15,16 @@ export class FriendsSystem {
 
   public setUserOnline(userId: string, sessionId: string) {
     this.onlineUsers.set(userId, sessionId);
-    this.broadcastStatusToFriends(userId, true);
+    this.broadcastStatusToFriends(userId, true).catch((e) =>
+      logger.error({ message: "Failed to broadcast online status", error: String(e) }),
+    );
   }
 
   public setUserOffline(userId: string) {
     this.onlineUsers.delete(userId);
-    this.broadcastStatusToFriends(userId, false);
+    this.broadcastStatusToFriends(userId, false).catch((e) =>
+      logger.error({ message: "Failed to broadcast offline status", error: String(e) }),
+    );
   }
 
   private async broadcastStatusToFriends(userId: string, _online: boolean) {

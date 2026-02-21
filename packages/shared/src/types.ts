@@ -585,7 +585,7 @@ export type ServerMessages = {
     templateData?: Record<string, unknown>;
   };
   [ServerMessageType.ItemUsed]: { sessionId: string; itemId: string };
-  [ServerMessageType.InvalidTarget]: null;
+  [ServerMessageType.InvalidTarget]: undefined;
   [ServerMessageType.LevelUp]: { sessionId: string; level: number };
   [ServerMessageType.OpenShop]: { npcId: string; inventory: string[] };
   [ServerMessageType.BuyItem]: { itemId: string; quantity: number };

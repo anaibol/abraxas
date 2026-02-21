@@ -557,6 +557,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     const nearby = this.spatial.findEntitiesInRadius(
       entity.tileX, entity.tileY, HARVEST_RANGE,
     );
+    for (const ent of nearby) {
       if (!ent.isPlayer()) continue;
       if (ent.classType !== "NECROMANCER" || !ent.alive) continue;
 

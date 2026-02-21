@@ -93,6 +93,8 @@ export class RespawnSystem {
       player.stunned = false;
       // B10: Clear spell cooldowns from previous life
       player.spellCooldowns.clear();
+      // Bug #72: Reset GCD so player can act immediately on respawn
+      player.lastGcdMs = 0;
 
       onRespawn?.(player);
       broadcast(ServerMessageType.Respawn, {
