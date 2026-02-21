@@ -34,16 +34,16 @@ export const AudioAssets = {
   SWORD: "audio/npc/sword-sfx.ogg",
 
   // UI
-  LEVEL_UP: "audio/kenney_ui/Audio/maximize-006.ogg",
-  NOTIFICATION: "audio/kenney_ui/Audio/bong-001.ogg",
-  CLICK: "audio/kenney_ui/Audio/click-002.ogg",
-  CLICK_HOVER: "audio/kenney_ui/Audio/tick-001.ogg",
-  CLICK_OPEN: "audio/kenney_ui/Audio/open-001.ogg",
-  CLICK_CLOSE: "audio/kenney_ui/Audio/close-001.ogg",
-  QUEST_ACCEPT: "audio/kenney_ui/Audio/confirmation-001.ogg",
-  QUEST_COMPLETE: "audio/kenney_ui/Audio/confirmation-002.ogg",
-  COINS: "audio/kenney_rpg/Audio/handlecoins.ogg",
-  MOUNT: "audio/kenney_rpg/Audio/clothbelt.ogg",
+  LEVEL_UP: "audio/spells/magical-1-0.ogg",
+  NOTIFICATION: "audio/kenney_rpg/Audio/metalLatch.ogg",
+  CLICK: "audio/kenney_rpg/Audio/bookFlip1.ogg",
+  CLICK_HOVER: "audio/kenney_rpg/Audio/dropLeather.ogg",
+  CLICK_OPEN: "audio/kenney_rpg/Audio/bookOpen.ogg",
+  CLICK_CLOSE: "audio/kenney_rpg/Audio/bookClose.ogg",
+  QUEST_ACCEPT: "audio/kenney_rpg/Audio/clothBelt2.ogg",
+  QUEST_COMPLETE: "audio/kenney_rpg/Audio/handleCoins2.ogg",
+  COINS: "audio/kenney_rpg/Audio/handleCoins.ogg",
+  MOUNT: "audio/kenney_rpg/Audio/clothBelt.ogg",
 
   // Ambiance
   AMBIANCE_WIND: "audio/ambiance/wind.ogg",
@@ -58,10 +58,7 @@ export const AudioAssets = {
   NPC_ROAR: "audio/npc/creatures/roar-01.ogg",
   NPC_SCREAM: "audio/npc/creatures/scream-01.ogg",
   NPC_HURT: "audio/npc/creatures/hurt-01.ogg",
-  NPC_LEVEL_UP: "audio/kenney_ui/Audio/maximize-008.ogg",
-
-  // Spells (extended)
-  SPELL_MAGICAL_1: "audio/spells/magical-1-0.ogg",
+  NPC_LEVEL_UP: "audio/spells/magical-1-0.ogg",
 } as const;
 
 export type AudioAssetKey = keyof typeof AudioAssets;
