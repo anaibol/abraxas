@@ -9,6 +9,7 @@ import { HEX, T } from "./tokens";
 type LobbyProps = {
   onJoin: (charId: string, classType: ClassType, token: string) => void;
   connecting: boolean;
+  error?: string | null;
 };
 
 type CharacterSummary = {
@@ -93,7 +94,9 @@ const inputStyle = {
   color: T.goldText,
   fontFamily: T.display,
   fontSize: "14px",
-  p: "2.5",
+  lineHeight: "inherit",
+  height: "42px",
+  px: "4",
   outline: "none",
   transition: "all 0.2s",
   _focus: { borderColor: T.gold, boxShadow: `0 0 10px ${HEX.gold}44` },
@@ -116,7 +119,7 @@ function formatCharName(raw: string): string {
 
 const MAX_CHARACTERS = 5;
 
-export function Lobby({ onJoin, connecting }: LobbyProps) {
+export function Lobby({ onJoin, connecting, error: joinError }: LobbyProps) {
   const { t, i18n } = useTranslation();
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
@@ -159,38 +162,47 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
       return;
     }
 
-    fetch("/api/me", {
-      headers: { Authorization: `Bearer ${stored}` },
-    })
-      .then(async (res) => {
+    let retryCount = 0;
+    const MAX_RETRIES = 5;
+
+    const checkToken = async (tok: string) => {
+      try {
+        const res = await fetch("/api/me", {
+          headers: { Authorization: `Bearer ${tok}` },
+        });
+
         if (!res.ok) {
           if (res.status === 401 || res.status === 403) {
-            throw new Error("invalid_token");
-          } else {
-            throw new Error("server_error");
+            localStorage.removeItem("abraxas_token");
+            setIsCheckingToken(false);
+            return;
           }
+          throw new Error("server_error");
         }
-        return res.json();
-      })
-      .then((data) => {
+
+        const data = await res.json();
         const admin = data.role === "ADMIN";
-        setToken(stored);
+        setToken(tok);
         setIsAdmin(admin);
         setCharacters(data.characters ?? []);
         setMode("character_select");
-        if (admin) fetchAdminCharacters(stored);
-      })
-      .catch((err) => {
-        if (err.message === "invalid_token") {
-          localStorage.removeItem("abraxas_token");
+        if (admin) fetchAdminCharacters(tok);
+        setIsCheckingToken(false);
+      } catch (err) {
+        if (retryCount < MAX_RETRIES) {
+          retryCount++;
+          const delay = Math.min(1000 * Math.pow(2, retryCount - 1), 10000);
+          console.warn(`[Abraxas] /api/me failed, retrying in ${delay}ms (attempt ${retryCount}/${MAX_RETRIES})...`);
+          setTimeout(() => checkToken(tok), delay);
         } else {
           setError(t("lobby.error.network_error"));
+          setIsCheckingToken(false);
         }
-      })
-      .finally(() => {
-        setIsCheckingToken(false);
-      });
-  }, []);
+      }
+    };
+
+    checkToken(stored);
+  }, [t]);
 
   const labelStyle = {
     fontSize: "12px",
@@ -327,6 +339,8 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
     const q = charSearch.toLowerCase();
     return c.name.toLowerCase().includes(q) || c.ownerEmail.toLowerCase().includes(q);
   });
+
+  const displayError = error || joinError;
 
   return (
     <Flex
@@ -471,7 +485,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
               />
             </Box>
 
-            {error && (
+            {displayError && (
               <Text
                 color={T.bloodBright}
                 fontSize="12px"
@@ -479,7 +493,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                 py="2"
                 fontWeight="600"
               >
-                {error}
+                {displayError}
               </Text>
             )}
 
@@ -766,6 +780,19 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
               </Box>
             )}
 
+            {displayError && (
+              <Text
+                color={T.bloodBright}
+                fontSize="12px"
+                textAlign="center"
+                py="2"
+                fontWeight="600"
+                mb="2"
+              >
+                {displayError}
+              </Text>
+            )}
+
             {!isAdmin && (
               <Button
                 w="100%"
@@ -917,7 +944,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
               })}
             </Grid>
 
-            {error && (
+            {displayError && (
               <Text
                 color={T.bloodBright}
                 fontSize="12px"
@@ -926,7 +953,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                 fontWeight="600"
                 mb="2"
               >
-                {error}
+                {displayError}
               </Text>
             )}
 

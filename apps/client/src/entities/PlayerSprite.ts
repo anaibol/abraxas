@@ -35,6 +35,7 @@ const STATUS_EMITTER_OFFSETS: Record<string, number> = {
 export class PlayerSprite {
   public container: Phaser.GameObjects.Container;
   private bodySprite: Phaser.GameObjects.Sprite;
+  private bodyWidth: number = TILE_SIZE;
   private headSprite: Phaser.GameObjects.Sprite | null = null;
   private weaponSprite: Phaser.GameObjects.Sprite | null = null;
   private shieldSprite: Phaser.GameObjects.Sprite | null = null;
@@ -183,6 +184,7 @@ export class PlayerSprite {
       `grh-${bodyStatic.id}`,
     );
     this.bodySprite.setOrigin(0.5, 1);
+    this.bodyWidth = bodyStatic.width;
 
     if (this.headEntry) {
       const headGrhId = this.headEntry.down;
@@ -208,7 +210,7 @@ export class PlayerSprite {
     this.nameText.setOrigin(0.5, 0);
 
     this.hpBarGfx = scene.add.graphics();
-    this.hpBarGfx.setVisible(false);
+    this.hpBarGfx.setVisible(false); // Hide health bar by default
     this.drawHpBar(1.0);
 
     this.speakingIcon = scene.add.text(0, -45, "🎤", { fontSize: "16px", resolution: getGameTextResolution() });
@@ -231,12 +233,7 @@ export class PlayerSprite {
       Phaser.Geom.Rectangle.Contains,
     );
     if (!isLocal) {
-      this.container.on("pointerover", () => {
-        this.hpBarGfx.setVisible(true);
-      });
-      this.container.on("pointerout", () => {
-        this.hpBarGfx.setVisible(false);
-      });
+      // Health bar is now permanent. Hover listeners removed.
     }
 
     this.resolver.ensureAnimation(scene, bodyGrhId, "body");
@@ -986,7 +983,7 @@ export class PlayerSprite {
 
   /** Redraws the HP bar Graphics with a border, dark track, coloured fill, and highlight strip. */
   private drawHpBar(hpRatio: number) {
-    const barW = TILE_SIZE - 4;
+    const barW = Math.min(TILE_SIZE - 4, this.bodyWidth);
     const barH = 4;
     const bx = -barW / 2;
     const by = TILE_SIZE / 2 + 1;
@@ -1017,7 +1014,12 @@ export class PlayerSprite {
   }
 
   updateHpMana(hp: number, _mana: number) {
+    if (hp === undefined || this.maxHp === undefined || this.maxHp === 0) return;
     this.drawHpBar(Math.max(0, hp / this.maxHp));
+  }
+
+  setHpBarVisibility(visible: boolean) {
+    this.hpBarGfx.setVisible(visible);
   }
 
   update(delta: number) {

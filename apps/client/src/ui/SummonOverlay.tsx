@@ -55,12 +55,17 @@ export function SummonOverlay({ onSummon, onClose }: SummonOverlayProps) {
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{
               width: "100%",
-              background: "rgba(0,0,0,0.5)",
-              border: `1px solid ${T.borderLight}`,
-              padding: "10px 12px",
-              color: "white",
-              borderRadius: "4px",
+              height: "32px",
+              lineHeight: "32px",
+              background: T.surface,
+              border: `1px solid ${T.border}`,
+              borderRadius: "2px",
+              color: T.goldText,
+              fontFamily: "var(--chakra-fonts-mono)",
+              fontSize: "14px",
+              padding: "0 8px",
               outline: "none",
+              boxSizing: "border-box",
             }}
           />
         </Box>

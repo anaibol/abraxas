@@ -124,13 +124,16 @@ export class TickSystem {
     for (const player of state.players.values()) {
       if (!player.alive) continue;
 
+      const isIdle = now - player.lastMoveMs > 5000 && now - player.lastCombatMs > 5000;
+
       // Mana
       if (player.meditating && state.tick % 5 === 0) TickSystem.restoreStat(player, "mana", 0.02);
-      else if (!player.meditating && state.tick % 30 === 0)
+      else if (!player.meditating && state.tick % 100 === 0 && isIdle) {
         TickSystem.restoreStat(player, "mana", 0.01);
+      }
 
       // HP
-      if (state.tick % 30 === 0) TickSystem.restoreStat(player, "hp", 0.005);
+      if (state.tick % 100 === 0 && isIdle) TickSystem.restoreStat(player, "hp", 0.005);
 
       // Energy (Rogue) — fast regen
       if (player.classType === "ROGUE" && state.tick % 20 === 0) {

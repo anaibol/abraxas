@@ -10,6 +10,15 @@ const customConfig = defineConfig({
       overflow: "hidden",
       background: "#08080c",
     },
+    "input, textarea": {
+      lineHeight: "normal",
+      fontFamily: "inherit",
+    },
+    "input::placeholder, textarea::placeholder": {
+      lineHeight: "inherit",
+      fontFamily: "inherit",
+      verticalAlign: "middle",
+    },
   },
   theme: {
     tokens: {

@@ -301,18 +301,13 @@ export class SpriteManager {
   setTargetOutline(sessionId: string | null) {
     if (this.targetOutlineSession && this.targetOutlineSession !== sessionId) {
       this.forEachPreFX(this.targetOutlineSession, p => p.clear());
-      // Hide HP bar of previous target unless it's the local player
-      const prevSprite = this.getSprite(this.targetOutlineSession);
-      if (prevSprite && !prevSprite.isLocal) {
-        prevSprite.setHpBarVisibility(false);
-      }
+      this.getSprite(this.targetOutlineSession)?.setHpBarVisibility(false);
     }
     
     this.targetOutlineSession = sessionId;
     
     if (sessionId) {
       this.forEachPreFX(sessionId, p => p.addGlow(0xffffff, 2, 2, false, 0.08, 12));
-      // Show HP bar of new target (unless it's the local player)
       const newSprite = this.getSprite(sessionId);
       if (newSprite && !newSprite.isLocal) {
         newSprite.setHpBarVisibility(true);

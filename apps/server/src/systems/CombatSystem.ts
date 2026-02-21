@@ -799,7 +799,13 @@ export class CombatSystem {
             x: target.tileX,
             y: target.tileY,
           });
-          if (dist > ability.rangeTiles) return;
+          if (dist > ability.rangeTiles) {
+            broadcast(ServerMessageType.Notification, {
+              message: "game.target_out_of_range",
+              templateData: { targetSessionId: attacker.sessionId },
+            });
+            return;
+          }
 
           // LOS check at resolution time to prevent wall-piercing curve
           if (
@@ -808,6 +814,10 @@ export class CombatSystem {
               y: target.tileY,
             })
           ) {
+            broadcast(ServerMessageType.Notification, {
+              message: "game.no_line_of_sight",
+              templateData: { targetSessionId: attacker.sessionId },
+            });
             return;
           }
 

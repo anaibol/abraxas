@@ -210,6 +210,7 @@ export class GameEventHandler {
     } else {
       this.soundManager.playHit(opts);
       if (data.attackerSessionId && this.isSelf(data.attackerSessionId)) {
+        this.spriteManager.setTargetOutline(data.targetSessionId);
         this.onConsoleMessage?.(t("game.you_dealt_damage", { amount: data.amount }), "#ff8800", "combat");
       }
     }
@@ -222,6 +223,10 @@ export class GameEventHandler {
       this.spriteManager.playDeathAnimation(data.sessionId);
       this.spriteManager.setAlpha(data.sessionId, 0.3);
       this.spriteManager.clearGlowFx(data.sessionId);
+      // Clear target if the dying entity was our target
+      if (this.spriteManager.currentTargetId === data.sessionId) {
+        this.spriteManager.setTargetOutline(null);
+      }
     }
     if (this.isSelf(data.sessionId)) {
       this.inputHandler.cancelTargeting();

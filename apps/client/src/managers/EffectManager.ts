@@ -1,4 +1,4 @@
-import { ABILITIES, TILE_SIZE } from "@abraxas/shared";
+import { ABILITIES, TILE_SIZE, i18n } from "@abraxas/shared";
 import Phaser from "phaser";
 import { FONTS, getGameTextResolution } from "../ui/tokens";
 import type { SpriteManager } from "./SpriteManager";
@@ -1264,9 +1264,16 @@ export class EffectManager {
     });
   }
 
-  showDamage(targetSessionId: string, amount: number, type: "physical" | "magic" | "dot") {
+  showDamage(targetSessionId: string, amount: number, type: "physical" | "magic" | "dot" | "dodged" | "parried") {
     const sprite = this.spriteManager.getSprite(targetSessionId);
     if (!sprite) return;
+    
+    if (type === "dodged" || type === "parried") {
+      const text = type === "dodged" ? i18n.t("game.dodged") : i18n.t("game.parried");
+      this.floatText(sprite.renderX, sprite.renderY - 30, text, "#aaaaaa", "13px");
+      return;
+    }
+    
     const color = type === "magic" ? "#bb44ff" : type === "dot" ? "#44cc44" : "#ff4444";
     const prefix = type === "dot" ? "🐾" : type === "magic" ? "✦" : "⚔";
     const size = type === "dot" ? "11px" : "14px";
