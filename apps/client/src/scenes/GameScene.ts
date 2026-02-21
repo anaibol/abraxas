@@ -456,6 +456,7 @@ export class GameScene extends Phaser.Scene {
       brightness = 1.0 - ((time - 17) / 3) * 0.85;
     }
     this.lightManager.setAmbientBrightness(brightness);
+    this.spriteManager.updateShadows(time);
 
     if (!this.ambientOverlay || !this.cameras.main) return;
     const width = this.cameras.main.width;
