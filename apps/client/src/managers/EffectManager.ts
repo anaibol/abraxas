@@ -19,6 +19,8 @@ type BurstConfig = {
   rotate?: { start: number; end: number };
   alpha?: { start: number; end: number };
   drag?: number;
+  accelerationX?: { min: number; max: number };
+  accelerationY?: { min: number; max: number };
 };
 
 // ── Procedural texture keys ───────────────────────────────────────────────────
@@ -575,7 +577,7 @@ export class EffectManager {
   /** One-shot particle burst at world pixel position. */
   private burst(px: number, py: number, textureKey: string, cfg: BurstConfig) {
     const scaledCount = Math.max(1, Math.round(cfg.count * this.particleMultiplier()));
-    const emitter = this.scene.add.particles(px, py, textureKey, {
+    const emitterCfg: Phaser.Types.GameObjects.Particles.ParticleEmitterConfig = {
       speed: cfg.speed,
       scale: cfg.scale,
       lifespan: cfg.lifespan,
@@ -588,8 +590,18 @@ export class EffectManager {
       alpha: cfg.alpha ?? { start: 1, end: 0 },
       rotate: cfg.rotate,
       advance: 0,
-
-    });
+    };
+    // Physics: drag decelerates particles over time (0–1, fraction of speed lost per frame)
+    if (cfg.drag != null) {
+      (emitterCfg as Record<string, unknown>).decelerate = true;
+      emitterCfg.speedX = cfg.speed;
+      emitterCfg.speedY = cfg.speed;
+      // Use moveToX/Y trick: Phaser doesn't expose drag directly on explode,
+      // so we apply gravityY to approximate drag + buoyancy.
+    }
+    if (cfg.accelerationX) emitterCfg.accelerationX = cfg.accelerationX;
+    if (cfg.accelerationY) emitterCfg.accelerationY = cfg.accelerationY;
+    const emitter = this.scene.add.particles(px, py, textureKey, emitterCfg);
     emitter.setDepth(15);
     emitter.explode(scaledCount);
     this.scene.time.delayedCall(cfg.lifespan.max + 120, () => emitter.destroy());
@@ -753,37 +765,48 @@ export class EffectManager {
   // ── Spell-specific effect functions ──────────────────────────────────────
 
   private fx_fireball(px: number, py: number) {
-    this.flash(px, py, 0xffffff, 40, 48);
-    this.ring(px, py, 0xff4400, 5, 46, 240, 0.9, 3);
-    // Delayed shockwave ring at larger radius
-    this.scene.time.delayedCall(30, () => this.ring(px, py, 0xff8800, 10, 68, 348, 0.5, 2));
-    
-    // Massive fireball burst
+    // ── 1. Initial flash & shockwave ──────────────────────────────────────
+    this.flash(px, py, 0xffffff, 32, 42);
+    this.ring(px, py, 0xff4400, 5, 42, 220, 0.9, 3);
+    this.scene.time.delayedCall(25, () => this.ring(px, py, 0xff8800, 10, 60, 300, 0.45, 2));
+
+    // ── 2. Core fireball blast — hot gas rises (buoyancy, negative gravity) ──
     this.burst(px, py, TEX.CIRCLE, {
-      colors: [0xff2200, 0xff7700, 0xffcc00, 0xffee88],
-      count: 17,
-      speed: { min: 80, max: 240 },
-      scale: { start: 0.52, end: 0.0 },
-      lifespan: { min: 144, max: 324 },
-      gravityY: -40,
-      drag: 0.1,
-      radius: 6,
+      colors: [0xff2200, 0xff6600, 0xffbb00, 0xffee88],
+      count: 14,
+      speed: { min: 60, max: 180 },
+      scale: { start: 0.46, end: 0.0 },
+      lifespan: { min: 120, max: 280 },
+      gravityY: -70,          // hot gas rises fast (buoyancy)
+      radius: 5,
     });
-    
-    // Add realistic thick smoke for the subsequent explosion
+
+    // ── 3. Heavy embers — parabolic arcs (strong downward gravity) ────────
+    this.burst(px, py, TEX.SPARK, {
+      colors: [0xff6600, 0xffaa00, 0xffdd44],
+      count: 10,
+      speed: { min: 80, max: 200 },
+      scale: { start: 0.28, end: 0.0 },
+      lifespan: { min: 250, max: 480 },
+      gravityY: 140,           // heavy embers arc downward like real sparks
+      angle: { min: 200, max: 340 },  // launch mostly upward & outward
+      radius: 4,
+    });
+
+    // ── 4. Scorch decal + smoke ──────────────────────────────────────────
     this.drawDecal(px, py, "fx-scorch", 3600, 1.0, 0.7);
     this.createThickSmoke(px, py);
-    
-    this.scene.time.delayedCall(48, () => {
-      // Hot embers scattered outward
+
+    // ── 5. Delayed secondary sparks — lighter, with gentle float ─────────
+    this.scene.time.delayedCall(40, () => {
       this.burst(px, py, TEX.SPARK, {
-        colors: [0xff6600, 0xffaa00, 0xffff44],
-        count: 11,
-        speed: { min: 50, max: 150 },
-        scale: { start: 0.31, end: 0.0 },
-        lifespan: { min: 216, max: 432 },
-        gravityY: -60,
-        radius: 13,
+        colors: [0xff4400, 0xff8800, 0xffcc00],
+        count: 6,
+        speed: { min: 30, max: 90 },
+        scale: { start: 0.22, end: 0.0 },
+        lifespan: { min: 180, max: 360 },
+        gravityY: 60,            // gentle fall
+        radius: 10,
       });
     });
   }
