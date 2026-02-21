@@ -56,238 +56,238 @@ type FxRecipe = {
 const SPELL_FX: Record<string, FxRecipe> = {
   // ── Mage ──
   ice_bolt: {
-    rings: [{ color: 0x44ddff, start: 4, end: 40, duration: 330, alpha: 0.85, width: 3 }],
+    rings: [{ color: 0x44ddff, start: 4, end: 40, duration: 330, alpha: 0.85, width: 1 }],
     bursts: [
-      { tex: "SHARD", colors: [0x88eeff, 0x44aaff, 0xccffff, 0xffffff], count: 22, speed: { min: 80, max: 190 }, scale: { start: 0.7, end: 0 }, lifespan: { min: 300, max: 620 }, rotate: { start: 0, end: 360 } },
-      { tex: "CIRCLE", colors: [0xffffff, 0xaaeeff], count: 14, speed: { min: 15, max: 55 }, scale: { start: 0.3, end: 0 }, lifespan: { min: 550, max: 950 }, gravityY: -28, radius: 16 },
+      { tex: "SHARD", colors: [0x88eeff, 0x44aaff, 0xccffff, 0xffffff], count: 11, speed: { min: 80, max: 190 }, scale: { start: 0.45, end: 0.0 }, lifespan: { min: 300, max: 620 }, rotate: { start: 0, end: 360 } },
+      { tex: "CIRCLE", colors: [0xffffff, 0xaaeeff], count: 7, speed: { min: 15, max: 55 }, scale: { start: 0.2, end: 0.0 }, lifespan: { min: 550, max: 950 }, gravityY: -28, radius: 10 },
     ],
   },
   arcane_surge: {
-    flash: { color: 0xaa44ff, size: 36, duration: 100 },
+    flash: { color: 0xaa44ff, size: 23, duration: 100 },
     rings: [
-      { color: 0x8844ff, start: 5, end: 50, duration: 420, alpha: 0.85, width: 4 },
-      { color: 0xffffff, start: 5, end: 42, duration: 310, alpha: 0.7, width: 2, delay: 60 },
+      { color: 0x8844ff, start: 5, end: 50, duration: 420, alpha: 0.85, width: 2 },
+      { color: 0xffffff, start: 5, end: 42, duration: 310, alpha: 0.7, width: 1, delay: 60 },
     ],
     bursts: [
-      { tex: "CIRCLE", colors: [0xaa44ff, 0xcc88ff, 0xffccff, 0xffffff], count: 34, speed: { min: 70, max: 200 }, scale: { start: 0.8, end: 0 }, lifespan: { min: 350, max: 750 }, gravityY: -32, radius: 8 },
+      { tex: "CIRCLE", colors: [0xaa44ff, 0xcc88ff, 0xffccff, 0xffffff], count: 17, speed: { min: 70, max: 200 }, scale: { start: 0.52, end: 0.0 }, lifespan: { min: 350, max: 750 }, gravityY: -32, radius: 5 },
     ],
   },
   mana_shield: {
-    rings: [{ color: 0x4488ff, start: 5, end: 36, duration: 380, alpha: 0.85, width: 3 }],
+    rings: [{ color: 0x4488ff, start: 5, end: 36, duration: 380, alpha: 0.85, width: 1 }],
     bursts: [
-      { tex: "CIRCLE", colors: [0x4488ff, 0x88bbff, 0xccddff], count: 24, speed: { min: 20, max: 62 }, scale: { start: 0.55, end: 0 }, lifespan: { min: 400, max: 820 }, gravityY: -30, radius: 18 },
-      { tex: "RING", colors: [0x4488ff, 0xffffff], count: 8, speed: { min: 10, max: 30 }, scale: { start: 0.5, end: 0 }, lifespan: { min: 600, max: 1100 }, rotate: { start: 0, end: 360 }, radius: 22 },
+      { tex: "CIRCLE", colors: [0x4488ff, 0x88bbff, 0xccddff], count: 12, speed: { min: 20, max: 62 }, scale: { start: 0.36, end: 0.0 }, lifespan: { min: 400, max: 820 }, gravityY: -30, radius: 11 },
+      { tex: "RING", colors: [0x4488ff, 0xffffff], count: 4, speed: { min: 10, max: 30 }, scale: { start: 0.33, end: 0.0 }, lifespan: { min: 600, max: 1100 }, rotate: { start: 0, end: 360 }, radius: 14 },
     ],
   },
   // ── Warrior ──
   war_cry: {
     rings: [
-      { color: 0xff6600, start: 5, end: 65, duration: 500, alpha: 0.85, width: 4 },
-      { color: 0xffcc00, start: 5, end: 60, duration: 480, alpha: 0.5, width: 3, delay: 100 },
+      { color: 0xff6600, start: 5, end: 65, duration: 500, alpha: 0.85, width: 2 },
+      { color: 0xffcc00, start: 5, end: 60, duration: 480, alpha: 0.5, width: 1, delay: 100 },
     ],
-    bursts: [{ tex: "CIRCLE", colors: [0xff6600, 0xffaa00, 0xffee44], count: 28, speed: { min: 40, max: 120 }, scale: { start: 0.65, end: 0 }, lifespan: { min: 350, max: 700 }, radius: 20 }],
+    bursts: [{ tex: "CIRCLE", colors: [0xff6600, 0xffaa00, 0xffee44], count: 14, speed: { min: 40, max: 120 }, scale: { start: 0.42, end: 0.0 }, lifespan: { min: 350, max: 700 }, radius: 13 }],
   },
   whirlwind: {
-    flash: { color: 0xcccccc, size: 34, duration: 80 },
-    rings: [{ color: 0xcccccc, start: 5, end: 52, duration: 400, alpha: 0.85, width: 4 }],
+    flash: { color: 0xcccccc, size: 22, duration: 80 },
+    rings: [{ color: 0xcccccc, start: 5, end: 52, duration: 400, alpha: 0.85, width: 2 }],
     bursts: [
-      { tex: "SHARD", colors: [0xcccccc, 0xffffff, 0xaaccff], count: 28, speed: { min: 90, max: 220 }, scale: { start: 0.65, end: 0 }, lifespan: { min: 200, max: 480 }, angle: { min: 0, max: 360 }, rotate: { start: 0, end: 720 } },
-      { tex: "SPARK", colors: [0xffffff, 0xffcc88], count: 16, speed: { min: 50, max: 140 }, scale: { start: 0.4, end: 0 }, lifespan: { min: 150, max: 380 }, angle: { min: 0, max: 360 } },
+      { tex: "SHARD", colors: [0xcccccc, 0xffffff, 0xaaccff], count: 14, speed: { min: 90, max: 220 }, scale: { start: 0.42, end: 0.0 }, lifespan: { min: 200, max: 480 }, angle: { min: 0, max: 360 }, rotate: { start: 0, end: 720 } },
+      { tex: "SPARK", colors: [0xffffff, 0xffcc88], count: 8, speed: { min: 50, max: 140 }, scale: { start: 0.26, end: 0.0 }, lifespan: { min: 150, max: 380 }, angle: { min: 0, max: 360 } },
     ],
   },
   battle_shout: {
     rings: [
-      { color: 0xffcc00, start: 5, end: 72, duration: 520, alpha: 0.85, width: 4 },
-      { color: 0xffcc00, start: 5, end: 85, duration: 580, alpha: 0.5, width: 3, delay: 120 },
+      { color: 0xffcc00, start: 5, end: 72, duration: 520, alpha: 0.85, width: 2 },
+      { color: 0xffcc00, start: 5, end: 85, duration: 580, alpha: 0.5, width: 1, delay: 120 },
     ],
-    bursts: [{ tex: "CIRCLE", colors: [0xffcc00, 0xffee88, 0xffffff], count: 24, speed: { min: 30, max: 90 }, scale: { start: 0.5, end: 0 }, lifespan: { min: 400, max: 780 }, radius: 22 }],
+    bursts: [{ tex: "CIRCLE", colors: [0xffcc00, 0xffee88, 0xffffff], count: 12, speed: { min: 30, max: 90 }, scale: { start: 0.33, end: 0.0 }, lifespan: { min: 400, max: 780 }, radius: 14 }],
   },
   enrage: {
-    flash: { color: 0xff4400, size: 44, duration: 120 },
-    rings: [{ color: 0xff4400, start: 5, end: 52, duration: 460, alpha: 0.85, width: 4 }],
-    bursts: [{ tex: "CIRCLE", colors: [0xff2200, 0xff8800, 0xffcc00], count: 32, speed: { min: 70, max: 165 }, scale: { start: 0.7, end: 0 }, lifespan: { min: 400, max: 820 }, radius: 20 }],
+    flash: { color: 0xff4400, size: 28, duration: 120 },
+    rings: [{ color: 0xff4400, start: 5, end: 52, duration: 460, alpha: 0.85, width: 2 }],
+    bursts: [{ tex: "CIRCLE", colors: [0xff2200, 0xff8800, 0xffcc00], count: 16, speed: { min: 70, max: 165 }, scale: { start: 0.45, end: 0.0 }, lifespan: { min: 400, max: 820 }, radius: 13 }],
   },
   // ── Priest / Holy ──
   holy_nova: {
-    flash: { color: 0xffffff, size: 46, duration: 100 },
+    flash: { color: 0xffffff, size: 29, duration: 100 },
     rings: [
-      { color: 0xffffcc, start: 5, end: 60, duration: 450, alpha: 0.9, width: 4 },
-      { color: 0xffcc88, start: 5, end: 60, duration: 475, alpha: 0.5, width: 2, delay: 100 },
+      { color: 0xffffcc, start: 5, end: 60, duration: 450, alpha: 0.9, width: 2 },
+      { color: 0xffcc88, start: 5, end: 60, duration: 475, alpha: 0.5, width: 1, delay: 100 },
     ],
-    bursts: [{ tex: "STAR", colors: [0xffffff, 0xffff88, 0xffee44, 0xffcc00], count: 32, speed: { min: 40, max: 140 }, scale: { start: 0.7, end: 0 }, lifespan: { min: 400, max: 850 }, rotate: { start: 0, end: 360 }, gravityY: -30 }],
+    bursts: [{ tex: "STAR", colors: [0xffffff, 0xffff88, 0xffee44, 0xffcc00], count: 16, speed: { min: 40, max: 140 }, scale: { start: 0.45, end: 0.0 }, lifespan: { min: 400, max: 850 }, rotate: { start: 0, end: 360 }, gravityY: -30 }],
   },
   heal: {
-    flash: { color: 0x44ff88, size: 32, duration: 120 },
-    rings: [{ color: 0x33dd66, start: 5, end: 42, duration: 380, alpha: 0.85, width: 3 }],
+    flash: { color: 0x44ff88, size: 20, duration: 120 },
+    rings: [{ color: 0x33dd66, start: 5, end: 42, duration: 380, alpha: 0.85, width: 1 }],
     bursts: [
-      { tex: "CROSS", colors: [0x44ff88, 0xffffff, 0xaaffcc], count: 24, speed: { min: 20, max: 80 }, scale: { start: 0.65, end: 0 }, lifespan: { min: 500, max: 950 }, rotate: { start: 0, end: 360 }, gravityY: -48, radius: 14 },
-      { tex: "CIRCLE", colors: [0x33dd66, 0x88ffaa], count: 16, speed: { min: 15, max: 50 }, scale: { start: 0.4, end: 0 }, lifespan: { min: 600, max: 1100 }, gravityY: -55, radius: 20 },
-      { tex: "STAR", colors: [0xffffff, 0xaaffcc], count: 8, speed: { min: 25, max: 55 }, scale: { start: 0.45, end: 0 }, lifespan: { min: 700, max: 1200 }, rotate: { start: 0, end: 360 }, gravityY: -60, radius: 18 },
+      { tex: "CROSS", colors: [0x44ff88, 0xffffff, 0xaaffcc], count: 12, speed: { min: 20, max: 80 }, scale: { start: 0.42, end: 0.0 }, lifespan: { min: 500, max: 950 }, rotate: { start: 0, end: 360 }, gravityY: -48, radius: 9 },
+      { tex: "CIRCLE", colors: [0x33dd66, 0x88ffaa], count: 8, speed: { min: 15, max: 50 }, scale: { start: 0.26, end: 0.0 }, lifespan: { min: 600, max: 1100 }, gravityY: -55, radius: 13 },
+      { tex: "STAR", colors: [0xffffff, 0xaaffcc], count: 4, speed: { min: 25, max: 55 }, scale: { start: 0.29, end: 0.0 }, lifespan: { min: 700, max: 1200 }, rotate: { start: 0, end: 360 }, gravityY: -60, radius: 11 },
     ],
   },
   divine_shield: {
-    flash: { color: 0xffff88, size: 42, duration: 120 },
+    flash: { color: 0xffff88, size: 27, duration: 120 },
     rings: [
-      { color: 0xffdd44, start: 5, end: 48, duration: 420, alpha: 0.9, width: 4 },
-      { color: 0xffee88, start: 5, end: 50, duration: 570, alpha: 0.7, width: 3, delay: 100 },
+      { color: 0xffdd44, start: 5, end: 48, duration: 420, alpha: 0.9, width: 2 },
+      { color: 0xffee88, start: 5, end: 50, duration: 570, alpha: 0.7, width: 1, delay: 100 },
     ],
-    bursts: [{ tex: "STAR", colors: [0xffffff, 0xffff44, 0xffcc00], count: 20, speed: { min: 15, max: 60 }, scale: { start: 0.55, end: 0 }, lifespan: { min: 600, max: 1100 }, rotate: { start: 0, end: 360 }, gravityY: -42, radius: 26 }],
+    bursts: [{ tex: "STAR", colors: [0xffffff, 0xffff44, 0xffcc00], count: 10, speed: { min: 15, max: 60 }, scale: { start: 0.36, end: 0.0 }, lifespan: { min: 600, max: 1100 }, rotate: { start: 0, end: 360 }, gravityY: -42, radius: 16 }],
   },
   holy_strike: {
-    flash: { color: 0xffffaa, size: 28, duration: 80 },
-    rings: [{ color: 0xffdd44, start: 4, end: 35, duration: 300, alpha: 0.85, width: 3 }],
-    bursts: [{ tex: "STAR", colors: [0xffffff, 0xffff88, 0xffcc00], count: 16, speed: { min: 50, max: 130 }, scale: { start: 0.55, end: 0 }, lifespan: { min: 250, max: 550 }, rotate: { start: 0, end: 360 } }],
+    flash: { color: 0xffffaa, size: 18, duration: 80 },
+    rings: [{ color: 0xffdd44, start: 4, end: 35, duration: 300, alpha: 0.85, width: 1 }],
+    bursts: [{ tex: "STAR", colors: [0xffffff, 0xffff88, 0xffcc00], count: 8, speed: { min: 50, max: 130 }, scale: { start: 0.36, end: 0.0 }, lifespan: { min: 250, max: 550 }, rotate: { start: 0, end: 360 } }],
   },
   // ── Rogue ──
   smoke_bomb: {
-    flash: { color: 0x333333, size: 38, duration: 100 },
+    flash: { color: 0x333333, size: 24, duration: 100 },
     rings: [
-      { color: 0x444444, start: 5, end: 55, duration: 500, alpha: 0.75, width: 4 },
-      { color: 0x222222, start: 5, end: 70, duration: 680, alpha: 0.45, width: 3, delay: 100 },
+      { color: 0x444444, start: 5, end: 55, duration: 500, alpha: 0.75, width: 2 },
+      { color: 0x222222, start: 5, end: 70, duration: 680, alpha: 0.45, width: 1, delay: 100 },
     ],
     bursts: [
-      { tex: "SMOKE", colors: [0x222222, 0x333333, 0x444444, 0x555555], count: 40, speed: { min: 20, max: 70 }, scale: { start: 1.2, end: 0.2 }, lifespan: { min: 600, max: 1400 }, gravityY: -18, radius: 28, blendMode: 0 /* NORMAL */, alpha: { start: 0.7, end: 0 } },
+      { tex: "SMOKE", colors: [0x222222, 0x333333, 0x444444, 0x555555], count: 20, speed: { min: 20, max: 70 }, scale: { start: 0.78, end: 0.13 }, lifespan: { min: 600, max: 1400 }, gravityY: -18, radius: 18, blendMode: 0 /* NORMAL */, alpha: { start: 0.7, end: 0 } },
     ],
   },
   hemorrhage: {
-    flash: { color: 0xdd2222, size: 26, duration: 80 },
-    rings: [{ color: 0xcc1111, start: 4, end: 36, duration: 320, alpha: 0.85, width: 3 }],
+    flash: { color: 0xdd2222, size: 16, duration: 80 },
+    rings: [{ color: 0xcc1111, start: 4, end: 36, duration: 320, alpha: 0.85, width: 1 }],
     bursts: [
-      { tex: "CIRCLE", colors: [0xff2222, 0xdd0000, 0x880000], count: 22, speed: { min: 50, max: 140 }, scale: { start: 0.6, end: 0 }, lifespan: { min: 250, max: 520 }, gravityY: 55, radius: 8 },
-      { tex: "CIRCLE", colors: [0xff4444, 0xcc0000], count: 12, speed: { min: 30, max: 80 }, scale: { start: 0.35, end: 0 }, lifespan: { min: 400, max: 780 }, angle: { min: 210, max: 330 }, gravityY: 120 },
+      { tex: "CIRCLE", colors: [0xff2222, 0xdd0000, 0x880000], count: 11, speed: { min: 50, max: 140 }, scale: { start: 0.39, end: 0.0 }, lifespan: { min: 250, max: 520 }, gravityY: 55, radius: 5 },
+      { tex: "CIRCLE", colors: [0xff4444, 0xcc0000], count: 6, speed: { min: 30, max: 80 }, scale: { start: 0.23, end: 0.0 }, lifespan: { min: 400, max: 780 }, angle: { min: 210, max: 330 }, gravityY: 120 },
     ],
   },
   backstab: {
-    flash: { color: 0xff4444, size: 24, duration: 60 },
-    rings: [{ color: 0xff4444, start: 4, end: 28, duration: 250, alpha: 0.85, width: 3 }],
-    bursts: [{ tex: "SPARK", colors: [0xff4444, 0xffaa44, 0xffffff], count: 14, speed: { min: 60, max: 160 }, scale: { start: 0.5, end: 0 }, lifespan: { min: 150, max: 350 }, angle: { min: -40, max: 40 } }],
+    flash: { color: 0xff4444, size: 15, duration: 60 },
+    rings: [{ color: 0xff4444, start: 4, end: 28, duration: 250, alpha: 0.85, width: 1 }],
+    bursts: [{ tex: "SPARK", colors: [0xff4444, 0xffaa44, 0xffffff], count: 7, speed: { min: 60, max: 160 }, scale: { start: 0.33, end: 0.0 }, lifespan: { min: 150, max: 350 }, angle: { min: -40, max: 40 } }],
   },
   stealth: {
-    rings: [{ color: 0x6644aa, start: 40, end: 5, duration: 400, alpha: 0.7, width: 3 }],
+    rings: [{ color: 0x6644aa, start: 40, end: 5, duration: 400, alpha: 0.7, width: 1 }],
     bursts: [
-      { tex: "SMOKE", colors: [0x332255, 0x221133, 0x110022], count: 24, speed: { min: 10, max: 40 }, scale: { start: 0.8, end: 0 }, lifespan: { min: 500, max: 1050 }, gravityY: -15, radius: 22, blendMode: 0, alpha: { start: 0.55, end: 0 } },
-      { tex: "CIRCLE", colors: [0x6644aa, 0x8866cc], count: 10, speed: { min: 15, max: 45 }, scale: { start: 0.3, end: 0 }, lifespan: { min: 400, max: 750 }, gravityY: -35, radius: 18 },
+      { tex: "SMOKE", colors: [0x332255, 0x221133, 0x110022], count: 12, speed: { min: 10, max: 40 }, scale: { start: 0.52, end: 0.0 }, lifespan: { min: 500, max: 1050 }, gravityY: -15, radius: 14, blendMode: 0, alpha: { start: 0.55, end: 0 } },
+      { tex: "CIRCLE", colors: [0x6644aa, 0x8866cc], count: 5, speed: { min: 15, max: 45 }, scale: { start: 0.2, end: 0.0 }, lifespan: { min: 400, max: 750 }, gravityY: -35, radius: 11 },
     ],
   },
   evasion: {
-    flash: { color: 0x44ccff, size: 30, duration: 100 },
+    flash: { color: 0x44ccff, size: 19, duration: 100 },
     rings: [
-      { color: 0x44ccff, start: 5, end: 42, duration: 360, alpha: 0.85, width: 3 },
+      { color: 0x44ccff, start: 5, end: 42, duration: 360, alpha: 0.85, width: 1 },
     ],
     bursts: [
-      { tex: "SHARD", colors: [0x44ccff, 0xaaeeff, 0xffffff], count: 20, speed: { min: 80, max: 190 }, scale: { start: 0.5, end: 0 }, lifespan: { min: 200, max: 420 }, rotate: { start: 0, end: 360 } },
+      { tex: "SHARD", colors: [0x44ccff, 0xaaeeff, 0xffffff], count: 10, speed: { min: 80, max: 190 }, scale: { start: 0.33, end: 0.0 }, lifespan: { min: 200, max: 420 }, rotate: { start: 0, end: 360 } },
     ],
   },
   // ── Hunter ──
   aimed_shot: {
-    flash: { color: 0xffaa44, size: 24, duration: 80 },
-    rings: [{ color: 0xffaa44, start: 4, end: 36, duration: 300, alpha: 0.85, width: 3 }],
+    flash: { color: 0xffaa44, size: 15, duration: 80 },
+    rings: [{ color: 0xffaa44, start: 4, end: 36, duration: 300, alpha: 0.85, width: 1 }],
     bursts: [
-      { tex: "SPARK", colors: [0xffaa44, 0xffcc88, 0xffffff], count: 18, speed: { min: 80, max: 200 }, scale: { start: 0.5, end: 0 }, lifespan: { min: 200, max: 450 }, angle: { min: -30, max: 30 } },
-      { tex: "CIRCLE", colors: [0xffaa44, 0xff8800], count: 10, speed: { min: 20, max: 55 }, scale: { start: 0.3, end: 0 }, lifespan: { min: 300, max: 600 }, radius: 12 },
+      { tex: "SPARK", colors: [0xffaa44, 0xffcc88, 0xffffff], count: 9, speed: { min: 80, max: 200 }, scale: { start: 0.33, end: 0.0 }, lifespan: { min: 200, max: 450 }, angle: { min: -30, max: 30 } },
+      { tex: "CIRCLE", colors: [0xffaa44, 0xff8800], count: 5, speed: { min: 20, max: 55 }, scale: { start: 0.2, end: 0.0 }, lifespan: { min: 300, max: 600 }, radius: 7 },
     ],
   },
   multi_shot: {
-    rings: [{ color: 0x88ff44, start: 4, end: 37, duration: 340, alpha: 0.75, width: 3 }],
-    bursts: [{ tex: "SHARD", colors: [0x88ff44, 0xffee44, 0xffffff], count: 22, speed: { min: 90, max: 190 }, scale: { start: 0.5, end: 0 }, lifespan: { min: 250, max: 510 }, angle: { min: -65, max: 65 }, rotate: { start: 0, end: 180 } }],
+    rings: [{ color: 0x88ff44, start: 4, end: 37, duration: 340, alpha: 0.75, width: 1 }],
+    bursts: [{ tex: "SHARD", colors: [0x88ff44, 0xffee44, 0xffffff], count: 11, speed: { min: 90, max: 190 }, scale: { start: 0.33, end: 0.0 }, lifespan: { min: 250, max: 510 }, angle: { min: -65, max: 65 }, rotate: { start: 0, end: 180 } }],
   },
   mark_target: {
-    flash: { color: 0xff4444, size: 22, duration: 80 },
-    rings: [{ color: 0xff4444, start: 4, end: 30, duration: 300, alpha: 0.85, width: 3 }],
-    bursts: [{ tex: "CROSS", colors: [0xff4444, 0xffaa44, 0xffffff], count: 12, speed: { min: 20, max: 55 }, scale: { start: 0.5, end: 0 }, lifespan: { min: 400, max: 750 }, rotate: { start: 0, end: 360 } }],
+    flash: { color: 0xff4444, size: 14, duration: 80 },
+    rings: [{ color: 0xff4444, start: 4, end: 30, duration: 300, alpha: 0.85, width: 1 }],
+    bursts: [{ tex: "CROSS", colors: [0xff4444, 0xffaa44, 0xffffff], count: 6, speed: { min: 20, max: 55 }, scale: { start: 0.33, end: 0.0 }, lifespan: { min: 400, max: 750 }, rotate: { start: 0, end: 360 } }],
   },
   curse: {
-    rings: [{ color: 0x8800aa, start: 5, end: 40, duration: 400, alpha: 0.8, width: 4 }],
+    rings: [{ color: 0x8800aa, start: 5, end: 40, duration: 400, alpha: 0.8, width: 2 }],
     bursts: [
-      { tex: "SMOKE", colors: [0x440066, 0x220033, 0x110022], count: 22, speed: { min: 15, max: 55 }, scale: { start: 0.8, end: 0 }, lifespan: { min: 500, max: 1100 }, gravityY: -22, radius: 20, blendMode: 0, alpha: { start: 0.6, end: 0 } },
-      { tex: "CIRCLE", colors: [0x8800aa, 0xcc44ff, 0xff88ff], count: 16, speed: { min: 30, max: 92 }, scale: { start: 0.5, end: 0 }, lifespan: { min: 350, max: 720 }, gravityY: -36, radius: 12 },
+      { tex: "SMOKE", colors: [0x440066, 0x220033, 0x110022], count: 11, speed: { min: 15, max: 55 }, scale: { start: 0.52, end: 0.0 }, lifespan: { min: 500, max: 1100 }, gravityY: -22, radius: 13, blendMode: 0, alpha: { start: 0.6, end: 0 } },
+      { tex: "CIRCLE", colors: [0x8800aa, 0xcc44ff, 0xff88ff], count: 8, speed: { min: 30, max: 92 }, scale: { start: 0.33, end: 0.0 }, lifespan: { min: 350, max: 720 }, gravityY: -36, radius: 7 },
     ],
   },
   // ── NPC effects ──
   fire_breath: {
-    rings: [{ color: 0xff4400, start: 5, end: 72, duration: 520, alpha: 0.85, width: 5 }],
+    rings: [{ color: 0xff4400, start: 5, end: 72, duration: 520, alpha: 0.85, width: 3 }],
     bursts: [
-      { tex: "CIRCLE", colors: [0xff2200, 0xff7700, 0xffcc00, 0xffee88], count: 48, speed: { min: 60, max: 185 }, scale: { start: 0.9, end: 0 }, lifespan: { min: 400, max: 920 }, gravityY: -35, radius: 42 },
-      { tex: "SMOKE", colors: [0x883300, 0x441100], count: 18, speed: { min: 20, max: 62 }, scale: { start: 1.1, end: 0.2 }, lifespan: { min: 600, max: 1250 }, gravityY: -22, radius: 37, blendMode: 0, alpha: { start: 0.52, end: 0 } },
+      { tex: "CIRCLE", colors: [0xff2200, 0xff7700, 0xffcc00, 0xffee88], count: 24, speed: { min: 60, max: 185 }, scale: { start: 0.59, end: 0.0 }, lifespan: { min: 400, max: 920 }, gravityY: -35, radius: 27 },
+      { tex: "SMOKE", colors: [0x883300, 0x441100], count: 9, speed: { min: 20, max: 62 }, scale: { start: 0.72, end: 0.13 }, lifespan: { min: 600, max: 1250 }, gravityY: -22, radius: 24, blendMode: 0, alpha: { start: 0.52, end: 0 } },
     ],
   },
   frost_breath: {
     rings: [
-      { color: 0x44aaff, start: 5, end: 68, duration: 540, alpha: 0.8, width: 4 },
-      { color: 0xffffff, start: 5, end: 52, duration: 440, alpha: 0.5, width: 2, delay: 85 },
+      { color: 0x44aaff, start: 5, end: 68, duration: 540, alpha: 0.8, width: 2 },
+      { color: 0xffffff, start: 5, end: 52, duration: 440, alpha: 0.5, width: 1, delay: 85 },
     ],
     bursts: [
-      { tex: "SHARD", colors: [0x44ccff, 0x88eeff, 0xffffff], count: 30, speed: { min: 60, max: 165 }, scale: { start: 0.6, end: 0 }, lifespan: { min: 400, max: 760 }, rotate: { start: 0, end: 270 }, radius: 38 },
-      { tex: "SMOKE", colors: [0x88ccff, 0xaaddff], count: 16, speed: { min: 15, max: 47 }, scale: { start: 0.9, end: 0.2 }, lifespan: { min: 600, max: 1120 }, gravityY: -16, radius: 42, blendMode: 0, alpha: { start: 0.42, end: 0 } },
+      { tex: "SHARD", colors: [0x44ccff, 0x88eeff, 0xffffff], count: 15, speed: { min: 60, max: 165 }, scale: { start: 0.39, end: 0.0 }, lifespan: { min: 400, max: 760 }, rotate: { start: 0, end: 270 }, radius: 24 },
+      { tex: "SMOKE", colors: [0x88ccff, 0xaaddff], count: 8, speed: { min: 15, max: 47 }, scale: { start: 0.59, end: 0.13 }, lifespan: { min: 600, max: 1120 }, gravityY: -16, radius: 27, blendMode: 0, alpha: { start: 0.42, end: 0 } },
     ],
   },
   banshee_wail: {
     rings: [
-      { color: 0x8844cc, start: 5, end: 78, duration: 620, alpha: 0.8, width: 5 },
-      { color: 0xcc44ff, start: 5, end: 62, duration: 510, alpha: 0.55, width: 3, delay: 105 },
+      { color: 0x8844cc, start: 5, end: 78, duration: 620, alpha: 0.8, width: 3 },
+      { color: 0xcc44ff, start: 5, end: 62, duration: 510, alpha: 0.55, width: 1, delay: 105 },
     ],
     bursts: [
-      { tex: "SMOKE", colors: [0xcc44ff, 0x880088, 0x4400aa], count: 26, speed: { min: 20, max: 68 }, scale: { start: 0.8, end: 0 }, lifespan: { min: 600, max: 1250 }, gravityY: -22, radius: 52, blendMode: 0, alpha: { start: 0.62, end: 0 } },
-      { tex: "CIRCLE", colors: [0x8844cc, 0xcc44ff], count: 18, speed: { min: 30, max: 92 }, scale: { start: 0.5, end: 0 }, lifespan: { min: 400, max: 820 }, gravityY: -36, radius: 32 },
+      { tex: "SMOKE", colors: [0xcc44ff, 0x880088, 0x4400aa], count: 13, speed: { min: 20, max: 68 }, scale: { start: 0.52, end: 0.0 }, lifespan: { min: 600, max: 1250 }, gravityY: -22, radius: 33, blendMode: 0, alpha: { start: 0.62, end: 0 } },
+      { tex: "CIRCLE", colors: [0x8844cc, 0xcc44ff], count: 9, speed: { min: 30, max: 92 }, scale: { start: 0.33, end: 0.0 }, lifespan: { min: 400, max: 820 }, gravityY: -36, radius: 20 },
     ],
   },
   shadow_bolt: {
-    rings: [{ color: 0x330044, start: 5, end: 42, duration: 370, alpha: 0.8, width: 4 }],
+    rings: [{ color: 0x330044, start: 5, end: 42, duration: 370, alpha: 0.8, width: 2 }],
     bursts: [
-      { tex: "CIRCLE", colors: [0x220033, 0x550055, 0x8800aa, 0xff44ff], count: 32, speed: { min: 60, max: 178 }, scale: { start: 0.7, end: 0 }, lifespan: { min: 350, max: 720 }, radius: 7 },
-      { tex: "SMOKE", colors: [0x110022, 0x330033], count: 15, speed: { min: 15, max: 50 }, scale: { start: 0.9, end: 0.1 }, lifespan: { min: 500, max: 1020 }, gravityY: -16, radius: 17, blendMode: 0, alpha: { start: 0.5, end: 0 } },
+      { tex: "CIRCLE", colors: [0x220033, 0x550055, 0x8800aa, 0xff44ff], count: 16, speed: { min: 60, max: 178 }, scale: { start: 0.45, end: 0.0 }, lifespan: { min: 350, max: 720 }, radius: 4 },
+      { tex: "SMOKE", colors: [0x110022, 0x330033], count: 7, speed: { min: 15, max: 50 }, scale: { start: 0.59, end: 0.07 }, lifespan: { min: 500, max: 1020 }, gravityY: -16, radius: 11, blendMode: 0, alpha: { start: 0.5, end: 0 } },
     ],
   },
   soul_drain: {
-    rings: [{ color: 0x4422aa, start: 4, end: 30, duration: 320, alpha: 0.8, width: 3 }],
-    bursts: [{ tex: "CIRCLE", colors: [0x4422aa, 0x8844cc, 0xaaaaff], count: 20, speed: { min: 20, max: 72 }, scale: { start: 0.55, end: 0 }, lifespan: { min: 400, max: 820 }, gravityY: -48, radius: 11 }],
+    rings: [{ color: 0x4422aa, start: 4, end: 30, duration: 320, alpha: 0.8, width: 1 }],
+    bursts: [{ tex: "CIRCLE", colors: [0x4422aa, 0x8844cc, 0xaaaaff], count: 10, speed: { min: 20, max: 72 }, scale: { start: 0.36, end: 0.0 }, lifespan: { min: 400, max: 820 }, gravityY: -48, radius: 7 }],
   },
   web_shot: {
-    rings: [{ color: 0x888888, start: 5, end: 32, duration: 360, alpha: 0.7, width: 3 }],
-    bursts: [{ tex: "CIRCLE", colors: [0x888888, 0xaaaaaa, 0xffffff], count: 20, speed: { min: 30, max: 92 }, scale: { start: 0.4, end: 0 }, lifespan: { min: 300, max: 660 }, radius: 11 }],
+    rings: [{ color: 0x888888, start: 5, end: 32, duration: 360, alpha: 0.7, width: 1 }],
+    bursts: [{ tex: "CIRCLE", colors: [0x888888, 0xaaaaaa, 0xffffff], count: 10, speed: { min: 30, max: 92 }, scale: { start: 0.26, end: 0.0 }, lifespan: { min: 300, max: 660 }, radius: 7 }],
   },
   // ── Paladin ──
   consecration: {
     rings: [
-      { color: 0xffcc00, start: 5, end: 48, duration: 480, alpha: 0.85, width: 4 },
-      { color: 0xff6600, start: 5, end: 36, duration: 380, alpha: 0.6, width: 3, delay: 80 },
+      { color: 0xffcc00, start: 5, end: 48, duration: 480, alpha: 0.85, width: 2 },
+      { color: 0xff6600, start: 5, end: 36, duration: 380, alpha: 0.6, width: 1, delay: 80 },
     ],
     bursts: [
-      { tex: "CIRCLE", colors: [0xff6600, 0xffcc00, 0xffffff, 0xffee44], count: 32, speed: { min: 50, max: 145 }, scale: { start: 0.65, end: 0 }, lifespan: { min: 400, max: 840 }, gravityY: -32, radius: 30 },
-      { tex: "STAR", colors: [0xffffff, 0xffee44], count: 14, speed: { min: 25, max: 72 }, scale: { start: 0.5, end: 0 }, lifespan: { min: 500, max: 920 }, rotate: { start: 0, end: 360 }, gravityY: -42, radius: 24 },
+      { tex: "CIRCLE", colors: [0xff6600, 0xffcc00, 0xffffff, 0xffee44], count: 16, speed: { min: 50, max: 145 }, scale: { start: 0.42, end: 0.0 }, lifespan: { min: 400, max: 840 }, gravityY: -32, radius: 19 },
+      { tex: "STAR", colors: [0xffffff, 0xffee44], count: 7, speed: { min: 25, max: 72 }, scale: { start: 0.33, end: 0.0 }, lifespan: { min: 500, max: 920 }, rotate: { start: 0, end: 360 }, gravityY: -42, radius: 15 },
     ],
   },
   // ── Druid ──
   bear_form: {
-    flash: { color: 0x8B5E3C, size: 40, duration: 150 },
-    rings: [{ color: 0x8B5E3C, start: 6, end: 52, duration: 500, alpha: 0.8, width: 4 }],
+    flash: { color: 0x8B5E3C, size: 26, duration: 150 },
+    rings: [{ color: 0x8B5E3C, start: 6, end: 52, duration: 500, alpha: 0.8, width: 2 }],
     bursts: [
-      { tex: "SMOKE", colors: [0x6B4226, 0xA07040, 0x5C3A1C], count: 30, speed: { min: 30, max: 95 }, scale: { start: 1.0, end: 0.1 }, lifespan: { min: 500, max: 1100 }, gravityY: -18, radius: 32, blendMode: 0, alpha: { start: 0.7, end: 0 } },
-      { tex: "CIRCLE", colors: [0x8B5E3C, 0xD2A679, 0xFFEECC], count: 16, speed: { min: 50, max: 130 }, scale: { start: 0.55, end: 0 }, lifespan: { min: 350, max: 700 }, radius: 18 },
+      { tex: "SMOKE", colors: [0x6B4226, 0xA07040, 0x5C3A1C], count: 15, speed: { min: 30, max: 95 }, scale: { start: 0.65, end: 0.07 }, lifespan: { min: 500, max: 1100 }, gravityY: -18, radius: 20, blendMode: 0, alpha: { start: 0.7, end: 0 } },
+      { tex: "CIRCLE", colors: [0x8B5E3C, 0xD2A679, 0xFFEECC], count: 8, speed: { min: 50, max: 130 }, scale: { start: 0.36, end: 0.0 }, lifespan: { min: 350, max: 700 }, radius: 11 },
     ],
   },
   cat_form: {
-    rings: [{ color: 0x44FF88, start: 4, end: 40, duration: 360, alpha: 0.8, width: 3 }],
+    rings: [{ color: 0x44FF88, start: 4, end: 40, duration: 360, alpha: 0.8, width: 1 }],
     bursts: [
-      { tex: "SHARD", colors: [0x44FF88, 0xAAFFCC, 0xFFFFFF], count: 24, speed: { min: 100, max: 240 }, scale: { start: 0.55, end: 0 }, lifespan: { min: 180, max: 380 }, angle: { min: 0, max: 360 }, rotate: { start: 0, end: 180 } },
-      { tex: "CIRCLE", colors: [0x44FF88, 0x88FFCC], count: 12, speed: { min: 30, max: 80 }, scale: { start: 0.35, end: 0 }, lifespan: { min: 300, max: 600 }, gravityY: -40, radius: 16 },
+      { tex: "SHARD", colors: [0x44FF88, 0xAAFFCC, 0xFFFFFF], count: 12, speed: { min: 100, max: 240 }, scale: { start: 0.36, end: 0.0 }, lifespan: { min: 180, max: 380 }, angle: { min: 0, max: 360 }, rotate: { start: 0, end: 180 } },
+      { tex: "CIRCLE", colors: [0x44FF88, 0x88FFCC], count: 6, speed: { min: 30, max: 80 }, scale: { start: 0.23, end: 0.0 }, lifespan: { min: 300, max: 600 }, gravityY: -40, radius: 10 },
     ],
   },
   // ── Necromancer ──
   summon: {
     rings: [
-      { color: 0x220033, start: 5, end: 40, duration: 480, alpha: 0.7, width: 4 },
-      { color: 0x8844CC, start: 5, end: 30, duration: 380, alpha: 0.4, width: 2, delay: 80 },
+      { color: 0x220033, start: 5, end: 40, duration: 480, alpha: 0.7, width: 2 },
+      { color: 0x8844CC, start: 5, end: 30, duration: 380, alpha: 0.4, width: 1, delay: 80 },
     ],
     bursts: [
-      { tex: "SMOKE", colors: [0x110022, 0x330033, 0x550055], count: 28, speed: { min: 15, max: 55 }, scale: { start: 1.0, end: 0.1 }, lifespan: { min: 700, max: 1500 }, gravityY: -40, radius: 20, blendMode: 0, alpha: { start: 0.65, end: 0 } },
-      { tex: "CIRCLE", colors: [0xCC44FF, 0x8800CC, 0x4400AA], count: 18, speed: { min: 30, max: 90 }, scale: { start: 0.55, end: 0 }, lifespan: { min: 400, max: 850 }, gravityY: -60, radius: 14 },
+      { tex: "SMOKE", colors: [0x110022, 0x330033, 0x550055], count: 14, speed: { min: 15, max: 55 }, scale: { start: 0.65, end: 0.07 }, lifespan: { min: 700, max: 1500 }, gravityY: -40, radius: 13, blendMode: 0, alpha: { start: 0.65, end: 0 } },
+      { tex: "CIRCLE", colors: [0xCC44FF, 0x8800CC, 0x4400AA], count: 9, speed: { min: 30, max: 90 }, scale: { start: 0.36, end: 0.0 }, lifespan: { min: 400, max: 850 }, gravityY: -60, radius: 9 },
     ],
   },
   // ── Default fallback ──
   _default: {
-    rings: [{ color: 0xaaaaff, start: 4, end: 32, duration: 320, alpha: 0.7, width: 2 }],
-    bursts: [{ tex: "CIRCLE", colors: [0xffffff, 0xaaaaff], count: 18, speed: { min: 40, max: 105 }, scale: { start: 0.5, end: 0 }, lifespan: { min: 300, max: 620 } }],
+    rings: [{ color: 0xaaaaff, start: 4, end: 32, duration: 320, alpha: 0.7, width: 1 }],
+    bursts: [{ tex: "CIRCLE", colors: [0xffffff, 0xaaaaff], count: 9, speed: { min: 40, max: 105 }, scale: { start: 0.33, end: 0.0 }, lifespan: { min: 300, max: 620 } }],
   },
 };
 
@@ -537,7 +537,7 @@ export class EffectManager {
     const aura = this.scene.add
       .particles(px, py + 8, TEX.CIRCLE, {
         tint: [0xaaffff, 0xffffff, 0x4488ff],
-        scale: { start: 1.2, end: 0.8 },
+        scale: { start: 0.78, end: 0.52 },
         alpha: { start: 0.8, end: 0 },
         lifespan: 2000,
         frequency: 500,
@@ -549,7 +549,7 @@ export class EffectManager {
     const stars = this.scene.add
       .particles(px, py, TEX.STAR, {
         tint: [0xffffff, 0xaaffff],
-        scale: { start: 0.4, end: 0 },
+        scale: { start: 0.26, end: 0.0 },
         alpha: { start: 1, end: 0 },
         speed: { min: 10, max: 30 },
         angle: { min: 250, max: 290 }, // Flowing upwards
@@ -692,12 +692,12 @@ export class EffectManager {
     // Massive fireball burst
     this.burst(px, py, TEX.CIRCLE, {
       colors: [0xff2200, 0xff7700, 0xffcc00, 0xffee88],
-      count: 50,
+      count: 25,
       speed: { min: 80, max: 240 },
-      scale: { start: 1.0, end: 0 },
+      scale: { start: 0.65, end: 0.0 },
       lifespan: { min: 400, max: 900 },
       gravityY: -40,
-      radius: 10,
+      radius: 6,
     });
     
     // Add realistic thick smoke for the subsequent explosion
@@ -707,12 +707,12 @@ export class EffectManager {
       // Hot embers scattered outward
       this.burst(px, py, TEX.SPARK, {
         colors: [0xff6600, 0xffaa00, 0xffff44],
-        count: 35,
+        count: 17,
         speed: { min: 50, max: 150 },
-        scale: { start: 0.6, end: 0 },
+        scale: { start: 0.39, end: 0.0 },
         lifespan: { min: 600, max: 1200 },
         gravityY: -60,
-        radius: 20,
+        radius: 13,
       });
     });
   }
@@ -732,12 +732,12 @@ export class EffectManager {
     // Horizontal electric sparks
     this.burst(px, py, TEX.SPARK, {
       colors: [0xffffff, 0xffffaa],
-      count: 22,
+      count: 11,
       speed: { min: 80, max: 220 },
-      scale: { start: 0.5, end: 0 },
+      scale: { start: 0.33, end: 0.0 },
       lifespan: { min: 100, max: 300 },
       angle: { min: 160, max: 200 },
-      radius: 30,
+      radius: 19,
     });
   }
 
@@ -752,12 +752,12 @@ export class EffectManager {
     // Lingering deep cold particles
     this.burst(px, py, TEX.CIRCLE, {
       colors: [0x88ddff, 0xffffff],
-      count: 25,
+      count: 12,
       speed: { min: 10, max: 40 },
-      scale: { start: 0.5, end: 0 },
+      scale: { start: 0.33, end: 0.0 },
       lifespan: { min: 800, max: 1500 },
       gravityY: 15, // Falling snow
-      radius: 55,
+      radius: 35,
     });
   }
 
@@ -771,9 +771,9 @@ export class EffectManager {
 
     this.burst(px, py, TEX.SPARK, {
       colors: [0xffffff, 0xaaccff, 0x6688cc],
-      count: 30,
+      count: 15,
       speed: { min: 100, max: 220 },
-      scale: { start: 0.6, end: 0 },
+      scale: { start: 0.39, end: 0.0 },
       lifespan: { min: 200, max: 500 },
       angle: { min: -55, max: 55 },
     });
@@ -781,13 +781,13 @@ export class EffectManager {
     this.scene.time.delayedCall(90, () => {
       this.burst(px, py - TILE_SIZE, TEX.STAR, {
         colors: [0xffff00, 0xffcc00, 0xffffff],
-        count: 7,
+        count: 3,
         speed: { min: 20, max: 55 },
-        scale: { start: 0.6, end: 0.2 },
+        scale: { start: 0.39, end: 0.13 },
         lifespan: { min: 700, max: 1000 },
         rotate: { start: 0, end: 720 },
         gravityY: -15,
-        radius: 16,
+        radius: 10,
       });
     });
   }
@@ -805,9 +805,9 @@ export class EffectManager {
     // An extra squirt of venom
     this.burst(px, py, TEX.CIRCLE, {
       colors: [0x44ff44, 0x00aa00, 0x88ff00],
-      count: 15,
+      count: 7,
       speed: { min: 50, max: 120 },
-      scale: { start: 0.6, end: 0 },
+      scale: { start: 0.39, end: 0.0 },
       lifespan: { min: 300, max: 700 },
       gravityY: 120,
     });
@@ -820,9 +820,9 @@ export class EffectManager {
     this.ring(px, py, 0xffee44, 5, 38, 330, 0.85, 3);
     this.burst(px, py, TEX.STAR, {
       colors: [0xffff44, 0xffcc00, 0xffffff],
-      count: 22,
+      count: 11,
       speed: { min: 90, max: 210 },
-      scale: { start: 0.55, end: 0 },
+      scale: { start: 0.36, end: 0.0 },
       lifespan: { min: 250, max: 560 },
       angle: { min: 50, max: 130 },
       rotate: { start: 0, end: 360 },
@@ -852,9 +852,9 @@ export class EffectManager {
       // Massive explosion sparks
       this.burst(px, py, TEX.SPARK, {
         colors: [0xffffff, 0xffff44, 0xff6600],
-        count: 50,
+        count: 25,
         speed: { min: 150, max: 350 },
-        scale: { start: 1.0, end: 0 },
+        scale: { start: 0.65, end: 0.0 },
         lifespan: { min: 400, max: 1000 },
         gravityY: 100, // Sparks fall back heavily
       });
@@ -907,18 +907,18 @@ export class EffectManager {
     // Horizontal chaining sparks
     this.burst(px, py, TEX.SHARD, {
       colors: [0xffffff, 0xaaffff],
-      count: 20,
+      count: 10,
       speed: { min: 100, max: 300 },
-      scale: { start: 0.6, end: 0 },
+      scale: { start: 0.39, end: 0.0 },
       lifespan: { min: 200, max: 500 },
       angle: { min: -20, max: 20 }, // Shoot mostly right
       gravityY: 0,
     });
     this.burst(px, py, TEX.SHARD, {
       colors: [0xffffff, 0xaaffff],
-      count: 20,
+      count: 10,
       speed: { min: 100, max: 300 },
-      scale: { start: 0.6, end: 0 },
+      scale: { start: 0.39, end: 0.0 },
       lifespan: { min: 200, max: 500 },
       angle: { min: 160, max: 200 }, // Shoot mostly left
       gravityY: 0,
@@ -952,12 +952,12 @@ export class EffectManager {
     // Screen shaking is handled by camera, but we emphasize it with heavy particles
     this.burst(px, py, TEX.SMOKE, {
       colors: [0x553311, 0x442200],
-      count: 40,
+      count: 20,
       speed: { min: 50, max: 150 },
-      scale: { start: 1.0, end: 0.2 },
+      scale: { start: 0.65, end: 0.13 },
       lifespan: { min: 600, max: 1200 },
       gravityY: 0,
-      radius: 40,
+      radius: 26,
       blendMode: Phaser.BlendModes.NORMAL,
       alpha: { start: 0.6, end: 0 },
     });
@@ -970,24 +970,24 @@ export class EffectManager {
     this.createVines(px, py);
     this.burst(px, py, TEX.SMOKE, {
       colors: [0x228822, 0x44AA44, 0x66CC66],
-      count: 22,
+      count: 11,
       speed: { min: 15, max: 50 },
-      scale: { start: 0.9, end: 0.1 },
+      scale: { start: 0.59, end: 0.07 },
       lifespan: { min: 600, max: 1300 },
       gravityY: -30,
-      radius: 28,
+      radius: 18,
       blendMode: Phaser.BlendModes.NORMAL,
       alpha: { start: 0.6, end: 0 },
     });
     this.burst(px, py, TEX.STAR, {
       colors: [0x88FF88, 0x44FF88, 0xFFFFFF],
-      count: 12,
+      count: 6,
       speed: { min: 20, max: 65 },
-      scale: { start: 0.5, end: 0 },
+      scale: { start: 0.33, end: 0.0 },
       lifespan: { min: 600, max: 1100 },
       rotate: { start: 0, end: 360 },
       gravityY: -55,
-      radius: 24,
+      radius: 15,
     });
   }
 
@@ -1012,31 +1012,31 @@ export class EffectManager {
     });
     this.burst(px, py, TEX.SMOKE, {
       colors: [0x330011, 0x110000, 0x220000, 0x440022],
-      count: 30,
+      count: 15,
       speed: { min: 22, max: 85 },
-      scale: { start: 1.0, end: 0.1 },
+      scale: { start: 0.65, end: 0.07 },
       lifespan: { min: 600, max: 1500 },
       gravityY: -14,
-      radius: 20,
+      radius: 13,
       blendMode: Phaser.BlendModes.NORMAL,
       alpha: { start: 0.7, end: 0 },
     });
     // Blood droplets falling downward
     this.burst(px, py, TEX.CIRCLE, {
       colors: [0xff2222, 0x880000, 0x440000],
-      count: 28,
+      count: 14,
       speed: { min: 50, max: 160 },
-      scale: { start: 0.55, end: 0 },
+      scale: { start: 0.36, end: 0.0 },
       lifespan: { min: 300, max: 650 },
-      radius: 10,
+      radius: 6,
       gravityY: 85,
     });
     // Blood splatter arcing upward
     this.burst(px, py, TEX.CIRCLE, {
       colors: [0xff0000, 0xcc0000],
-      count: 14,
+      count: 7,
       speed: { min: 60, max: 145 },
-      scale: { start: 0.42, end: 0 },
+      scale: { start: 0.27, end: 0.0 },
       lifespan: { min: 200, max: 420 },
       angle: { min: 220, max: 320 },
       gravityY: 180,
@@ -1061,37 +1061,37 @@ export class EffectManager {
     // Primary spinning gold stars
     this.burst(px, py, TEX.STAR, {
       colors: [0xffff00, 0xffd700, 0xffffff, 0xffee88],
-      count: 50,
+      count: 25,
       speed: { min: 55, max: 200 },
-      scale: { start: 0.8, end: 0 },
+      scale: { start: 0.52, end: 0.0 },
       lifespan: { min: 600, max: 1200 },
       rotate: { start: 0, end: 720 },
-      radius: 12,
+      radius: 7,
       gravityY: -40,
     });
     // Golden cross-shaped sparks
     this.burst(px, py, TEX.CROSS, {
       colors: [0xffffff, 0xffff44],
-      count: 14,
+      count: 7,
       speed: { min: 25, max: 80 },
-      scale: { start: 0.65, end: 0 },
+      scale: { start: 0.42, end: 0.0 },
       lifespan: { min: 800, max: 1400 },
       rotate: { start: 0, end: 360 },
       gravityY: -50,
-      radius: 28,
+      radius: 18,
     });
     // Wide sparkle cloud
     this.burst(px, py, TEX.CIRCLE, {
       colors: [0xffff44, 0xffd700, 0xffffff],
-      count: 32,
+      count: 16,
       speed: { min: 35, max: 95 },
-      scale: { start: 0.45, end: 0 },
+      scale: { start: 0.29, end: 0.0 },
       lifespan: { min: 700, max: 1450 },
       gravityY: -62,
-      radius: 40,
+      radius: 26,
     });
     // Large styled text — bigger than normal floatText
-    this.floatText(px, py - 56, "✦ LEVEL UP! ✦", "#ffff00", "18px");
+    this.floatText(px, py - 56, "✦ LEVEL UP! ✦", "#ffff00", "16px");
   }
 
   /**
@@ -1111,9 +1111,9 @@ export class EffectManager {
       this.scene.time.delayedCall(80, () => this.ring(px, py, 0xffaa00, 8, 3, 300, 0.55, 2));
       this.burst(px, py, TEX.STAR, {
         colors: [0xffee44, 0xffcc00, 0xffffff],
-        count: 16,
+        count: 8,
         speed: { min: 30, max: 90 },
-        scale: { start: 0.75, end: 0 },
+        scale: { start: 0.49, end: 0.0 },
         lifespan: { min: 280, max: 560 },
         angle: { min: 230, max: 310 }, // arc upward
         rotate: { start: 0, end: 540 },
@@ -1124,11 +1124,11 @@ export class EffectManager {
       this.ring(px, py, color, 8, 3, 300, 0.65, 2);
       this.burst(px, py, TEX.SPARK, {
         colors: [color, 0xffffff],
-        count: 8,
+        count: 4,
         speed: { min: 20, max: 55 },
-        scale: { start: 0.4, end: 0 },
+        scale: { start: 0.26, end: 0.0 },
         lifespan: { min: 200, max: 450 },
-        radius: 6,
+        radius: 3,
       });
     }
   }
@@ -1145,22 +1145,22 @@ export class EffectManager {
     this.ring(px, py, 0x44ffaa, 5, 42, 460, 0.8, 3);
     this.burst(px, py, TEX.CIRCLE, {
       colors: [0xffffff, 0x44ffaa, 0xaaffee],
-      count: 20,
+      count: 10,
       speed: { min: 20, max: 72 },
-      scale: { start: 0.45, end: 0 },
+      scale: { start: 0.29, end: 0.0 },
       lifespan: { min: 400, max: 820 },
       gravityY: -45,
-      radius: 20,
+      radius: 13,
     });
     this.burst(px, py, TEX.STAR, {
       colors: [0xffffff, 0x88ffcc],
-      count: 8,
+      count: 4,
       speed: { min: 25, max: 60 },
-      scale: { start: 0.5, end: 0 },
+      scale: { start: 0.33, end: 0.0 },
       lifespan: { min: 550, max: 950 },
       rotate: { start: 0, end: 360 },
       gravityY: -50,
-      radius: 16,
+      radius: 10,
     });
   }
 
@@ -1181,11 +1181,11 @@ export class EffectManager {
     // Small particle spray to draw the eye
     this.burst(px, py, TEX.SPARK, {
       colors: [color],
-      count: 6,
+      count: 3,
       speed: { min: 10, max: 28 },
-      scale: { start: 0.3, end: 0 },
+      scale: { start: 0.2, end: 0.0 },
       lifespan: { min: 100, max: 200 },
-      radius: 22,
+      radius: 14,
     });
   }
 
@@ -1256,9 +1256,9 @@ export class EffectManager {
     this.flash(px, py, 0xff4444, 16, 60);
     this.burst(px, py, TEX.SPARK, {
       colors: [0xff4444, 0xff8844, 0xffcc88, 0xffffff],
-      count: 16,
+      count: 8,
       speed: { min: 50, max: 115 },
-      scale: { start: 0.55, end: 0 },
+      scale: { start: 0.36, end: 0.0 },
       lifespan: { min: 150, max: 390 },
       angle: { min: -55, max: 55 },
     });
@@ -1270,27 +1270,27 @@ export class EffectManager {
     
     if (type === "dodged" || type === "parried") {
       const text = type === "dodged" ? i18n.t("game.dodged") : i18n.t("game.parried");
-      this.floatText(sprite.renderX, sprite.renderY - 30, text, "#aaaaaa", "13px");
+      this.floatText(sprite.renderX, sprite.renderY - 20, text, "#aaaaaa", "10px");
       return;
     }
     
     // Use red for all damage (physical, magic, dot) as per user request
     const color = "#ff4444";
     const prefix = "-";
-    const size = type === "dot" ? "11px" : "14px";
-    this.floatText(sprite.renderX, sprite.renderY - 30, `${prefix}${amount}`, color, size);
+    const size = type === "dot" ? "10px" : "12px";
+    this.floatText(sprite.renderX, sprite.renderY - 20, `${prefix}${amount}`, color, size);
   }
 
   showHeal(targetSessionId: string, amount: number) {
     const sprite = this.spriteManager.getSprite(targetSessionId);
     if (!sprite) return;
-    this.floatText(sprite.renderX, sprite.renderY - 30, `+${amount}`, "#33cc33", "14px");
+    this.floatText(sprite.renderX, sprite.renderY - 20, `+${amount}`, "#33cc33", "12px");
   }
 
   showFloatingText(sessionId: string, text: string, color: string) {
     const sprite = this.spriteManager.getSprite(sessionId);
     if (!sprite) return;
-    this.floatText(sprite.renderX, sprite.renderY - 42, text, color, "11px");
+    this.floatText(sprite.renderX, sprite.renderY - 28, text, color, "10px");
   }
 
   // ── Internals ─────────────────────────────────────────────────────────────
@@ -1378,7 +1378,7 @@ export class EffectManager {
 
     this.scene.tweens.add({
       targets: text,
-      y: y - 42,
+      y: y - 28,
       alpha: 0,
       duration: 1250,
       ease: "Power1",
@@ -1522,7 +1522,7 @@ export class EffectManager {
     // Trail with slight colour variation
     const trail = this.scene.add.particles(sx, sy, texKey, {
       speed: { min: 2, max: 15 },
-      scale: { start: 0.55, end: 0 },
+      scale: { start: 0.36, end: 0.0 },
       lifespan: { min: 150, max: 320 },
       tint: [color, 0xffffff],
       blendMode: Phaser.BlendModes.ADD,
@@ -1553,31 +1553,31 @@ export class EffectManager {
   private projectileStyle(spellId: string): { color: number; texKey: string; size: number } {
     switch (spellId) {
       case "basic_attack":
-        return { color: 0xdddddd, texKey: TEX.CIRCLE, size: 4 };
+        return { color: 0xdddddd, texKey: TEX.CIRCLE, size: 2 };
       case "shadow_bolt":
-        return { color: 0x8800ff, texKey: TEX.CIRCLE, size: 7 };
+        return { color: 0x8800ff, texKey: TEX.CIRCLE, size: 4 };
       case "magic_dart":
-        return { color: 0x88bbff, texKey: TEX.CIRCLE, size: 4 };
+        return { color: 0x88bbff, texKey: TEX.CIRCLE, size: 2 };
       case "fireball":
-        return { color: 0xff5500, texKey: TEX.CIRCLE, size: 8 };
+        return { color: 0xff5500, texKey: TEX.CIRCLE, size: 5 };
       case "ice_bolt":
-        return { color: 0x44ccff, texKey: TEX.SHARD, size: 6 };
+        return { color: 0x44ccff, texKey: TEX.SHARD, size: 3 };
       case "web_shot":
-        return { color: 0xbbbbaa, texKey: TEX.SPARK, size: 5 };
+        return { color: 0xbbbbaa, texKey: TEX.SPARK, size: 3 };
       case "poison_arrow":
       case "poison_bite":
-        return { color: 0x44ff44, texKey: TEX.CIRCLE, size: 5 };
+        return { color: 0x44ff44, texKey: TEX.CIRCLE, size: 3 };
       case "aimed_shot":
       case "multi_shot":
-        return { color: 0xffdd44, texKey: TEX.SHARD, size: 5 };
+        return { color: 0xffdd44, texKey: TEX.SHARD, size: 3 };
       case "soul_drain":
-        return { color: 0x8844cc, texKey: TEX.CIRCLE, size: 6 };
+        return { color: 0x8844cc, texKey: TEX.CIRCLE, size: 3 };
       case "holy_strike":
       case "holy_bolt":
       case "smite":
-        return { color: 0xffffaa, texKey: TEX.STAR, size: 7 };
+        return { color: 0xffffaa, texKey: TEX.STAR, size: 4 };
       default:
-        return { color: this.spellWindupColor(spellId), texKey: TEX.CIRCLE, size: 6 };
+        return { color: this.spellWindupColor(spellId), texKey: TEX.CIRCLE, size: 3 };
     }
   }
 
@@ -1593,34 +1593,34 @@ export class EffectManager {
     // The Core: Bright, hot, ADD blend mode
     this.burst(px, py + 4, TEX.CIRCLE, {
       colors: [0xffffff, 0xffff44, 0xffaa00, 0xff2200],
-      count: 24,
+      count: 12,
       speed: { min: 10, max: 25 },
-      scale: { start: 0.8, end: 0 },
+      scale: { start: 0.52, end: 0.0 },
       lifespan: { min: 500, max: 900 },
       gravityY: -20,
-      radius: 6,
+      radius: 3,
     });
 
     // The Flames: Orange/Red, ADD blend mode, larger but faster decay
     this.burst(px, py, TEX.SMOKE, {
       colors: [0xff4400, 0xff2200, 0xaa0000],
-      count: 18,
+      count: 9,
       speed: { min: 20, max: 40 },
-      scale: { start: 1.0, end: 0.2 },
+      scale: { start: 0.65, end: 0.13 },
       lifespan: { min: 600, max: 1100 },
       gravityY: -30,
-      radius: 10,
+      radius: 6,
     });
 
     // The Embers: Tiny sparks, ADD blend mode, erratic upward movement
     this.burst(px, py - 4, TEX.SPARK, {
       colors: [0xffaa00, 0xff4400, 0xffffff],
-      count: 12,
+      count: 6,
       speed: { min: 30, max: 70 },
-      scale: { start: 0.4, end: 0 },
+      scale: { start: 0.26, end: 0.0 },
       lifespan: { min: 800, max: 1600 },
       gravityY: -45,
-      radius: 12,
+      radius: 7,
       angle: { min: 240, max: 300 }, // mostly up
     });
 
@@ -1628,12 +1628,12 @@ export class EffectManager {
     this.scene.time.delayedCall(200, () => {
       this.burst(px, py - 18, TEX.SMOKE, {
         colors: [0x444444, 0x222222],
-        count: 8,
+        count: 4,
         speed: { min: 15, max: 30 },
-        scale: { start: 0.5, end: 1.2 }, // expands as it rises
+        scale: { start: 0.33, end: 0.78 }, // expands as it rises
         lifespan: { min: 1000, max: 1800 },
         gravityY: -15,
-        radius: 8,
+        radius: 5,
         blendMode: Phaser.BlendModes.NORMAL,
         alpha: { start: 0.4, end: 0 },
       });
@@ -1653,10 +1653,10 @@ export class EffectManager {
       colors: [0x888888, 0x666666, 0x444444, 0x222222],
       count: Math.max(8, Math.round(30 * m)),
       speed: { min: 10, max: 45 },
-      scale: { start: 0.5, end: 2.8 },
+      scale: { start: 0.33, end: 1.82 },
       lifespan: { min: 1800, max: 3500 },
       gravityY: -8,
-      radius: 18,
+      radius: 11,
       blendMode: Phaser.BlendModes.NORMAL,
       alpha: { start: 0.85, end: 0 },
     });
@@ -1666,10 +1666,10 @@ export class EffectManager {
       colors: [0xaaaaaa, 0x888888],
       count: Math.max(4, Math.round(10 * m)),
       speed: { min: 40, max: 80 },
-      scale: { start: 0.6, end: 0 },
+      scale: { start: 0.39, end: 0.0 },
       lifespan: { min: 400, max: 800 },
       gravityY: 0,
-      radius: 5,
+      radius: 3,
       blendMode: Phaser.BlendModes.NORMAL,
     });
   }
@@ -1687,9 +1687,9 @@ export class EffectManager {
     // The Main Splashes: Drops arcing upwards and falling rapidly back down
     this.burst(px, py, TEX.CIRCLE, {
       colors: [0xffffff, 0xccffff, 0x88ddff, 0x44aaff],
-      count: 35,
+      count: 17,
       speed: { min: 80, max: 220 },
-      scale: { start: 0.5, end: 0 },
+      scale: { start: 0.33, end: 0.0 },
       lifespan: { min: 400, max: 850 },
       gravityY: 450, // **Very heavy** downward pull
       angle: { min: 200, max: 340 }, // Bursting upwards in an arc
@@ -1700,12 +1700,12 @@ export class EffectManager {
     this.scene.time.delayedCall(50, () => {
       this.burst(px, py - 10, TEX.SMOKE, {
         colors: [0xccffff, 0x88ddff, 0xaaffff],
-        count: 12,
+        count: 6,
         speed: { min: 10, max: 35 },
-        scale: { start: 0.6, end: 1.5 },
+        scale: { start: 0.39, end: 0.98 },
         lifespan: { min: 600, max: 1200 },
         gravityY: -5,
-        radius: 16,
+        radius: 10,
         blendMode: Phaser.BlendModes.NORMAL,
         alpha: { start: 0.5, end: 0 },
       });
@@ -1714,9 +1714,9 @@ export class EffectManager {
     // A few trailing sparkles representing tiny glinting droplets
     this.burst(px, py, TEX.SPARK, {
       colors: [0xffffff, 0xccffff],
-      count: 10,
+      count: 5,
       speed: { min: 40, max: 120 },
-      scale: { start: 0.3, end: 0 },
+      scale: { start: 0.2, end: 0.0 },
       lifespan: { min: 300, max: 700 },
       gravityY: 300,
       angle: { min: 220, max: 320 },
@@ -1740,7 +1740,7 @@ export class EffectManager {
       colors: [0xccccff, 0x8888aa],
       count: Math.max(5, Math.round(10 * m)),
       speed: { min: 20, max: 60 },
-      scale: { start: 1.5, end: 0.2 },
+      scale: { start: 0.98, end: 0.13 },
       lifespan: { min: 800, max: 1500 },
       gravityY: -10,
       blendMode: Phaser.BlendModes.NORMAL,
@@ -1752,7 +1752,7 @@ export class EffectManager {
       colors: [0xffffff, 0xaaffff, 0xffff44],
       count: Math.max(10, Math.round(28 * m)),
       speed: { min: 100, max: 350 },
-      scale: { start: 0.7, end: 0 },
+      scale: { start: 0.45, end: 0.0 },
       lifespan: { min: 200, max: 600 },
       gravityY: 150,
       angle: { min: 0, max: 360 },
@@ -1769,9 +1769,9 @@ export class EffectManager {
     // Thick green toxic smoke
     this.burst(px, py, TEX.SMOKE, {
       colors: [0x44ff44, 0x22aa22, 0x116611],
-      count: 35,
+      count: 17,
       speed: { min: 15, max: 40 },
-      scale: { start: 0.8, end: 3.5 }, // Expands massively
+      scale: { start: 0.52, end: 2.27 }, // Expands massively
       lifespan: { min: 1500, max: 3500 },
       gravityY: -5,
       blendMode: Phaser.BlendModes.NORMAL,
@@ -1781,12 +1781,12 @@ export class EffectManager {
     // Bubbling toxic droplets dripping down
     this.burst(px, py, TEX.CIRCLE, {
       colors: [0x88ff88, 0x44ff44],
-      count: 20,
+      count: 10,
       speed: { min: 30, max: 80 },
-      scale: { start: 0.5, end: 0 },
+      scale: { start: 0.33, end: 0.0 },
       lifespan: { min: 500, max: 1000 },
       gravityY: 150,
-      radius: 20,
+      radius: 13,
     });
   }
 
@@ -1805,7 +1805,7 @@ export class EffectManager {
       colors: [0xffffff, 0xccffff, 0x88ddff],
       count: Math.max(12, Math.round(40 * m)),
       speed: { min: 150, max: 450 },
-      scale: { start: 0.9, end: 0 },
+      scale: { start: 0.59, end: 0.0 },
       lifespan: { min: 300, max: 700 },
       rotate: { start: 0, end: 720 },
       blendMode: Phaser.BlendModes.ADD,
@@ -1816,7 +1816,7 @@ export class EffectManager {
       colors: [0xddffff, 0xaaddff],
       count: Math.max(8, Math.round(20 * m)),
       speed: { min: 10, max: 50 },
-      scale: { start: 0.5, end: 2.5 },
+      scale: { start: 0.33, end: 1.62 },
       lifespan: { min: 1200, max: 2400 },
       gravityY: 25,
       blendMode: Phaser.BlendModes.NORMAL,
@@ -1834,9 +1834,9 @@ export class EffectManager {
     // Dust cloud billowing upwards
     this.burst(px, py, TEX.SMOKE, {
       colors: [0x664422, 0x442211, 0x221100],
-      count: 35,
+      count: 17,
       speed: { min: 20, max: 70 },
-      scale: { start: 0.6, end: 2.8 },
+      scale: { start: 0.39, end: 1.82 },
       lifespan: { min: 800, max: 1800 },
       gravityY: -10,
       blendMode: Phaser.BlendModes.NORMAL,
@@ -1846,9 +1846,9 @@ export class EffectManager {
     // Rock debris falling back down heavily
     this.burst(px, py, TEX.SPARK, {
       colors: [0x554433, 0x332211],
-      count: 30,
+      count: 15,
       speed: { min: 100, max: 200 },
-      scale: { start: 0.7, end: 0.2 },
+      scale: { start: 0.45, end: 0.13 },
       lifespan: { min: 400, max: 900 },
       gravityY: 500, // Very heavy rocks
       angle: { min: 200, max: 340 }, // Arcing upwards first
@@ -1882,7 +1882,7 @@ export class EffectManager {
     // Thick black/red flaming trail
     const trail = this.scene.add.particles(px, startY, TEX.SMOKE, {
       speed: { min: 10, max: 50 },
-      scale: { start: 1.5, end: 0 },
+      scale: { start: 0.98, end: 0.0 },
       lifespan: { min: 400, max: 800 },
       tint: [0xff4400, 0x221100, 0x441100],
       blendMode: Phaser.BlendModes.NORMAL,
@@ -1919,9 +1919,9 @@ export class EffectManager {
     // Initial dirt kickup from the roots bursting out
     this.burst(px, py, TEX.SMOKE, {
       colors: [0x553311, 0x332211],
-      count: 15,
+      count: 7,
       speed: { min: 10, max: 35 },
-      scale: { start: 0.5, end: 1.5 },
+      scale: { start: 0.33, end: 0.98 },
       lifespan: { min: 400, max: 800 },
       gravityY: -5,
       blendMode: Phaser.BlendModes.NORMAL,
@@ -1931,9 +1931,9 @@ export class EffectManager {
     // Spiky green vines shooting upwards around the target
     this.burst(px, py + 10, TEX.SHARD, {
       colors: [0x22aa22, 0x116611, 0x448822],
-      count: 25,
+      count: 12,
       speed: { min: 60, max: 180 },
-      scale: { start: 0.8, end: 0.2 },
+      scale: { start: 0.52, end: 0.13 },
       lifespan: { min: 800, max: 1600 },
       angle: { min: 240, max: 300 }, // Shooting strictly upwards
       gravityY: 150, // They arch and stop, simulating grabbing
@@ -1957,7 +1957,7 @@ export class EffectManager {
       tint: [0x44ffcc, 0xccffff, 0xffffff],
       speed: { min: 250, max: 400 },
       angle: 90, // Falling straight down
-      scale: { start: 0.4, end: 0.2 },
+      scale: { start: 0.26, end: 0.13 },
       lifespan: 600,
       frequency: 25,
       blendMode: Phaser.BlendModes.ADD,
@@ -1973,7 +1973,7 @@ export class EffectManager {
       speed: { min: 10, max: 30 },
       gravityY: 100,
       angle: { min: 220, max: 320 }, // Small upward splashes
-      scale: { start: 0.2, end: 0 },
+      scale: { start: 0.13, end: 0.0 },
       lifespan: 300,
       frequency: 40,
       blendMode: Phaser.BlendModes.ADD,
@@ -2004,9 +2004,9 @@ export class EffectManager {
     // Heavy liquid splash, uses gravity to fall back down fast
     this.burst(px, py, TEX.CIRCLE, {
       colors: [0x44ff00, 0x88ff44, 0x22cc00],
-      count: 40,
+      count: 20,
       speed: { min: 80, max: 200 },
-      scale: { start: 0.6, end: 0 },
+      scale: { start: 0.39, end: 0.0 },
       lifespan: { min: 400, max: 900 },
       gravityY: 400, // Very heavy
       angle: { min: 200, max: 340 }, 
@@ -2017,9 +2017,9 @@ export class EffectManager {
     this.scene.time.delayedCall(50, () => {
       this.burst(px, py - 10, TEX.SMOKE, {
         colors: [0x44ff00, 0x88ff44],
-        count: 15,
+        count: 7,
         speed: { min: 10, max: 30 },
-        scale: { start: 0.5, end: 1.5 },
+        scale: { start: 0.33, end: 0.98 },
         lifespan: { min: 600, max: 1200 },
         gravityY: -5,
         blendMode: Phaser.BlendModes.NORMAL,

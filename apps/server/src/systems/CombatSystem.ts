@@ -390,8 +390,8 @@ export class CombatSystem {
       }
     }
 
-    // Validate target if ability is not self-target or AoE around self
-    if (ability.rangeTiles > 0 || (ability.aoeRadius && ability.aoeRadius > 0)) {
+    // Validate target if ability is not self-target or AoE around self (i.e. has ranged targeting)
+    if (ability.rangeTiles > 0) {
       const target = this.spatial.findEntityAtTile(targetTileX, targetTileY);
       if (target) {
         const failureReason = this.getCastFailureReason(caster, target, ability);

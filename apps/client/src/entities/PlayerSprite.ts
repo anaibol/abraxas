@@ -731,10 +731,10 @@ export class PlayerSprite {
         tint: [0xffff00, 0xffcc00, 0xffffff, 0xffee44],
         speed: { min: 20, max: 48 },
         angle: { min: 0, max: 360 },
-        scale: { start: 0.6, end: 0.12 },
+        scale: { start: 0.39, end: 0.12 },
         alpha: { start: 1, end: 0.3 },
         lifespan: { min: 700, max: 1100 },
-        quantity: 2,
+        quantity: 1,
         frequency: 80,
         rotate: { start: 0, end: 720 },
         x: { min: -TILE_SIZE * 0.5, max: TILE_SIZE * 0.5 },
@@ -758,10 +758,10 @@ export class PlayerSprite {
         tint: [0x44ff44, 0x007700, 0x88ff00, 0x33cc00, 0xaaff00],
         speed: { min: 8, max: 28 },
         angle: { min: 0, max: 360 },
-        scale: { start: 0.52, end: 0 },
+        scale: { start: 0.34, end: 0 },
         alpha: { start: 0.95, end: 0 },
         lifespan: { min: 700, max: 1300 },
-        quantity: 2,
+        quantity: 1,
         frequency: 60,
         gravityY: 65,
         x: { min: -12, max: 12 },
@@ -785,7 +785,7 @@ export class PlayerSprite {
         tint: [0xffdd44, 0xffaa00, 0xffffff],
         speed: { min: 12, max: 32 },
         angle: { min: 240, max: 300 },
-        scale: { start: 0.38, end: 0 },
+        scale: { start: 0.25, end: 0 },
         alpha: { start: 0.85, end: 0 },
         lifespan: { min: 600, max: 950 },
         quantity: 1,
@@ -813,7 +813,7 @@ export class PlayerSprite {
         tint: [0xcc44ff, 0x880088, 0x4400aa],
         speed: { min: 6, max: 20 },
         angle: { min: 240, max: 300 },
-        scale: { start: 0.5, end: 0 },
+        scale: { start: 0.33, end: 0 },
         alpha: { start: 0.75, end: 0 },
         lifespan: { min: 600, max: 1100 },
         quantity: 1,
@@ -864,10 +864,10 @@ export class PlayerSprite {
       tint: [0xffffff, 0xeef8ff, 0xffee88, 0x88ccff],
       speed: { min: 18, max: 45 },
       angle: { min: 0, max: 360 },
-      scale: { start: 0.45, end: 0 },
+      scale: { start: 0.29, end: 0 },
       alpha: { start: 0.95, end: 0 },
       lifespan: { min: 500, max: 900 },
-      quantity: 2,
+      quantity: 1,
       frequency: 65,
       gravityY: -20,
       x: { min: -TILE_SIZE * 0.7, max: TILE_SIZE * 0.7 },
@@ -901,10 +901,10 @@ export class PlayerSprite {
     const emitter = scene.add.particles(this.renderX, this.renderY, "status-dot", {
       speed: { min: 40, max: 100 },
       angle: { min: 0, max: 360 },
-      scale: { start: 0.8, end: 0 },
+      scale: { start: 0.52, end: 0 },
       alpha: { start: 0.8, end: 0 },
       lifespan: 500,
-      quantity: 15,
+      quantity: 7,
       tint: [0xffffff, 0xcccccc, 0x888888],
     });
     emitter.setDepth(this.container.depth + 10);
@@ -958,8 +958,8 @@ export class PlayerSprite {
         [0xff6600, 0xffaa00, 0xffdd00, 0xffee44],      // mid:  warm flames
         [0xffdd00, 0xffee88, 0xffffff, 0x88ccff],       // high: bright white-blue fire
       ][tier];
-      const scaleStart = [0.28, 0.42, 0.58][tier];
-      const quantity = [2, 3, 5][tier];
+      const scaleStart = [0.18, 0.27, 0.38][tier];
+      const quantity = [1, 2, 3][tier];
       const frequency = [65, 45, 30][tier];
       const xSpread = [6, 8, 12][tier];
       const speedMax = [22, 30, 42][tier];

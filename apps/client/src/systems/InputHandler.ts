@@ -232,11 +232,7 @@ export class InputHandler {
       );
     }
 
-    for (const { key, spellId, rangeTiles } of this.spellKeys) {
-      if (Phaser.Input.Keyboard.JustDown(key)) {
-        this.handleSpellKey(spellId, rangeTiles);
-      }
-    }
+
   }
 
   private handleSpellKey(spellId: string, rangeTiles: number) {
