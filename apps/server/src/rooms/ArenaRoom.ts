@@ -375,6 +375,10 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       prisma.character
         .update({ where: { id: char.id }, data: { lastLoginAt: new Date() } })
         .catch(() => {});
+
+      // Initialize StateView early so it's ready before the player is added to state
+      client.view = new StateView();
+
       const player = await this.playerService.createPlayer(client, char, auth.id);
       player.role = auth.role;
       // Assign spawn point — prefer safe zone for both initial spawns and
@@ -405,12 +409,10 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         player.tileX = safe?.x ?? candidate.x;
         player.tileY = safe?.y ?? candidate.y;
       }
-      // IMPORTANT: Add the player to state FIRST, then set up the StateView.
+      // IMPORTANT: Add the player to state FIRST, then add to the StateView.
       // Colyseus 0.17+ requires the instance to be attached to the state tree
-      // before it can be added to a view (calling view.add() on a detached
-      // instance throws "Cannot add a detached instance to the StateView").
+      // before it can be added to a view.
       this.state.players.set(client.sessionId, player);
-      client.view = new StateView();
       client.view.add(player);
       // Seed the AoI view with NPCs in range around the player's spawn point.
       this.npcViewSets.set(client.sessionId, new Set());
@@ -500,7 +502,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     const player = this.state.players.get(client.sessionId);
     if (!player) return;
 
-    // Player is already in state.players, so view.add() is safe here.
+    // Initialize StateView early
     client.view = new StateView();
     client.view.add(player);
     // Re-seed the AoI views for the reconnecting client.

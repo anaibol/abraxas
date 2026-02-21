@@ -51,10 +51,6 @@ export function QuestDialogue({ npcId: _npcId, npcType, text, options, onAction,
 
         {/* Body */}
         <Box p="6">
-          <Text color="white" fontSize="15px" lineHeight="1.6" mb="6">
-            {text}
-          </Text>
-
           <VStack align="stretch" gap="2">
             {options.map((opt, i) => (
               <Button

@@ -76,6 +76,7 @@ export class GameEventHandler {
     on(ServerMessageType.WorldEventEnd, (data) => this.onWorldEventEnd(data));
     on(ServerMessageType.WorldEventProgress, (data) => this.onWorldEventProgress(data));
     on(ServerMessageType.FastTravelUsed, (data) => this.onFastTravelUsed(data));
+    on(ServerMessageType.OpenDialogue, (data) => this.onOpenDialogue(data));
   }
 
   destroy() {
@@ -133,8 +134,12 @@ export class GameEventHandler {
 
   private onAttackHit(data: ServerMessages["attack_hit"]) {
     if (data.targetSessionId) {
-      this.spriteManager.flashSprite(data.targetSessionId);
-      this.effectManager.playMeleeHit(data.targetSessionId);
+      if (data.dodged || data.parried) {
+        this.effectManager.showDamage(data.targetSessionId, 0, data.dodged ? "dodged" : "parried");
+      } else {
+        this.spriteManager.flashSprite(data.targetSessionId);
+        this.effectManager.playMeleeHit(data.targetSessionId);
+      }
     }
   }
 
@@ -179,6 +184,11 @@ export class GameEventHandler {
   }
 
   private onDamage(data: ServerMessages["damage"]) {
+    if (data.dodged || data.parried) {
+      this.effectManager.showDamage(data.targetSessionId, 0, data.dodged ? "dodged" : "parried");
+      return;
+    }
+
     this.effectManager.showDamage(data.targetSessionId, data.amount, data.type);
     const sprite = this.spriteManager.getSprite(data.targetSessionId);
     const opts = sprite ? { sourceX: sprite.renderX, sourceY: sprite.renderY } : undefined;
@@ -355,6 +365,10 @@ export class GameEventHandler {
   private onFastTravelUsed(_data: ServerMessages[ServerMessageType.FastTravelUsed]) {
     this.onCameraFlash?.(200, 255, 255, 400);
     this.onConsoleMessage?.("✈ Fast travel used.", "#88ddff", "system");
+  }
+
+  private onOpenDialogue(data: ServerMessages[ServerMessageType.OpenDialogue]) {
+    this.spriteManager.showChatBubble(data.npcId, t(data.text));
   }
 
   // ── Lookup tables ─────────────────────────────────────────────────────────────

@@ -126,7 +126,7 @@ export class TickSystem {
 
       // Mana
       if (player.meditating && state.tick % 5 === 0) TickSystem.restoreStat(player, "mana", 0.02);
-      else if (!player.meditating && state.tick % 20 === 0)
+      else if (!player.meditating && state.tick % 30 === 0)
         TickSystem.restoreStat(player, "mana", 0.01);
 
       // HP

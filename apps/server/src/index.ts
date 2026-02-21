@@ -1,6 +1,10 @@
 import { resolve } from "node:path";
 import type { TileMap } from "@abraxas/shared";
 import { createGameServer } from "./server";
+import { Encoder } from "@colyseus/schema";
+
+// Increase default buffer size to 128KB to prevent state truncation
+Encoder.BUFFER_SIZE = 128 * 1024;
 
 const mapName = process.env.MAP || "arena";
 const mapPath = resolve(import.meta.dir, "../../../packages/shared/src/maps", `${mapName}.json`);

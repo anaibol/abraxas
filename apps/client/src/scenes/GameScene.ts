@@ -177,6 +177,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     const localPlayer = this.room.state.players.get(this.room.sessionId);
+
     const classType = localPlayer?.classType ?? "WARRIOR";
     this.inputHandler = new InputHandler(
       this,
@@ -614,7 +615,6 @@ export class GameScene extends Phaser.Scene {
 
       for (let dy = -range; dy <= range; dy++) {
         for (let dx = -range; dx <= range; dx++) {
-          if (Math.sqrt(dx * dx + dy * dy) > range + 0.5) continue;
           const tx = cx + dx;
           const ty = cy + dy;
           if (tx < 0 || ty < 0 || tx >= this.welcome.mapWidth || ty >= this.welcome.mapHeight)
