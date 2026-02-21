@@ -1,5 +1,5 @@
 import type { Direction, NpcEntityState, PlayerEntityState, WelcomeData } from "@abraxas/shared";
-import { AudioAssets, CLASS_STATS, DIRECTION_DELTA, i18n, MathUtils, TILE_SIZE } from "@abraxas/shared";
+import { AudioAssets, CLASS_STATS, DIRECTION_DELTA, i18n, MathUtils, TILE_SIZE, VIEWPORT_TILES_X, VIEWPORT_TILES_Y } from "@abraxas/shared";
 import { Callbacks, type Room } from "@colyseus/sdk";
 import Phaser from "phaser";
 import type { Drop } from "../../../server/src/schema/Drop";
@@ -11,7 +11,6 @@ import type { AudioManager } from "../managers/AudioManager";
 import { EffectManager } from "../managers/EffectManager";
 import { SpriteManager } from "../managers/SpriteManager";
 import type { NetworkManager } from "../network/NetworkManager";
-import { CameraController } from "../systems/CameraController";
 import { DropManager } from "../systems/DropManager";
 import { InputHandler } from "../systems/InputHandler";
 import { MapBaker } from "../systems/MapBaker";
@@ -43,28 +42,7 @@ type NpcRightClickCallback = (
 ) => void;
 export type GMMapClickCallback = (tileX: number, tileY: number) => void;
 
-/**
- * Typed subset of Colyseus StateCallbackStrategy scoped to Player.
- * Colyseus's PublicPropNames<T> resolves to `never` for nested Schema instances,
- * so we define this interface to keep player listener call sites type-safe.
- */
-interface PlayerCallbacks {
-  listen<K extends keyof Player & string>(
-    instance: Player, property: K,
-    handler: (current: Player[K], previous: Player[K]) => void,
-    immediate?: boolean,
-  ): () => void;
-  onChange(instance: unknown, handler: () => void): () => void;
-  onAdd<K extends keyof Player & string>(
-    instance: Player, property: K,
-    handler: (value: unknown, key: string) => void,
-    immediate?: boolean,
-  ): () => void;
-  onRemove<K extends keyof Player & string>(
-    instance: Player, property: K,
-    handler: (value: unknown, key: string) => void,
-  ): () => void;
-}
+
 
 export class GameScene extends Phaser.Scene {
   private network: NetworkManager;
@@ -81,7 +59,7 @@ export class GameScene extends Phaser.Scene {
   private spriteManager!: SpriteManager;
   private effectManager!: EffectManager;
   private inputHandler!: InputHandler;
-  private cameraController!: CameraController;
+
   public soundManager!: SoundManager;
   private audioManager: AudioManager;
   public onTargetingCancelled?: () => void;
@@ -179,9 +157,8 @@ export class GameScene extends Phaser.Scene {
 
     this.input.mouse?.disableContextMenu();
 
-    this.cameraController = new CameraController(this.cameras.main);
-    this.cameraController.applyFixedZoom();
-    this.scale.on("resize", () => this.cameraController.applyFixedZoom());
+    this.applyFixedZoom();
+    this.scale.on("resize", () => this.applyFixedZoom());
     // Round camera scroll to whole pixels — prevents sub-pixel shimmer
     // when the camera is manually positioned each frame.
     this.cameras.main.setRoundPixels(true);
@@ -298,8 +275,6 @@ export class GameScene extends Phaser.Scene {
           }
           this.pushSidebarUpdate(player);
 
-          const $player = $state as unknown as PlayerCallbacks;
-
           // React sidebar sync: use per-field listen() so that movement
           // (tileX/tileY changes every step) does NOT trigger React re-renders.
           // Only the fields actually displayed in the sidebar are observed here.
@@ -327,11 +302,11 @@ export class GameScene extends Phaser.Scene {
             "equipRingId",
             "equipMountId",
           ] as const) {
-            unsub($player.listen(player, field, () => this.pushSidebarUpdate(player)));
+            unsub($state.listen<Player, typeof field>(player, field, () => this.pushSidebarUpdate(player)));
           }
 
           unsub(
-            $player.listen(player, "equipMountId", (newMount, oldMount) => {
+            $state.listen<Player, "equipMountId">(player, "equipMountId", (newMount, oldMount) => {
               if (newMount && newMount !== oldMount) {
                 const sprite = this.spriteManager.getSprite(sessionId);
                 const opts = sprite ? { sourceX: sprite.renderX, sourceY: sprite.renderY } : undefined;
@@ -341,7 +316,7 @@ export class GameScene extends Phaser.Scene {
           );
 
           unsub(
-            $player.listen(player, "speedOverride", (newVal) => {
+            $state.listen<Player, "speedOverride">(player, "speedOverride", (newVal) => {
               if (newVal > 0) {
                 this.inputHandler.setSpeed(newVal);
               } else {
@@ -353,11 +328,11 @@ export class GameScene extends Phaser.Scene {
 
           // Inventory: item add/remove and per-item quantity changes
           unsub(
-            $player.onAdd(player, "inventory", (item) => {
+            $state.onAdd<Player, "inventory">(player, "inventory", (item) => {
               this.pushSidebarUpdate(player);
-              unsub($player.onChange(item, () => this.pushSidebarUpdate(player)));
+              unsub($state.onChange(item, () => this.pushSidebarUpdate(player)));
             }),
-            $player.onRemove(player, "inventory", () => this.pushSidebarUpdate(player)),
+            $state.onRemove<Player, "inventory">(player, "inventory", () => this.pushSidebarUpdate(player)),
           );
         }
       }),
@@ -423,7 +398,7 @@ export class GameScene extends Phaser.Scene {
         const baseZoom = this.cameras.main.zoom;
         this.cameras.main.zoomTo(zoom * baseZoom, durationMs / 2);
         this.time.delayedCall(durationMs / 2, () => {
-          this.cameraController.applyFixedZoom();
+          this.applyFixedZoom();
         });
       },
       (durationMs: number) => this.triggerHitStop(durationMs),
@@ -677,8 +652,6 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-
-
   private pushSidebarUpdate(player: Player): void {
     this.onStateUpdate({
       name: player.name,
@@ -755,5 +728,12 @@ export class GameScene extends Phaser.Scene {
     sprite.setFacing(direction);
     sprite.predictMove(direction);
     this.soundManager.playStep({ sourceX: sprite.renderX, sourceY: sprite.renderY });
+  }
+
+  private applyFixedZoom() {
+    const { width, height } = this.cameras.main;
+    const zoomX = width / (VIEWPORT_TILES_X * TILE_SIZE);
+    const zoomY = height / (VIEWPORT_TILES_Y * TILE_SIZE);
+    this.cameras.main.setZoom(Math.min(zoomX, zoomY));
   }
 }

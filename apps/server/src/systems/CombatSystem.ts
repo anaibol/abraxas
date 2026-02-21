@@ -254,7 +254,6 @@ export class CombatSystem {
 
     const targetAtStart = this.spatial.findEntityAtTile(targetTileX, targetTileY);
     if (!targetAtStart) {
-      sendToClient?.(ServerMessageType.InvalidTarget, { reason: "dead_or_invalid" });
       return false;
     }
     const failureReason = this.getAttackFailureReason(attacker, targetAtStart);
@@ -897,11 +896,11 @@ export class CombatSystem {
 
   private getAttackFailureReason(attacker: Entity, target: Entity): InvalidTargetReason | null {
     if (!target.alive) return "dead";
-    if (attacker.sessionId === target.sessionId) return "dead_or_invalid";
+    if (attacker.sessionId === target.sessionId) return "invalid";
 
     // GMs/admins are fully invulnerable — nobody can attack them
     if (target.isPlayer() && (target.role === "ADMIN" || target.role === "GM"))
-      return "dead_or_invalid";
+      return "invalid";
 
     if (this.sameFaction(attacker, target)) return "friendly_fire";
 
@@ -935,7 +934,7 @@ export class CombatSystem {
     // Self-target abilities (rangeTiles === 0) always target the caster.
     // AoE abilities with rangeTiles === 0 target a radius around the caster.
     if (ability.rangeTiles === 0 && (!ability.aoeRadius || ability.aoeRadius === 0)) {
-      return caster.sessionId === target.sessionId ? null : "dead_or_invalid";
+      return caster.sessionId === target.sessionId ? null : "invalid";
     }
 
     // Healing abilities
