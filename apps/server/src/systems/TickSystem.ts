@@ -12,6 +12,7 @@ import type { Client } from "@colyseus/core";
 import type { GameState } from "../schema/GameState";
 import type { Npc } from "../schema/Npc";
 import type { Player } from "../schema/Player";
+import { logger } from "../logger";
 import type { BuffSystem } from "../systems/BuffSystem";
 import type { CombatSystem } from "../systems/CombatSystem";
 import type { DropSystem } from "../systems/DropSystem";
@@ -224,7 +225,10 @@ export class TickSystem {
           const client = this.opts.findClient(player.sessionId);
           if (client) this.opts.sendQuestUpdates(client, updates);
         }
-      });
+      })
+      .catch((e) =>
+        logger.error({ message: "Failed to update quest progress", error: String(e) }),
+      );
 
     // Necromancer soul gain on kill
     if (player.classType === "NECROMANCER" && player.souls < player.maxSouls) {

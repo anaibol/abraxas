@@ -108,6 +108,7 @@
     "invalid_target": "Obiettivo non valido",
     "connection_failed": "Connessione fallita",
     "connection_failed_desc": "Impossibile connettersi al server. È in esecuzione?",
+    "logged_in_elsewhere": "Sessione chiusa: Hai effettuato l'accesso da un'altra posizione.",
     "you_attacked": "Hai attaccato!",
     "you_cast_spell": "Hai lanciato un incantesimo!",
     "you_took_damage": "Hai subito {{amount}} danni!",

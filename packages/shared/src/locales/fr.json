@@ -108,6 +108,7 @@
     "invalid_target": "Cible invalide",
     "connection_failed": "Connexion échouée",
     "connection_failed_desc": "Impossible de se connecter au serveur. Est-il en cours d'exécution ?",
+    "logged_in_elsewhere": "Session fermée : Vous êtes connecté(e) depuis un autre appareil.",
     "you_attacked": "Vous avez attaqué !",
     "you_cast_spell": "Vous avez lancé un sort !",
     "you_took_damage": "Vous avez subi {{amount}} dégâts !",

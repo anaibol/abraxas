@@ -108,6 +108,7 @@
     "invalid_target": "Invalid target",
     "connection_failed": "Connection Failed",
     "connection_failed_desc": "Failed to connect to server. Is it running?",
+    "logged_in_elsewhere": "Session closed: Logged in from another location.",
     "you_attacked": "You attacked!",
     "you_cast_spell": "You cast a spell!",
     "you_took_damage": "You took {{amount}} damage!",

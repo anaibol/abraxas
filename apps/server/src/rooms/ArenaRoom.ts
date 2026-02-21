@@ -1,6 +1,5 @@
 import {
   type BroadcastFn,
-  EntityType,
   type ItemAffix,
   ItemRarity,
   type JoinOptions,
@@ -359,7 +358,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
           const oldClient = this.clients.getById(existingSessionId);
           if (oldClient) {
             oldClient.send(ServerMessageType.Error, {
-              message: "logged_in_elsewhere",
+              message: "game.logged_in_elsewhere",
             });
             oldClient.leave();
           }
@@ -644,7 +643,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       const nearby = this.spatial.findEntitiesInRadius(player.tileX, player.tileY, NPC_VIEW_RADIUS);
       nextIds = new Set<string>();
       for (const entity of nearby) {
-        if (entity.entityType === EntityType.NPC) {
+        if (entity.isNpc()) {
           nextIds.add(entity.sessionId);
         }
       }

@@ -1,4 +1,4 @@
-import { EntityType, MathUtils } from "@abraxas/shared";
+import { MathUtils } from "@abraxas/shared";
 import type { GameState } from "../schema/GameState";
 import type { Npc } from "../schema/Npc";
 import type { Player } from "../schema/Player";
@@ -153,11 +153,11 @@ export class SpatialLookup {
     let minDist = Infinity;
 
     for (const entity of entities) {
-      if (entity.entityType === EntityType.PLAYER && entity.isAttackable()) {
+      if (entity.isPlayer() && entity.isAttackable()) {
         const dist = MathUtils.manhattanDist({ x: cx, y: cy }, entity.getPosition());
         if (dist < minDist) {
           minDist = dist;
-          nearest = entity as Player;
+          nearest = entity;
         }
       }
     }

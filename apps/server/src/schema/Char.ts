@@ -3,7 +3,6 @@ import {
   type BufferedAction,
   type ClassStats,
   Direction,
-  EntityType,
   type NpcStats,
   type WindupAction,
 } from "@abraxas/shared";
@@ -15,7 +14,7 @@ import { Schema, type } from "@colyseus/schema";
  * and are common across character types.
  */
 export abstract class Char extends Schema {
-  @type("string") entityType: EntityType = EntityType.NPC;
+
   @type("string") sessionId: string = "";
   @type("string") name: string = "";
   @type("uint16") tileX: number = 0;

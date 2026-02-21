@@ -1,5 +1,5 @@
 import type { Ability, ClassStats, ClassType } from "@abraxas/shared";
-import { ABILITIES, CLASS_STATS, EntityType } from "@abraxas/shared";
+import { ABILITIES, CLASS_STATS } from "@abraxas/shared";
 import { ArraySchema, type } from "@colyseus/schema";
 import { Char } from "./Char";
 import { InventoryItem } from "./InventoryItem";
@@ -11,7 +11,7 @@ export class Player extends Char {
 
   constructor() {
     super();
-    this.entityType = EntityType.PLAYER;
+
   }
   @type("string") classType: ClassType = "WARRIOR";
   @type("boolean") meditating: boolean = false;
