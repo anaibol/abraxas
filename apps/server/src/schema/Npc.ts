@@ -4,13 +4,13 @@ import {
   NPC_STATS,
   NpcState,
   type NpcStats,
-  type NpcType,
+  type NpcId,
 } from "@abraxas/shared";
 import { type } from "@colyseus/schema";
 import { Char } from "./Char";
 
 export class Npc extends Char {
-  @type("string") npcId: NpcType = "orc";
+  @type("string") npcId: NpcId = "orc";
   @type("uint8") spellCastPercent = 0;
 
   constructor() {
