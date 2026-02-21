@@ -48,43 +48,59 @@ export function LoadingScreen() {
         animation={`${pulse} 8s infinite ease-in-out`}
       />
 
-      <Box pos="relative" mb="12">
-        {/* Custom Loading Animation */}
-        <Box
-          w="100px"
-          h="100px"
-          border="2px dashed"
-          borderColor={T.gold}
-          borderRadius="full"
-          animation={`${spin} 12s linear infinite`}
-        />
+      <Box pos="relative" mb="12" w="120px" h="120px">
+        {/* Glow backdrop */}
         <Box
           pos="absolute"
-          top="-10px"
-          left="-10px"
-          right="-10px"
-          bottom="-10px"
-          border="1px solid"
-          borderColor={T.goldDim}
-          opacity="0.3"
+          inset="-20px"
           borderRadius="full"
-          animation={`${spin} 8s linear infinite reverse`}
+          bg={`radial-gradient(circle, ${HEX.gold}18 0%, transparent 70%)`}
+          animation={`${pulse} 4s infinite ease-in-out`}
         />
+        {/* Orbiting ring */}
+        <Box
+          pos="absolute"
+          inset="-6px"
+          border="1px solid"
+          borderColor={`${HEX.gold}44`}
+          borderRadius="full"
+          animation={`${spin} 10s linear infinite`}
+          css={{
+            "&::after": {
+              content: '""',
+              position: "absolute",
+              top: "-3px",
+              left: "50%",
+              w: "6px",
+              h: "6px",
+              borderRadius: "full",
+              bg: HEX.gold,
+              boxShadow: `0 0 8px ${HEX.gold}, 0 0 16px ${HEX.gold}88`,
+            },
+          }}
+        />
+        {/* Inner circle */}
+        <Box
+          pos="absolute"
+          inset="0"
+          borderRadius="full"
+          border="1px solid"
+          borderColor={`${HEX.goldDim}33`}
+        />
+        {/* Letter */}
         <Box
           pos="absolute"
           inset="0"
           display="flex"
           alignItems="center"
           justifyContent="center"
-          animation={`${pulse} 4s infinite ease-in-out`}
         >
           <Text
-            fontSize="52px"
+            fontSize="54px"
             fontFamily={T.display}
             fontWeight="700"
-            bgClip="text"
-            bgGradient={`linear-gradient(135deg, ${HEX.gold}, #f7e0a3, ${HEX.goldDim})`}
-            textShadow={`0 0 20px ${HEX.goldDim}88, 0 0 40px ${HEX.goldDim}44`}
+            color={T.gold}
+            textShadow={`0 0 24px ${HEX.gold}aa, 0 0 48px ${HEX.goldDim}66`}
             lineHeight="1"
             userSelect="none"
           >

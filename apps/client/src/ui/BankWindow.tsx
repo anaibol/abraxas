@@ -1,4 +1,4 @@
-import { ITEMS } from "@abraxas/shared";
+import { ITEMS, getItemEmoji } from "@abraxas/shared";
 import { Box, Flex, Grid, Input, Text } from "@chakra-ui/react";
 import { type ChangeEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -70,7 +70,7 @@ function ItemGrid({ slots, selectedSlotIndex, onSelect }: ItemGridProps) {
               }
             }}
           >
-            {def && <Text fontSize="24px">✨</Text>}
+            {def && <Text fontSize="24px">{getItemEmoji(slot!.itemId)}</Text>}
             {slot && slot.quantity > 1 && (
               <Text
                 position="absolute"
@@ -131,7 +131,7 @@ export function BankWindow({
 
       <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={{ base: "4", md: "8" }}>
         <Box>
-          <Text color={T.goldMuted} fontSize="12px" mb="4" fontWeight="700" letterSpacing="2px">
+          <Text color={T.goldMuted} textStyle={T.formLabel} mb="4">
             {t("ui.bank.inventory_label")}
           </Text>
           <ItemGrid
@@ -142,7 +142,7 @@ export function BankWindow({
         </Box>
 
         <Box>
-          <Text color={T.goldMuted} fontSize="12px" mb="4" fontWeight="700" letterSpacing="2px">
+          <Text color={T.goldMuted} textStyle={T.formLabel} mb="4">
             {t("ui.bank.vault_label")} {bankItems.length} / 24
           </Text>
           <ItemGrid
@@ -172,15 +172,15 @@ export function BankWindow({
               alignItems="center"
               justifyContent="center"
             >
-              <Text fontSize="32px">✨</Text>
+              <Text fontSize="32px">{getItemEmoji(selectedItem!.itemId)}</Text>
             </Box>
             <Box flex="1">
-              <Text color={T.gold} fontSize="20px" fontWeight="700" mb="1">
+              <Text color={T.gold} textStyle={T.headingLg} mb="1">
                 {selectedDef ? t(selectedDef.name) : ""}
               </Text>
               <Text
                 color="whiteAlpha.600"
-                fontSize="12px"
+                textStyle={T.bodyMuted}
                 textTransform="uppercase"
                 letterSpacing="1px"
               >
@@ -192,7 +192,7 @@ export function BankWindow({
 
             <Flex align="center" gap="4">
               <Box>
-                <Text color={T.goldDark} fontSize="10px" mb="1" fontWeight="700">
+                <Text color={T.goldDark} textStyle={T.badgeText} mb="1" fontWeight="700">
                   {t("ui.bank.quantity")}
                 </Text>
                 <Flex align="center">

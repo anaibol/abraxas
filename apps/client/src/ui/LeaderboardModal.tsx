@@ -77,7 +77,7 @@ function RankBadge({ rank }: { rank: number }) {
     <Box
       w="24px"
       textAlign="center"
-      fontSize="12px"
+      textStyle={T.bodyMuted}
       fontWeight="700"
       color="#4a3e2a"
       fontFamily={FONT}
@@ -128,7 +128,7 @@ function LeaderRow({
 
       <Flex flex="1" align="baseline" gap="1.5" minW="0">
         <Box
-          fontSize="13px"
+          textStyle={T.bodyText}
           color={isMe ? T.gold : "#c8b68a"}
           fontFamily={FONT}
           overflow="hidden"
@@ -139,14 +139,14 @@ function LeaderRow({
           {entry.name}
         </Box>
         {isMe && (
-          <Text as="span" color="#8a7a60" fontSize="10px" flexShrink={0}>
+          <Text as="span" color="#8a7a60" textStyle={T.badgeText} flexShrink={0}>
             {t("scoreboard.you")}
           </Text>
         )}
       </Flex>
 
       <Box
-        fontSize="13px"
+        textStyle={T.bodyText}
         fontWeight="700"
         color={valueColor}
         fontFamily={T.mono}
@@ -270,17 +270,17 @@ export function LeaderboardModal({ myName, onClose }: LeaderboardModalProps) {
           {loading ? (
             <Flex align="center" justify="center" py="10" direction="column" gap="3">
               <Spinner size="md" color={HEX.gold} />
-              <Box fontSize="12px" color="#4a3e2a" fontFamily={FONT} letterSpacing="2px">
+              <Box textStyle={T.bodyMuted} color="#4a3e2a" fontFamily={FONT} letterSpacing="2px">
                 {t("leaderboard.loading")}
               </Box>
             </Flex>
           ) : error ? (
             <Flex align="center" justify="center" py="10" direction="column" gap="3">
-              <Box fontSize="12px" color="#c41e3a" fontFamily={FONT} textAlign="center">
+              <Box textStyle={T.bodyMuted} color="#c41e3a" fontFamily={FONT} textAlign="center">
                 {t("leaderboard.error")}
               </Box>
               <Box
-                fontSize="11px"
+                textStyle={T.statLabel}
                 color={T.goldDim}
                 fontFamily={FONT}
                 cursor="pointer"
@@ -292,7 +292,7 @@ export function LeaderboardModal({ myName, onClose }: LeaderboardModalProps) {
             </Flex>
           ) : entries.length === 0 ? (
             <Flex align="center" justify="center" py="10">
-              <Box fontSize="12px" color="#4a3e2a" fontFamily={FONT} textAlign="center">
+              <Box textStyle={T.bodyMuted} color="#4a3e2a" fontFamily={FONT} textAlign="center">
                 {t("leaderboard.empty")}
               </Box>
             </Flex>
@@ -317,7 +317,7 @@ export function LeaderboardModal({ myName, onClose }: LeaderboardModalProps) {
           bg={T.darkest}
           flexShrink={0}
         >
-          <Box fontSize="11px" color="#4a3e2a" fontFamily={FONT} letterSpacing="1px" textAlign="center">
+          <Box textStyle={T.statLabel} color="#4a3e2a" fontFamily={FONT} letterSpacing="1px" textAlign="center">
             {t("leaderboard.hint")}
           </Box>
         </Box>

@@ -1215,3 +1215,214 @@ export const ITEMS: Record<string, Item> = {
   shiny_bead: mat("shiny_bead", "items.shiny_bead.name", ItemRarity.COMMON, 10),
   ancient_coin: mat("ancient_coin", "items.ancient_coin.name", ItemRarity.EPIC, 500),
 };
+
+// ─── Per-item emoji lookup ──────────────────────────────────────────────────
+/** Unique emoji for every item, keyed by item id. */
+export const ITEM_EMOJIS: Record<string, string> = {
+  // Weapons — Generic
+  club: "🏏",
+  dagger: "🗡️",
+  bronze_axe: "🪓",
+  iron_dagger: "🔪",
+
+  // Weapons — Warrior
+  iron_sword: "⚔️",
+  steel_sword: "🗡️",
+  battle_axe: "🪓",
+  flame_blade: "🔥",
+  great_axe: "⛏️",
+  berserker_blade: "⚔️",
+  titan_axe: "🪓",
+  bone_sword: "🦴",
+
+  // Weapons — Paladin
+  war_hammer: "🔨",
+  crusader_sword: "✝️",
+  divine_blade: "✨",
+  holy_avenger: "⚡",
+
+  // Weapons — Cleric
+  holy_mace: "🔨",
+  healing_rod: "🪄",
+  blessed_hammer: "⚒️",
+  bishop_staff: "🏥",
+  scepter_of_faith: "👑",
+  divine_scepter: "🌟",
+  elder_staff: "🪄",
+
+  // Weapons — Mage
+  magic_staff: "🪄",
+  crystal_wand: "💎",
+  arcane_staff: "🔮",
+  staff_of_ice: "❄️",
+  void_orb: "🌀",
+  staff_of_storms: "⛈️",
+  arcane_tome: "📖",
+
+  // Weapons — Ranger
+  short_bow: "🏹",
+  hunting_bow: "🎯",
+  composite_bow: "🏹",
+  longbow: "🏹",
+  war_bow: "🏹",
+  elven_bow: "🧝",
+  crossbow: "🏹",
+  siege_crossbow: "💥",
+
+  // Weapons — Rogue
+  dagger_dual: "🗡️",
+  twin_daggers: "⚔️",
+  sap: "🥊",
+  poisoned_shiv: "🧪",
+  shadow_daggers: "🌑",
+  skull_dagger: "💀",
+  venom_blades: "🐍",
+  void_knife: "🌀",
+
+  // Weapons — Necromancer
+  bone_wand: "🦴",
+  death_scepter: "☠️",
+  void_staff: "🌑",
+  soul_reaper: "👻",
+
+  // Weapons — Druid
+  wooden_club: "🌿",
+  gnarled_staff: "🌳",
+  nature_wand: "🍃",
+  staff_of_the_wild: "🌲",
+  moon_staff: "🌙",
+
+  // Armor
+  tunic: "👕",
+  leather_armor: "🦺",
+  studded_armor: "🛡️",
+  scale_armor: "🐉",
+  chainmail: "⛓️",
+  battle_plate: "🪖",
+  plate_armor: "🛡️",
+  knight_plate: "🏰",
+  elven_cloak: "🧣",
+  shadow_cloak: "🌑",
+  shadow_shroud: "👤",
+  mage_robes: "🧙",
+  silk_robes: "👘",
+  arcane_robes: "🔮",
+  druid_robes: "🌿",
+  necro_shroud: "☠️",
+  vampire_cape: "🧛",
+
+  // Shields
+  wooden_shield: "🪵",
+  buckler: "🛡️",
+  iron_shield: "🛡️",
+  knight_shield: "⚜️",
+  tower_shield: "🏰",
+  mage_ward: "🔮",
+
+  // Helmets
+  leather_cap: "🧢",
+  iron_helmet: "⛑️",
+  chainmail_hood: "🪖",
+  plate_helm: "🪖",
+  wizard_hat: "🧙",
+  arcane_circlet: "👑",
+  ranger_hood: "🏹",
+  wolf_mask: "🐺",
+  bone_crown: "💀",
+  light_crown: "✨",
+  crown_of_thorns: "🌹",
+
+  // Rings / Amulets
+  ring_of_strength: "💪",
+  ring_of_agility: "🏃",
+  ring_of_intellect: "🧠",
+  ring_of_vitality: "❤️",
+  ring_of_power: "💍",
+  ring_of_shadows: "🌑",
+  ring_of_healing: "💚",
+  ring_of_fortune: "🍀",
+  blood_amulet: "🩸",
+  amulet_of_life: "❤️",
+  amulet_of_mana: "💧",
+  amulet_of_speed: "⚡",
+  cursed_ring: "💀",
+
+  // Consumables — Potions
+  health_potion: "❤️",
+  mana_potion: "💙",
+  great_health_potion: "❤️‍🔥",
+  great_mana_potion: "💎",
+  elixir_of_life: "🧬",
+  full_restore: "💖",
+
+  // Consumables — Antidotes
+  antidote: "🧴",
+  greater_antidote: "💊",
+
+  // Consumables — Elixirs
+  elixir_of_strength: "💪",
+  elixir_of_agility: "🏃",
+  elixir_of_intellect: "🧠",
+  elixir_of_fortitude: "🛡️",
+
+  // Consumables — Scrolls
+  scroll_of_fireball: "🔥",
+  scroll_of_healing: "📜",
+  smoke_bomb_item: "💨",
+
+  // Taming
+  lasso: "🪢",
+
+  // Mounts
+  brown_horse: "🐴",
+  bear_mount: "🐻",
+  elephant_mount: "🐘",
+  dragon_mount: "🐲",
+  wolf_mount: "🐺",
+
+  // Crafting Materials — Mob drops
+  wolf_pelt: "🐾",
+  bat_wing: "🦇",
+  orc_tusk: "🦷",
+  spider_silk: "🕸️",
+  troll_hide: "👹",
+  bone_fragment: "🦴",
+  ghost_essence: "👻",
+  dragon_scale: "🐉",
+  void_crystal: "🔮",
+  dark_gem: "💎",
+
+  // Crafting Materials — Minerals
+  iron_ore: "⛏️",
+  coal: "�ite",
+  moonstone: "🌙",
+  enchant_dust: "✨",
+  blank_scroll: "📃",
+
+  // Crafting Materials — Collectibles
+  lucky_coin: "🪙",
+  strange_gem: "💠",
+  treasure_map: "🗺️",
+  shiny_bead: "📿",
+  ancient_coin: "🏛️",
+};
+
+/** Slot-based fallback emoji when an item ID has no specific mapping. */
+const SLOT_EMOJI: Record<string, string> = {
+  weapon: "⚔️",
+  armor: "🛡️",
+  shield: "🛡️",
+  helmet: "⛑️",
+  ring: "💍",
+  mount: "🐎",
+  consumable: "🧪",
+  material: "🔩",
+};
+
+/** Returns the emoji for a given item id, falling back to slot-based or generic. */
+export function getItemEmoji(itemId: string): string {
+  if (ITEM_EMOJIS[itemId]) return ITEM_EMOJIS[itemId];
+  const item = ITEMS[itemId];
+  if (item) return SLOT_EMOJI[item.slot] ?? "✨";
+  return "✨";
+}

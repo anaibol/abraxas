@@ -31,19 +31,18 @@ export function QuestLog({ quests }: QuestLogProps) {
                 borderRadius="2px"
               >
                 <Flex justify="space-between" align="center" mb="1">
-                  <Text fontSize="13px" fontWeight="700" color={T.gold}>
+                  <Text textStyle={T.bodyText} fontWeight="700" color={T.gold}>
                     {t(def.title)}
                   </Text>
                   <Text
-                    fontSize="11px"
+                    textStyle={T.statLabel}
                     color={q.status === "COMPLETED" ? "#00ff00" : T.goldMuted}
                     fontWeight="700"
-                    textTransform="uppercase"
                   >
                     {t(`quest_status.${q.status}`, { defaultValue: q.status })}
                   </Text>
                 </Flex>
-                <Text fontSize="12px" color="whiteAlpha.800" mb="2" fontStyle="italic">
+                <Text textStyle={T.bodyMuted} color="whiteAlpha.800" mb="2" fontStyle="italic">
                   {t(def.description)}
                 </Text>
                 <VStack align="stretch" gap="1.5">
@@ -52,7 +51,7 @@ export function QuestLog({ quests }: QuestLogProps) {
                     const pct = Math.min(100, (current / req.count) * 100);
                     return (
                       <Box key={`${q.questId}-req-${i}`}>
-                        <Flex justify="space-between" fontSize="11px" color={T.goldMuted} mb="0.5">
+                        <Flex justify="space-between" textStyle={T.statLabel} color={T.goldMuted} mb="0.5">
                           <Text>
                             {req.type === "kill"
                               ? t("ui.quests.kill_target", { target: t(`npcs.${req.target}`) })
@@ -75,7 +74,7 @@ export function QuestLog({ quests }: QuestLogProps) {
                   })}
                 </VStack>
                 {q.status === "COMPLETED" && (
-                  <Text fontSize="11px" color="#00ff00" mt="2" textAlign="center" fontWeight="700">
+                  <Text textStyle={T.statLabel} color="#00ff00" mt="2" textAlign="center" fontWeight="700">
                     {t("ui.quests.turn_in_hint", { name: t(`npcs.${def.npcId}`) })}
                   </Text>
                 )}
@@ -89,11 +88,10 @@ export function QuestLog({ quests }: QuestLogProps) {
       {availableQuests.length > 0 && (
         <Box>
           <Text
-            fontSize="10px"
+            textStyle={T.badgeText}
             letterSpacing="3px"
             textTransform="uppercase"
             color={T.goldDark}
-            fontWeight="700"
             pb="1"
             mb="2"
             borderBottom={`1px solid ${HEX.border}`}
@@ -112,27 +110,26 @@ export function QuestLog({ quests }: QuestLogProps) {
                 opacity="0.75"
               >
                 <Flex justify="space-between" align="center" mb="1">
-                  <Text fontSize="13px" fontWeight="700" color={T.goldMuted}>
+                  <Text textStyle={T.bodyText} fontWeight="700" color={T.goldMuted}>
                     {t(def.title)}
                   </Text>
                   <Text
-                    fontSize="10px"
+                    textStyle={T.badgeText}
                     color={T.goldDark}
                     fontWeight="600"
-                    textTransform="uppercase"
                     letterSpacing="1px"
                   >
                     {t("ui.quests.see_npc", { name: t(`npcs.${def.npcId}`) })}
                   </Text>
                 </Flex>
-                <Text fontSize="12px" color="whiteAlpha.600" fontStyle="italic">
+                <Text textStyle={T.bodyMuted} color="whiteAlpha.600" fontStyle="italic">
                   {t(def.description)}
                 </Text>
                 <Flex gap="2" mt="1.5" flexWrap="wrap">
                   {def.requirements.map((req) => (
                     <Text
                       key={`${def.id}-avail-${req.target}`}
-                      fontSize="10px"
+                      textStyle={T.badgeText}
                       color={T.goldDark}
                       fontFamily={T.mono}
                     >
@@ -150,7 +147,7 @@ export function QuestLog({ quests }: QuestLogProps) {
       )}
 
       {activeQuests.length === 0 && availableQuests.length === 0 && (
-        <Text textAlign="center" color={T.goldMuted} fontSize="11px" py="8" fontStyle="italic">
+        <Text textAlign="center" color={T.goldMuted} textStyle={T.statLabel} py="8" fontStyle="italic">
           {t("ui.quests.no_active")}
         </Text>
       )}

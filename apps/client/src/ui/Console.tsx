@@ -201,7 +201,7 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
           <Text
             key={msg.id}
             color={msg.color || "white"}
-            fontSize="13px"
+            textStyle={T.bodyText}
             mb={0.5}
             lineHeight="1.2"
             textShadow="1px 1px 0 #000"
@@ -230,20 +230,20 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
           {gmHints.map((hint, i) => (
             <HStack key={hint.usage} gap="2" py="1px">
               <Text
-                fontSize="11px"
+                textStyle={T.statLabel}
                 fontWeight="700"
                 color={i === tabIndex ? "#ffaa33" : "#d4a843"}
-                fontFamily="'Courier New', monospace"
+                fontFamily={T.mono}
                 flexShrink={0}
               >
                 {hint.usage}
               </Text>
-              <Text fontSize="11px" color="rgba(255,255,255,0.45)" lineClamp={1}>
+              <Text textStyle={T.statLabel} color="rgba(255,255,255,0.45)" lineClamp={1}>
                 {hint.desc}
               </Text>
             </HStack>
           ))}
-          <Text fontSize="10px" color="rgba(255,255,255,0.25)" mt="2px">
+          <Text textStyle={T.badgeText} color="rgba(255,255,255,0.25)" mt="2px">
             Tab to cycle
           </Text>
         </Box>

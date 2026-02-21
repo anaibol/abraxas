@@ -63,12 +63,9 @@ const KEYBINDS: { key: string; labelKey: string; categoryKey: string }[] = [
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <Box
-      fontSize="11px"
-      letterSpacing="3px"
-      textTransform="uppercase"
+      textStyle={T.sectionLabel}
       color={T.gold}
       fontWeight="700"
-      fontFamily={FONT}
       pb="1"
       mb="2"
       borderBottom={`1px solid ${HEX.border}`}
@@ -108,7 +105,7 @@ function LeaderboardRow({
       <Box
         w="16px"
         textAlign="center"
-        fontSize="12px"
+        textStyle={T.bodyMuted}
         fontWeight="700"
         color={rankColor}
         fontFamily={FONT}
@@ -118,7 +115,7 @@ function LeaderboardRow({
       </Box>
       <Box
         flex="1"
-        fontSize="13px"
+        textStyle={T.bodyText}
         color={isMe ? T.gold : SC.text}
         fontFamily={FONT}
         overflow="hidden"
@@ -127,13 +124,13 @@ function LeaderboardRow({
       >
         {name}
         {isMe && (
-          <Text as="span" color={T.goldDim} fontSize="11px" ml="1">
+          <Text as="span" color={T.goldDim} textStyle={T.statLabel} ml="1">
             {t("scoreboard.you")}
           </Text>
         )}
       </Box>
       <Box
-        fontSize="13px"
+        textStyle={T.bodyText}
         fontWeight="700"
         color={valueColor ?? SC.text}
         fontFamily={T.mono}
@@ -208,9 +205,8 @@ export function ScoreboardOverlay({
           <Box
             pos="absolute"
             right="4"
-            fontSize="11px"
+            textStyle={T.statLabel}
             color={SC.textMuted}
-            letterSpacing="2px"
             fontFamily={FONT}
             display={{ base: "none", md: "block" }}
           >
@@ -220,7 +216,7 @@ export function ScoreboardOverlay({
             <Box
               pos="absolute"
               left="4"
-              fontSize="10px"
+              textStyle={T.badgeText}
               color={T.goldDim}
               letterSpacing="1px"
               fontFamily={FONT}
@@ -251,7 +247,7 @@ export function ScoreboardOverlay({
           >
             <SectionTitle>{t("scoreboard.top_npc_hunters")}</SectionTitle>
             {npcRanking.length === 0 ? (
-              <Box fontSize="12px" color={SC.textMuted} fontFamily={FONT} textAlign="center" mt="4">
+              <Box textStyle={T.bodyMuted} color={SC.textMuted} fontFamily={FONT} textAlign="center" mt="4">
                 {t("scoreboard.no_kills")}
               </Box>
             ) : (
@@ -282,7 +278,7 @@ export function ScoreboardOverlay({
                 <Box
                   w="16px"
                   textAlign="center"
-                  fontSize="12px"
+                  textStyle={T.bodyMuted}
                   fontWeight="700"
                   color={T.gold}
                   fontFamily={FONT}
@@ -291,7 +287,7 @@ export function ScoreboardOverlay({
                 </Box>
                 <Box
                   flex="1"
-                  fontSize="13px"
+                  textStyle={T.bodyText}
                   color={T.gold}
                   fontFamily={FONT}
                   overflow="hidden"
@@ -299,16 +295,16 @@ export function ScoreboardOverlay({
                   textOverflow="ellipsis"
                 >
                   {myName}
-                  <Text as="span" color={T.goldDim} fontSize="11px" ml="1">
+                  <Text as="span" color={T.goldDim} textStyle={T.statLabel} ml="1">
                     {t("scoreboard.you")}
                   </Text>
                 </Box>
-                <Box fontSize="13px" fontWeight="700" color={T.gold} fontFamily={T.mono}>
+                <Box textStyle={T.bodyText} fontWeight="700" color={T.gold} fontFamily={T.mono}>
                   {t("scoreboard.lv_prefix")}
                   {myLevel}
                 </Box>
               </Flex>
-              <Box fontSize="11px" color={SC.textMuted} textAlign="center" mt="2" fontFamily={FONT}>
+              <Box textStyle={T.statLabel} color={SC.textMuted} textAlign="center" mt="2" fontFamily={FONT}>
                 {t("scoreboard.level_private")}
               </Box>
             </Box>
@@ -324,7 +320,7 @@ export function ScoreboardOverlay({
           >
             <SectionTitle>{t("scoreboard.top_pvp")}</SectionTitle>
             {pvpRanking.length === 0 ? (
-              <Box fontSize="12px" color={SC.textMuted} fontFamily={FONT} textAlign="center" mt="4">
+              <Box textStyle={T.bodyMuted} color={SC.textMuted} fontFamily={FONT} textAlign="center" mt="4">
                 {t("scoreboard.no_pvp_kills")}
               </Box>
             ) : (
@@ -344,7 +340,7 @@ export function ScoreboardOverlay({
             <Box mt="5">
               <SectionTitle>
                 {t("scoreboard.online_players")}
-                <Text as="span" color={SC.textDim} fontSize="11px" ml="2">
+                <Text as="span" color={SC.textDim} textStyle={T.statLabel} ml="2">
                   ({onlinePlayers.length})
                 </Text>
               </SectionTitle>
@@ -371,7 +367,7 @@ export function ScoreboardOverlay({
                   />
                   <Box
                     flex="1"
-                    fontSize="13px"
+                    textStyle={T.bodyText}
                     color={p.name === myName ? T.gold : SC.text}
                     fontFamily={FONT}
                     overflow="hidden"
@@ -381,7 +377,7 @@ export function ScoreboardOverlay({
                     {p.name}
                   </Box>
                   <Box
-                    fontSize="11px"
+                    textStyle={T.statLabel}
                     color={CLASS_COLOR[p.classType.toUpperCase()] ?? SC.textDim}
                     fontFamily={FONT}
                     letterSpacing="1px"
@@ -400,7 +396,7 @@ export function ScoreboardOverlay({
             {Object.entries(keybindsByCategory).map(([categoryKey, binds]) => (
               <Box key={categoryKey} mb="4">
                 <Box
-                  fontSize="10px"
+                  textStyle={T.badgeText}
                   letterSpacing="2px"
                   textTransform="uppercase"
                   color={SC.textDim}
@@ -417,7 +413,7 @@ export function ScoreboardOverlay({
                       bg={SC.raised}
                       border={`1px solid ${HEX.borderLight}`}
                       borderRadius="3px"
-                      fontSize="11px"
+                      textStyle={T.statLabel}
                       color={T.gold}
                       fontFamily={T.mono}
                       whiteSpace="nowrap"
@@ -426,7 +422,7 @@ export function ScoreboardOverlay({
                     >
                       {kb.key}
                     </Box>
-                    <Box fontSize="12px" color={SC.textDim} fontFamily={FONT}>
+                    <Box textStyle={T.bodyMuted} color={SC.textDim} fontFamily={FONT}>
                       {t(`scoreboard.keybind_labels.${kb.labelKey}`)}
                     </Box>
                   </Flex>

@@ -1,5 +1,5 @@
 import type { TradeState } from "@abraxas/shared";
-import { ITEMS } from "@abraxas/shared";
+import { ITEMS, getItemEmoji } from "@abraxas/shared";
 import { Box, Flex, HStack, Input, Text, VStack } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -10,14 +10,7 @@ import { ModalOverlay } from "./components/ModalOverlay";
 import type { InventorySlot } from "./sidebar/types";
 import { T } from "./tokens";
 
-const ITEM_ICONS: Record<string, string> = {
-  weapon: "⚔️",
-  armor: "🛡️",
-  shield: "🛡️",
-  helmet: "⛑️",
-  ring: "💍",
-  consumable: "🧪",
-};
+
 
 type OfferItem = { itemId: string; quantity: number };
 
@@ -144,7 +137,7 @@ export function TradeWindow({
               bg={T.surface}
               borderRadius="2px"
             >
-              <Text textStyle={T.bodyText}>{def ? ITEM_ICONS[def.slot] || "✨" : "❓"}</Text>
+              <Text textStyle={T.bodyText}>{def ? getItemEmoji(item.itemId) : "❓"}</Text>
               <Text textStyle={T.bodyMuted} color={T.goldText} flex="1">
                 {def?.name ?? item.itemId}
               </Text>

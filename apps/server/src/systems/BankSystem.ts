@@ -6,6 +6,9 @@ import type { Player } from "../schema/Player";
 import type { InventorySystem } from "./InventorySystem";
 
 export class BankSystem {
+  // Bug #54: In-memory cache is session-scoped — loaded on openBank, persisted on closeBank.
+  // Safe for single-server: no external writes can happen between open/close.
+  // Multi-server would need pub/sub invalidation (out of scope).
   private activeBanks = new Map<string, InventoryEntry[]>();
 
   constructor(private inventory: InventorySystem) {}
@@ -97,7 +100,9 @@ export class BankSystem {
         });
       }
     } else {
-      // Non-stackable: add as separate slots
+      // Bug #56: Non-stackable items create separate slots. Each copy inherits the
+      // source item's rarity/affixes, which is correct since they came from the same stack.
+      // Truly unique non-stackable items should always have qty=1 in inventory.
       for (let i = 0; i < quantity; i++) {
         const nextIdx = this.getNextIndex(bankItems);
         bankItems.push({

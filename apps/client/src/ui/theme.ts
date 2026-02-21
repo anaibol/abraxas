@@ -67,6 +67,7 @@ const customConfig = defineConfig({
           fontWeight: "700",
           letterSpacing: "3px",
           textTransform: "uppercase",
+          lineHeight: "1",
         },
       },
       // Form / sidebar section labels
@@ -77,6 +78,7 @@ const customConfig = defineConfig({
           fontWeight: "600",
           letterSpacing: "2px",
           textTransform: "uppercase",
+          lineHeight: "1",
         },
       },
       // Stat bar captions (HEALTH, MANA, STR…)
@@ -86,6 +88,7 @@ const customConfig = defineConfig({
           fontSize: "11px",
           letterSpacing: "1px",
           textTransform: "uppercase",
+          lineHeight: "1",
         },
       },
       // Standard readable body copy
@@ -93,6 +96,7 @@ const customConfig = defineConfig({
         value: {
           fontFamily: "display",
           fontSize: "13px",
+          lineHeight: "1.4",
         },
       },
       // Dimmer secondary body copy
@@ -100,6 +104,7 @@ const customConfig = defineConfig({
         value: {
           fontFamily: "display",
           fontSize: "12px",
+          lineHeight: "1.4",
         },
       },
       // Panel / dialog titles (item names, NPC names)
@@ -109,6 +114,7 @@ const customConfig = defineConfig({
           fontSize: "16px",
           fontWeight: "700",
           letterSpacing: "2px",
+          lineHeight: "1.2",
         },
       },
       // Larger headings (page titles, hero text)
@@ -118,6 +124,7 @@ const customConfig = defineConfig({
           fontSize: "20px",
           fontWeight: "700",
           letterSpacing: "3px",
+          lineHeight: "1.2",
         },
       },
       // Tab bar labels (INV / SPELLS / ALL / GROUP…)
@@ -128,6 +135,7 @@ const customConfig = defineConfig({
           fontWeight: "700",
           letterSpacing: "1px",
           textTransform: "uppercase",
+          lineHeight: "1",
         },
       },
       // Numeric / monospaced values (HP 120/200, 500g…)
@@ -135,6 +143,7 @@ const customConfig = defineConfig({
         value: {
           fontFamily: "mono",
           fontSize: "13px",
+          lineHeight: "1",
         },
       },
       // Tiny badges — spell keybind, effect type labels
@@ -143,6 +152,7 @@ const customConfig = defineConfig({
           fontFamily: "mono",
           fontSize: "10px",
           fontWeight: "700",
+          lineHeight: "1",
         },
       },
     },

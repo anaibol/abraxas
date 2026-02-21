@@ -1,4 +1,4 @@
-import { ITEMS } from "@abraxas/shared";
+import { ITEMS, getItemEmoji } from "@abraxas/shared";
 import { Box, Grid, Text } from "@chakra-ui/react";
 import { useAudio } from "../../contexts/AudioContext";
 import { T } from "../tokens";
@@ -58,7 +58,7 @@ export function ItemGrid({ slots, selectedSlotIndex, onSelect, maxSlots = 24 }: 
               }
             }}
           >
-            {def && <Text fontSize="24px">✨</Text>}
+            {def && <Text fontSize="24px">{getItemEmoji(slot!.itemId)}</Text>}
             {slot && slot.quantity > 1 && (
               <Text
                 position="absolute"

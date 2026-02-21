@@ -42,9 +42,8 @@ export function QuestDialogue({ npcId: _npcId, npcType, text, options, onAction,
           <Text
             color={T.gold}
             fontWeight="700"
-            fontSize="18px"
+            textStyle={T.heading}
             textTransform="uppercase"
-            letterSpacing="2px"
           >
             {t("npcs." + npcType)}
           </Text>

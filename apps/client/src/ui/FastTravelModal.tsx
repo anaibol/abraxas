@@ -44,14 +44,12 @@ export const FastTravelModal: FC<FastTravelModalProps> = ({
             <Text
               color={T.gold}
               fontWeight="700"
-              fontSize="15px"
-              letterSpacing="3px"
-              textTransform="uppercase"
+              textStyle={T.sectionLabel}
               textShadow={`0 0 8px ${HEX.goldDark}`}
             >
               ✦ {t("fast_travel.title", "Fast Travel")}
             </Text>
-            <Text color={T.goldDark} fontSize="11px" mt="0.5">
+            <Text color={T.goldDark} textStyle={T.statLabel} mt="0.5">
               {currentMapName}
             </Text>
           </Box>
@@ -76,7 +74,7 @@ export const FastTravelModal: FC<FastTravelModalProps> = ({
           <Text
             color={T.goldDark}
             textAlign="center"
-            fontSize="13px"
+            textStyle={T.bodyText}
             py="4"
             fontStyle="italic"
           >
@@ -113,10 +111,10 @@ export const FastTravelModal: FC<FastTravelModalProps> = ({
               >
                 <Text fontSize="20px" flexShrink={0}>🌀</Text>
                 <Box>
-                  <Text fontSize="13px" fontWeight="700" color={T.goldText}>
+                  <Text textStyle={T.bodyText} fontWeight="700" color={T.goldText}>
                     {wp.label}
                   </Text>
-                  <Text fontSize="11px" color={T.goldDark} mt="0.5">
+                  <Text textStyle={T.statLabel} color={T.goldDark} mt="0.5">
                     ({wp.x}, {wp.y})
                   </Text>
                 </Box>
@@ -128,7 +126,7 @@ export const FastTravelModal: FC<FastTravelModalProps> = ({
         <Text
           mt="5"
           color={T.goldDark}
-          fontSize="11px"
+          textStyle={T.statLabel}
           textAlign="center"
           letterSpacing="1px"
         >

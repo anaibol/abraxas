@@ -75,11 +75,6 @@ const shimmer = keyframes`
   100% { background-position: 200% 0; }
 `;
 
-const progressSweep = keyframes`
-  0% { background-position: 100% 0; }
-  100% { background-position: -100% 0; }
-`;
-
 const entrance = keyframes`
   from { opacity: 0; transform: translateY(10px) scale(0.98); }
   to { opacity: 1; transform: translateY(0) scale(1); }
@@ -136,7 +131,6 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
   const [charSearch, setCharSearch] = useState("");
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [deletingCharId, setDeletingCharId] = useState<string | null>(null);
-  const [connectingCharId, setConnectingCharId] = useState<string | null>(null);
 
   const [token, setToken] = useState("");
   const [characters, setCharacters] = useState<CharacterSummary[]>([]);
@@ -187,10 +181,6 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
         setIsCheckingToken(false);
       });
   }, []);
-
-  useEffect(() => {
-    if (!connecting) setConnectingCharId(null);
-  }, [connecting]);
 
   const labelStyle = {
     fontSize: "12px",
@@ -612,29 +602,22 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                     const adminChar = char as AdminCharacterSummary;
                     const isConfirming = confirmDeleteId === char.id;
                     const isDeleting = deletingCharId === char.id;
-                    const isConnecting = connectingCharId === char.id;
                     return (
                       <Box
                         key={char.id}
                         p="3"
-                        bg={isConnecting
-                          ? `linear-gradient(90deg, rgba(8,8,12,0.4) 0%, ${HEX.gold}22 50%, rgba(8,8,12,0.4) 100%)`
-                          : isConfirming ? "rgba(180, 40, 40, 0.12)" : "rgba(8, 8, 12, 0.4)"}
-                        backgroundSize={isConnecting ? "200% 100%" : "auto"}
-                        animation={isConnecting ? `${progressSweep} 1.5s linear infinite` : undefined}
+                        bg={isConfirming ? "rgba(180, 40, 40, 0.12)" : "rgba(8, 8, 12, 0.4)"}
                         border="1px solid"
-                        borderColor={isConnecting ? T.goldDim : isConfirming ? "rgba(180, 40, 40, 0.4)" : T.border}
+                        borderColor={isConfirming ? "rgba(180, 40, 40, 0.4)" : T.border}
                         borderRadius="8px"
-                        cursor={isConfirming || connecting ? "default" : "pointer"}
-                        opacity={connecting && !isConnecting ? 0.4 : 1}
+                        cursor={isConfirming ? "default" : "pointer"}
                         transition="all 0.2s"
                         onClick={() => {
-                          if (isConfirming || connecting) return;
-                          setConnectingCharId(char.id);
+                          if (isConfirming) return;
                           onJoin(char.id, char.class, token);
                         }}
                         _hover={
-                          isConfirming || isConnecting
+                          isConfirming
                             ? {}
                             : {
                                 bg: `${info.color}11`,
@@ -750,7 +733,6 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                           >
                             {t("sidebar.inventory.level")} {char.level}
                           </Badge>
-                          {!isConnecting && (
                           <Box
                             flexShrink={0}
                             color={T.goldDark}
@@ -765,7 +747,6 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                           >
                             <Trash2 size={14} />
                           </Box>
-                          )}
                         </Flex>
                         )}
                       </Box>

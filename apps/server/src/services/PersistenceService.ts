@@ -80,7 +80,14 @@ export class PersistenceService {
     },
   ) {
     try {
-      const facingStr = Direction[data.facing] || "DOWN";
+      // Bug #59: Use robust fallback for Direction enum → DB string
+      const facingLookup: Record<number, string> = {
+        [Direction.UP]: "UP",
+        [Direction.DOWN]: "DOWN",
+        [Direction.LEFT]: "LEFT",
+        [Direction.RIGHT]: "RIGHT",
+      };
+      const facingStr = facingLookup[data.facing] ?? "DOWN";
 
       const char = (await prisma.character.update({
         where: { id },
@@ -225,18 +232,39 @@ export class PersistenceService {
           }
         }
 
-        // --- Save Companions ---
-        await tx.companion.deleteMany({ where: { characterId: char.id } });
-        if (data.companions && data.companions.length > 0) {
-          await tx.companion.createMany({
-            data: data.companions.map((comp) => ({
-              characterId: char.id,
-              type: comp.type,
-              level: comp.level,
-              exp: comp.exp,
-              hp: comp.hp,
-            })),
-          });
+        // Bug #60: Upsert companions by type to preserve DB IDs
+        const existingCompanions = await tx.companion.findMany({
+          where: { characterId: char.id },
+        });
+        const existingMap = new Map(existingCompanions.map((c) => [c.type, c]));
+        const savedTypes = new Set<string>();
+
+        for (const comp of data.companions ?? []) {
+          savedTypes.add(comp.type);
+          const existing = existingMap.get(comp.type);
+          if (existing) {
+            await tx.companion.update({
+              where: { id: existing.id },
+              data: { level: comp.level, exp: comp.exp, hp: comp.hp },
+            });
+          } else {
+            await tx.companion.create({
+              data: {
+                characterId: char.id,
+                type: comp.type,
+                level: comp.level,
+                exp: comp.exp,
+                hp: comp.hp,
+              },
+            });
+          }
+        }
+
+        // Remove companions no longer owned
+        for (const existing of existingCompanions) {
+          if (!savedTypes.has(existing.type)) {
+            await tx.companion.delete({ where: { id: existing.id } });
+          }
         }
         // -----------------------
 

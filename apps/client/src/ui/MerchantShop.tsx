@@ -69,9 +69,9 @@ export function MerchantShop({
         border="1px solid"
         borderColor={T.border}
       >
-        <Text color={T.goldDim} fontSize="14px" fontWeight="700">
+        <Text color={T.goldDim} textStyle={T.bodyText} fontWeight="700">
           {t("ui.merchant.purse")}:{" "}
-          <Text as="span" color={T.gold} fontSize="16px" ml="2">
+          <Text as="span" color={T.gold} textStyle={T.heading} ml="2">
             {playerGold.toLocaleString()} GP
           </Text>
         </Text>
@@ -144,7 +144,7 @@ export function MerchantShop({
           <>
             {playerInventory.length === 0 && (
               <Box py="10" textAlign="center">
-                <Text color="#555" fontSize="14px" fontStyle="italic">
+                <Text color="#555" textStyle={T.bodyText} fontStyle="italic">
                   {t("ui.merchant.no_items_sell")}
                 </Text>
               </Box>
@@ -183,19 +183,19 @@ export function MerchantShop({
         >
           <Flex justify="space-between" align="start" mb="4">
             <Box>
-              <Text color={T.gold} fontSize="18px" fontWeight="700" mb="1">
+              <Text color={T.gold} textStyle={T.heading} fontSize="18px" mb="1">
                 {t(selectedItem.name)}
               </Text>
-              <Text color="whiteAlpha.600" fontSize="12px" letterSpacing="1px">
+              <Text color="whiteAlpha.600" textStyle={T.bodyMuted} letterSpacing="1px">
                 {t(`item_slot.${selectedItem.slot}`).toUpperCase()} |{" "}
                 {t(`item_rarity.${selectedItem.rarity}`).toUpperCase()}
               </Text>
             </Box>
             <Box textAlign="right">
-              <Text color="#fff" fontSize="12px" mb="1">
+              <Text color="#fff" textStyle={T.bodyMuted} mb="1">
                 {t("ui.merchant.unit_price")}
               </Text>
-              <Text color={T.gold} fontSize="16px" fontWeight="700">
+              <Text color={T.gold} textStyle={T.heading} fontWeight="700">
                 {tab === "buy" ? selectedItem.goldValue : Math.floor(selectedItem.goldValue * 0.5)}{" "}
                 GP
               </Text>
@@ -213,7 +213,7 @@ export function MerchantShop({
             flexWrap="wrap"
             gap="3"
           >
-            <Text color="whiteAlpha.800" fontSize="13px">
+            <Text color="whiteAlpha.800" textStyle={T.bodyText}>
               {t("ui.merchant.quantity")}:
             </Text>
             <Flex align="center" flex="1" minW="120px">
@@ -252,10 +252,10 @@ export function MerchantShop({
               </Button>
             </Flex>
             <Box textAlign="right" ml={{ base: "0", md: "6" }}>
-              <Text color="whiteAlpha.600" fontSize="11px">
+              <Text color="whiteAlpha.600" textStyle={T.statLabel}>
                 {t("ui.merchant.total_cost")}
               </Text>
-              <Text color={T.gold} fontSize="20px" fontWeight="700">
+              <Text color={T.gold} textStyle={T.headingLg} fontWeight="700">
                 {(tab === "buy"
                   ? selectedItem.goldValue * quantity
                   : Math.floor(selectedItem.goldValue * 0.5) * quantity
@@ -270,7 +270,7 @@ export function MerchantShop({
             h="48px"
             bg={T.goldDim}
             color="#000"
-            fontSize="16px"
+            textStyle={T.heading}
             fontWeight="700"
             letterSpacing="2px"
             _hover={{ bg: T.gold, transform: "scale(1.02)" }}
