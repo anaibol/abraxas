@@ -280,9 +280,15 @@ export class NpcSystem {
     return NPC_STATS[npc.npcType].aggroRange ?? AGGRO_RANGE;
   }
 
-  /** Finds the nearest attackable player within the NPC's aggro range, or null. */
+  /** Finds the nearest attackable player within the NPC's aggro range, or null.
+   *  Players standing inside a safe zone are excluded — NPCs should not aggro them.
+   */
   private scanForAggroTarget(npc: Npc): Player | null {
-    return this.spatial.findNearestPlayer(npc.tileX, npc.tileY, this.getAggroRange(npc));
+    const candidate = this.spatial.findNearestPlayer(npc.tileX, npc.tileY, this.getAggroRange(npc));
+    if (candidate && MathUtils.isInSafeZone(candidate.tileX, candidate.tileY, this.currentMap?.safeZones)) {
+      return null;
+    }
+    return candidate;
   }
 
   private updateIdle(npc: Npc, tickCount: number): void {
@@ -376,7 +382,7 @@ export class NpcSystem {
     roomId: string,
   ): void {
     const target = this.spatial.findEntityBySessionId(npc.targetId);
-    if (!target || !target.isAttackable()) {
+    if (!target || !target.isAttackable() || MathUtils.isInSafeZone(target.tileX, target.tileY, this.currentMap?.safeZones)) {
       npc.targetId = "";
       npc.state = NpcState.RETURN;
       return;
@@ -408,7 +414,7 @@ export class NpcSystem {
 
   private updateAttack(npc: Npc, now: number, broadcast: BroadcastFn): void {
     const target = this.spatial.findEntityBySessionId(npc.targetId);
-    if (!target || !target.isAttackable()) {
+    if (!target || !target.isAttackable() || MathUtils.isInSafeZone(target.tileX, target.tileY, this.currentMap?.safeZones)) {
       npc.targetId = "";
       npc.state = npc.ownerId ? NpcState.FOLLOW : NpcState.RETURN;
       return;
