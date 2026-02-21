@@ -1,11 +1,14 @@
 import {
-  type EquipmentData,
-  type InventoryEntry,
-  type NpcType,
   Direction,
+  type EquipmentData,
   EXP_TABLE,
+  type InventoryEntry,
+  type ItemAffix,
+  ItemRarity,
   ITEMS,
+  type NpcType,
   STARTING_EQUIPMENT,
+  type StatType,
 } from "@abraxas/shared";
 import type { Client } from "@colyseus/core";
 import type { GameState } from "../schema/GameState";
@@ -154,7 +157,7 @@ export class PlayerService {
         const def = ITEMS[itemId];
         if (def && def.slot !== "consumable") {
           // Find the item in the inventory to get its slotIndex
-          const item = player.inventory.find(i => i.itemId === itemId);
+          const item = player.inventory.find((i) => i.itemId === itemId);
           if (item) {
             this.inventorySystem.equipItem(player, item.itemId);
           }
@@ -177,8 +180,12 @@ export class PlayerService {
         itemId: item.itemId,
         quantity: item.quantity,
         slotIndex: item.slotIndex,
-        rarity: item.rarity as any,
-        affixes: Array.from(item.affixes).map(a => ({ type: a.affixType, stat: a.stat, value: a.value })) as any,
+        rarity: item.rarity as ItemRarity,
+        affixes: Array.from(item.affixes).map((a): ItemAffix => ({
+          type: a.affixType,
+          stat: a.stat as StatType,
+          value: a.value,
+        })),
       });
     });
 

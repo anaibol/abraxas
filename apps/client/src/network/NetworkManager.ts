@@ -12,7 +12,7 @@ import type { GameState } from "../../../server/src/schema/GameState";
 
 declare global {
   interface Window {
-    __room?: Room<unknown, GameState>;
+    __room?: Room<unknown, GameState> | null;
   }
 }
 

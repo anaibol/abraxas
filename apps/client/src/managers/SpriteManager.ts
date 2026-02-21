@@ -7,9 +7,15 @@ import type { CameraController } from "../systems/CameraController";
 
 // ── Item #45: Per-sprite glow tracking ────────────────────────────────────────
 interface ActiveGlow {
-  glowRef: unknown; // Phaser.FX.Glow as `any` for version compat
+  glowRef: unknown; // Phaser.FX.Glow — no stable public type
   expireAt: number;
   color: number;
+}
+
+/** Minimal shape of Phaser's preFX pipeline (no stable public type). */
+interface PreFXPipeline {
+  addGlow(color: number, outerStrength: number, innerStrength: number, knockout: boolean, quality: number, distance: number): unknown;
+  clear(): void;
 }
 
 export class SpriteManager {
@@ -242,22 +248,19 @@ export class SpriteManager {
    * Run `fn` against each child's preFX in a sprite container, swallowing
    * errors for objects that don't support preFX (Phaser 3.60+).
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private forEachPreFX(sessionId: string, fn: (preFX: any) => void) {
+  private forEachPreFX(sessionId: string, fn: (preFX: PreFXPipeline) => void) {
     const sprite = this.sprites.get(sessionId);
     if (!sprite?.container) return;
     sprite.container.list.forEach(child => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const preFX = (child as any).preFX;
-      if (preFX) try { fn(preFX); } catch { /* unsupported child type */ }
+      if ('preFX' in child && child.preFX) {
+        try { fn(child.preFX as PreFXPipeline); } catch { /* unsupported child type */ }
+      }
     });
   }
 
   /** Add a glow to every child and return the created glow objects. */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private collectGlows(sessionId: string, color: number, innerStrength = 0): any[] {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const glows: any[] = [];
+  private collectGlows(sessionId: string, color: number, innerStrength = 0): unknown[] {
+    const glows: unknown[] = [];
     this.forEachPreFX(sessionId, preFX => {
       const g = preFX.addGlow(color, 0, innerStrength, false, 0.1, 16);
       if (g) glows.push(g);

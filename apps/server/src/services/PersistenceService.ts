@@ -36,7 +36,7 @@ const CHAR_INCLUDE = {
     },
   },
   companions: true,
-} as const;
+};
 
 /** Strictly typed Character with all relations included. */
 export type FullCharacter = Prisma.CharacterGetPayload<{

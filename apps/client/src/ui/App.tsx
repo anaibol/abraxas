@@ -805,11 +805,14 @@ export function App() {
               playerInventory={playerState.inventory ?? []}
               playerGold={playerState.gold}
               onUpdateOffer={(gold, items) => {
-                const mappedItems = items.map(item => ({
-                  itemId: item.itemId,
-                  quantity: item.quantity,
-                  slotIndex: (item as any).slotIndex ?? 0,
-                }));
+                const mappedItems = items.map(item => {
+                  const invItem = playerState.inventory?.find(i => i.itemId === item.itemId);
+                  return {
+                    itemId: item.itemId,
+                    quantity: item.quantity,
+                    slotIndex: invItem?.slotIndex ?? 0,
+                  };
+                });
                 networkRef.current?.sendTradeOfferUpdate(gold, mappedItems);
               }}
               onConfirm={() => networkRef.current?.sendTradeConfirm()}

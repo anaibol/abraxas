@@ -78,9 +78,10 @@ export class GameScene extends Phaser.Scene {
   private debugText?: Phaser.GameObjects.Text;
   private handleVisibilityChange = () => {
     if (document.visibilityState === "visible") {
-      const webAudio: any = this.sound;
-      if (webAudio.context?.state === "suspended") {
-        webAudio.context.resume();
+      const sm = this.sound as unknown as Record<string, unknown>;
+      const ctx = sm.context as AudioContext | undefined;
+      if (ctx?.state === "suspended") {
+        ctx.resume();
       }
     }
   };
@@ -497,8 +498,8 @@ export class GameScene extends Phaser.Scene {
         (o) => o instanceof Phaser.GameObjects.Text,
       ).length;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const drawCalls: number = (this.game.renderer as any)?.drawCount ?? -1;
+      const renderer = this.game.renderer as unknown as Record<string, unknown>;
+      const drawCalls: number = typeof renderer.drawCount === 'number' ? renderer.drawCount : -1;
 
       this.debugText.setText(
         `X: ${localSprite.predictedTileX}  Y: ${localSprite.predictedTileY}\n` +
