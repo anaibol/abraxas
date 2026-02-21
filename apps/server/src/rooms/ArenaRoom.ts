@@ -46,7 +46,6 @@ import { TickSystem } from "../systems/TickSystem";
 import { TradeSystem } from "../systems/TradeSystem";
 import { WorldEventSystem } from "../systems/WorldEventSystem";
 import { type Entity, SpatialLookup } from "../utils/SpatialLookup";
-import { toSharedRarity } from "../utils/rarityUtils";
 import { findSafeSpawn } from "../utils/spawnUtils";
 
 export class ArenaRoom extends Room<{ state: GameState }> {
@@ -236,7 +235,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         drop.spawnedAt = d.spawnedAt.getTime();
 
         if (d.item) {
-          drop.rarity = toSharedRarity(d.item.rarity);
+          drop.rarity = d.item.rarity ?? ItemRarity.COMMON;
           drop.nameOverride = d.item.nameOverride || "";
           const affixes = (d.item.affixesJson as unknown as ItemAffix[]) || [];
           affixes.forEach((a) => {

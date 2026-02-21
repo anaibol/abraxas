@@ -3,7 +3,6 @@ import { type InventoryEntry, ITEMS, ItemRarity, type StatType } from "@abraxas/
 import { prisma } from "../database/db";
 import { logger } from "../logger";
 import type { Player } from "../schema/Player";
-import { toSharedRarity, toPrismaRarity } from "../utils/rarityUtils";
 import type { InventorySystem } from "./InventorySystem";
 
 export class BankSystem {
@@ -27,7 +26,7 @@ export class BankSystem {
         itemId: s.item?.itemDef.code || "",
         quantity: s.qty,
         slotIndex: s.idx,
-        rarity: toSharedRarity(s.item?.rarity),
+        rarity: s.item?.rarity ?? ItemRarity.COMMON,
         affixes: (s.item?.affixesJson as unknown as ItemAffix[]) || [],
       })) || [];
 
@@ -189,7 +188,7 @@ export class BankSystem {
           const instance = await tx.itemInstance.create({
             data: {
               itemDefId: itemDef.id,
-              rarity: toPrismaRarity(item.rarity),
+              rarity: item.rarity ?? ItemRarity.COMMON,
               affixesJson: item.affixes ? (item.affixes as unknown as import("../generated/prisma").Prisma.InputJsonValue) : [],
             },
           });

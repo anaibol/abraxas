@@ -19,7 +19,7 @@ import { logger } from "../logger";
 import type { GameState } from "../schema/GameState";
 import type { Npc } from "../schema/Npc";
 import type { Player } from "../schema/Player";
-import type { Entity, SpatialLookup } from "../utils/SpatialLookup";
+import { isNpc, isPlayer, type Entity, type SpatialLookup } from "../utils/SpatialLookup";
 import type { BuffSystem } from "./BuffSystem";
 
 /** Player fields that correspond to resource costs. */
@@ -799,35 +799,30 @@ export class CombatSystem {
 
   /** Shared Rage generation logic applied to both attacker and defender on any hit. */
   private applyRageOnHit(attacker: Entity, target: Entity): void {
-    if (attacker.entityType === EntityType.PLAYER && (attacker as Player).classType === "WARRIOR") {
-      (attacker as Player).rage = Math.min(
-        (attacker as Player).maxRage,
-        (attacker as Player).rage + 5,
-      );
+    if (isPlayer(attacker) && attacker.classType === "WARRIOR") {
+      attacker.rage = Math.min(attacker.maxRage, attacker.rage + 5);
     }
-    if (target.entityType === EntityType.PLAYER && (target as Player).classType === "WARRIOR") {
-      (target as Player).rage = Math.min((target as Player).maxRage, (target as Player).rage + 3);
+    if (isPlayer(target) && target.classType === "WARRIOR") {
+      target.rage = Math.min(target.maxRage, target.rage + 3);
     }
   }
 
   private sameFaction(a: Entity, b: Entity): boolean {
     // Check for owner-pet or pet-pet relation
-    const aOwnerId = a.entityType === EntityType.NPC ? (a as Npc).ownerId : undefined;
-    const bOwnerId = b.entityType === EntityType.NPC ? (b as Npc).ownerId : undefined;
+    const aOwnerId = isNpc(a) ? a.ownerId : undefined;
+    const bOwnerId = isNpc(b) ? b.ownerId : undefined;
 
     if (aOwnerId && aOwnerId === b.sessionId) return true;
     if (bOwnerId && bOwnerId === a.sessionId) return true;
     if (aOwnerId && bOwnerId && aOwnerId === bOwnerId) return true;
 
-    if (a.entityType === EntityType.PLAYER && b.entityType === EntityType.PLAYER) {
-      const pa = a as Player,
-        pb = b as Player;
-      if (pa.groupId && pa.groupId === pb.groupId) return true;
-      if (pa.guildId && pa.guildId === pb.guildId) return true;
+    if (isPlayer(a) && isPlayer(b)) {
+      if (a.groupId && a.groupId === b.groupId) return true;
+      if (a.guildId && a.guildId === b.guildId) return true;
       return false;
     }
-    if (a.entityType === EntityType.NPC && b.entityType === EntityType.NPC) {
-      return (a as Npc).npcType === (b as Npc).npcType;
+    if (isNpc(a) && isNpc(b)) {
+      return a.npcType === b.npcType;
     }
     return false;
   }
@@ -835,16 +830,13 @@ export class CombatSystem {
   private canAttack(attacker: Entity, target: Entity): boolean {
     if (attacker.sessionId === target.sessionId) return false;
     if (this.sameFaction(attacker, target)) return false;
-    // Safe zones protect everyone — no entity can attack or be attacked inside one.
     if (
       this.isInSafeZone(attacker.tileX, attacker.tileY) ||
       this.isInSafeZone(target.tileX, target.tileY)
     )
       return false;
-    if (attacker.entityType === EntityType.PLAYER && target.entityType === EntityType.PLAYER) {
-      const pa = attacker as Player,
-        pt = target as Player;
-      if (!pa.pvpEnabled || !pt.pvpEnabled) return false;
+    if (isPlayer(attacker) && isPlayer(target)) {
+      if (!attacker.pvpEnabled || !target.pvpEnabled) return false;
     }
     return true;
   }

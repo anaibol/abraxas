@@ -25,11 +25,11 @@ export enum DropType {
 }
 
 export enum ItemRarity {
-  COMMON = "common",
-  UNCOMMON = "uncommon",
-  RARE = "rare",
-  EPIC = "epic",
-  LEGENDARY = "legendary",
+  COMMON = "COMMON",
+  UNCOMMON = "UNCOMMON",
+  RARE = "RARE",
+  EPIC = "EPIC",
+  LEGENDARY = "LEGENDARY",
 }
 
 export enum StatType {
