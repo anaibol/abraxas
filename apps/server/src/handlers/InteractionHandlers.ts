@@ -30,7 +30,13 @@ export class InteractionHandlers {
 
     ctx.systems.quests
       .updateProgress(player.dbId, "talk", npc.npcType, 1)
-      .then((updatedQuests) => HandlerUtils.sendQuestUpdates(client, updatedQuests));
+      .then((updatedQuests) => HandlerUtils.sendQuestUpdates(client, updatedQuests))
+      .catch((err) => {
+        logger.error({
+          message: `Failed to update quest progress on interact for ${player.name}`,
+          error: String(err),
+        });
+      });
 
     if (npc.npcType === "merchant") {
       InteractionHandlers.openShop(ctx, client, npc);

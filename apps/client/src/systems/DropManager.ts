@@ -142,7 +142,7 @@ export class DropManager {
         strokeThickness: 3,
         fontFamily: FONTS.mono,
         fontStyle: "normal",
-        resolution: window.devicePixelRatio,
+        resolution: 4,
       })
       .setOrigin(0.5, 0)
       .setDepth(7)

@@ -11,6 +11,7 @@ import type { Player } from "../schema/Player";
 import { HandlerUtils } from "./HandlerUtils";
 import { InteractionHandlers } from "./InteractionHandlers";
 import type { RoomContext } from "./RoomContext";
+import { logger } from "../logger";
 
 export class EconomyHandlers {
   // ── Trading ─────────────────────────────────────────────────────────────
@@ -100,6 +101,8 @@ export class EconomyHandlers {
           });
         }
         // result === null means not both confirmed yet — no action needed
+      }).catch((e) => {
+        logger.error({ message: "Failed to execute trade", error: String(e) });
       });
     }
   }

@@ -45,7 +45,12 @@ export class ItemHandlers {
         });
         ctx.systems.quests
           .updateProgress(player.dbId, "collect", drop.itemId, drop.quantity)
-          .then((updatedQuests) => HandlerUtils.sendQuestUpdates(client, updatedQuests));
+          .then((updatedQuests) => HandlerUtils.sendQuestUpdates(client, updatedQuests))
+          .catch((e) => {
+            import("../logger").then(({ logger }) => {
+              logger.error({ message: "Failed to update quest progress on pickup", error: String(e) });
+            });
+          });
       }
     }
   }

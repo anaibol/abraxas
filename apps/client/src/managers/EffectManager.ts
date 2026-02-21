@@ -1363,7 +1363,7 @@ export class EffectManager {
         fontStyle: "bold",
         stroke: "#000000",
         strokeThickness: 3,
-        resolution: window.devicePixelRatio,
+        resolution: 4,
       })
       .setOrigin(0.5)
       .setDepth(20);

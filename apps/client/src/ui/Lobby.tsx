@@ -162,8 +162,14 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
     fetch("/api/me", {
       headers: { Authorization: `Bearer ${stored}` },
     })
-      .then((res) => {
-        if (!res.ok) throw new Error("invalid");
+      .then(async (res) => {
+        if (!res.ok) {
+          if (res.status === 401 || res.status === 403) {
+            throw new Error("invalid_token");
+          } else {
+            throw new Error("server_error");
+          }
+        }
         return res.json();
       })
       .then((data) => {
@@ -174,8 +180,12 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
         setMode("character_select");
         if (admin) fetchAdminCharacters(stored);
       })
-      .catch(() => {
-        localStorage.removeItem("abraxas_token");
+      .catch((err) => {
+        if (err.message === "invalid_token") {
+          localStorage.removeItem("abraxas_token");
+        } else {
+          setError(t("lobby.error.network_error"));
+        }
       })
       .finally(() => {
         setIsCheckingToken(false);

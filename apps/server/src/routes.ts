@@ -119,16 +119,21 @@ export const meEndpoint = createEndpoint("/api/me", { method: "GET" }, async (ct
   if (!auth.payload) return ctx.json(auth.response!.body, { status: auth.response!.status });
   const { payload } = auth;
 
-  const [account, characters] = await Promise.all([
-    prisma.account.findUnique({ where: { id: payload.userId }, select: { role: true } }),
-    prisma.character.findMany({
-      where: { accountId: payload.userId },
-      select: { id: true, name: true, class: true, level: true },
-      orderBy: { lastLoginAt: "desc" },
-    }),
-  ]);
+  try {
+    const [account, characters] = await Promise.all([
+      prisma.account.findUnique({ where: { id: payload.userId }, select: { role: true } }),
+      prisma.character.findMany({
+        where: { accountId: payload.userId },
+        select: { id: true, name: true, class: true, level: true },
+        orderBy: { lastLoginAt: "desc" },
+      }),
+    ]);
 
-  return ctx.json({ characters, role: account?.role ?? payload.role });
+    return ctx.json({ characters, role: account?.role ?? payload.role });
+  } catch (e) {
+    logger.error({ message: "meEndpoint error", error: String(e) });
+    return ctx.json({ error: "Internal Server Error" }, { status: 500 });
+  }
 });
 
 export const createCharacterEndpoint: ReturnType<typeof createEndpoint> = createEndpoint(
