@@ -78,48 +78,18 @@ export function LoadingScreen() {
           justifyContent="center"
           animation={`${pulse} 4s infinite ease-in-out`}
         >
-          <svg
-            width="60"
-            height="60"
-            viewBox="0 0 100 100"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+          <Text
+            fontSize="52px"
+            fontFamily={T.display}
+            fontWeight="700"
+            bgClip="text"
+            bgGradient={`linear-gradient(135deg, ${HEX.gold}, #f7e0a3, ${HEX.goldDim})`}
+            textShadow={`0 0 20px ${HEX.goldDim}88, 0 0 40px ${HEX.goldDim}44`}
+            lineHeight="1"
+            userSelect="none"
           >
-            <defs>
-              <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor={HEX.gold} />
-                <stop offset="50%" stopColor="#f7e0a3" />
-                <stop offset="100%" stopColor={HEX.goldDim} />
-              </linearGradient>
-              <filter id="glow">
-                <feGaussianBlur stdDeviation="3" result="blur" />
-                <feComposite in="SourceGraphic" in2="blur" operator="over" />
-              </filter>
-            </defs>
-            {/* Inner "A" Shape */}
-            <path
-              d="M50 15L20 85H32L38 70H62L68 85H80L50 15ZM50 35L58 55H42L50 35Z"
-              fill="url(#goldGradient)"
-              filter="url(#glow)"
-            />
-            {/* Arcane Details */}
-            <path
-              d="M35 75L40 68M65 75L60 68M50 25L50 30"
-              stroke={HEX.gold}
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-            {/* Outer Circular Accents */}
-            <circle
-              cx="50"
-              cy="50"
-              r="45"
-              stroke={HEX.gold}
-              strokeWidth="0.5"
-              strokeDasharray="4 8"
-              opacity="0.5"
-            />
-          </svg>
+            A
+          </Text>
         </Box>
       </Box>
 

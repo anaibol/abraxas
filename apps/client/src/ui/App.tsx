@@ -650,7 +650,8 @@ export function App() {
           </Box>
         </Flex>
       )}
-      {phase === "lobby" && <Lobby onJoin={handleJoin} connecting={connecting} />}
+      {connecting && <LoadingScreen />}
+      {phase === "lobby" && !connecting && <Lobby onJoin={handleJoin} connecting={connecting} />}
       {phase === "game" && mapData && (
         <>
           {isLoading && <LoadingScreen />}

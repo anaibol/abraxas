@@ -75,6 +75,11 @@ const shimmer = keyframes`
   100% { background-position: 200% 0; }
 `;
 
+const progressSweep = keyframes`
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+`;
+
 const entrance = keyframes`
   from { opacity: 0; transform: translateY(10px) scale(0.98); }
   to { opacity: 1; transform: translateY(0) scale(1); }
@@ -616,7 +621,7 @@ export function Lobby({ onJoin, connecting }: LobbyProps) {
                           ? `linear-gradient(90deg, rgba(8,8,12,0.4) 0%, ${HEX.gold}22 50%, rgba(8,8,12,0.4) 100%)`
                           : isConfirming ? "rgba(180, 40, 40, 0.12)" : "rgba(8, 8, 12, 0.4)"}
                         backgroundSize={isConnecting ? "200% 100%" : "auto"}
-                        animation={isConnecting ? `${shimmer} 1.5s ease-in-out infinite` : undefined}
+                        animation={isConnecting ? `${progressSweep} 1.5s linear infinite` : undefined}
                         border="1px solid"
                         borderColor={isConnecting ? T.goldDim : isConfirming ? "rgba(180, 40, 40, 0.4)" : T.border}
                         borderRadius="8px"
