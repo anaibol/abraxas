@@ -8,7 +8,7 @@ import {
   TILE_SIZE,
 } from "@abraxas/shared";
 import type { Room } from "@colyseus/sdk";
-import { type SoundManager } from "../assets/SoundManager";
+import { HEAVY_HIT_ABILITIES, type SoundManager } from "../assets/SoundManager";
 import { LightPreset, type LightManager } from "../managers/LightManager";
 import type { EffectManager } from "../managers/EffectManager";
 import type { SpriteManager } from "../managers/SpriteManager";
@@ -182,7 +182,7 @@ export class GameEventHandler {
     const sourceY = data.targetTileY * TILE_SIZE + TILE_SIZE / 2;
     this.soundManager.playSpellImpactSfx(data.abilityId, { sourceX, sourceY });
 
-    const isHeavy = this.HEAVY_HIT_ABILITIES.has(data.abilityId);
+    const isHeavy = HEAVY_HIT_ABILITIES.has(data.abilityId);
     const now = Date.now();
     if (isHeavy && now - this.lastShakeTime > this.SHAKE_COOLDOWN_MS) {
       this.lastShakeTime = now;
@@ -399,13 +399,6 @@ export class GameEventHandler {
   }
 
   // ── Lookup tables ─────────────────────────────────────────────────────────────
-
-  private readonly HEAVY_HIT_ABILITIES = new Set([
-    "meteor_strike", "earthquake", "leap", "whirlwind", "execute", "barrage",
-    "chain_lightning", "banshee_wail", "holy_nova", "thunderstorm",
-    "consecration", "war_cry", "berserker_rage",
-  ]);
-
   private readonly SPELL_LIGHT_MAP = new Map<string, { preset: LightPreset; durationMs: number }>([
     ["fireball",          { preset: LightPreset.EXPLOSION, durationMs: 400 }],
     ["meteor_strike",     { preset: LightPreset.EXPLOSION, durationMs: 400 }],

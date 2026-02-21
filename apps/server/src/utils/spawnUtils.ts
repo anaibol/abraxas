@@ -1,5 +1,6 @@
 import type { TileMap } from "@abraxas/shared";
 import type { SpatialLookup } from "./SpatialLookup";
+import { isTileValidForMove } from "./mapUtils";
 
 /**
  * Generic outward spiral search from (originX, originY).
@@ -51,14 +52,7 @@ export function spiralSearch(
  * Items / drops on the tile are explicitly allowed.
  */
 function isValidSpawnTile(x: number, y: number, map: TileMap, spatial: SpatialLookup): boolean {
-  return (
-    x >= 0 &&
-    x < map.width &&
-    y >= 0 &&
-    y < map.height &&
-    map.collision[y]?.[x] !== 1 &&
-    !spatial.isTileOccupied(x, y)
-  );
+  return isTileValidForMove(x, y, map, spatial);
 }
 
 /**

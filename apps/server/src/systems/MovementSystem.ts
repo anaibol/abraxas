@@ -3,6 +3,8 @@ import { logger } from "../logger";
 
 import type { Entity, SpatialLookup } from "../utils/SpatialLookup";
 import type { BuffSystem } from "./BuffSystem";
+import { MathUtils } from "@abraxas/shared";
+import { isTileValidForMove } from "../utils/mapUtils";
 
 type MoveResult = {
   success: boolean;
@@ -23,8 +25,7 @@ export class MovementSystem {
   teleport(entity: Entity, tileX: number, tileY: number, map?: TileMap): boolean {
     // Bug #70: Validate bounds and collision
     if (map) {
-      if (tileX < 0 || tileX >= map.width || tileY < 0 || tileY >= map.height) return false;
-      if (map.collision[tileY]?.[tileX] === 1) return false;
+      if (!MathUtils.isTileWalkable(tileX, tileY, map)) return false;
     }
     const oldX = entity.tileX;
     const oldY = entity.tileY;
@@ -90,16 +91,9 @@ export class MovementSystem {
     entity.facing = direction;
 
     // Bounds, Collision, and Occupancy checks
-    if (
-      newX < 0 ||
-      newX >= map.width ||
-      newY < 0 ||
-      newY >= map.height ||
-      map.collision[newY]?.[newX] === 1 ||
-      // Bug #69: Removed NPC warp blocking — it could permanently trap NPCs
-      // if a warp tile was on the only path between two areas
-      this.spatial.isTileOccupied(newX, newY, entity.sessionId)
-    ) {
+    // Bug #69: Removed NPC warp blocking — it could permanently trap NPCs
+    // if a warp tile was on the only path between two areas (already handled by passing entity.sessionId as exclude arg below)
+    if (!isTileValidForMove(newX, newY, map, this.spatial, entity.sessionId)) {
       return { success: false };
     }
 

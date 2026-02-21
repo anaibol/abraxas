@@ -12,6 +12,7 @@ import type { Entity, SpatialLookup } from "../utils/SpatialLookup";
 import type { BuffSystem } from "./BuffSystem";
 import type { DamageCalculator } from "./DamageCalculator";
 import { logger } from "../logger";
+import { isTileValidForMove } from "../utils/mapUtils";
 
 // ── EffectResolver ─────────────────────────────────────────────────────
 
@@ -321,14 +322,7 @@ export class EffectResolver {
     } else if (ability.effect === "teleport") {
       const tx = windup.targetTileX;
       const ty = windup.targetTileY;
-      if (
-        tx < 0 ||
-        tx >= this.map.width ||
-        ty < 0 ||
-        ty >= this.map.height ||
-        this.map.collision[ty]?.[tx] === 1 ||
-        this.spatial.isTileOccupied(tx, ty)
-      ) {
+      if (!isTileValidForMove(tx, ty, this.map, this.spatial)) {
         return;
       }
 

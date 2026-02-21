@@ -25,6 +25,7 @@ import type { Entity, SpatialLookup } from "../utils/SpatialLookup";
 import type { BuffSystem } from "./BuffSystem";
 import type { DamageCalculator } from "./DamageCalculator";
 import type { EffectResolver } from "./EffectResolver";
+import { isTileValidForMove } from "../utils/mapUtils";
 
 /** Player fields that correspond to resource costs. */
 type PlayerResourceField = "mana" | "souls" | "rage" | "energy" | "focus" | "holyPower";
@@ -395,14 +396,7 @@ export class CombatSystem {
     // Validate target if ability is not self-target or AoE around self (i.e. has ranged targeting)
     if (ability.rangeTiles > 0) {
       if (ability.effect === "teleport") {
-        if (
-          targetTileX < 0 ||
-          targetTileX >= this.map.width ||
-          targetTileY < 0 ||
-          targetTileY >= this.map.height ||
-          this.map.collision[targetTileY]?.[targetTileX] === 1 ||
-          this.spatial.isTileOccupied(targetTileX, targetTileY)
-        ) {
+        if (!isTileValidForMove(targetTileX, targetTileY, this.map, this.spatial)) {
           sendToClient?.(ServerMessageType.InvalidTarget, { reason: "invalid" });
           return false;
         }
