@@ -43,6 +43,7 @@ import { PreloaderScene } from "../scenes/PreloaderScene";
 import { BankWindow } from "./BankWindow";
 import { Console } from "./Console";
 import { DeathOverlay } from "./DeathOverlay";
+import { DebugOverlay } from "./DebugOverlay";
 import { DropQuantityDialog } from "./DropQuantityDialog";
 import { FastTravelModal } from "./FastTravelModal";
 import { KillFeed, type KillFeedEntry } from "./KillFeed";
@@ -696,6 +697,7 @@ export function App() {
                 />
               )}
 
+              <DebugOverlay />
 
               {/* Mobile sidebar toggle button */}
               {isMobile && (

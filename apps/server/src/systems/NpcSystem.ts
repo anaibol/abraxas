@@ -150,6 +150,10 @@ export class NpcSystem {
    *  Players standing inside a safe zone are excluded — NPCs should not aggro them.
    */
   private scanForAggroTarget(npc: Npc): Player | null {
+    // Bug #28: NPCs standing inside a safe zone should not aggro
+    if (MathUtils.isInSafeZone(npc.tileX, npc.tileY, this.currentMap?.safeZones)) {
+      return null;
+    }
     const candidate = this.spatial.findNearestPlayer(npc.tileX, npc.tileY, this.getAggroRange(npc));
     if (candidate && MathUtils.isInSafeZone(candidate.tileX, candidate.tileY, this.currentMap?.safeZones)) {
       return null;

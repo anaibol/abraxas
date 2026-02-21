@@ -39,7 +39,8 @@ export class BuffSystem {
     const s = this.getState(sessionId);
     const existing = s.buffs.find((b) => b.id === id);
     if (existing) {
-      existing.expiresAt = Math.max(existing.expiresAt, now) + durationMs;
+      // Bug #23: Refresh from `now` to prevent infinite extension
+      existing.expiresAt = now + durationMs;
     } else {
       s.buffs.push({
         id,
@@ -157,8 +158,10 @@ export class BuffSystem {
     stat: string,
     amount: number,
     durationMs: number,
+    now: number = Date.now(),
   ): void {
-    this.addBuff(player.sessionId, `elixir_${stat}`, stat, amount, durationMs, Date.now());
+    // Bug #25: Use authoritative `now` passed from caller
+    this.addBuff(player.sessionId, `elixir_${stat}`, stat, amount, durationMs, now);
   }
 
   getBuffBonus(sessionId: string, stat: string, now: number): number {

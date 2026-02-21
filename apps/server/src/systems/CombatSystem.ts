@@ -620,6 +620,8 @@ export class CombatSystem {
         // Rage Generation
         this.effects.applyRageOnHit(attacker, target);
 
+        // Bug #4: Death check moved AFTER rage — but only for the attacker.
+        // Target death must come after damage broadcast but before any further target logic.
         if (target.hp <= 0) {
           onDeath(target, attacker.sessionId);
         }

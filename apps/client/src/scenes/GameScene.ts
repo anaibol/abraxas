@@ -79,7 +79,6 @@ export class GameScene extends Phaser.Scene {
 
   private muteKey?: Phaser.Input.Keyboard.Key;
   private debugKey?: Phaser.Input.Keyboard.Key;
-  private debugText?: Phaser.GameObjects.Text;
   private settingsUnsub?: () => void;
   private handleVisibilityChange = () => {
     if (document.visibilityState === "visible") {
@@ -383,9 +382,10 @@ export class GameScene extends Phaser.Scene {
       },
       // Item #17, #19: Camera zoom callback
       (zoom: number, durationMs: number) => {
-        this.cameras.main.zoomTo(zoom, durationMs / 2);
+        const baseZoom = this.cameras.main.zoom;
+        this.cameras.main.zoomTo(zoom * baseZoom, durationMs / 2);
         this.time.delayedCall(durationMs / 2, () => {
-          this.cameras.main.zoomTo(1, durationMs / 2);
+          this.cameraController.applyFixedZoom();
         });
       },
       this.lightManager,
@@ -405,22 +405,11 @@ export class GameScene extends Phaser.Scene {
     this.updateAmbientLighting(this.room.state.timeOfDay);
     this.weatherManager.updateWeather(this.room.state.weather as WeatherType);
 
-    // Debug overlay — always created, visibility driven by settings + F3 key
-    // NOTE: we do NOT use setScrollFactor(0) because Phaser still applies the
-    // camera zoom to scroll-factor-0 objects, pushing them off-screen when the
-    // camera zoom > 1.  Instead we reposition the text every frame in update().
-    this.debugText = this.add.text(0, 0, "", {
-      fontSize: "16px",
-      color: "#ffffff",
-      stroke: "#000000",
-      strokeThickness: 4,
-      fontFamily: "'Courier New', Courier, monospace",
-    });
-    this.debugText.setDepth(3000);
-    this.debugText.setVisible(gameSettings.get().showDebugOverlay);
+    // Debug overlay visibility is driven by settings + F3 key
+    // React Chakra component Listens to `abraxas-debug-update` events, so we no longer render it in Phaser
 
-    this.settingsUnsub = gameSettings.subscribe((s) => {
-      this.debugText?.setVisible(s.showDebugOverlay);
+    this.settingsUnsub = gameSettings.subscribe(() => {
+      // Used to toggle debug text visibility, now handled by React DebugOverlay
     });
 
     this.debugKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.F3);
@@ -508,17 +497,7 @@ export class GameScene extends Phaser.Scene {
       this.dropManager.updateLabels(localSprite.predictedTileX, localSprite.predictedTileY);
     }
 
-    if (this.debugText?.visible && localSprite) {
-      // Pin the debug text to the camera's top-left corner in world coords.
-      // This avoids setScrollFactor(0) which misbehaves with camera zoom > 1.
-      const cam = this.cameras.main;
-      const margin = 10 / cam.zoom;
-      this.debugText.setPosition(
-        cam.worldView.x + margin,
-        cam.worldView.y + margin,
-      );
-      this.debugText.setScale(1 / cam.zoom);
-
+    if (gameSettings.get().showDebugOverlay && localSprite) {
       // Count particle emitters (persistent + transient)
       const allObjs = this.children.list;
       const emitterCount = allObjs.filter(
@@ -534,14 +513,14 @@ export class GameScene extends Phaser.Scene {
       const renderer = this.game.renderer as unknown as Record<string, unknown>;
       const drawCalls: number = typeof renderer.drawCount === 'number' ? renderer.drawCount : -1;
 
-      this.debugText.setText(
-        `X: ${localSprite.predictedTileX}  Y: ${localSprite.predictedTileY}\n` +
+      const debugString = `X: ${localSprite.predictedTileX}  Y: ${localSprite.predictedTileY}\n` +
         `FPS: ${this.game.loop.actualFps.toFixed(1)}  δ: ${delta.toFixed(1)}ms\n` +
         `GO: ${allObjs.length}  Tweens: ${this.tweens.getTweens().length}  DrawCalls: ${drawCalls}\n` +
         `Sprites: ${this.spriteManager.getAllSprites().size}  StateNPCs: ${this.room.state.npcs.size}  StatePlayers: ${this.room.state.players.size}\n` +
         `Drops: ${this.dropManager.count}  Particles: ${emitterCount}  Graphics: ${graphicsCount}  Texts: ${textCount}\n` +
-        `Lights: ${this.lightManager.getLightCount()}/48`,
-      );
+        `Lights: ${this.lightManager.getLightCount()}/48`;
+      
+      window.dispatchEvent(new CustomEvent("abraxas-debug-update", { detail: debugString }));
     }
   }
 

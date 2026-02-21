@@ -633,31 +633,22 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     const currentSet = this.npcViewSets.get(client.sessionId);
     if (!currentSet) return;
 
-    const last = this.lastPlayerTiles.get(client.sessionId);
-    const playerMoved = !last || last.x !== player.tileX || last.y !== player.tileY;
-
-    let nextIds: Set<string> | undefined;
-
-    if (playerMoved) {
-      this.lastPlayerTiles.set(client.sessionId, { x: player.tileX, y: player.tileY });
-
-      // Build the set of NPC ids that should now be visible.
-      const nearby = this.spatial.findEntitiesInRadius(player.tileX, player.tileY, NPC_VIEW_RADIUS);
-      nextIds = new Set<string>();
-      for (const entity of nearby) {
-        if (entity.isNpc()) {
-          nextIds.add(entity.sessionId);
-        }
+    // Always build the set of NPC ids that should be visible.
+    const nearby = this.spatial.findEntitiesInRadius(player.tileX, player.tileY, NPC_VIEW_RADIUS);
+    const nextIds = new Set<string>();
+    for (const entity of nearby) {
+      if (entity.isNpc()) {
+        nextIds.add(entity.sessionId);
       }
+    }
 
-      // Add newly-visible NPCs.
-      for (const id of nextIds) {
-        if (!currentSet.has(id)) {
-          const npc = this.state.npcs.get(id);
-          if (npc) {
-            client.view.add(npc);
-            currentSet.add(id);
-          }
+    // Add newly-visible NPCs.
+    for (const id of nextIds) {
+      if (!currentSet.has(id)) {
+        const npc = this.state.npcs.get(id);
+        if (npc) {
+          client.view.add(npc);
+          currentSet.add(id);
         }
       }
     }
@@ -666,7 +657,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     // player was stationary are evicted from the view on the next tick.
     for (const id of currentSet) {
       const npc = this.state.npcs.get(id);
-      const outOfRange = nextIds !== undefined && !nextIds.has(id);
+      const outOfRange = !nextIds.has(id);
       if (!npc || !npc.alive || outOfRange) {
         if (npc) client.view.remove(npc);
         currentSet.delete(id);

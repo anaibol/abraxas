@@ -17,10 +17,6 @@ export class MovementHandlers {
       ctx.systems.buff.clearSpawnProtection(client.sessionId);
     }
 
-    if (player.spawnProtection) {
-      ctx.systems.buff.clearSpawnProtection(client.sessionId);
-    }
-
     const result = ctx.systems.movement.tryMove(
       player,
       data.direction,
