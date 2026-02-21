@@ -116,7 +116,6 @@ export class InventorySystem {
   }
 
   equipItem(player: Player, itemId: string, slotIndex?: number, onError?: (msg: string) => void): boolean {
-    // Bug #41: Find exact item instance by slotIndex if provided, otherwise fallback to first matching itemId
     const item = slotIndex !== undefined
       ? player.inventory.find((i) => i.itemId === itemId && i.slotIndex === slotIndex)
       : player.inventory.find((i) => i.itemId === itemId);
@@ -153,7 +152,6 @@ export class InventorySystem {
       const itemToEquip = item;
       const unequipped = currentEquip;
 
-      // Bug #40: Prevent splice-then-push race by just swapping the array element directly at idx
       const idx = player.inventory.indexOf(itemToEquip);
       if (idx !== -1) {
         unequipped.slotIndex = itemToEquip.slotIndex;

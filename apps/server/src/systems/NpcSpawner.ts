@@ -3,7 +3,6 @@ import {
   type ClassStats,
   DIRECTION_DELTA,
   Direction,
-
   NPC_STATS,
   NPC_TYPES,
   NpcState,
@@ -81,7 +80,6 @@ export class NpcSpawner {
       npc.level = this.calculateSpawnLevel(type, map);
     }
 
-    // D3: Use shared stat recalculation
     this.recalcNpcStats(npc);
 
     npc.alive = true;
@@ -98,7 +96,6 @@ export class NpcSpawner {
     return npc;
   }
 
-  /** D3: Shared NPC stat scaling formula — called from spawnNpcAt and levelUp.
    * @param resetHp When true (default for new spawns), set HP to maxHp. When false
    *                (level-up mid-combat), scale HP proportionally to the new max. */
   recalcNpcStats(npc: Npc, resetHp = true): void {
@@ -110,7 +107,6 @@ export class NpcSpawner {
     if (resetHp) {
       npc.hp = npc.maxHp;
     } else {
-      // Bug #36: Proportionally scale HP so level-up doesn't grant a full heal
       npc.hp = Math.min(npc.maxHp, Math.ceil((npc.hp / prevMax) * npc.maxHp));
     }
     npc.str = Math.ceil(stats.str * scale);
@@ -130,7 +126,7 @@ export class NpcSpawner {
     return 1;
   }
 
-  /** Q9: Shared summon cap — returns maxCompanions from stats if available, otherwise 1. */
+  /** Returns maxCompanions from stats if available, otherwise 1. */
   getSummonCap(entity: Entity): number {
     const stats = entity.getStats();
     if (stats && "maxCompanions" in stats) {
@@ -139,7 +135,7 @@ export class NpcSpawner {
     return 1;
   }
 
-  /** Q9: Counts live minions owned by the given sessionId. */
+  /** Counts live minions owned by the given sessionId. */
   countLiveMinions(ownerSessionId: string): number {
     let count = 0;
     for (const n of this.state.npcs.values()) {
