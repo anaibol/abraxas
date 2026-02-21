@@ -347,6 +347,28 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         // session in allowReconnection limbo.
         throw new Error(`Character not found: ${options.charId}`);
       }
+
+      // ── Kick previous session if this character is already online ──────
+      for (const [existingSessionId, existingPlayer] of this.state.players) {
+        if (existingPlayer.dbId === char.id) {
+          logger.info({
+            message: `Kicking duplicate session for character ${char.id}`,
+            oldSession: existingSessionId,
+            newSession: client.sessionId,
+          });
+          const oldClient = this.clients.getById(existingSessionId);
+          if (oldClient) {
+            oldClient.send(ServerMessageType.Error, {
+              message: "logged_in_elsewhere",
+            });
+            oldClient.leave();
+          }
+          // Ensure clean state before setting up the new session
+          await this.removePlayer(oldClient ?? { sessionId: existingSessionId } as Client);
+          break;
+        }
+      }
+
       prisma.character
         .update({ where: { id: char.id }, data: { lastLoginAt: new Date() } })
         .catch(() => {});
@@ -535,30 +557,28 @@ export class ArenaRoom extends Room<{ state: GameState }> {
     const nearby = this.spatial.findEntitiesInRadius(
       entity.tileX, entity.tileY, HARVEST_RANGE,
     );
-    for (const ent of nearby) {
-      if (ent.entityType !== EntityType.PLAYER) continue;
-      const player = ent as Player;
-      if (player.classType !== "NECROMANCER" || !player.alive) continue;
+      if (!ent.isPlayer()) continue;
+      if (ent.classType !== "NECROMANCER" || !ent.alive) continue;
 
-      const hpGain = Math.floor(player.maxHp * 0.05);
-      const manaGain = Math.floor(player.maxMana * 0.05);
-      player.hp = Math.min(player.maxHp, player.hp + hpGain);
-      player.mana = Math.min(player.maxMana, player.mana + manaGain);
+      const hpGain = Math.floor(ent.maxHp * 0.05);
+      const manaGain = Math.floor(ent.maxMana * 0.05);
+      ent.hp = Math.min(ent.maxHp, ent.hp + hpGain);
+      ent.mana = Math.min(ent.maxMana, ent.mana + manaGain);
 
-      if (player.souls < player.maxSouls) {
-        player.souls++;
+      if (ent.souls < ent.maxSouls) {
+        ent.souls++;
       }
 
       this.broadcast(ServerMessageType.Heal, {
-        sessionId: player.sessionId,
+        sessionId: ent.sessionId,
         amount: hpGain,
-        hpAfter: player.hp,
+        hpAfter: ent.hp,
       });
     }
 
-    if (entity.entityType === EntityType.PLAYER)
-      this.onPlayerDeath(entity as Player, killerSessionId);
-    else this.tickSystem.handleNpcDeath(entity as Npc, killerSessionId);
+    if (entity.isPlayer())
+      this.onPlayerDeath(entity, killerSessionId);
+    else if (entity.isNpc()) this.tickSystem.handleNpcDeath(entity, killerSessionId);
   }
 
   private onSummon(caster: Entity, spellId: string, x: number, y: number) {

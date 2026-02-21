@@ -1,6 +1,6 @@
-import { DIRECTION_DELTA, type Direction, EntityType, ITEMS, type TileMap } from "@abraxas/shared";
+import { DIRECTION_DELTA, type Direction, ITEMS, type TileMap } from "@abraxas/shared";
 import { logger } from "../logger";
-import type { Player } from "../schema/Player";
+
 import type { Entity, SpatialLookup } from "../utils/SpatialLookup";
 import type { BuffSystem } from "./BuffSystem";
 
@@ -45,12 +45,11 @@ export class MovementSystem {
     if (!stats) return { success: false };
 
     let speed = stats.speedTilesPerSecond;
-    if (entity.entityType === EntityType.PLAYER) {
-      const player = entity as Player;
-      if (player.speedOverride > 0) speed = player.speedOverride;
+    if (entity.isPlayer()) {
+      if (entity.speedOverride > 0) speed = entity.speedOverride;
       // Apply mount speed bonus if a mount is equipped
-      if (player.equipMount?.itemId) {
-        const mountBonus = ITEMS[player.equipMount.itemId]?.stats?.speedBonus ?? 0;
+      if (entity.equipMount?.itemId) {
+        const mountBonus = ITEMS[entity.equipMount.itemId]?.stats?.speedBonus ?? 0;
         speed += mountBonus;
       }
     }
@@ -86,7 +85,7 @@ export class MovementSystem {
       newY < 0 ||
       newY >= map.height ||
       map.collision[newY]?.[newX] === 1 ||
-      (entity.entityType !== EntityType.PLAYER &&
+      (!entity.isPlayer() &&
         map.warps?.some((w) => w.x === newX && w.y === newY)) ||
       this.spatial.isTileOccupied(newX, newY, entity.sessionId)
     ) {

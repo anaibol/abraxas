@@ -5,7 +5,7 @@ import {
   type ClassStats,
   DIRECTION_DELTA,
   Direction,
-  EntityType,
+
   EXP_TABLE,
   MathUtils,
   NPC_RESPAWN_TIME_MS,
@@ -395,7 +395,7 @@ export class NpcSystem {
         AGGRO_RANGE,
       );
       for (const enemy of nearbyEnemies) {
-        if (enemy.entityType === EntityType.NPC && (enemy as Npc).targetId === owner.sessionId) {
+        if (enemy.isNpc() && enemy.targetId === owner.sessionId) {
           npc.targetId = enemy.sessionId;
           npc.state = NpcState.CHASE;
           return;

@@ -417,14 +417,14 @@ export class CombatSystem {
 
       // Handle Combo Points
       if (ability.comboPointsGain) {
-        pc.comboPoints = Math.min(pc.maxComboPoints, pc.comboPoints + ability.comboPointsGain);
+        caster.comboPoints = Math.min(caster.maxComboPoints, caster.comboPoints + ability.comboPointsGain);
       }
       if (ability.comboPointsCost) {
-        comboPointsSpent = Math.min(pc.comboPoints, ability.comboPointsCost);
+        comboPointsSpent = Math.min(caster.comboPoints, ability.comboPointsCost);
         if (ability.comboDamageMultiplier) {
-          comboPointsSpent = pc.comboPoints; // Spend ALL for finishing moves
+          comboPointsSpent = caster.comboPoints; // Spend ALL for finishing moves
         }
-        pc.comboPoints = Math.max(0, pc.comboPoints - comboPointsSpent);
+        caster.comboPoints = Math.max(0, caster.comboPoints - comboPointsSpent);
       }
     }
 
@@ -478,7 +478,7 @@ export class CombatSystem {
 
       // Spell Echo: Next spell casts twice
       if (
-        attacker.entityType === EntityType.PLAYER &&
+        attacker.isPlayer() &&
         this.buffSystem.hasBuff(attacker.sessionId, "spell_echo", now)
       ) {
         this.buffSystem.removeBuff(attacker.sessionId, "spell_echo");

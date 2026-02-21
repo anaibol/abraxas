@@ -3,13 +3,12 @@ import {
   calcHealAmount,
   CLASS_APPEARANCE,
   DamageSchool,
-  EntityType,
   NPC_APPEARANCE,
   ServerMessageType,
   StatType,
 } from "@abraxas/shared";
-import type { Npc } from "../schema/Npc";
-import type { Player } from "../schema/Player";
+
+
 import type { Entity, SpatialLookup } from "../utils/SpatialLookup";
 import type { BuffSystem } from "./BuffSystem";
 import type { DamageCalculator } from "./DamageCalculator";
@@ -27,11 +26,11 @@ export class EffectResolver {
 
   /** Shared Rage generation logic applied to both attacker and defender on any hit. */
   applyRageOnHit(attacker: Entity, target: Entity): void {
-    if (attacker.entityType === EntityType.PLAYER && (attacker as Player).classType === "WARRIOR") {
-      (attacker as Player).rage = Math.min((attacker as Player).maxRage, (attacker as Player).rage + 5);
+    if (attacker.isPlayer() && attacker.classType === "WARRIOR") {
+      attacker.rage = Math.min(attacker.maxRage, attacker.rage + 5);
     }
-    if (target.entityType === EntityType.PLAYER && (target as Player).classType === "WARRIOR") {
-      (target as Player).rage = Math.min((target as Player).maxRage, (target as Player).rage + 3);
+    if (target.isPlayer() && target.classType === "WARRIOR") {
+      target.rage = Math.min(target.maxRage, target.rage + 3);
     }
   }
 
@@ -52,7 +51,7 @@ export class EffectResolver {
     suppressCastHit = false,
     onSummon?: (caster: Entity, abilityId: string, x: number, y: number) => void,
   ) {
-    if (target.entityType === EntityType.NPC && (target as Npc).npcType === "merchant") return;
+    if (target.isNpc() && target.npcType === "merchant") return;
 
     const isSelfCast = attacker.sessionId === target.sessionId;
     if (!isSelfCast && this.buffSystem.isInvulnerable(target.sessionId, now)) return;
@@ -116,13 +115,16 @@ export class EffectResolver {
 
       // B19: Apply rage + leech heal BEFORE death check — onDeath cleans up the entity
       this.applyRageOnHit(attacker, target);
-      const healBack = Math.max(1, Math.round(damageRes.damage * (ability.leechRatio ?? 0)));
-      attacker.hp = Math.min(attacker.maxHp, attacker.hp + healBack);
-      broadcast(ServerMessageType.Heal, {
-        sessionId: attacker.sessionId,
-        amount: healBack,
-        hpAfter: attacker.hp,
-      });
+      // Bug #10: Only leech if attacker is still alive (could be dead from reflect/thorns)
+      if (attacker.alive && (ability.leechRatio ?? 0) > 0) {
+        const healBack = Math.max(1, Math.round(damageRes.damage * (ability.leechRatio ?? 0)));
+        attacker.hp = Math.min(attacker.maxHp, attacker.hp + healBack);
+        broadcast(ServerMessageType.Heal, {
+          sessionId: attacker.sessionId,
+          amount: healBack,
+          hpAfter: attacker.hp,
+        });
+      }
 
       if (target.hp <= 0) {
         onDeath(target, attacker.sessionId);
@@ -220,15 +222,14 @@ export class EffectResolver {
       // Special Case: Resource Buffs (e.g. Berserker Rage gives 30 Rage)
       if (
         [StatType.RAGE, StatType.ENERGY, StatType.FOCUS, StatType.HOLY_POWER].includes(buffStat) &&
-        target.entityType === EntityType.PLAYER
+        target.isPlayer()
       ) {
-        const pt = target as Player;
-        if (buffStat === StatType.RAGE) pt.rage = Math.min(pt.maxRage, pt.rage + buffAmount);
+        if (buffStat === StatType.RAGE) target.rage = Math.min(target.maxRage, target.rage + buffAmount);
         if (buffStat === StatType.ENERGY)
-          pt.energy = Math.min(pt.maxEnergy, pt.energy + buffAmount);
-        if (buffStat === StatType.FOCUS) pt.focus = Math.min(pt.maxFocus, pt.focus + buffAmount);
+          target.energy = Math.min(target.maxEnergy, target.energy + buffAmount);
+        if (buffStat === StatType.FOCUS) target.focus = Math.min(target.maxFocus, target.focus + buffAmount);
         if (buffStat === StatType.HOLY_POWER)
-          pt.holyPower = Math.min(pt.maxHolyPower, pt.holyPower + buffAmount);
+          target.holyPower = Math.min(target.maxHolyPower, target.holyPower + buffAmount);
       } else {
         this.buffSystem.addBuff(
           target.sessionId,
@@ -251,12 +252,12 @@ export class EffectResolver {
       let bodyId = 0;
       let headId = 0;
 
-      if (target.entityType === EntityType.PLAYER) {
-        const appearance = CLASS_APPEARANCE[(target as Player).classType];
+      if (target.isPlayer()) {
+        const appearance = CLASS_APPEARANCE[target.classType];
         bodyId = appearance?.bodyId || 0;
         headId = appearance?.headId || 0;
-      } else if (target.entityType === EntityType.NPC) {
-        const appearance = NPC_APPEARANCE[(target as Npc).npcType];
+      } else if (target.isNpc()) {
+        const appearance = NPC_APPEARANCE[target.npcType];
         bodyId = appearance?.bodyId || 0;
         headId = appearance?.headId || 0;
       }
@@ -304,8 +305,8 @@ export class EffectResolver {
       });
     } else if (ability.effect === "pickpocket") {
       if (
-        attacker.entityType === EntityType.PLAYER &&
-        target.entityType === EntityType.NPC &&
+        attacker.isPlayer() &&
+        target.isNpc() &&
         target.alive
       ) {
         // Bug #12: Per-target cooldown to prevent infinite gold farming
@@ -315,7 +316,7 @@ export class EffectResolver {
         (attacker as unknown as Record<string, number>)[ppKey] = now;
 
         const goldGain = Math.floor(Math.random() * 40) + 10;
-        (attacker as Player).gold += goldGain;
+        attacker.gold += goldGain;
         broadcast(ServerMessageType.Notification, {
           message: "game.pickpocket_success",
           templateData: { amount: goldGain, target: target.name },

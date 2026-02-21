@@ -199,12 +199,19 @@ export class PersistenceService {
               where: { characterId: char.id, slot: schemaSlot },
             });
           } else {
-            const instance = await tx.itemInstance.findFirst({
-              where: {
-                boundToCharacterId: char.id,
-                itemDef: { code: itemCode },
-              },
+            // Bug #58: Prefer the instance already linked to this equipment slot
+            const existingEquip = await tx.equipment.findUnique({
+              where: { characterId_slot: { characterId: char.id, slot: schemaSlot } },
+              include: { item: { include: { itemDef: true } } },
             });
+            const instance =
+              (existingEquip?.item && existingEquip.item.itemDef?.code === itemCode ? existingEquip.item : null) ??
+              await tx.itemInstance.findFirst({
+                where: {
+                  boundToCharacterId: char.id,
+                  itemDef: { code: itemCode },
+                },
+              });
 
             if (instance) {
               await tx.equipment.upsert({

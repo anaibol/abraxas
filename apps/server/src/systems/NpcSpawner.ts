@@ -3,7 +3,7 @@ import {
   type ClassStats,
   DIRECTION_DELTA,
   Direction,
-  EntityType,
+
   NPC_STATS,
   NPC_TYPES,
   NpcState,
@@ -173,8 +173,8 @@ export class NpcSpawner {
     let typeToSummon: NpcType = "skeleton";
     if (abilityId === "summon_skeleton") typeToSummon = "skeleton";
     else if (abilityId === "summon_zombie") typeToSummon = "zombie";
-    else if (caster.entityType === EntityType.NPC) {
-      const npcStats = NPC_STATS[(caster as Npc).npcType];
+    else if (caster.isNpc()) {
+      const npcStats = NPC_STATS[caster.npcType];
       if (npcStats?.summonType) typeToSummon = npcStats.summonType;
     }
 

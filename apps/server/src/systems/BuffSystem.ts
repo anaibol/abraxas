@@ -1,10 +1,9 @@
+```
 import {
   type BroadcastFn,
-  EntityType,
   type PlayerBuffState,
   ServerMessageType,
 } from "@abraxas/shared";
-import type { Player } from "../schema/Player";
 import type { Entity } from "../utils/SpatialLookup";
 
 export class BuffSystem {
@@ -144,10 +143,8 @@ export class BuffSystem {
     const s = this.state.get(sessionId);
     if (!s) return;
     s.dots = [];
-    // Keep positive buffs (str, agi, etc.) — only remove debuff-type buffs
-    s.buffs = s.buffs.filter(
-      (b) => !["poison", "weakness", "slow", "burn", "curse"].includes(b.id),
-    );
+    // Bug #22: Filter by negative amount (debuff) instead of hardcoded list
+    s.buffs = s.buffs.filter((b) => b.amount >= 0);
   }
 
   /** Apply a temporary stat buff from an elixir item. Uses the existing buff slot. */
@@ -200,10 +197,10 @@ export class BuffSystem {
       if (s.buffs.length !== buffsBefore) {
         if (entity.hp > entity.maxHp) entity.hp = entity.maxHp;
         if (
-          entity.entityType === EntityType.PLAYER &&
-          (entity as Player).mana > (entity as Player).maxMana
+          entity.isPlayer() &&
+          entity.mana > entity.maxMana
         ) {
-          (entity as Player).mana = (entity as Player).maxMana;
+          entity.mana = entity.maxMana;
         }
       }
 
@@ -221,7 +218,8 @@ export class BuffSystem {
       s.dots = s.dots.filter((d) => now < d.expiresAt);
       for (const dot of s.dots) {
         if (now - dot.lastTickAt < dot.intervalMs) continue;
-        dot.lastTickAt += dot.intervalMs;
+        // Bug #21: Use `now` directly to prevent burst ticks on lag spikes
+        dot.lastTickAt = now;
         entity.hp -= dot.damage;
 
         broadcast(ServerMessageType.Damage, {
