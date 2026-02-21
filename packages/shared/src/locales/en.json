@@ -118,6 +118,10 @@
     "invalid_target_los": "Target not in line of sight",
     "invalid_target_out_of_range": "Target out of range",
     "invalid_target_dead_or_invalid": "Invalid or dead target",
+    "invalid_target_safe_zone": "Target in Safe Zone",
+    "invalid_target_friendly_fire": "Friendly target",
+    "invalid_target_pvp_disabled": "PvP Mode disabled",
+    "invalid_target_dead": "Target is already dead",
     "connection_failed": "Connection Failed",
     "connection_failed_desc": "Failed to connect to server. Is it running?",
     "logged_in_elsewhere": "Session closed: Logged in from another location.",
@@ -752,68 +756,294 @@
     },
     "thunderstorm": {
       "name": "Thunderstorm",
-      "desc": "Call down lightning at a location,# Add Missing Translations and Localize UI
-
-Verify and add missing translations for spells, world events, and map zones, and localize hardcoded strings in UI components.
-
-## Proposed Changes
-
-### Locales
-
-#### [MODIFY
-      ] [en.json
-      ](file: ///Users/anaibol/Workspace/polypoll/abraxas/packages/shared/src/locales/en.json)
-- Add `events` object with translations for all world events (Goblin Raid, Undead Surge, etc.).
-- Add `maps` object with translations for zone labels and descriptions.
-- Add `ui.summon` and `ui.map` namespaces for UI-specific strings.
-
-#### [MODIFY
-      ] [es.json
-      ](file: ///Users/anaibol/Workspace/polypoll/abraxas/packages/shared/src/locales/es.json)
-- Mirror changes from `en.json` with Spanish translations.
-
-#### [MODIFY
-      ] [fr.json
-      ](file: ///Users/anaibol/Workspace/polypoll/abraxas/packages/shared/src/locales/fr.json)
-- Mirror changes from `en.json` with French translations.
-
-#### [MODIFY
-      ] [it.json
-      ](file: ///Users/anaibol/Workspace/polypoll/abraxas/packages/shared/src/locales/it.json)
-- Mirror changes from `en.json` with Italian translations.
-
-### UI Components
-
-#### [MODIFY
-      ] [WorldEventBanner.tsx
-      ](file: ///Users/anaibol/Workspace/polypoll/abraxas/apps/client/src/ui/WorldEventBanner.tsx)
-- Localize "Enemies slain" and use translation keys for `eventName` and `description`.
-
-#### [MODIFY
-      ] [SummonOverlay.tsx
-      ](file: ///Users/anaibol/Workspace/polypoll/abraxas/apps/client/src/ui/SummonOverlay.tsx)
-- Localize "Summon Creature",
-      "Search creatures...", and "No creatures found."
-- Localize NPC types in the grid.
-
-#### [MODIFY
-      ] [WorldMapModal.tsx
-      ](file: ///Users/anaibol/Workspace/polypoll/abraxas/apps/client/src/ui/WorldMapModal.tsx)
-- Localize "WORLD MAP",
-      "YOU ARE HERE", and the help text at the bottom.
-- Update `ZONES` to use translation keys for labels and descriptions.
-
-## Verification Plan
-
-### Automated Tests
-- Run `node check_i18n.js` to ensure no new missing keys are introduced.
-- Run `verify_all_data.py` (custom script) to verify data-driven IDs.
-
-### Manual Verification
-- Trigger a world event (if possible) to check the banner localization.
-- Open the Summon overlay and World Map to verify localized text in different languages.
-"
+    "thunderstorm": {
+      "name": "Thunderstorm",
+      "desc": "Call down lightning at a location, hitting all nearby enemies."
     },
+    "mana_shield": {
+      "name": "Mana Shield",
+      "desc": "Convert mana into a protective arcane shell (+armor for 6s)."
+    },
+    "frost_nova": {
+      "name": "Frost Nova",
+      "desc": "Explosion of frost that damages all enemies around you."
+    },
+    "arcane_surge": {
+      "name": "Arcane Surge",
+      "desc": "Channel immense arcane power into a devastating bolt."
+    },
+    "multi_shot": {
+      "name": "Multi Shot",
+      "desc": "Loose a volley of arrows hitting enemies in a small area."
+    },
+    "poison_arrow": {
+      "name": "Poison Arrow",
+      "desc": "Hurl a toxic arrow that deals nature damage over time."
+    },
+    "evasion": {
+      "name": "Evasion",
+      "desc": "Focus on dodging attacks, increasing Agility for a short duration."
+    },
+    "aimed_shot": {
+      "name": "Aimed Shot",
+      "desc": "A precise shot that deals heavy damage to a single target."
+    },
+    "mark_target": {
+      "name": "Mark Target",
+      "desc": "Mark a target, making them more vulnerable to your attacks."
+    },
+    "backstab": {
+      "name": "Backstab",
+      "desc": "Strike from the shadows for massive damage if behind the target."
+    },
+    "stealth": {
+      "name": "Stealth",
+      "desc": "Become nearly invisible to enemies."
+    },
+    "envenom": {
+      "name": "Envenom",
+      "desc": "Coat your blades in deadly poison."
+    },
+    "smoke_bomb": {
+      "name": "Smoke Bomb",
+      "desc": "Create a cloud of smoke that confuses enemies and hides you."
+    },
+    "hemorrhage": {
+      "name": "Hemorrhage",
+      "desc": "Strike a target, causing them to bleed profusely."
+    },
+    "holy_strike": {
+      "name": "Holy Strike",
+      "desc": "Infuse your weapon with light, dealing holy damage."
+    },
+    "heal": {
+      "name": "Heal",
+      "desc": "Restore health to yourself or an ally."
+    },
+    "divine_shield": {
+      "name": "Divine Shield",
+      "desc": "Surround yourself with a shield of pure light."
+    },
+    "holy_nova": {
+      "name": "Holy Nova",
+      "desc": "An explosion of light that heals allies and damages foes."
+    },
+    "curse": {
+      "name": "Curse",
+      "desc": "Afflict a target with a dark curse, reducing their attributes."
+    },
+    "smite": {
+      "name": "Smite",
+      "desc": "Call down divine wrath upon your enemy."
+    },
+    "judgment": {
+      "name": "Judgment",
+      "desc": "Pass judgment on a foe, dealing holy damage and slowing them."
+    },
+    "lay_on_hands": {
+      "name": "Lay on Hands",
+      "desc": "Instantly restore a large amount of health."
+    },
+    "consecration": {
+      "name": "Consecration",
+      "desc": "Bless the ground, damaging all enemies who stand upon it."
+    },
+    "aura_of_protection": {
+      "name": "Aura of Protection",
+      "desc": "A protective aura that boosts the armor of nearby allies."
+    },
+    "holy_bolt": {
+      "name": "Holy Bolt",
+      "desc": "Fiery bolt of light that strikes a target from afar."
+    },
+    "detect_invisibility": {
+      "name": "True Vision",
+      "desc": "Briefly reveals all cloaked units in a wide area."
+    },
+    "berserker_rage": {
+      "name": "Berserker Rage",
+      "desc": "Instantly gain 30 Rage."
+    },
+    "blink": {
+      "name": "Blink",
+      "desc": "Teleports the caster forward."
+    },
+    "elemental_infusion": {
+      "name": "Elemental Infusion",
+      "desc": "Increases INT for a short duration."
+    },
+    "spell_echo": {
+      "name": "Spell Echo",
+      "desc": "Next spell you cast will echo, triggering twice."
+    },
+    "mana_spring": {
+      "name": "Mana Spring",
+      "desc": "Summons a crystal that restores mana to nearby allies."
+    },
+    "polymorph": {
+      "name": "Polymorph",
+      "desc": "Transforms the target into a sheep."
+    },
+    "entangling_roots": {
+      "name": "Entangling Roots",
+      "desc": "Roots enemies in place and deals nature damage."
+    },
+    "explosive_trap": {
+      "name": "Explosive Trap",
+      "desc": "Place a trap that explodes when stepped on."
+    },
+    "pet_bond": {
+      "name": "Pet Bond",
+      "desc": "Boosts AGI for the duration of the buff."
+    },
+    "eagle_eye": {
+      "name": "Eagle Eye",
+      "desc": "Massively increases your AGI for a duration."
+    },
+    "barrage": {
+      "name": "Barrage",
+      "desc": "Fire a rapid burst of arrows in a wide area."
+    },
+    "shadowstep": {
+      "name": "Shadowstep",
+      "desc": "Instantly teleports you behind your target."
+    },
+    "pickpocket": {
+      "name": "Pickpocket",
+      "desc": "Steal gold from an NPC."
+    },
+    "caltrops": {
+      "name": "Caltrops",
+      "desc": "Drop spikes that slow and damage enemies."
+    },
+    "fan_of_knives": {
+      "name": "Fan of Knives",
+      "desc": "Throw a circle of daggers around you."
+    },
+    "cleansing_rain": {
+      "name": "Cleansing Rain",
+      "desc": "Massive area heal shower."
+    },
+    "poison_bite": {
+      "name": "Poison Bite",
+      "desc": "Afflicts the target with a lingering poison."
+    },
+    "web_shot": {
+      "name": "Web Shot",
+      "desc": "Fires a web that stuns the target."
+    },
+    "enrage": {
+      "name": "Enrage",
+      "desc": "Increase strength for a short duration."
+    },
+    "fire_breath": {
+      "name": "Fire Breath",
+      "desc": "A short-range burst of fire."
+    },
+    "frost_breath": {
+      "name": "Frost Breath",
+      "desc": "A burst of frost that slows enemies."
+    },
+    "disease_bite": {
+      "name": "Diseased Bite",
+      "desc": "Afflicts the target with a long-lasting disease."
+    },
+    "troll_regen": {
+      "name": "Troll Regen",
+      "desc": "Heals the caster rapidly."
+    },
+    "earthquake": {
+      "name": "Earthquake",
+      "desc": "Shakes the earth, stunning and damaging nearby enemies."
+    },
+    "leap": {
+      "name": "Leap",
+      "desc": "Jumps to a target location, damaging and stunning enemies."
+    },
+    "execute": {
+      "name": "Execute",
+      "desc": "Deals massive damage to low-health targets."
+    },
+    "cleave": {
+      "name": "Cleave",
+      "desc": "A wide strike that hits multiple nearby targets."
+    },
+    "shield_wall": {
+      "name": "Shield Wall",
+      "desc": "Massively increases armor for a duration."
+    },
+    "meteor_strike": {
+      "name": "Meteor Strike",
+      "desc": "Summon a meteor to deal massive area fire damage."
+    },
+    "chain_lightning": {
+      "name": "Chain Lightning",
+      "desc": "Discharges lightning that jumps between enemies."
+    },
+    "acid_splash": {
+      "name": "Acid Splash",
+      "desc": "AoE damage that reduces enemy armor over time."
+    }
+  },
+  "events": {
+    "goblin_raid": {
+      "name": "Goblin Raid",
+      "desc": "A horde of goblins is attacking the settlement!"
+    },
+    "undead_surge": {
+      "name": "Undead Surge",
+      "desc": "The dead rise from their graves — defend the living!"
+    },
+    "dragon_sighting": {
+      "name": "Dragon Sighting",
+      "desc": "A fearsome dragon has been spotted circling the skies!"
+    },
+    "troll_invasion": {
+      "name": "Troll Invasion",
+      "desc": "A war party of trolls is storming the settlement!"
+    },
+    "spider_swarm": {
+      "name": "Spider Swarm",
+      "desc": "Thousands of giant spiders are emerging from hidden lairs!"
+    },
+    "vampire_hunt": {
+      "name": "Vampire Hunt",
+      "desc": "Ancient vampires have risen — protect the living before dawn!"
+    }
+  },
+  "maps": {
+    "arena": {
+      "name": "Arena",
+      "desc": "The starting grounds. Goblins, orcs, and wolves roam the plains."
+    },
+    "forest": {
+      "name": "Whispering Forest",
+      "desc": "A dense forest filled with wolves, bears, and restless spirits."
+    },
+    "dungeon": {
+      "name": "Catacombs",
+      "desc": "Ancient ruins haunted by the undead and guarded by a fearsome dragon."
+    }
+  },
+  "ui": {
+    "summon": {
+      "title": "Summon Creature",
+      "search": "Search creatures...",
+      "empty": "No creatures found."
+    },
+    "map": {
+      "title": "WORLD MAP",
+      "current_pos": "YOU ARE HERE",
+      "help": "Use warps in the world to travel between zones. Press M or ESC to close."
+    },
+    "event": {
+      "enemies_slain": "Enemies slain"
+    },
+    "spells": {
+      "mana_unit": "mp",
+      "cooldown_unit": "s cd"
+    }
+  },
     "poison_arrow": {
       "name": "Poison Arrow",
       "desc": "Arrow coated in toxin that poisons the target over 5s."

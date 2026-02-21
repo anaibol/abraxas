@@ -118,6 +118,10 @@
     "invalid_target_los": "Cible hors de vue",
     "invalid_target_out_of_range": "Cible hors de portée",
     "invalid_target_dead_or_invalid": "Cible invalide ou morte",
+    "invalid_target_safe_zone": "Cible en zone sûre",
+    "invalid_target_friendly_fire": "Cible alliée",
+    "invalid_target_pvp_disabled": "Mode PvP désactivé",
+    "invalid_target_dead": "La cible est déjà morte",
     "connection_failed": "Connexion échouée",
     "connection_failed_desc": "Impossible de se connecter au serveur. Est-il en cours d'exécution ?",
     "logged_in_elsewhere": "Session fermée : Vous êtes connecté(e) depuis un autre appareil.",
@@ -1081,6 +1085,63 @@
       "hello_traveler": "Bonjour, voyageur !",
       "accept_prompt": "Acceptez-vous cette quête ?",
       "reward_prompt": "Excellent travail pour {{title}} ! Voici votre récompense."
+    },
+    "summon": {
+      "title": "Invoquer une Créature",
+      "search": "Chercher des créatures...",
+      "empty": "Aucune créature trouvée."
+    },
+    "map": {
+      "title": "CARTE DU MONDE",
+      "current_pos": "VOUS ÊTES ICI",
+      "help": "Utilisez les portails dans le monde pour voyager entre les zones. Appuyez sur M ou ESC pour fermer."
+    },
+    "event": {
+      "enemies_slain": "Ennemis vaincus"
+    },
+    "spells": {
+      "mana_unit": "mp",
+      "cooldown_unit": "s cd"
+    }
+  },
+  "events": {
+    "goblin_raid": {
+      "name": "Raid des Gobelins",
+      "desc": "Une horde de gobelins attaque la colonie !"
+    },
+    "undead_surge": {
+      "name": "Vague de Morts-Vivants",
+      "desc": "Les morts sortent de leurs tombes — défendez les vivants !"
+    },
+    "dragon_sighting": {
+      "name": "Apparition du Dragon",
+      "desc": "Un redoutable dragon a été aperçu tournoyant dans le ciel !"
+    },
+    "troll_invasion": {
+      "name": "Invasion de Trolls",
+      "desc": "Une troupe de guerre de trolls prend d'assaut la colonie !"
+    },
+    "spider_swarm": {
+      "name": "Essaim d'Araignées",
+      "desc": "Des milliers d'araignées géantes émergent de repaires cachés !"
+    },
+    "vampire_hunt": {
+      "name": "Chasse aux Vampires",
+      "desc": "D'anciens vampires ont surgi — protégez les vivants avant l'aube !"
+    }
+  },
+  "maps": {
+    "arena": {
+      "name": "Arène",
+      "desc": "Le point de départ. Gobelins, orques et loups parcourent les plaines."
+    },
+    "forest": {
+      "name": "Forêt des Murmures",
+      "desc": "Une forêt dense remplie de loups, d'ours et d'esprits agités."
+    },
+    "dungeon": {
+      "name": "Catacombes",
+      "desc": "Des ruines anciennes hantées par les morts-vivants et gardées par un redoutable dragon."
     }
   },
   "scoreboard": {

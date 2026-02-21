@@ -246,8 +246,13 @@ export class CombatSystem {
     const isRanged = stats.attackRange > 1;
 
     const targetAtStart = this.spatial.findEntityAtTile(targetTileX, targetTileY);
-    if (!targetAtStart || !targetAtStart.alive || !this.canAttack(attacker, targetAtStart)) {
+    if (!targetAtStart) {
       sendToClient?.(ServerMessageType.InvalidTarget, { reason: "dead_or_invalid" });
+      return false;
+    }
+    const failureReason = this.getAttackFailureReason(attacker, targetAtStart);
+    if (failureReason) {
+      sendToClient?.(ServerMessageType.InvalidTarget, { reason: failureReason });
       return false;
     }
 
@@ -375,6 +380,21 @@ export class CombatSystem {
           sendToClient?.(ServerMessageType.Notification, { message: rc.msg });
           return false;
         }
+      }
+    }
+
+    // Validate target if ability is not self-target or AoE around self
+    if (ability.rangeTiles > 0 || (ability.aoeRadius && ability.aoeRadius > 0)) {
+      const target = this.spatial.findEntityAtTile(targetTileX, targetTileY);
+      if (target) {
+        const failureReason = this.getCastFailureReason(caster, target, ability);
+        if (failureReason) {
+          sendToClient?.(ServerMessageType.InvalidTarget, { reason: failureReason });
+          return false;
+        }
+      } else if (ability.effect !== "summon") { // Summon abilities can target empty tiles
+        sendToClient?.(ServerMessageType.InvalidTarget, { reason: "dead_or_invalid" });
+        return false;
       }
     }
 
@@ -862,33 +882,56 @@ export class CombatSystem {
   }
 
   private canAttack(attacker: Entity, target: Entity): boolean {
-    if (attacker.sessionId === target.sessionId) return false;
+    return this.getAttackFailureReason(attacker, target) === null;
+  }
+
+  private getAttackFailureReason(attacker: Entity, target: Entity): string | null {
+    if (!target.alive) return "dead";
+    if (attacker.sessionId === target.sessionId) return "dead_or_invalid";
     // GMs/admins are fully invulnerable — nobody can attack them
-    if (target.isPlayer() && (target.role === "ADMIN" || target.role === "GM")) return false;
-    if (this.sameFaction(attacker, target)) return false;
+    if (target.isPlayer() && (target.role === "ADMIN" || target.role === "GM"))
+      return "dead_or_invalid";
+    if (this.sameFaction(attacker, target)) return "friendly_fire";
     if (
       MathUtils.isInSafeZone(attacker.tileX, attacker.tileY, this.map.safeZones) ||
       MathUtils.isInSafeZone(target.tileX, target.tileY, this.map.safeZones)
     )
-      return false;
+      return "safe_zone";
     // GMs/admins can attack anyone — skip PvP flag requirements
-    const attackerIsGM = attacker.isPlayer() && (attacker.role === "ADMIN" || attacker.role === "GM");
+    const attackerIsGM =
+      attacker.isPlayer() && (attacker.role === "ADMIN" || attacker.role === "GM");
     if (!attackerIsGM && attacker.isPlayer() && target.isPlayer()) {
-      if (!attacker.pvpEnabled || !target.pvpEnabled) return false;
+      if (!attacker.pvpEnabled || !target.pvpEnabled) return "pvp_disabled";
     }
-    return true;
+    return null;
   }
 
-  private isValidTarget(attacker: Entity, target: Entity, ability: Ability): boolean {
-    // Bug #5: Include pickpocket in the harmful list
+  private isValidTarget(caster: Entity, target: Entity, ability: Ability): boolean {
+    return this.getCastFailureReason(caster, target, ability) === null;
+  }
+
+  private getCastFailureReason(caster: Entity, target: Entity, ability: Ability): string | null {
+    if (!target.alive) return "dead";
+
+    // Self-target abilities (rangeTiles === 0) always target the caster.
+    // AoE abilities with rangeTiles === 0 target a radius around the caster.
+    if (ability.rangeTiles === 0 && (!ability.aoeRadius || ability.aoeRadius === 0)) {
+      return caster.sessionId === target.sessionId ? null : "dead_or_invalid";
+    }
+
+    // Healing abilities
+    if (ability.effect === "heal" || ability.effect === "aoe_heal") {
+      const isFriendly = this.sameFaction(caster, target) || caster.sessionId === target.sessionId;
+      return isFriendly ? null : "dead_or_invalid";
+    }
+
+    // Harmful abilities
     const harmful =
       ["damage", "dot", "stun", "debuff", "leech", "reveal", "pickpocket"].includes(ability.effect) ||
       ability.baseDamage > 0 ||
       ability.buffStat === StatType.STUN;
 
     if (harmful) {
-      return this.canAttack(attacker, target);
-    } else {
       if (attacker.sessionId === target.sessionId) return true;
       return this.sameFaction(attacker, target);
     }

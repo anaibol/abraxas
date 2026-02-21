@@ -118,6 +118,10 @@
     "invalid_target_los": "Objetivo fuera de línea de visión",
     "invalid_target_out_of_range": "Objetivo fuera de alcance",
     "invalid_target_dead_or_invalid": "Objetivo inválido o muerto",
+    "invalid_target_safe_zone": "Objetivo en zona segura",
+    "invalid_target_friendly_fire": "Objetivo aliado",
+    "invalid_target_pvp_disabled": "Modo PvP desactivado",
+    "invalid_target_dead": "El objetivo ya está muerto",
     "connection_failed": "Conexión fallida",
     "connection_failed_desc": "No se pudo conectar al servidor. ¿Está en ejecución?",
     "logged_in_elsewhere": "Sesión cerrada: Has iniciado sesión desde otro lugar.",
@@ -1081,6 +1085,63 @@
       "hello_traveler": "¡Hola, viajero!",
       "accept_prompt": "¿Aceptas esta misión?",
       "reward_prompt": "¡Gran trabajo con {{title}}! Aquí tienes tu recompensa."
+    },
+    "summon": {
+      "title": "Invocar Criatura",
+      "search": "Buscar criaturas...",
+      "empty": "No se encontraron criaturas."
+    },
+    "map": {
+      "title": "MAPA MUNDIAL",
+      "current_pos": "ESTÁS AQUÍ",
+      "help": "Usa los portales en el mundo para viajar entre zonas. Presiona M o ESC para cerrar."
+    },
+    "event": {
+      "enemies_slain": "Enemigos derrotados"
+    },
+    "spells": {
+      "mana_unit": "mp",
+      "cooldown_unit": "s cd"
+    }
+  },
+  "events": {
+    "goblin_raid": {
+      "name": "Incursión de Goblins",
+      "desc": "¡Una horda de goblins está atacando el asentamiento!"
+    },
+    "undead_surge": {
+      "name": "Oleada de No Muertos",
+      "desc": "Los muertos se levantan de sus tumbas — ¡defiende a los vivos!"
+    },
+    "dragon_sighting": {
+      "name": "Avistamiento de Dragón",
+      "desc": "¡Se ha visto un dragón temible dando vueltas por los cielos!"
+    },
+    "troll_invasion": {
+      "name": "Invasión de Trolls",
+      "desc": "¡Una partida de guerra de trolls está asaltando el asentamiento!"
+    },
+    "spider_swarm": {
+      "name": "Enjambre de Arañas",
+      "desc": "¡Miles de arañas gigantes emergen de guaridas ocultas!"
+    },
+    "vampire_hunt": {
+      "name": "Caza de Vampiros",
+      "desc": "Antiguos vampiros han surgido — ¡protege a los vivos antes del amanecer!"
+    }
+  },
+  "maps": {
+    "arena": {
+      "name": "Arena",
+      "desc": "Los terrenos de inicio. Goblins, orcos y lobos deambulan por las llanuras."
+    },
+    "forest": {
+      "name": "Bosque Susurrante",
+      "desc": "Un bosque denso lleno de lobos, osos y espíritus inquietos."
+    },
+    "dungeon": {
+      "name": "Catacumbas",
+      "desc": "Ruinas antiguas habitadas por no muertos y custodiadas por un temible dragón."
     }
   },
   "scoreboard": {

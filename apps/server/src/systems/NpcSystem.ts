@@ -187,6 +187,11 @@ export class NpcSystem {
     if (Math.random() < 0.15) {
       npc.patrolStepsLeft = PATROL_STEPS;
       npc.state = NpcState.PATROL;
+    } else {
+      // Feature: Natural regeneration while idle
+      if (tickCount % 50 === 0 && npc.hp < npc.maxHp) {
+        npc.hp = Math.min(npc.maxHp, npc.hp + Math.ceil(npc.maxHp * 0.01));
+      }
     }
   }
 
@@ -351,11 +356,9 @@ export class NpcSystem {
 
     const dist = MathUtils.chebyshevDist(npc.getPosition(), { x: npc.spawnX, y: npc.spawnY });
     if (dist === 0) {
-      npc.hp = npc.maxHp;
       npc.state = NpcState.IDLE;
       return;
     }
-    npc.hp = Math.min(npc.maxHp, npc.hp + Math.ceil(npc.maxHp * 0.005));
     this.moveTowards(npc, npc.spawnX, npc.spawnY, map, now, tickCount, roomId);
   }
 
@@ -428,9 +431,6 @@ export class NpcSystem {
       this.moveTowards(npc, owner.tileX, owner.tileY, map, now, tickCount, roomId);
     } else {
       npc.path = [];
-      if (tickCount % 25 === 0 && npc.hp < npc.maxHp) {
-        npc.hp = Math.min(npc.maxHp, npc.hp + Math.ceil(npc.maxHp * 0.02));
-      }
     }
   }
 
