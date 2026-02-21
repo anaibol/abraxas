@@ -392,34 +392,60 @@ export class MapBaker {
 		g.strokePath();
 	}
 
-	// ── Per-frame update: animated water ripples ─────────────────────────────
+	// ── Per-frame update: animated water ripples and wind ─────────────────────
 	update(time: number) {
-		if (!this.waterOverlay || this.waterTiles.length === 0) return;
-
-		// Only redraw every 4 frames (~15 FPS) to save CPU
-		if (Math.floor(time / 66) % 2 !== 0) return;
-
 		const cam = this.scene.cameras.main;
-		const camL = cam.scrollX - TILE_SIZE;
-		const camR = cam.scrollX + cam.width / cam.zoom + TILE_SIZE;
-		const camT = cam.scrollY - TILE_SIZE;
-		const camB = cam.scrollY + cam.height / cam.zoom + TILE_SIZE;
+		const camL = cam.scrollX - TILE_SIZE * 2;
+		const camR = cam.scrollX + cam.width / cam.zoom + TILE_SIZE * 2;
+		const camT = cam.scrollY - TILE_SIZE * 2;
+		const camB = cam.scrollY + cam.height / cam.zoom + TILE_SIZE * 2;
 
-		this.waterOverlay.clear();
+		// 1. Update tree sway (wind animation)
+		// We update this every frame for smooth motion
+		const windTime = time * 0.001;
+		for (let i = 0; i < this.treeSprites.length; i++) {
+			const sprite = this.treeSprites[i];
+			if (!sprite.active) continue;
 
-		for (const { px, py } of this.waterTiles) {
-			// Viewport culling
-			if (px + TILE_SIZE < camL || px > camR || py + TILE_SIZE < camT || py > camB) continue;
+			// Viewport culling for trees
+			if (sprite.x < camL || sprite.x > camR || sprite.y < camT || sprite.y > camB) {
+				continue;
+			}
 
-			const phase = (time * 0.001 + px * 0.02 + py * 0.03);
-			const alpha = 0.08 + Math.sin(phase) * 0.06;
-			const offsetX = Math.sin(phase * 1.3) * 2;
+			// Calculate a low-frequency ambient wind sway
+			// Use the tree's position as a phase offset so they don't move in rigid unison,
+			// creating a rolling wave effect across the forest
+			const phaseX = sprite.x * 0.005;
+			const phaseY = sprite.y * 0.002;
+			
+			// Combine a slow, deep wave with a slightly faster, smaller jitter
+			const wave1 = Math.sin(windTime * 0.8 + phaseX + phaseY);
+			const wave2 = Math.cos(windTime * 1.5 + phaseX * 2);
+			
+			// Resulting rotation is very subtle (a few degrees)
+			const rot = (wave1 * 0.03) + (wave2 * 0.015);
+			sprite.setRotation(rot);
+		}
 
-			this.waterOverlay.lineStyle(1, 0x77ccdd, Math.max(0, alpha));
-			this.waterOverlay.beginPath();
-			this.waterOverlay.moveTo(px + 4 + offsetX, py + TILE_SIZE / 2);
-			this.waterOverlay.lineTo(px + TILE_SIZE - 4 + offsetX, py + TILE_SIZE / 2 + 1);
-			this.waterOverlay.strokePath();
+		// 2. Update water ripples
+		// Only redraw graphics every 4 frames (~15 FPS) to save CPU
+		if (this.waterOverlay && this.waterTiles.length > 0 && Math.floor(time / 66) % 2 === 0) {
+			this.waterOverlay.clear();
+
+			for (const { px, py } of this.waterTiles) {
+				// Viewport culling
+				if (px + TILE_SIZE < camL || px > camR || py + TILE_SIZE < camT || py > camB) continue;
+
+				const phase = (time * 0.001 + px * 0.02 + py * 0.03);
+				const alpha = 0.08 + Math.sin(phase) * 0.06;
+				const offsetX = Math.sin(phase * 1.3) * 2;
+
+				this.waterOverlay.lineStyle(1, 0x77ccdd, Math.max(0, alpha));
+				this.waterOverlay.beginPath();
+				this.waterOverlay.moveTo(px + 4 + offsetX, py + TILE_SIZE / 2);
+				this.waterOverlay.lineTo(px + TILE_SIZE - 4 + offsetX, py + TILE_SIZE / 2 + 1);
+				this.waterOverlay.strokePath();
+			}
 		}
 	}
 

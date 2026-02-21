@@ -61,7 +61,7 @@ export class DropManager {
     const hitRadius = isGold ? 12 : (isRare ? 10 : 9);
     const container = this.scene.add
       .container(px, py)
-      .setDepth(5)
+      .setDepth(RENDER_LAYERS.GROUND_ITEMS)
       .setSize(hitRadius * 2, hitRadius * 2)
       .setInteractive(
         new Phaser.Geom.Circle(0, 0, hitRadius),
@@ -136,7 +136,7 @@ export class DropManager {
         blendMode: Phaser.BlendModes.ADD,
         gravityY: -8,
       });
-      glowEmitter.setDepth(4);
+      glowEmitter.setDepth(RENDER_LAYERS.GROUND_ITEMS - 1);
     }
 
     const sparkTex = isRare ? TEX_STAR : TEX_SPARK;
@@ -153,7 +153,7 @@ export class DropManager {
       rotate: isGold ? { start: 0, end: 360 } : (isRare ? { start: 0, end: 360 } : undefined),
       blendMode: isGold ? Phaser.BlendModes.ADD : Phaser.BlendModes.NORMAL,
     });
-    emitter.setDepth(6);
+    emitter.setDepth(RENDER_LAYERS.GROUND_ITEMS + 1);
 
 
 
@@ -177,7 +177,7 @@ export class DropManager {
         resolution: getGameTextResolution(),
       })
       .setOrigin(0.5, 0)
-      .setDepth(7)
+      .setDepth(RENDER_LAYERS.GROUND_ITEMS + 2)
       .setVisible(this.labelsVisible);
 
     // ── Hover tooltip ─────────────────────────────────────────────────────────
@@ -224,7 +224,7 @@ export class DropManager {
         gravityY: 140,
         blendMode: Phaser.BlendModes.ADD,
       });
-      burst.setDepth(8);
+      burst.setDepth(RENDER_LAYERS.GROUND_ITEMS + 3);
       burst.explode(22);
 
       // Soft radial glow flash
@@ -237,7 +237,7 @@ export class DropManager {
         lifespan: { min: 180, max: 380 },
         blendMode: Phaser.BlendModes.ADD,
       });
-      glow.setDepth(7);
+      glow.setDepth(RENDER_LAYERS.GROUND_ITEMS + 2);
       glow.explode(14);
 
       this.scene.time.delayedCall(700, () => {
@@ -255,7 +255,7 @@ export class DropManager {
         lifespan: { min: 220, max: 500 },
         rotate: { start: 0, end: 360 },
       });
-      burst.setDepth(6);
+      burst.setDepth(RENDER_LAYERS.GROUND_ITEMS + 1);
       burst.explode(20);
       this.scene.time.delayedCall(560, () => burst.destroy());
     }

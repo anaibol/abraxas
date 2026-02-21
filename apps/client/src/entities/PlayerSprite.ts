@@ -260,7 +260,7 @@ export class PlayerSprite {
       this.speakingIcon,
     ];
     this.uiContainer = scene.add.container(px, py, uiChildren);
-    this.uiContainer.setDepth(RENDER_LAYERS.UI_OVERLAYS); // Ensure UI is always on top of players
+    this.uiContainer.setDepth(2005); // Ensure UI is always on top of players
 
     this.container.setInteractive(
       new Phaser.Geom.Rectangle(-TILE_SIZE / 2, -TILE_SIZE, TILE_SIZE, TILE_SIZE * 2),
