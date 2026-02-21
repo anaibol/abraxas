@@ -21,7 +21,6 @@ const t = (key: string, opts?: Record<string, unknown>) => i18n.t(key, opts);
 export class GameEventHandler {
   private unsubscribers: (() => void)[] = [];
 
-  // ── Item #16: Per-source shake cooldown ─────────────────────────────────────
   private lastShakeTime = 0;
   private readonly SHAKE_COOLDOWN_MS = 200;
 
@@ -33,16 +32,12 @@ export class GameEventHandler {
     private inputHandler: InputHandler,
     private onConsoleMessage?: ConsoleCallback,
     private onKillFeed?: (killer: string, victim: string) => void,
-    /** Camera shake callback — heavy-impact spells call this. */
     private onCameraShake?: (intensity: number, durationMs: number) => void,
-    /** Camera flash callback — used for damage screen flash (#13) and death (#14) */
     private onCameraFlash?: (r: number, g: number, b: number, durationMs: number) => void,
-    /** Camera zoom callback — level-up pulse (#19), respawn zoom in (#17) */
     private onCameraZoom?: (zoom: number, durationMs: number) => void,
     private lightManager?: LightManager,
   ) {}
 
-  /** Item 82: Gate shake calls through settings. */
   private maybeShake(intensity: number, durationMs: number) {
     const s = gameSettings.get();
     if (!s.screenShakeEnabled) return;
@@ -76,16 +71,10 @@ export class GameEventHandler {
     on(ServerMessageType.KillFeed, (data) => this.onKillFeedMessage(data));
     on(ServerMessageType.InvalidTarget, () => this.onInvalidTarget());
     on(ServerMessageType.StealthApplied, (data) => this.onStealthApplied(data));
-
-    // ── NPC Bark ──────────────────────────────────────────────────────────────
     on(ServerMessageType.NpcBark, (data) => this.onNpcBark(data));
-
-    // ── World Events ─────────────────────────────────────────────────────────
     on(ServerMessageType.WorldEventStart, (data) => this.onWorldEventStart(data));
     on(ServerMessageType.WorldEventEnd, (data) => this.onWorldEventEnd(data));
     on(ServerMessageType.WorldEventProgress, (data) => this.onWorldEventProgress(data));
-
-    // ── Fast Travel ──────────────────────────────────────────────────────────
     on(ServerMessageType.FastTravelUsed, (data) => this.onFastTravelUsed(data));
   }
 
@@ -111,6 +100,7 @@ export class GameEventHandler {
       if (this.isSelf(data.sessionId))
         this.onConsoleMessage?.(t("game.you_attacked"), "#cccccc", "combat");
     }
+
     let isRanged = false;
     if (data.targetTileX !== undefined && data.targetTileY !== undefined) {
       if (sprite) {
@@ -156,11 +146,8 @@ export class GameEventHandler {
       if (this.isSelf(data.sessionId))
         this.onConsoleMessage?.(t("game.you_cast_spell"), "#aaaaff", "combat");
     }
-
-    // Per-spell SFX on CAST (not impact)
     const opts = sprite ? { sourceX: sprite.renderX, sourceY: sprite.renderY } : undefined;
     this.soundManager.playSpellSfx(data.abilityId, opts);
-
     this.effectManager.maybeLaunchProjectile(
       data.sessionId,
       data.abilityId,
@@ -172,32 +159,22 @@ export class GameEventHandler {
   private onCastHit(data: ServerMessages["cast_hit"]) {
     this.effectManager.playSpellEffect(data.abilityId, data.targetTileX, data.targetTileY, data.sessionId);
 
-    // Item #9: Impact SFX separate from cast SFX
     const sourceX = data.targetTileX * TILE_SIZE + TILE_SIZE / 2;
     const sourceY = data.targetTileY * TILE_SIZE + TILE_SIZE / 2;
     this.soundManager.playSpellImpactSfx(data.abilityId, { sourceX, sourceY });
 
-    // ── Item #11 + #12: Camera shake scaled by proximity & self-target ─────────
     const isHeavy = HEAVY_HIT_ABILITIES.has(data.abilityId);
     const now = Date.now();
-
     if (isHeavy && now - this.lastShakeTime > this.SHAKE_COOLDOWN_MS) {
       this.lastShakeTime = now;
-      this.maybeShake(0.009, 220); // item 82
+      this.maybeShake(0.009, 220);
     }
 
-    // ── Item #35: Fire spells → lingering ember light ─────────────────────────
-    // ── Item #36: Frost spells → icy ring light ───────────────────────────────
-    // ── Item #37: Holy spells → radiating golden light ───────────────────────
-    // ── Item #38: Shadow bolt → dark pulse ───────────────────────────────────
     if (this.lightManager) {
       const px = data.targetTileX * TILE_SIZE + TILE_SIZE / 2;
       const py = data.targetTileY * TILE_SIZE + TILE_SIZE / 2;
       const preset = this.spellLightPreset(data.abilityId);
-      if (preset !== null) {
-        const { preset: p, durationMs } = preset;
-        this.lightManager.flashLight(px, py, p, undefined, durationMs);
-      }
+      if (preset) this.lightManager.flashLight(px, py, preset.preset, undefined, preset.durationMs);
     }
   }
 
@@ -207,23 +184,15 @@ export class GameEventHandler {
     const opts = sprite ? { sourceX: sprite.renderX, sourceY: sprite.renderY } : undefined;
 
     if (this.isSelf(data.targetSessionId)) {
-      // ── Item #11: Scale shake from damage amount ───────────────────────────
       const now = Date.now();
       if (now - this.lastShakeTime > this.SHAKE_COOLDOWN_MS) {
         this.lastShakeTime = now;
         const intensity = Math.min(0.015, data.amount * 0.00005);
-        if (intensity > 0.002) this.maybeShake(intensity, 150); // item 82
+        if (intensity > 0.002) this.maybeShake(intensity, 150);
       }
-
-      // ── Item #13: Red flash screen on taking damage ────────────────────────
       this.onCameraFlash?.(255, 60, 60, 150);
-
       this.soundManager.playHit(opts);
-      this.onConsoleMessage?.(
-        t("game.you_took_damage", { amount: data.amount }),
-        "#ff4444",
-        "combat",
-      );
+      this.onConsoleMessage?.(t("game.you_took_damage", { amount: data.amount }), "#ff4444", "combat");
     } else {
       this.soundManager.playHit(opts);
     }
@@ -235,14 +204,12 @@ export class GameEventHandler {
       this.effectManager.playDeath(data.sessionId);
       this.spriteManager.playDeathAnimation(data.sessionId);
       this.spriteManager.setAlpha(data.sessionId, 0.3);
-      // ── Item #47: Death removes active glow ───────────────────────────────
       this.spriteManager.clearGlowFx(data.sessionId);
     }
     if (this.isSelf(data.sessionId)) {
       this.inputHandler.cancelTargeting();
       this.onConsoleMessage?.(t("game.you_died"), "#ff0000", "combat");
-      // ── Item #14: Big shake + blackout on self-death ───────────────────────
-      this.maybeShake(0.018, 800); // item 82
+      this.maybeShake(0.018, 800);
       this.onCameraFlash?.(0, 0, 0, 1500);
     }
     const opts = sprite ? { sourceX: sprite.renderX, sourceY: sprite.renderY } : undefined;
@@ -258,7 +225,6 @@ export class GameEventHandler {
     }
     if (this.isSelf(data.sessionId)) {
       this.onConsoleMessage?.(t("game.you_respawned"), "#aaffaa", "combat");
-      // ── Item #17: Zoom-in on respawn ──────────────────────────────────────
       this.onCameraZoom?.(1.12, 500);
     }
   }
@@ -269,8 +235,8 @@ export class GameEventHandler {
     const opts = sprite ? { sourceX: sprite.renderX, sourceY: sprite.renderY } : undefined;
     this.soundManager.playHeal(opts);
 
-    if (sprite) {
-      this.lightManager?.flashLight(sprite.renderX, sprite.renderY, LightPreset.HEAL, undefined, 700);
+    if (this.lightManager && sprite) {
+      this.lightManager.flashLight(sprite.renderX, sprite.renderY, LightPreset.HEAL, undefined, 700);
     }
     this.spriteManager.applyGlowFx(data.sessionId, 0xaaffaa, 500);
 
@@ -295,7 +261,6 @@ export class GameEventHandler {
     } else if (effect === "stealth") {
       this.spriteManager.applySpellStateVisual(data.sessionId, data.abilityId, durationMs);
       this.effectManager.showFloatingText(data.sessionId, t("game.buff_stealth"), "#aaddff");
-      // ── Item #32: Dim player light on stealth ─────────────────────────────
       if (this.isSelf(data.sessionId)) {
         this.lightManager?.setPlayerLightColor(0x4466aa, 0.15);
         window.setTimeout(() => this.lightManager?.resetPlayerLightColor(), durationMs);
@@ -311,11 +276,7 @@ export class GameEventHandler {
     } else {
       this.spriteManager.applySpellStateVisual(data.sessionId, data.abilityId, durationMs);
       this.effectManager.showFloatingText(data.sessionId, `${t("game.buff_buffed")} ✦`, "#ffdd44");
-      const buffColor = this.buffGlowColor(data.abilityId);
-      this.spriteManager.applyGlowFx(data.sessionId, buffColor, durationMs);
-
-      // ── Item #33: Berserker Rage → red player light ────────────────────────
-      // ── Item #34: Mana Shield → blue player light ──────────────────────────
+      this.spriteManager.applyGlowFx(data.sessionId, this.buffGlowColor(data.abilityId), durationMs);
       if (this.isSelf(data.sessionId)) {
         const playerLightColor = this.buffPlayerLightColor(data.abilityId);
         if (playerLightColor !== null) {
@@ -328,11 +289,7 @@ export class GameEventHandler {
 
   private onStunApplied(data: ServerMessages["stun_applied"]) {
     this.spriteManager.applyStunVisual(data.targetSessionId, data.durationMs ?? 1500);
-    this.effectManager.showFloatingText(
-      data.targetSessionId,
-      `${t("game.buff_stunned")} ✦`,
-      "#ffff44",
-    );
+    this.effectManager.showFloatingText(data.targetSessionId, `${t("game.buff_stunned")} ✦`, "#ffff44");
     this.spriteManager.applyGlowFx(data.targetSessionId, 0xffdd44, data.durationMs ?? 1500);
     if (this.isSelf(data.targetSessionId)) {
       this.onConsoleMessage?.(t("game.you_stunned"), "#ffff44", "combat");
@@ -358,10 +315,8 @@ export class GameEventHandler {
     const opts = sprite ? { sourceX: sprite.renderX, sourceY: sprite.renderY } : undefined;
     if (this.isSelf(data.sessionId)) {
       this.soundManager.playLevelUp(opts);
-      // ── Item #19: Zoom pulse on level-up ──────────────────────────────────
       this.onCameraZoom?.(1.06, 300);
     } else {
-      // Companion / NPC levelled up — play a shorter, distinct sound
       this.soundManager.playNpcLevelUp(opts);
     }
   }
@@ -398,35 +353,44 @@ export class GameEventHandler {
     this.onConsoleMessage?.("✈ Fast travel used.", "#88ddff", "system");
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────────────────
+  // ── Lookup tables ─────────────────────────────────────────────────────────────
 
-  /** Flat ability→preset lookup for spell impact light flashes. */
   private readonly SPELL_LIGHT_MAP = new Map<string, { preset: LightPreset; durationMs: number }>([
-    // Fire
-    ...(["fireball", "meteor_strike", "fire_breath", "war_cry", "execute"]
-        .map(id => [id, { preset: LightPreset.EXPLOSION, durationMs: 400 }] as const)),
-    // Ice
-    ...(["ice_bolt", "frost_nova", "frost_breath", "polymorph"]
-        .map(id => [id, { preset: LightPreset.FROST, durationMs: 600 }] as const)),
-    // Holy
-    ...(["holy_nova", "judgment", "consecration", "smite", "holy_bolt", "holy_strike", "lay_on_hands"]
-        .map(id => [id, { preset: LightPreset.HOLY, durationMs: 500 }] as const)),
-    // Electric
-    ...(["thunderstorm", "chain_lightning", "leap", "whirlwind"]
-        .map(id => [id, { preset: LightPreset.ELECTRIC, durationMs: 350 }] as const)),
-    // Shadow
-    ...(["shadow_bolt", "soul_drain", "banshee_wail", "curse"]
-        .map(id => [id, { preset: LightPreset.SHADOW, durationMs: 500 }] as const)),
-    // Nature / Heal
-    ...(["heal", "cleansing_rain", "entangling_roots", "poison_arrow", "acid_splash"]
-        .map(id => [id, { preset: LightPreset.HEAL, durationMs: 700 }] as const)),
+    ["fireball",          { preset: LightPreset.EXPLOSION, durationMs: 400 }],
+    ["meteor_strike",     { preset: LightPreset.EXPLOSION, durationMs: 400 }],
+    ["fire_breath",       { preset: LightPreset.EXPLOSION, durationMs: 400 }],
+    ["war_cry",           { preset: LightPreset.EXPLOSION, durationMs: 400 }],
+    ["execute",           { preset: LightPreset.EXPLOSION, durationMs: 400 }],
+    ["ice_bolt",          { preset: LightPreset.FROST,     durationMs: 600 }],
+    ["frost_nova",        { preset: LightPreset.FROST,     durationMs: 600 }],
+    ["frost_breath",      { preset: LightPreset.FROST,     durationMs: 600 }],
+    ["polymorph",         { preset: LightPreset.FROST,     durationMs: 600 }],
+    ["holy_nova",         { preset: LightPreset.HOLY,      durationMs: 500 }],
+    ["judgment",          { preset: LightPreset.HOLY,      durationMs: 500 }],
+    ["consecration",      { preset: LightPreset.HOLY,      durationMs: 500 }],
+    ["smite",             { preset: LightPreset.HOLY,      durationMs: 500 }],
+    ["holy_bolt",         { preset: LightPreset.HOLY,      durationMs: 500 }],
+    ["holy_strike",       { preset: LightPreset.HOLY,      durationMs: 500 }],
+    ["lay_on_hands",      { preset: LightPreset.HOLY,      durationMs: 500 }],
+    ["thunderstorm",      { preset: LightPreset.ELECTRIC,  durationMs: 350 }],
+    ["chain_lightning",   { preset: LightPreset.ELECTRIC,  durationMs: 350 }],
+    ["leap",              { preset: LightPreset.ELECTRIC,  durationMs: 350 }],
+    ["whirlwind",         { preset: LightPreset.ELECTRIC,  durationMs: 350 }],
+    ["shadow_bolt",       { preset: LightPreset.SHADOW,    durationMs: 500 }],
+    ["soul_drain",        { preset: LightPreset.SHADOW,    durationMs: 500 }],
+    ["banshee_wail",      { preset: LightPreset.SHADOW,    durationMs: 500 }],
+    ["curse",             { preset: LightPreset.SHADOW,    durationMs: 500 }],
+    ["heal",              { preset: LightPreset.HEAL,      durationMs: 700 }],
+    ["cleansing_rain",    { preset: LightPreset.HEAL,      durationMs: 700 }],
+    ["entangling_roots",  { preset: LightPreset.HEAL,      durationMs: 700 }],
+    ["poison_arrow",      { preset: LightPreset.HEAL,      durationMs: 700 }],
+    ["acid_splash",       { preset: LightPreset.HEAL,      durationMs: 700 }],
   ]);
 
   private spellLightPreset(abilityId: string) {
     return this.SPELL_LIGHT_MAP.get(abilityId) ?? null;
   }
 
-  /** Returns the glow colour for a positive buff. */
   private buffGlowColor(abilityId: string): number {
     const map: Record<string, number> = {
       berserker_rage:     0xff3300,
@@ -443,20 +407,15 @@ export class GameEventHandler {
     return map[abilityId] ?? 0xffdd44;
   }
 
-  /**
-   * Items #33-34: Returns the player personal light colour for buff-specific
-   * player light tinting, or null if no special tint is needed.
-   */
   private buffPlayerLightColor(abilityId: string): number | null {
     const map: Record<string, number> = {
-      berserker_rage:     0xff3300, // deep red
-      mana_shield:        0x4488ff, // calm blue
-      divine_shield:      0xffe066, // holy gold
+      berserker_rage:     0xff3300,
+      mana_shield:        0x4488ff,
+      divine_shield:      0xffe066,
       aura_of_protection: 0xffe066,
-      elemental_infusion: 0xff6644, // molten orange
-      spell_echo:         0xcc44ff, // arcane purple
+      elemental_infusion: 0xff6644,
+      spell_echo:         0xcc44ff,
     };
     return map[abilityId] ?? null;
   }
-
 }

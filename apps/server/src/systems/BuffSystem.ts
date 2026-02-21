@@ -3,6 +3,7 @@ import {
   type PlayerBuffState,
   ServerMessageType,
 } from "@abraxas/shared";
+import { Player } from "../schema/Player";
 import type { Entity } from "../utils/SpatialLookup";
 
 export class BuffSystem {
@@ -40,7 +41,6 @@ export class BuffSystem {
     const existing = s.buffs.find((b) => b.id === id);
     if (existing) {
       existing.expiresAt = Math.max(existing.expiresAt, now) + durationMs;
-      // Optionally update amount if it's stronger? For now just extend.
     } else {
       s.buffs.push({
         id,
@@ -196,22 +196,20 @@ export class BuffSystem {
       // B005: After expiring buffs that may have boosted maxHP/maxMana, clamp current values.
       if (s.buffs.length !== buffsBefore) {
         if (entity.hp > entity.maxHp) entity.hp = entity.maxHp;
-        if ("mana" in entity && "maxMana" in entity) {
-          const e = entity as { mana: number; maxMana: number };
-          if (e.mana > e.maxMana) e.mana = e.maxMana;
+        if (entity instanceof Player && entity.mana > entity.maxMana) {
+          entity.mana = entity.maxMana;
         }
       }
 
-      // Apply appearance overrides from active buffs
+      // Apply appearance overrides from active buffs (overrideBodyId/HeadId are on Char base)
       let overrideBodyId = 0;
       let overrideHeadId = 0;
       for (const b of s.buffs) {
         if (b.overrideBodyId) overrideBodyId = b.overrideBodyId;
         if (b.overrideHeadId) overrideHeadId = b.overrideHeadId;
       }
-      // Apply appearance overrides only if the entity schema supports these fields
-      if ("overrideBodyId" in entity) (entity as unknown as { overrideBodyId: number }).overrideBodyId = overrideBodyId;
-      if ("overrideHeadId" in entity) (entity as unknown as { overrideHeadId: number }).overrideHeadId = overrideHeadId;
+      entity.overrideBodyId = overrideBodyId;
+      entity.overrideHeadId = overrideHeadId;
 
       // Process DoTs — expire first, then tick the survivors
       s.dots = s.dots.filter((d) => now < d.expiresAt);

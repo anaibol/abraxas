@@ -20,7 +20,18 @@ function extractBearerToken(req: Request): string | null {
   return authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
 }
 
-export const healthEndpoint: ReturnType<typeof createEndpoint> = createEndpoint(
+/** Verifies the bearer token on a request. Returns `{ payload }` on success or `{ response }` with the error to send. */
+function requireAuth(ctx: { request?: Request }, requiredRole?: string) {
+  const token = ctx.request ? extractBearerToken(ctx.request) : null;
+  if (!token) return { payload: null, response: { body: { error: "Unauthorized" }, status: 401 } as const };
+  const payload = verifyToken(token);
+  if (!payload) return { payload: null, response: { body: { error: "Invalid or expired token" }, status: 401 } as const };
+  if (requiredRole && payload.role !== requiredRole)
+    return { payload: null, response: { body: { error: "Forbidden" }, status: 403 } as const };
+  return { payload, response: null };
+}
+
+export const healthEndpoint = createEndpoint(
   "/health",
   { method: "GET" },
   async (ctx) => ctx.json({ ok: true }),
@@ -99,21 +110,14 @@ export const loginEndpoint: ReturnType<typeof createEndpoint> = createEndpoint(
   },
 );
 
-export const meEndpoint: ReturnType<typeof createEndpoint> = createEndpoint(
+export const meEndpoint = createEndpoint(
   "/api/me",
   { method: "GET" },
   async (ctx) => {
     if (!ctx.request) return ctx.json({ error: "Missing request" }, { status: 400 });
-    const token = extractBearerToken(ctx.request);
-
-    if (!token) {
-      return ctx.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const payload = verifyToken(token);
-    if (!payload) {
-      return ctx.json({ error: "Invalid or expired token" }, { status: 401 });
-    }
+    const auth = requireAuth(ctx);
+    if (!auth.payload) return ctx.json(auth.response!.body, { status: auth.response!.status });
+    const { payload } = auth;
 
     const characters = await prisma.character.findMany({
       where: { accountId: payload.userId },
@@ -143,16 +147,9 @@ export const createCharacterEndpoint: ReturnType<typeof createEndpoint> = create
   },
   async (ctx) => {
     if (!ctx.request) return ctx.json({ error: "Missing request" }, { status: 400 });
-    const token = extractBearerToken(ctx.request);
-
-    if (!token) {
-      return ctx.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const payload = verifyToken(token);
-    if (!payload) {
-      return ctx.json({ error: "Invalid or expired token" }, { status: 401 });
-    }
+    const auth = requireAuth(ctx);
+    if (!auth.payload) return ctx.json(auth.response!.body, { status: auth.response!.status });
+    const { payload } = auth;
 
     const { charName, classType } = ctx.body;
     const stats = CLASS_STATS[classType];
@@ -198,18 +195,13 @@ export const createCharacterEndpoint: ReturnType<typeof createEndpoint> = create
   },
 );
 
-export const adminCharactersEndpoint: ReturnType<typeof createEndpoint> = createEndpoint(
+export const adminCharactersEndpoint = createEndpoint(
   "/api/admin/characters",
   { method: "GET" },
   async (ctx) => {
     if (!ctx.request) return ctx.json({ error: "Missing request" }, { status: 400 });
-    const token = extractBearerToken(ctx.request);
-    if (!token) return ctx.json({ error: "Unauthorized" }, { status: 401 });
-
-    const payload = verifyToken(token);
-    if (!payload || payload.role !== "ADMIN") {
-      return ctx.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const auth = requireAuth(ctx, "ADMIN");
+    if (!auth.payload) return ctx.json(auth.response!.body, { status: auth.response!.status });
 
     try {
       const characters = await prisma.character.findMany({
@@ -230,7 +222,7 @@ export const adminCharactersEndpoint: ReturnType<typeof createEndpoint> = create
   },
 );
 
-export const leaderboardEndpoint: ReturnType<typeof createEndpoint> = createEndpoint(
+export const leaderboardEndpoint = createEndpoint(
   "/api/leaderboard",
   { method: "GET" },
   async (ctx) => {
