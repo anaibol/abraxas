@@ -1,7 +1,7 @@
 import {
   type ClientMessages,
   type ClientMessageType,
-  FRIENDLY_NPC_IDS,
+  FRIENDLY_NPC_TYPES,
   MathUtils,
   MERCHANT_INVENTORY,
   QUESTS,
@@ -28,12 +28,12 @@ export class InteractionHandlers {
     if (!npc) return;
 
     // Only friendly NPCs (merchant, banker, etc.) support dialogue interaction
-    if (!FRIENDLY_NPC_IDS.has(npc.npcId)) return;
+    if (!FRIENDLY_NPC_TYPES.has(npc.npcType)) return;
 
     if (!HandlerUtils.assertInRange(client, player, npc, 3, "game.too_far")) return;
 
     ctx.systems.quests
-      .updateProgress(player.dbId, "talk", npc.npcId, 1)
+      .updateProgress(player.dbId, "talk", npc.npcType, 1)
       .then((updatedQuests) => HandlerUtils.sendQuestUpdates(client, updatedQuests))
       .catch((err) => {
         logger.error({
@@ -42,23 +42,23 @@ export class InteractionHandlers {
         });
       });
 
-    if (npc.npcId === "merchant") {
-      InteractionHandlers.openShop(ctx, client, npc);
-    } else if (npc.npcId === "banker") {
+    if (npc.npcType === "merchant") {
+      InteractionHandlers.openMerchantShop(ctx, client, npc);
+    } else if (npc.npcType === "banker") {
       EconomyHandlers.openBank(ctx, client);
     } else {
       InteractionHandlers.openDialogue(ctx, client, player, npc);
     }
   }
 
-  static openShop(_ctx: RoomContext, client: Client, npc: Npc) {
+  static openMerchantShop(_ctx: RoomContext, client: Client, npc: Npc) {
     const inventory = MERCHANT_INVENTORY.general_store ?? [];
     client.send(ServerMessageType.OpenShop, { npcId: npc.sessionId, inventory });
   }
 
   static openDialogue(ctx: RoomContext, client: Client, player: Player, npc: Npc) {
-    const dialogue = ctx.systems.quests.getDialogueOptions(player.dbId, npc.sessionId, npc.npcId);
-    client.send(ServerMessageType.OpenDialogue, { npcId: npc.npcId, ...dialogue });
+    const dialogue = ctx.systems.quests.getDialogueOptions(player.dbId, npc.sessionId, npc.npcType);
+    client.send(ServerMessageType.OpenDialogue, { npcId: npc.sessionId, ...dialogue });
   }
 
   static handleQuestAccept(
@@ -100,7 +100,7 @@ export class InteractionHandlers {
     if (!player) return;
 
     const questDef = QUESTS[data.questId];
-    if (questDef && !InteractionHandlers.isNearNpcId(ctx, player, questDef.npcId)) {
+    if (questDef && !InteractionHandlers.isNearNpcType(ctx, player, questDef.npcType)) {
       HandlerUtils.sendHint(client, "game.quest_near_npc");
       return;
     }
@@ -143,13 +143,17 @@ export class InteractionHandlers {
   }
 
   /** Returns true if the player is within `range` Chebyshev tiles of any living NPC with the given type. */
-  static isNearNpcId(ctx: RoomContext, player: Player, npcId: string, range = 3): boolean {
-    return [...ctx.state.npcs.values()].some(
-      (n) =>
-        n.npcId === npcId &&
+  static isNearNpcType(ctx: RoomContext, player: Player, npcType: string, range = 3): boolean {
+    for (const n of ctx.state.npcs.values()) {
+      if (
+        n.npcType === npcType &&
         n.alive &&
         MathUtils.chebyshevDist({ x: player.tileX, y: player.tileY }, { x: n.tileX, y: n.tileY }) <=
-          range,
-    );
+          range
+      ) {
+        return true;
+      }
+    }
+    return false;
   }
 }

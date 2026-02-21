@@ -9,7 +9,7 @@ interface EventSchedule {
   /** Wall-clock ms when the next start is due (0 = not scheduled yet). */
   nextStartAt: number;
   /** Spawn IDs created for the current run, so we can clean them up on end. */
-  activeNpcIds: string[];
+  activeNpcTypes: string[];
 }
 
 /**
@@ -30,22 +30,22 @@ export class WorldEventSystem {
       event,
       // First occurrence: spread out by 10 min per event so they don't all fire at once.
       nextStartAt: now + (i + 1) * 600_000,
-      activeNpcIds: [],
+      activeNpcTypes: [],
     }));
   }
 
   /** Called by TickSystem when an event NPC is killed — updates progress counter. */
   onEventNpcDied(npcSessionId: string, broadcast: BroadcastFn): void {
     for (const schedule of this.schedules) {
-      const idx = schedule.activeNpcIds.indexOf(npcSessionId);
+      const idx = schedule.activeNpcTypes.indexOf(npcSessionId);
       if (idx === -1) continue;
-      schedule.activeNpcIds.splice(idx, 1);
+      schedule.activeNpcTypes.splice(idx, 1);
 
       // Broadcast live progress
       broadcast(ServerMessageType.WorldEventProgress, {
         eventId: schedule.event.id,
         npcsDead:
-          schedule.event.spawns.reduce((s, w) => s + w.count, 0) - schedule.activeNpcIds.length,
+          schedule.event.spawns.reduce((s, w) => s + w.count, 0) - schedule.activeNpcTypes.length,
         npcsTotalCount: schedule.event.spawns.reduce((s, w) => s + w.count, 0),
       });
       break;
@@ -86,11 +86,11 @@ export class WorldEventSystem {
     const { event } = schedule;
 
     // Spawn NPC waves for this event and track their session IDs
-    schedule.activeNpcIds = [];
+    schedule.activeNpcTypes = [];
     for (const wave of event.spawns) {
       for (let i = 0; i < wave.count; i++) {
-        const npc = this.npcSystem.spawnNpc(wave.npcId, map);
-        if (npc) schedule.activeNpcIds.push(npc.sessionId);
+        const npc = this.npcSystem.spawnNpc(wave.npcType, map);
+        if (npc) schedule.activeNpcTypes.push(npc.sessionId);
       }
     }
 
@@ -125,14 +125,14 @@ export class WorldEventSystem {
     this.state.worldEventId = "";
     this.state.worldEventEndsAt = 0;
 
-    for (const npcId of schedule.activeNpcIds) {
+    for (const npcId of schedule.activeNpcTypes) {
       const npc = this.npcSystem.getNpc(npcId);
       if (npc && npc.alive) {
         // We simulate a silent removal (despawn) instead of a death to avoid dropping loot
         this.npcSystem.despawnNpc(npcId);
       }
     }
-    schedule.activeNpcIds = [];
+    schedule.activeNpcTypes = [];
 
     // Schedule the next occurrence
     schedule.nextStartAt = now + event.intervalMs;

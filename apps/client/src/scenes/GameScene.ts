@@ -1,5 +1,5 @@
 import type { Direction, NpcEntityState, PlayerEntityState, WelcomeData } from "@abraxas/shared";
-import { AudioAssets, CLASS_STATS, DIRECTION_DELTA, FRIENDLY_NPC_IDS, i18n, MathUtils, TILE_SIZE, VIEWPORT_TILES_X, VIEWPORT_TILES_Y } from "@abraxas/shared";
+import { AudioAssets, CLASS_STATS, DIRECTION_DELTA, FRIENDLY_NPC_TYPES, i18n, MathUtils, TILE_SIZE, VIEWPORT_TILES_X, VIEWPORT_TILES_Y } from "@abraxas/shared";
 import { Callbacks, type Room } from "@colyseus/sdk";
 import Phaser from "phaser";
 import type { Drop } from "../../../server/src/schema/Drop";
@@ -208,7 +208,7 @@ export class GameScene extends Phaser.Scene {
         if (targetNpc) {
           if (targetNpc.npcId === "horse") {
             this.network.sendTame(targetNpc.id);
-          } else if (FRIENDLY_NPC_IDS.has(targetNpc.npcId)) {
+          } else if (FRIENDLY_NPC_TYPES.has(targetNpc.npcId)) {
             this.network.sendInteract(targetNpc.id);
           }
         }

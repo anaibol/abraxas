@@ -2,7 +2,7 @@ import {
   type BroadcastFn,
   NPC_DROPS,
   NPC_STATS,
-  type NpcId,
+  type NpcType,
   type ServerMessages,
   ServerMessageType,
   SPAWN_PROTECTION_MS,
@@ -117,7 +117,7 @@ export class TickSystem {
     const manaSprings =
       state.tick % 20 === 0
         ? Array.from(state.npcs.values()).filter(
-            (n) => n.npcId === ("mana_spring" as NpcId) && n.alive && n.ownerId,
+            (n) => n.npcType === ("mana_spring" as NpcType) && n.alive && n.ownerId,
           )
         : null;
 
@@ -205,7 +205,7 @@ export class TickSystem {
 
   private handleNpcKillRewards(player: Player, killedNpc: Npc) {
     const { systems, state } = this.opts;
-    const stats = NPC_STATS[killedNpc.npcId];
+    const stats = NPC_STATS[killedNpc.npcType];
 
     if (stats?.expReward) {
       const companions = Array.from(state.npcs.values()).filter(
@@ -229,7 +229,7 @@ export class TickSystem {
     // Bug #97: DoT kills credit the DoT source as the killer — this is intentional.
     // The player who applied the DoT should get quest/XP credit.
     void systems.quests
-      .updateProgress(player.dbId, "kill", killedNpc.npcId, 1)
+      .updateProgress(player.dbId, "kill", killedNpc.npcType, 1)
       .then((updates) => {
         if (updates.length > 0) {
           const client = this.opts.findClient(player.sessionId);
@@ -245,7 +245,7 @@ export class TickSystem {
       player.souls++;
     }
 
-    const dropTable = NPC_DROPS[killedNpc.npcId];
+    const dropTable = NPC_DROPS[killedNpc.npcType];
     if (!dropTable) return;
 
     for (const entry of dropTable) {

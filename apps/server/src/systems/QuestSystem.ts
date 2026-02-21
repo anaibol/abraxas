@@ -1,4 +1,4 @@
-import { type PlayerQuestState, type NpcId, NPC_STATS, QUESTS, type Quest, type QuestType } from "@abraxas/shared";
+import { type PlayerQuestState, type NpcType, NPC_STATS, QUESTS, type Quest, type QuestType } from "@abraxas/shared";
 import { prisma } from "../database/db";
 
 export class QuestSystem {
@@ -179,7 +179,7 @@ export class QuestSystem {
       }
     }
 
-    const dialogue = NPC_STATS[npcId as NpcId]?.dialogue;
+    const dialogue = NPC_STATS[npcId as NpcType]?.dialogue;
     const greetings = dialogue?.greetings ?? ["ui.dialogue.hello_traveler"];
     const text = greetings[Math.floor(Math.random() * greetings.length)];
     const extraOptions = (dialogue?.options ?? []).map((o) => ({

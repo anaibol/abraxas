@@ -5,9 +5,9 @@ import {
   Direction,
   MathUtils,
   NPC_STATS,
-  NPC_IDS,
+  NPC_TYPES,
   NpcState,
-  type NpcId,
+  type NpcType,
   type TileMap,
 } from "@abraxas/shared";
 import { logger } from "../logger";
@@ -19,7 +19,7 @@ import { findSafeSpawn } from "../utils/spawnUtils";
 // ── Types ──────────────────────────────────────────────────────────────
 
 export type RespawnEntry = {
-  npcId: NpcId;
+  npcId: NpcType;
   deadAt: number;
   spawnX: number;
   spawnY: number;
@@ -36,9 +36,9 @@ export class NpcSpawner {
     private spatial: SpatialLookup,
   ) {}
 
-  /** Bulk-spawn random hostile NPCs from NPC_IDS, plus a merchant if the map lacks one. */
+  /** Bulk-spawn random hostile NPCs from NPC_TYPES, plus a merchant if the map lacks one. */
   spawnNpcs(count: number, map: TileMap): void {
-    const types = NPC_IDS.filter((t) => !NPC_STATS[t].passive && !NPC_STATS[t].rareSpawn);
+    const types = NPC_TYPES.filter((t) => !NPC_STATS[t].passive && !NPC_STATS[t].rareSpawn);
 
     for (let i = 0; i < count; i++) {
       const type = types[Math.floor(Math.random() * types.length)];
@@ -51,14 +51,14 @@ export class NpcSpawner {
       const merchantSpot = findSafeSpawn(map.spawns[0].x + 2, map.spawns[0].y, map, this.spatial)
         ?? findSafeSpawn(map.spawns[0].x, map.spawns[0].y, map, this.spatial);
       if (merchantSpot) {
-        this.spawnNpcAt("merchant" as NpcId, map, merchantSpot.x, merchantSpot.y);
+        this.spawnNpcAt("merchant" as NpcType, map, merchantSpot.x, merchantSpot.y);
       }
     }
   }
 
   /** Spawn a specific NPC at an exact tile position. */
   spawnNpcAt(
-    type: NpcId,
+    type: NpcType,
     map: TileMap,
     tileX: number,
     tileY: number,
@@ -68,7 +68,7 @@ export class NpcSpawner {
   ): Npc {
     const npc = new Npc();
     npc.sessionId = crypto.randomUUID();
-    npc.npcId = type;
+    npc.npcType = type;
     npc.name = type
       .split("_")
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
@@ -112,7 +112,7 @@ export class NpcSpawner {
    *                (level-up mid-combat), scale HP proportionally to the new max.
    */
   recalcNpcStats(npc: Npc, resetHp = true): void {
-    const stats = NPC_STATS[npc.npcId];
+    const stats = NPC_STATS[npc.npcType];
     if (!stats) return;
     const scale = 1 + (npc.level - 1) * 0.1;
     const prevMax = npc.maxHp || 1;
@@ -129,7 +129,7 @@ export class NpcSpawner {
   }
 
   /** Determine the spawn level for an NPC type based on its stat definition. */
-  calculateSpawnLevel(npcId: NpcId, _map: TileMap): number {
+  calculateSpawnLevel(npcId: NpcType, _map: TileMap): number {
     const stats = NPC_STATS[npcId];
     if (stats.minLevel !== undefined && stats.maxLevel !== undefined) {
       return Math.floor(Math.random() * (stats.maxLevel - stats.minLevel + 1)) + stats.minLevel;
@@ -158,7 +158,7 @@ export class NpcSpawner {
   }
 
   /** Spawn a single NPC at a random walkable tile. */
-  spawnNpc(type: NpcId, map: TileMap, ownerId?: string): Npc | undefined {
+  spawnNpc(type: NpcType, map: TileMap, ownerId?: string): Npc | undefined {
     // Bug #39: Increased from 20 to 50 attempts for smaller/crowded maps
     for (let attempt = 0; attempt < 50; attempt++) {
       const rx = Math.floor(Math.random() * map.width);
@@ -182,11 +182,11 @@ export class NpcSpawner {
     const ability = ABILITIES[abilityId];
     if (!ability) return;
 
-    let typeToSummon: NpcId = "skeleton";
+    let typeToSummon: NpcType = "skeleton";
     if (abilityId === "summon_skeleton") typeToSummon = "skeleton";
     else if (abilityId === "summon_zombie") typeToSummon = "zombie";
     else if (caster.isNpc()) {
-      const npcStats = NPC_STATS[caster.npcId];
+      const npcStats = NPC_STATS[caster.npcType];
       if (npcStats?.summonType) typeToSummon = npcStats.summonType;
     }
 
@@ -221,7 +221,7 @@ export class NpcSpawner {
    * adjacent to the summoner, up to the summon cap.
    */
   handleSummonCast(summoner: Npc, currentMap: TileMap): void {
-    const stats = NPC_STATS[summoner.npcId];
+    const stats = NPC_STATS[summoner.npcType];
     if (!stats.summonType) return;
 
     const owner = summoner.ownerId ? this.spatial.findEntityBySessionId(summoner.ownerId) : null;
@@ -247,13 +247,13 @@ export class NpcSpawner {
     this.respawns = this.respawns.filter((r) => {
       if (now - r.deadAt < respawnTimeMs) return true;
       const safe = findSafeSpawn(r.spawnX, r.spawnY, map, this.spatial);
-      safe ? this.spawnNpcAt(r.npcId, map, safe.x, safe.y) : this.spawnNpc(r.npcId, map);
+      safe ? this.spawnNpcAt(r.npcType, map, safe.x, safe.y) : this.spawnNpc(r.npcType, map);
       return false;
     });
   }
 
   /** Queue an NPC for respawn after the standard delay. */
-  queueRespawn(npcId: NpcId, spawnX: number, spawnY: number): void {
+  queueRespawn(npcId: NpcType, spawnX: number, spawnY: number): void {
     this.respawns.push({
       npcId,
       deadAt: Date.now(),

@@ -187,7 +187,7 @@ export class EconomyHandlers {
     const player = HandlerUtils.getActivePlayer(ctx, client);
     if (!player) return;
 
-    if (!InteractionHandlers.isNearNpcId(ctx, player, "merchant")) {
+    if (!InteractionHandlers.isNearNpcType(ctx, player, "merchant")) {
       HandlerUtils.sendHint(client, "game.too_far_merchant");
       return;
     }
@@ -235,7 +235,7 @@ export class EconomyHandlers {
     const player = HandlerUtils.getActivePlayer(ctx, client);
     if (!player) return;
 
-    if (!InteractionHandlers.isNearNpcId(ctx, player, "merchant")) {
+    if (!InteractionHandlers.isNearNpcType(ctx, player, "merchant")) {
       HandlerUtils.sendHint(client, "game.too_far_merchant");
       return;
     }

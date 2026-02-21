@@ -4,13 +4,13 @@ import {
   NPC_STATS,
   NpcState,
   type NpcStats,
-  type NpcId,
+  type NpcType,
 } from "@abraxas/shared";
 import { type } from "@colyseus/schema";
 import { Char } from "./Char";
 
 export class Npc extends Char {
-  @type("string") npcId: NpcId = "orc";
+  @type("string") npcId: NpcType = "orc";
   @type("uint8") spellCastPercent = 0;
 
   constructor() {
@@ -58,7 +58,7 @@ export class Npc extends Char {
   rareRespawnAt: number = 0;
 
   getStats(): NpcStats | undefined {
-    return NPC_STATS[this.npcId];
+    return NPC_STATS[this.npcType];
   }
 
   getAbility(abilityId: string): Ability | undefined {

@@ -40,7 +40,7 @@ export type Item = {
   aoWeaponId?: number;
   aoShieldId?: number;
   aoHelmetId?: number;
-  mountNpcId?: string;
+  mountNpcType?: string;
   /** Crafting material — can be used in recipes, sold for gold. */
   isMaterial?: boolean;
 };
@@ -1146,7 +1146,7 @@ export const ITEMS: Record<string, Item> = {
     rarity: ItemRarity.UNCOMMON,
     stats: { ...Z, speedBonus: 4 },
     goldValue: 250,
-    mountNpcId: "horse",
+    mountNpcType: "horse",
   },
   bear_mount: {
     id: "bear_mount",
@@ -1155,7 +1155,7 @@ export const ITEMS: Record<string, Item> = {
     rarity: ItemRarity.UNCOMMON,
     stats: { ...Z, speedBonus: 3 },
     goldValue: 400,
-    mountNpcId: "bear",
+    mountNpcType: "bear",
   },
   elephant_mount: {
     id: "elephant_mount",
@@ -1164,7 +1164,7 @@ export const ITEMS: Record<string, Item> = {
     rarity: ItemRarity.RARE,
     stats: { ...Z, speedBonus: 3 },
     goldValue: 1200,
-    mountNpcId: "elephant",
+    mountNpcType: "elephant",
   },
   dragon_mount: {
     id: "dragon_mount",
@@ -1173,7 +1173,7 @@ export const ITEMS: Record<string, Item> = {
     rarity: ItemRarity.LEGENDARY,
     stats: { ...Z, speedBonus: 6 },
     goldValue: 5000,
-    mountNpcId: "dragon",
+    mountNpcType: "dragon",
   },
   wolf_mount: {
     id: "wolf_mount",
@@ -1182,7 +1182,7 @@ export const ITEMS: Record<string, Item> = {
     rarity: ItemRarity.UNCOMMON,
     stats: { ...Z, speedBonus: 4 },
     goldValue: 350,
-    mountNpcId: "wolf",
+    mountNpcType: "wolf",
   },
 
   // ══════════════════════════════════════════════════════════════════════════

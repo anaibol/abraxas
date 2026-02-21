@@ -1,4 +1,4 @@
-import type { NpcId, NpcStats } from "../types";
+import type { NpcType, NpcStats } from "../types";
 
 export const NPC_APPEARANCE: Record<string, { bodyId: number; headId: number }> = {
   orc: { bodyId: 74, headId: 0 }, // 64×64 green orc/ogre
@@ -628,7 +628,7 @@ const _NPC_STATS: Partial<Record<string, Partial<NpcStats>>> = {
   },
 };
 
-export const NPC_STATS: Record<NpcId, NpcStats> = Object.fromEntries(
+export const NPC_STATS: Record<NpcType, NpcStats> = Object.fromEntries(
   Object.entries(_NPC_STATS).map(([k, v]) => {
     const stats: NpcStats = {
       passive: false,
@@ -646,12 +646,12 @@ export const NPC_STATS: Record<NpcId, NpcStats> = Object.fromEntries(
     } as NpcStats;
     return [k, stats];
   }),
-) as Record<NpcId, NpcStats>;
+) as Record<NpcType, NpcStats>;
 
-export const NPC_IDS: NpcId[] = Object.keys(_NPC_STATS) as NpcId[];
+export const NPC_TYPES: NpcType[] = Object.keys(_NPC_STATS) as NpcType[];
 
 /** NPC IDs that support click-to-talk interaction. Requires BOTH passive + dialogue. */
-export const FRIENDLY_NPC_IDS: ReadonlySet<string> = new Set<string>(
+export const FRIENDLY_NPC_TYPES: ReadonlySet<string> = new Set<string>(
   Object.entries(_NPC_STATS)
     .filter(([, v]) => v?.passive && v?.dialogue)
     .map(([k]) => k),
@@ -765,6 +765,6 @@ export const NPC_DROPS: Record<string, DropTableEntry[]> = {
  * Returns the drop table for an NPC type.
  * Always returns an array (empty for passive/mount NPCs).
  */
-export function buildDropRolls(npcId: NpcId): DropTableEntry[] {
+export function buildDropRolls(npcId: NpcType): DropTableEntry[] {
   return NPC_DROPS[npcId] ?? [];
 }

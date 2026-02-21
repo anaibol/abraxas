@@ -5,7 +5,7 @@ import {
   NPC_STATS,
   NPC_VIEW_RADIUS,
   PLAYER_VIEW_RADIUS,
-  type NpcId,
+  type NpcType,
   PLAYER_RESPAWN_TIME_MS,
   ServerMessageType,
   SPAWN_PROTECTION_MS,
@@ -205,13 +205,13 @@ export class ArenaRoom extends Room<{ state: GameState }> {
           logger.warn({ intent: "gm_spawn", result: "rejected", role: player.role });
           return;
         }
-        const npcId = message.type as NpcId;
-        if (!NPC_STATS[npcId]) {
+        const npcType = message.type as NpcType;
+        if (!NPC_STATS[npcType]) {
           logger.warn({ intent: "gm_spawn", result: "invalid_type", type: message.type });
           return;
         }
-        this.npcSystem.spawnNpc(npcId, this.map);
-        logger.debug({ intent: "gm_spawn", result: "success", type: npcId });
+        this.npcSystem.spawnNpc(npcType, this.map);
+        logger.debug({ intent: "gm_spawn", result: "success", type: npcType });
       });
 
       this.tickSystem = new TickSystem({
@@ -276,7 +276,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
         // Resume world — recreate each NPC from its saved state.
         for (const n of savedNpcs) {
           this.npcSystem.spawnNpcAt(
-            n.npcId as NpcId,
+            n.npcType as NpcType,
             this.map,
             n.tileX,
             n.tileY,
@@ -288,7 +288,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       } else {
         // Fresh boot — spawn from authoritative map sources, then persist.
         for (const n of this.map.npcs ?? []) {
-          this.npcSystem.spawnNpcAt(n.id, this.map, n.x, n.y);
+          this.npcSystem.spawnNpcAt(n.type, this.map, n.x, n.y);
         }
         const npcCount = this.map.npcCount;
         if (npcCount > 0) {
@@ -297,7 +297,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
 
         // Persist the newly-spawned world so the next restart restores it.
         const toSave = Array.from(this.state.npcs.values()).map((npc) => ({
-          npcId: npc.npcId,
+          npcType: npc.npcType,
           tileX: npc.tileX,
           tileY: npc.tileY,
           spawnX: npc.spawnX,
@@ -453,7 +453,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
           const sy = "y" in spawnLoc ? spawnLoc.y : spawnLoc.tileY;
 
           const newNpc = this.npcSystem.spawnNpcAt(
-            comp.type as NpcId,
+            comp.type as NpcType,
             this.map,
             sx,
             sy,
@@ -550,7 +550,7 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       for (const [id, npc] of this.state.npcs) {
         if (npc.ownerId === player.sessionId && npc.alive) {
           activeCompanions.push({
-            type: npc.npcId,
+            type: npc.npcType,
             level: npc.level,
             exp: npc.exp,
             hp: npc.hp,

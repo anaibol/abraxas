@@ -885,7 +885,7 @@ export class CombatSystem {
       // Bug #6: Only treat same-type NPCs as allies if BOTH are wild (no owner).
       // Summoned NPCs of the same type as wild ones should be attackable.
       if (a.ownerId || b.ownerId) return false;
-      return a.npcId === b.npcId;
+      return a.npcType === b.npcType;
     }
     return false;
   }
