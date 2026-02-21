@@ -143,7 +143,13 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
       w={{ base: "55vw", md: "420px" }}
       maxW={{ base: "240px", md: "420px" }}
       h={{ base: "130px", md: "240px" }}
-      layerStyle={T.panelGlass}
+      bg="rgba(12, 10, 18, 0.85)"
+      backdropFilter="blur(16px)"
+      borderWidth="1px"
+      borderStyle="solid"
+      borderColor="var(--chakra-colors-game-goldDim)"
+      borderRadius="2px"
+      boxShadow="var(--chakra-shadows-deepBox)"
       color="white"
       fontFamily={T.display}
       fontSize="14px"
@@ -157,7 +163,7 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
       <HStack
         gap="0"
         bg="rgba(0,0,0,0.3)"
-        borderBottom="1px solid var(--chakra-colors-game-borderLight)"
+        borderBottom="1px solid var(--chakra-colors-game-goldDim)"
         overflow="hidden"
       >
         {TABS.map((tab) => (
@@ -217,7 +223,7 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
       {isChatOpen && gmHints.length > 0 && (
         <Box
           bg="rgba(8, 6, 18, 0.96)"
-          borderTop="1px solid var(--chakra-colors-game-borderLight)"
+          borderTop="1px solid var(--chakra-colors-game-goldDim)"
           px="10px"
           py="4px"
         >

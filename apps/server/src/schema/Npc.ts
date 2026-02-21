@@ -1,7 +1,6 @@
 import {
   ABILITIES,
   type Ability,
-  EntityType,
   NPC_STATS,
   NpcState,
   type NpcStats,
@@ -16,7 +15,6 @@ export class Npc extends Char {
 
   constructor() {
     super();
-    this.entityType = EntityType.NPC;
   }
 
   @type("string") ownerId?: string;

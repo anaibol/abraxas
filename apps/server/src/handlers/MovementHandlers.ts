@@ -10,7 +10,7 @@ export class MovementHandlers {
     data: ClientMessages[ClientMessageType.Move],
   ): void {
     const player = HandlerUtils.getActivePlayer(ctx, client);
-    if (!player || player.stunned) return;
+    if (!player || !player.alive || player.stunned) return;
 
     const result = ctx.systems.movement.tryMove(
       player,

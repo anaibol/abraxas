@@ -5,10 +5,6 @@ export enum Direction {
   RIGHT = 3,
 }
 
-export enum EntityType {
-  PLAYER = "player",
-  NPC = "npc",
-}
 
 export const DIRECTION_DELTA: Record<Direction, { dx: number; dy: number }> = {
   [Direction.UP]: { dx: 0, dy: -1 },
@@ -413,8 +409,7 @@ export interface PlayerEntityState extends BaseEntityState {
 }
 
 export interface NpcEntityState extends BaseEntityState {
-  /** EntityType discriminator — always "npc" */
-  type?: never;
+
   /** The NPC species (e.g. "orc", "wolf") — maps to Npc.npcType on the server */
   npcType: NpcType;
   classType?: never;

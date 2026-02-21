@@ -376,8 +376,9 @@ export class ArenaRoom extends Room<{ state: GameState }> {
       // Assign spawn point — prefer safe zone for both initial spawns and
       // returning players. New players get a dedicated newbieSpawn slot.
       let candidate: { x: number; y: number } | undefined;
+      const isNewbie = player.xp === 0 && player.level === 1;
       if (
-        this.playerService.isPlayerTotallyNew(player) &&
+        isNewbie &&
         this.map.newbieSpawns &&
         this.map.newbieSpawns.length > 0
       ) {
