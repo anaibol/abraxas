@@ -5,6 +5,7 @@ import {
   ITEMS,
   ServerMessageType,
   type StatType,
+  STARTING_EQUIPMENT,
 } from "@abraxas/shared";
 import type { Client } from "@colyseus/core";
 import { spiralSearch } from "../utils/spawnUtils";
@@ -111,6 +112,23 @@ export class ItemHandlers {
 
     const qty = data.quantity ?? item.quantity ?? 1;
     const itemId = item.itemId;
+
+    // --- Prevent dropping below starting quantity ---
+    const startingGear = STARTING_EQUIPMENT[player.classType];
+    let protectedQty = 0;
+    if (startingGear) {
+      protectedQty = startingGear.items.filter((id) => id === itemId).length;
+    }
+
+    if (protectedQty > 0) {
+      const totalOwned = ctx.systems.inventory.getTotalItemQuantity(player, itemId);
+      const maxDroppable = Math.max(0, totalOwned - protectedQty);
+      if (maxDroppable < qty) {
+        HandlerUtils.sendError(client, "game.cannot_drop_basic_item");
+        return;
+      }
+    }
+    // ----------------------------------------------
 
     // Capture instance data for the drop
     const instanceData = {

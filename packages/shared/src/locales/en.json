@@ -151,7 +151,8 @@
     "safe_zone": "Safe Zone",
     "dodged": "Dodged",
     "parried": "Parried",
-    "invalid_target_invalid": "Invalid target"
+    "invalid_target_invalid": "Invalid target",
+    "cannot_drop_basic_item": "You cannot drop your starting basic items or fall below the starting quantity"
   },
   "social": {
     "already_in_group": "Player is already in a group",

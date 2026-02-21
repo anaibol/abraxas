@@ -115,6 +115,22 @@ export class InventorySystem {
     return true;
   }
 
+  getTotalItemQuantity(player: Player, itemId: string): number {
+    let total = 0;
+    for (const item of player.inventory) {
+      if (item.itemId === itemId) {
+        total += item.quantity;
+      }
+    }
+    for (const slotKey of Object.values(EQUIP_SLOT_MAP)) {
+      const equip = (player as Pick<Player, EquipSlotKey>)[slotKey];
+      if (equip && equip.itemId === itemId) {
+        total += equip.quantity; // usually 1 for equipment
+      }
+    }
+    return total;
+  }
+
   equipItem(player: Player, itemId: string, slotIndex?: number, onError?: (msg: string) => void): boolean {
     const item = slotIndex !== undefined
       ? player.inventory.find((i) => i.itemId === itemId && i.slotIndex === slotIndex)
