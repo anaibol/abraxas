@@ -115,8 +115,11 @@ export class InventorySystem {
     return true;
   }
 
-  equipItem(player: Player, itemId: string, onError?: (msg: string) => void): boolean {
-    const item = player.inventory.find((i) => i.itemId === itemId);
+  equipItem(player: Player, itemId: string, slotIndex?: number, onError?: (msg: string) => void): boolean {
+    // Bug #41: Find exact item instance by slotIndex if provided, otherwise fallback to first matching itemId
+    const item = slotIndex !== undefined
+      ? player.inventory.find((i) => i.itemId === itemId && i.slotIndex === slotIndex)
+      : player.inventory.find((i) => i.itemId === itemId);
     if (!item) {
       onError?.("game.item_not_found");
       return false;
@@ -150,16 +153,12 @@ export class InventorySystem {
       const itemToEquip = item;
       const unequipped = currentEquip;
 
-      // 1. Remove item to equip from inventory
+      // Bug #40: Prevent splice-then-push race by just swapping the array element directly at idx
       const idx = player.inventory.indexOf(itemToEquip);
-      player.inventory.splice(idx, 1);
-
-      // 2. Clear equip slot
-      (player as Pick<Player, EquipSlotKey>)[slotKey] = undefined;
-
-      // 3. Put unequipped item into inventory at the same slotIndex
-      unequipped.slotIndex = itemToEquip.slotIndex;
-      player.inventory.push(unequipped);
+      if (idx !== -1) {
+        unequipped.slotIndex = itemToEquip.slotIndex;
+        player.inventory[idx] = unequipped;
+      }
 
       // 4. Set new item as equipment
       (player as Pick<Player, EquipSlotKey>)[slotKey] = itemToEquip;
@@ -335,6 +334,9 @@ export class InventorySystem {
     for (const slotKey of Object.values(EQUIP_SLOT_MAP)) {
       const item = (player as Pick<Player, EquipSlotKey>)[slotKey];
       if (!item) continue;
+      // Bug #43: Ensure equipment is actually an InventoryItem object before pushing
+      if (typeof item !== "object" || !("itemId" in item)) continue;
+
       if (basicItems.has(item.itemId)) {
         basicKept.add(item.itemId);
       } else {

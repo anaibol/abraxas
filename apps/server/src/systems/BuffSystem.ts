@@ -137,6 +137,11 @@ export class BuffSystem {
     s.dots = [];
   }
 
+  clearSpawnProtection(sessionId: string): void {
+    const s = this.state.get(sessionId);
+    if (s) s.spawnProtectedUntil = 0;
+  }
+
   /** Remove all active DoTs and debuff buffs (for antidote items). */
   clearDebuffs(sessionId: string): void {
     const s = this.state.get(sessionId);

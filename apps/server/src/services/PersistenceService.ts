@@ -149,9 +149,7 @@ export class PersistenceService {
             // Different item in this slot (or slot is new) — must replace.
             if (current) {
               await tx.inventorySlot.delete({ where: { id: current.id } });
-              if (current.itemId) {
-                await tx.itemInstance.delete({ where: { id: current.itemId } });
-              }
+              // Bug #57: Don't eagerly delete itemInstance since it might just be moved to Equipment
             }
 
             const itemDef = await tx.itemDef.findUnique({
@@ -184,9 +182,7 @@ export class PersistenceService {
         for (const current of currentSlots) {
           if (!savedIndices.has(current.idx)) {
             await tx.inventorySlot.delete({ where: { id: current.id } });
-            if (current.itemId) {
-              await tx.itemInstance.delete({ where: { id: current.itemId } });
-            }
+            // Bug #57: Don't eagerly delete itemInstance since it might just be moved to Equipment
           }
         }
 
@@ -243,6 +239,17 @@ export class PersistenceService {
           });
         }
         // -----------------------
+
+        // Bug #57: Clean up all orphaned ItemInstances cleanly after all relationships are updated
+        await tx.itemInstance.deleteMany({
+          where: {
+            boundToCharacterId: char.id,
+            inventorySlot: null,
+            equipment: null,
+            bankSlot: null,
+            worldDrop: null, // Should be null anyway for bound items
+          },
+        });
       });
     } catch (e) {
       logger.error({ message: "Failed to save char", error: String(e) });

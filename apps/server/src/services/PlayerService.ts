@@ -178,7 +178,8 @@ export class PlayerService {
           // Find the item in the inventory to get its slotIndex
           const item = player.inventory.find((i) => i.itemId === itemId);
           if (item) {
-            this.inventorySystem.equipItem(player, item.itemId);
+            // Bug #65: Pass the exact item.slotIndex so duplicate starting gear equips correctly
+            this.inventorySystem.equipItem(player, item.itemId, item.slotIndex);
           }
         }
       }

@@ -130,7 +130,7 @@ export class InputHandler {
     }
   }
 
-  update(time: number, getMouseTile: () => { x: number; y: number }) {
+  update(time: number, getMouseTile: () => { x: number; y: number }, canAct: boolean = true) {
     const leftClicked = this.pendingLeftClick;
     const rightClicked = this.pendingRightClick;
     this.pendingLeftClick = false;
@@ -142,6 +142,20 @@ export class InputHandler {
       } else if (Phaser.Input.Keyboard.JustUp(this.pttKey)) {
         this.onPttEnd?.();
       }
+    }
+
+    if (!canAct) {
+      if (this.targeting) this.cancelTargeting();
+      if (rightClicked) {
+        const tile = getMouseTile();
+        this.onRightClickTile?.(
+          tile.x,
+          tile.y,
+          this.lastRightClickScreenX,
+          this.lastRightClickScreenY,
+        );
+      }
+      return;
     }
 
     for (const key of Object.values(this.moveKeys)) {

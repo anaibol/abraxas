@@ -746,7 +746,7 @@ export type ClientMessages = {
     targetTileY: number;
   };
   [ClientMessageType.Pickup]: { dropId: string };
-  [ClientMessageType.Equip]: { itemId: string };
+  [ClientMessageType.Equip]: { itemId: string; slotIndex?: number };
   [ClientMessageType.Unequip]: { slot: EquipmentSlot };
   [ClientMessageType.UseItem]: { itemId: string };
   [ClientMessageType.DropItem]: { itemId: string; quantity?: number };

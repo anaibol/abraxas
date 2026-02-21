@@ -57,7 +57,7 @@ export class ItemHandlers {
   ): void {
     const player = HandlerUtils.getActivePlayer(ctx, client);
     if (!player) return;
-    ctx.systems.inventory.equipItem(player, data.itemId, (msg) =>
+    ctx.systems.inventory.equipItem(player, data.itemId, data.slotIndex, (msg) =>
       HandlerUtils.sendError(client, msg),
     );
   }

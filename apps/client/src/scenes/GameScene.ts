@@ -482,14 +482,17 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
+  private canAct(): boolean {
+    const lp = this.room.state.players.get(this.room.sessionId);
+    return lp ? (lp.alive && !lp.stunned) : false;
+  }
+
   update(time: number, delta: number) {
-    this.inputHandler.update(time, () => this.getMouseTile());
+    this.inputHandler.update(time, () => this.getMouseTile(), this.canAct());
     this.spriteManager.update(delta);
     this.lightManager.update(time);
 
     if (this.inputHandler.targeting) {
-      const lp = this.room.state.players.get(this.room.sessionId);
-      if (lp && (!lp.alive || lp.stunned)) this.inputHandler.cancelTargeting();
       this.updateTargetingOverlay();
     }
 
@@ -557,18 +560,22 @@ export class GameScene extends Phaser.Scene {
   }
 
   triggerMove(direction: Direction) {
+    if (!this.canAct()) return;
     this.inputHandler.triggerMove(direction, this.time.now);
   }
 
   triggerAttack() {
+    if (!this.canAct()) return;
     this.inputHandler.handleAttackInput();
   }
 
   triggerCast(spellId: string) {
+    if (!this.canAct()) return;
     this.network.sendCast(spellId, 0, 0);
   }
 
   startSpellTargeting(spellId: string, rangeTiles: number) {
+    if (!this.canAct()) return;
     this.inputHandler.cancelTargeting();
     if (rangeTiles > 0) {
       this.inputHandler.enterTargeting({ mode: "spell", spellId, rangeTiles });
