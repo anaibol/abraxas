@@ -10,15 +10,6 @@ export class CombatHandlers {
     player.meditating = !player.meditating;
   }
 
-  static handleTogglePvP(ctx: RoomContext, client: Client): void {
-    const player = HandlerUtils.getActivePlayer(ctx, client);
-    if (!player) return;
-    player.pvpEnabled = !player.pvpEnabled;
-    client.send(ServerMessageType.Notification, {
-      message: player.pvpEnabled ? "PvP Enabled" : "PvP Disabled",
-    });
-  }
-
   static handleAttack(
     ctx: RoomContext,
     client: Client,

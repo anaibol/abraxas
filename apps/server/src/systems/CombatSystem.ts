@@ -958,10 +958,6 @@ export class CombatSystem {
       ) {
         return "safe_zone";
       }
-
-      if (attacker.isPlayer() && target.isPlayer()) {
-        if (!attacker.pvpEnabled || !target.pvpEnabled) return "pvp_disabled";
-      }
     }
 
     return null;

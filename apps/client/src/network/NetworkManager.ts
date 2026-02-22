@@ -417,10 +417,6 @@ export class NetworkManager {
     this._send(ClientMessageType.FastTravel, { waypointId });
   }
 
-  sendTogglePvP() {
-    this._send(ClientMessageType.TogglePvP, {});
-  }
-
   disconnect() {
     this.room?.leave();
   }
