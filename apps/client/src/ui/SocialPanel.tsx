@@ -94,18 +94,19 @@ export function SocialPanel({
             direction="column"
             align="center"
             justify="center"
-            py="1"
-            gap="0.5"
-            bg={tab === key ? "rgba(255,255,255,0.1)" : "transparent"}
+            py="3"
+            bg={tab === key ? "rgba(255,255,255,0.08)" : "transparent"}
             color={tab === key ? T.gold : T.goldDark}
             borderRight="2px solid"
             borderRightColor={tab === key ? T.gold : "transparent"}
             mr="-2px"
             cursor="pointer"
             transition="all 0.2s"
+            opacity={tab === key ? 1 : 0.4}
+            filter={tab === key ? `drop-shadow(0 0 6px ${T.gold}40)` : "grayscale(100%)"}
+            title={t(`sidebar.tabs.${key}`)}
             _hover={{ 
-              color: T.goldText, 
-              bg: "rgba(255,255,255,0.15)"
+              bg: "rgba(255,255,255,0.12)"
             }}
             onMouseEnter={() => {
               if (tab !== key) playUIHover?.();
@@ -115,17 +116,7 @@ export function SocialPanel({
               setTab(key);
             }}
           >
-            <Box fontSize="14px" lineHeight="1">{icon}</Box>
-            <Box
-              fontFamily={T.display}
-              fontSize="9px"
-              fontWeight="700"
-              letterSpacing="0.5px"
-              textTransform="uppercase"
-              lineHeight="1"
-            >
-              {t(`sidebar.tabs.${key}`)}
-            </Box>
+            <Box fontSize="16px" lineHeight="1">{icon}</Box>
           </Flex>
         ))}
       </Flex>
