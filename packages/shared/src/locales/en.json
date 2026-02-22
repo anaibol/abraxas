@@ -120,7 +120,6 @@
     "invalid_target_out_of_range": "Target out of range",
     "invalid_target_safe_zone": "Target in Safe Zone",
     "invalid_target_friendly_fire": "Friendly target",
-    "invalid_target_pvp_disabled": "PvP Mode disabled",
     "invalid_target_dead": "Target is already dead",
     "connection_failed": "Connection Failed",
     "connection_failed_desc": "Failed to connect to server. Is it running?",
@@ -245,9 +244,6 @@
       "agi": "AGI",
       "int": "INT"
     },
-    "pvp": "PvP Mode",
-    "pvp_on": "ON",
-    "pvp_off": "OFF",
     "guild": {
       "not_in_guild": "Not in a guild. Join or create one.",
       "guild_name": "Guild name",
@@ -261,8 +257,7 @@
   "status": {
     "spawn_protected": "Spawn Protected",
     "safe_zone": "Safe Zone",
-    "pvp_off": "PvP Disabled",
-    "pvp_on": "PvP Enabled",
+    "pvp_on": "ATTACKABLE",
     "dead": "DEAD",
     "stunned": "STUNNED",
     "stealthed": "STEALTHED",

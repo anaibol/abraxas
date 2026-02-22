@@ -120,7 +120,6 @@
     "invalid_target_out_of_range": "Objetivo fuera de alcance",
     "invalid_target_safe_zone": "Objetivo en zona segura",
     "invalid_target_friendly_fire": "Objetivo aliado",
-    "invalid_target_pvp_disabled": "Modo PvP desactivado",
     "invalid_target_dead": "El objetivo ya está muerto",
     "connection_failed": "Conexión fallida",
     "connection_failed_desc": "No se pudo conectar al servidor. ¿Está en ejecución?",
@@ -244,9 +243,6 @@
       "agi": "AGI",
       "int": "INT"
     },
-    "pvp": "Modo PvP",
-    "pvp_on": "ON",
-    "pvp_off": "OFF",
     "guild": {
       "not_in_guild": "No estás en un clan. Únete o crea uno.",
       "guild_name": "Nombre del clan",
@@ -260,8 +256,7 @@
   "status": {
     "spawn_protected": "Protección de Aparición",
     "safe_zone": "Zona Segura",
-    "pvp_off": "PvP Desactivado",
-    "pvp_on": "PvP Activado",
+    "pvp_on": "ATACABLE",
     "dead": "MUERTO",
     "stunned": "ATURDIDO",
     "stealthed": "SIGILO",

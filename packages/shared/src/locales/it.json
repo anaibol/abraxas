@@ -119,7 +119,6 @@
     "invalid_target_out_of_range": "Bersaglio fuori portata",
     "invalid_target_safe_zone": "Bersaglio in zona sicura",
     "invalid_target_friendly_fire": "Bersaglio alleato",
-    "invalid_target_pvp_disabled": "Modalità PvP disattivata",
     "invalid_target_dead": "Il bersaglio è già morto",
     "connection_failed": "Connessione fallita",
     "connection_failed_desc": "Impossibile connettersi al server. È in esecuzione?",
@@ -243,9 +242,6 @@
       "agi": "AGI",
       "int": "INT"
     },
-    "pvp": "Modalità PvP",
-    "pvp_on": "ON",
-    "pvp_off": "OFF",
     "guild": {
       "not_in_guild": "Non sei in una gilda. Unisciti o creane una.",
       "guild_name": "Nome gilda",
@@ -259,8 +255,7 @@
   "status": {
     "spawn_protected": "Protezione Generazione",
     "safe_zone": "Zona Sicura",
-    "pvp_off": "PvP Disabilitato",
-    "pvp_on": "PvP Abilitato",
+    "pvp_on": "ATTACCABILE",
     "dead": "MORTO",
     "stunned": "STORDITO",
     "stealthed": "OCCULTATO",
