@@ -1,4 +1,4 @@
-import { Box, Flex, HStack, Text } from "@chakra-ui/react";
+import { Box, Flex, HStack, Text, Tooltip } from "@chakra-ui/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { HEX, T } from "./tokens";
@@ -174,13 +174,7 @@ export function Console({
     <Box
       flex="1"
       h="100%"
-      bg="rgba(12, 10, 18, 0.65)"
-      backdropFilter="blur(6px)"
-      borderWidth="0"
-      borderBottom="1px solid rgba(255,255,255,0.06)"
-      borderRight="1px solid rgba(255,255,255,0.06)"
-      borderRadius="0"
-      boxShadow="0 8px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.03)"
+      bg="transparent"
       color="white"
       fontFamily={T.display}
       fontSize="14px"
@@ -200,41 +194,41 @@ export function Console({
         flexShrink={0}
       >
         {TABS.map((tab) => (
-          <Box
-            key={tab.id}
-            px={{ base: "2", md: "4" }}
-            py="1.5"
-            cursor="pointer"
-            fontSize={{ base: "14px", md: "16px" }}
-            lineHeight="1"
-            bg={
-              activeChannel === tab.id
-                ? "rgba(255,255,255,0.08)"
-                : "transparent"
-            }
-            borderRight={
-              activeChannel === tab.id
-                ? `2px solid ${tab.color}`
-                : "2px solid transparent"
-            }
-            onClick={() => setActiveChannel(tab.id)}
-            pointerEvents="auto"
-            _hover={{ bg: "rgba(255,255,255,0.12)" }}
-            transition="all 0.2s"
-            flexShrink={0}
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            opacity={activeChannel === tab.id ? 1 : 0.4}
-            filter={
-              activeChannel === tab.id
-                ? "drop-shadow(0 0 6px " + tab.color + "40)"
-                : "grayscale(100%)"
-            }
-            title={t(tab.labelKey)}
-          >
-            {tab.icon}
-          </Box>
+          <Tooltip key={tab.id} label={t(tab.labelKey)} placement="right" hasArrow>
+            <Box
+              px={{ base: "2", md: "4" }}
+              py="1.5"
+              cursor="pointer"
+              fontSize={{ base: "14px", md: "16px" }}
+              lineHeight="1"
+              bg={
+                activeChannel === tab.id
+                  ? "rgba(255,255,255,0.08)"
+                  : "transparent"
+              }
+              borderRight={
+                activeChannel === tab.id
+                  ? `2px solid ${tab.color}`
+                  : "2px solid transparent"
+              }
+              onClick={() => setActiveChannel(tab.id)}
+              pointerEvents="auto"
+              _hover={{ bg: "rgba(255,255,255,0.12)" }}
+              transition="all 0.2s"
+              flexShrink={0}
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              opacity={activeChannel === tab.id ? 1 : 0.4}
+              filter={
+                activeChannel === tab.id
+                  ? "drop-shadow(0 0 6px " + tab.color + "40)"
+                  : "grayscale(100%)"
+              }
+            >
+              {tab.icon}
+            </Box>
+          </Tooltip>
         ))}
       </Flex>
 

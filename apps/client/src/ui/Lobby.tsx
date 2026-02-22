@@ -1,9 +1,10 @@
 import { type ClassType, getRandomName } from "@abraxas/shared";
-import { Badge, Box, Button, Flex, Grid, IconButton, Input, Spinner, Text } from "@chakra-ui/react";
+import { Badge, Box, Flex, Grid, IconButton, Input, Spinner, Text } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import { Search, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Button } from "./components/Button";
 import { HEX, T } from "./tokens";
 
 type LobbyProps = {
@@ -501,21 +502,7 @@ export function Lobby({ onJoin, connecting, error: joinError }: LobbyProps) {
               mt="2"
               w="100%"
               h="50px"
-              bg={T.goldDim}
-              color={T.darkest}
               type="submit"
-              fontFamily={T.display}
-              fontWeight="700"
-              fontSize="16px"
-              letterSpacing="4px"
-              textTransform="uppercase"
-              transition="all 0.2s"
-              _hover={{
-                bg: T.gold,
-                transform: "translateY(-2px)",
-                boxShadow: `0 5px 20px ${HEX.gold}44`,
-              }}
-              _active={{ transform: "translateY(0)" }}
             >
               {mode === "login" ? t("lobby.login") : t("lobby.register")}
             </Button>
@@ -797,23 +784,11 @@ export function Lobby({ onJoin, connecting, error: joinError }: LobbyProps) {
               <Button
                 w="100%"
                 h="44px"
-                bg={characters.length >= MAX_CHARACTERS ? T.goldDark : "transparent"}
-                border="1px solid"
-                borderColor={characters.length >= MAX_CHARACTERS ? "transparent" : T.border}
-                color={characters.length >= MAX_CHARACTERS ? T.goldDark : T.goldMuted}
-                fontFamily={T.display}
-                fontWeight="700"
-                fontSize="13px"
-                letterSpacing="3px"
-                textTransform="uppercase"
                 disabled={characters.length >= MAX_CHARACTERS}
                 onClick={() => {
                   setError("");
                   setMode("character_create");
                 }}
-                _hover={
-                  characters.length < MAX_CHARACTERS ? { borderColor: T.gold, color: T.goldText } : {}
-                }
               >
                 + {t("lobby.new_character")}
               </Button>
@@ -960,20 +935,8 @@ export function Lobby({ onJoin, connecting, error: joinError }: LobbyProps) {
             <Button
               w="100%"
               h="50px"
-              bg={creating ? T.goldDark : T.goldDim}
-              color={T.darkest}
               loading={creating}
               onClick={handleCreateCharacter}
-              fontFamily={T.display}
-              fontWeight="700"
-              fontSize="16px"
-              letterSpacing="4px"
-              textTransform="uppercase"
-              _hover={{
-                bg: T.gold,
-                transform: "translateY(-2px)",
-                boxShadow: `0 5px 20px ${HEX.gold}44`,
-              }}
             >
               {t("lobby.create_character")}
             </Button>

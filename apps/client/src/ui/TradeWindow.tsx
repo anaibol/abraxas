@@ -318,27 +318,12 @@ export function TradeWindow({
               <Button
                 flex="1"
                 size="sm"
-                bg={T.goldDark}
-                color={T.gold}
-                border="1px solid"
-                borderColor={T.gold}
-                fontFamily={T.display}
-                fontWeight="700"
-                fontSize="13px"
-                letterSpacing="1px"
-                _hover={{ bg: T.gold, color: "#000" }}
                 onClick={onConfirm}
               >
                 {t("trade.confirm_trade")}
               </Button>
               <Button
                 size="sm"
-                variant="outline"
-                borderColor={T.blood}
-                color="red.400"
-                fontFamily={T.display}
-                fontSize="13px"
-                _hover={{ bg: T.blood }}
                 onClick={onCancel}
               >
                 {t("trade.cancel")}

@@ -78,15 +78,6 @@ export function SummonOverlay({ onSummon, onClose }: SummonOverlayProps) {
               <Button
                 key={type}
                 size="sm"
-                bg={T.surface}
-                color={T.gold}
-                border="1px solid"
-                borderColor="transparent"
-                _hover={{
-                  borderColor: T.gold,
-                  bg: T.darkest,
-                  transform: "translateY(-1px) scale(1.02)",
-                }}
                 onClick={() => {
                   onSummon(type);
                   onClose();

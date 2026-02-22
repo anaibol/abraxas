@@ -1,4 +1,4 @@
-import { Box, Flex } from "@chakra-ui/react";
+import { Box, Flex, Tooltip } from "@chakra-ui/react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAudio } from "../contexts/AudioContext";
@@ -80,44 +80,41 @@ export function SocialPanel({
       direction="row"
       w="100%"
       h="100%"
-      bg="rgba(12, 10, 18, 0.65)"
-      backdropFilter="blur(6px)"
-      borderBottom="1px solid rgba(255,255,255,0.06)"
-      borderLeft="1px solid rgba(255,255,255,0.06)"
-      borderRight="1px solid rgba(255,255,255,0.06)"
+      bg="transparent"
     >
       <Flex direction="column" borderRight="2px solid" borderRightColor={T.border} bg="rgba(0,0,0,0.3)" w="44px">
         {SOCIAL_TABS.map(({ key, icon }) => (
-          <Flex
-            key={key}
-            flex="0"
-            direction="column"
-            align="center"
-            justify="center"
-            py="3"
-            bg={tab === key ? "rgba(255,255,255,0.08)" : "transparent"}
-            color={tab === key ? T.gold : T.goldDark}
-            borderRight="2px solid"
-            borderRightColor={tab === key ? T.gold : "transparent"}
-            mr="-2px"
-            cursor="pointer"
-            transition="all 0.2s"
-            opacity={tab === key ? 1 : 0.4}
-            filter={tab === key ? `drop-shadow(0 0 6px ${T.gold}40)` : "grayscale(100%)"}
-            title={t(`sidebar.tabs.${key}`)}
-            _hover={{ 
-              bg: "rgba(255,255,255,0.12)"
-            }}
-            onMouseEnter={() => {
-              if (tab !== key) playUIHover?.();
-            }}
-            onClick={() => {
-              if (tab !== key) playUIClick?.();
-              setTab(key);
-            }}
-          >
-            <Box fontSize="16px" lineHeight="1">{icon}</Box>
-          </Flex>
+          <Tooltip key={key} label={t(`sidebar.tabs.${key}`)} placement="right" hasArrow>
+            <Flex
+              flex="0"
+              direction="column"
+              align="center"
+              justify="center"
+              py="3"
+              bg={tab === key ? "rgba(255,255,255,0.08)" : "transparent"}
+              color={tab === key ? T.gold : T.goldDark}
+              borderRight="2px solid"
+              borderRightColor={tab === key ? T.gold : "transparent"}
+              mr="-2px"
+              cursor="pointer"
+              transition="all 0.2s"
+              opacity={tab === key ? 1 : 0.4}
+              filter={tab === key ? `drop-shadow(0 0 6px ${T.gold}40)` : "grayscale(100%)"}
+              title={t(`sidebar.tabs.${key}`)}
+              _hover={{ 
+                bg: "rgba(255,255,255,0.12)"
+              }}
+              onMouseEnter={() => {
+                if (tab !== key) playUIHover?.();
+              }}
+              onClick={() => {
+                if (tab !== key) playUIClick?.();
+                setTab(key);
+              }}
+            >
+              <Box fontSize="16px" lineHeight="1">{icon}</Box>
+            </Flex>
+          </Tooltip>
         ))}
       </Flex>
       <Box flex="1" overflow="auto" p="2">
