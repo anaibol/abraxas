@@ -1,4 +1,4 @@
-import { Box, HStack, Text } from "@chakra-ui/react";
+import { Box, Flex, HStack, Text } from "@chakra-ui/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { HEX, T } from "./tokens";
@@ -170,10 +170,11 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
       pointerEvents={isChatOpen ? "auto" : "none"}
       zIndex={100}
       display="flex"
-      flexDirection="column"
+      flexDirection="row"
     >
       {/* Tabs */}
-      <HStack
+      <Flex
+        direction="column"
         gap="0"
         bg="rgba(0,0,0,0.3)"
         borderBottom="1px solid rgba(255,255,255,0.06)"
@@ -188,7 +189,7 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
             fontSize={{ base: "14px", md: "16px" }}
             lineHeight="1"
             bg={activeChannel === tab.id ? "rgba(255,255,255,0.08)" : "transparent"}
-            borderBottom={activeChannel === tab.id ? `2px solid ${tab.color}` : "2px solid transparent"}
+            borderRight={activeChannel === tab.id ? `2px solid ${tab.color}` : "2px solid transparent"}
             onClick={() => setActiveChannel(tab.id)}
             pointerEvents="auto"
             _hover={{ bg: "rgba(255,255,255,0.12)" }}
@@ -204,9 +205,10 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
             {tab.icon}
           </Box>
         ))}
-      </HStack>
+      </Flex>
 
-      <Box
+      <Flex flex="1" direction="column" minW="0">
+        <Box
         flex="1"
         overflowY="auto"
         p="10px"
@@ -309,6 +311,7 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
           }
         />
       </Box>
+      </Flex>
     </Box>
   );
 }

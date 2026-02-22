@@ -1111,7 +1111,7 @@ export class PlayerSprite {
 
   updateHp(hp: number) {
     if (hp === undefined || this.maxHp === undefined || this.maxHp === 0) return;
-    const targetRatio = Math.min(1, Math.max(0, hp / this.maxHp));
+    const targetRatio = Phaser.Math.Clamp(hp / this.maxHp, 0, 1);
 
     if (this.displayedHpRatio === targetRatio) return;
 
@@ -1147,7 +1147,7 @@ export class PlayerSprite {
       this.renderX = this.targetX;
       this.renderY = this.targetY;
     } else {
-      const dist = Math.sqrt(distSq);
+      const dist = Phaser.Math.Distance.Between(this.renderX, this.renderY, this.targetX, this.targetY);
       const maxMove = this.pixelsPerSecond * (delta / 1000);
       if (maxMove >= dist) {
         this.renderX = this.targetX;

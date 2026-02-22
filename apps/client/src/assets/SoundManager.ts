@@ -170,7 +170,7 @@ export class SoundManager {
     const pan = Phaser.Math.Clamp(dx / maxPanDist, -1, 1);
 
     // Attenuate volume based on distance.
-    const dist = Math.sqrt(dx * dx + dy * dy);
+    const dist = Phaser.Math.Distance.Between(opts.sourceX, opts.sourceY, cx, cy);
     // At ~1200px (approx 3/4 screen width on some setups, or just outside), volume becomes 0.
     const maxDist = 1200;
     const volume = Phaser.Math.Clamp(1 - dist / maxDist, 0, 1);

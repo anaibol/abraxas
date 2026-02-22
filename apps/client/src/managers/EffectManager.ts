@@ -1645,9 +1645,7 @@ export class EffectManager {
 
     const casterTileX = Math.round(sprite.renderX / TILE_SIZE);
     const casterTileY = Math.round(sprite.renderY / TILE_SIZE);
-    const dx = targetTileX - casterTileX;
-    const dy = targetTileY - casterTileY;
-    if (Math.sqrt(dx * dx + dy * dy) < 2) return;
+    if (Phaser.Math.Distance.Between(casterTileX, casterTileY, targetTileX, targetTileY) < 2) return;
 
     const travelMs = Math.max(120, spell.windupMs ?? 200);
     this.playProjectile(casterSessionId, spellId, targetTileX, targetTileY, travelMs);
@@ -1666,9 +1664,7 @@ export class EffectManager {
 
     const casterTileX = Math.round(sprite.renderX / TILE_SIZE);
     const casterTileY = Math.round(sprite.renderY / TILE_SIZE);
-    const dx = targetTileX - casterTileX;
-    const dy = targetTileY - casterTileY;
-    if (Math.sqrt(dx * dx + dy * dy) < 1.5) return;
+    if (Phaser.Math.Distance.Between(casterTileX, casterTileY, targetTileX, targetTileY) < 1.5) return;
 
     // Ranged auto-attacks generally have faster windups.
     // We don't have direct access to stats/class here easily, so we provide a generic physical-looking projectile.
@@ -1737,7 +1733,7 @@ export class EffectManager {
     const tx = targetTileX * TILE_SIZE + TILE_SIZE / 2;
     const ty = targetTileY * TILE_SIZE + TILE_SIZE / 2;
 
-    const dist = Math.sqrt((tx - sx) ** 2 + (ty - sy) ** 2);
+    const dist = Phaser.Math.Distance.Between(sx, sy, tx, ty);
     if (dist < 4) return; // caster is at target, skip
 
     const { color, texKey, size } = this.projectileStyle(spellId);

@@ -17,9 +17,9 @@ function hexToRgb(hex: number): [number, number, number] {
 
 function rgbToHex(r: number, g: number, b: number): number {
 	return (
-		((Math.max(0, Math.min(255, r | 0)) << 16) |
-			(Math.max(0, Math.min(255, g | 0)) << 8) |
-			Math.max(0, Math.min(255, b | 0))) >>>
+		((Phaser.Math.Clamp(r | 0, 0, 255) << 16) |
+			(Phaser.Math.Clamp(g | 0, 0, 255) << 8) |
+			Phaser.Math.Clamp(b | 0, 0, 255)) >>>
 		0
 	);
 }

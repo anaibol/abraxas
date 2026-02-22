@@ -675,10 +675,9 @@ function AppContent() {
           {isLoading && <LoadingScreen />}
           <Flex pos="fixed" inset="0" bg={T.darkest}>
             <Flex flex="1" h="100%" direction="column" minW="0">
-              {/* TOP BAR */}
               <Flex 
                 w="100%" 
-                h={{ base: "130px", md: "240px" }} 
+                h={{ base: "130px", md: "196px" }} 
                 borderBottom="1px solid" 
                 borderColor={T.border}
                 zIndex={100}

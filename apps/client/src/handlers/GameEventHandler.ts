@@ -1,4 +1,5 @@
 import type { ServerMessages } from "@abraxas/shared";
+import Phaser from "phaser";
 import {
   ABILITIES,
   ChatChannel,
@@ -115,9 +116,7 @@ export class GameEventHandler {
       if (sprite) {
         const casterTileX = Math.round(sprite.renderX / TILE_SIZE);
         const casterTileY = Math.round(sprite.renderY / TILE_SIZE);
-        const dx = data.targetTileX - casterTileX;
-        const dy = data.targetTileY - casterTileY;
-        if (Math.sqrt(dx * dx + dy * dy) >= 1.5) isRanged = true;
+        if (Phaser.Math.Distance.Between(casterTileX, casterTileY, data.targetTileX, data.targetTileY) >= 1.5) isRanged = true;
       }
       this.effectManager.maybeLaunchAttackProjectile(
         data.sessionId,
@@ -304,7 +303,7 @@ export class GameEventHandler {
       this.effectManager.showFloatingText(data.sessionId, t("game.buff_stealth"), "#aaddff");
       if (this.isSelf(data.sessionId)) {
         this.lightManager?.setPlayerLightColor(0x4466aa, 0.15);
-        window.setTimeout(() => this.lightManager?.resetPlayerLightColor(), durationMs);
+        this.spriteManager.scene.time.delayedCall(durationMs, () => this.lightManager?.resetPlayerLightColor());
       }
     } else if (data.abilityId === "divine_shield") {
       this.spriteManager.applyInvulnerableVisual(data.sessionId, durationMs);
@@ -322,7 +321,7 @@ export class GameEventHandler {
         const playerLightColor = this.buffPlayerLightColor(data.abilityId);
         if (playerLightColor !== null) {
           this.lightManager?.setPlayerLightColor(playerLightColor, 1.4);
-          window.setTimeout(() => this.lightManager?.resetPlayerLightColor(), durationMs);
+          this.spriteManager.scene.time.delayedCall(durationMs, () => this.lightManager?.resetPlayerLightColor());
         }
       }
     }

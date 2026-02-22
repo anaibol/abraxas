@@ -29,7 +29,7 @@ export class SpriteManager {
   private targetOutlineSession: string | null = null;
 
   constructor(
-    private scene: GameScene,
+    public scene: GameScene,
     private getSessionId: () => string,
   ) {}
 

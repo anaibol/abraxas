@@ -186,9 +186,7 @@ export class GameScene extends Phaser.Scene {
         const py = data.targetY * TILE_SIZE + TILE_SIZE / 2;
         const cx = this.cameras.main.scrollX + this.cameras.main.width / 2;
         const cy = this.cameras.main.scrollY + this.cameras.main.height / 2;
-        const dx = (px - cx) / TILE_SIZE;
-        const dy = (py - cy) / TILE_SIZE;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+        const dist = Phaser.Math.Distance.Between(px, py, cx, cy) / TILE_SIZE;
 
         if (dist > 15) {
           this.cameras.main.flash(400, 200, 255, 255);

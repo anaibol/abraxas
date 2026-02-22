@@ -77,7 +77,7 @@ export function SocialPanel({
 
   return (
     <Flex
-      direction="column"
+      direction="row"
       w="100%"
       h="100%"
       bg="rgba(12, 10, 18, 0.65)"
@@ -86,11 +86,11 @@ export function SocialPanel({
       borderLeft="1px solid rgba(255,255,255,0.06)"
       borderRight="1px solid rgba(255,255,255,0.06)"
     >
-      <Flex borderBottom="2px solid" borderBottomColor={T.border} bg="rgba(0,0,0,0.3)">
+      <Flex direction="column" borderRight="2px solid" borderRightColor={T.border} bg="rgba(0,0,0,0.3)" w="44px">
         {SOCIAL_TABS.map(({ key, icon }) => (
           <Flex
             key={key}
-            flex="1"
+            flex="0"
             direction="column"
             align="center"
             justify="center"
@@ -98,9 +98,9 @@ export function SocialPanel({
             gap="0.5"
             bg={tab === key ? "rgba(255,255,255,0.1)" : "transparent"}
             color={tab === key ? T.gold : T.goldDark}
-            borderBottom="2px solid"
-            borderBottomColor={tab === key ? T.gold : "transparent"}
-            mb="-2px"
+            borderRight="2px solid"
+            borderRightColor={tab === key ? T.gold : "transparent"}
+            mr="-2px"
             cursor="pointer"
             transition="all 0.2s"
             _hover={{ 
