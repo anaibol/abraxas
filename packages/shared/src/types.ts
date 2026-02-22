@@ -418,7 +418,6 @@ export interface PlayerEntityState extends BaseEntityState {
   equipMountId: string;
   meditating: boolean;
   guildId?: string;
-  pvpEnabled: boolean;
   role?: string;
   type?: never;
 }
@@ -504,8 +503,7 @@ export type InvalidTargetReason =
   | "invalid"
   | "dead"
   | "friendly_fire"
-  | "safe_zone"
-  | "pvp_disabled";
+  | "safe_zone";
 
 export enum ChatChannel {
   Global = "global",
@@ -739,9 +737,6 @@ export enum ClientMessageType {
   BankWithdraw = "bank_withdraw",
   BankClose = "bank_close",
 
-  // PvP
-  TogglePvP = "toggle_pvp",
-
   // Guilds
   GuildCreate = "guild_create",
   GuildInvite = "guild_invite",
@@ -815,9 +810,6 @@ export type ClientMessages = {
     bankSlotIndex: number;
   };
   [ClientMessageType.BankClose]: {};
-
-  // PvP
-  [ClientMessageType.TogglePvP]: {};
 
   // Guilds
   [ClientMessageType.GuildCreate]: { name: string };

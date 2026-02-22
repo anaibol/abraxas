@@ -38,7 +38,6 @@ export class PlayerService {
     player.classType = char.class;
     player.tileX = char.x;
     player.tileY = char.y;
-    player.pvpEnabled = char.pvpEnabled;
 
     const stats = char.stats;
     if (stats) {
@@ -236,7 +235,6 @@ export class PlayerService {
       companions: activeCompanions,
       pvpKills: player.pvpKills,
       npcKills: player.npcKills,
-      pvpEnabled: player.pvpEnabled,
     };
 
     await PersistenceService.saveChar(player.dbId, saveData);

@@ -15,7 +15,6 @@ export class Player extends Char {
   }
   @type("string") classType: ClassType = "WARRIOR";
   @type("boolean") meditating: boolean = false;
-  @type("boolean") pvpEnabled: boolean = false;
 
   /** Public equip item IDs — visible to all clients for rendering (weapon/shield/helmet/mount sprites). */
   @type("string") equipWeaponId: string = "";
