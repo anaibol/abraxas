@@ -27,7 +27,7 @@ export const Minimap: FC<MinimapProps> = ({
   markers = [],
 }) => {
   const isMobile = useIsMobile();
-  const size = isMobile ? 120 : 200;
+  const size = isMobile ? 130 : 196;
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const VISIBLE_TILES = 80;
@@ -211,7 +211,7 @@ export const Minimap: FC<MinimapProps> = ({
   return (
     <div
       style={{
-        border: isGM ? "2px solid rgba(212, 168, 67, 0.85)" : "2px solid rgba(212, 168, 67, 0.5)",
+        borderLeft: "1px solid rgba(255,255,255,0.06)",
         backgroundColor: "rgba(10, 8, 20, 0.85)",
         overflow: "hidden",
         width: `${size}px`,

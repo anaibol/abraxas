@@ -678,9 +678,14 @@ function AppContent() {
               <Flex 
                 w="100%" 
                 h={{ base: "130px", md: "196px" }} 
-                borderBottom="1px solid" 
-                borderColor={T.border}
+                borderTop={{ md: "2px solid rgba(212, 168, 67, 0.5)" }}
+                borderBottom="2px solid rgba(212, 168, 67, 0.5)"
+                borderLeft={{ md: "2px solid rgba(212, 168, 67, 0.5)" }}
+                bg="rgba(12, 10, 18, 0.85)"
+                backdropFilter="blur(6px)"
+                boxShadow="0 8px 32px rgba(0,0,0,0.5)"
                 zIndex={100}
+                boxSizing="border-box"
               >
                 <Console
                   messages={consoleMessages}

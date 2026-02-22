@@ -198,8 +198,6 @@ export function BankWindow({
                 <Flex align="center">
                   <Button
                     size="xs"
-                    variant="outline"
-                    color={T.gold}
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   >
                     -
@@ -220,8 +218,6 @@ export function BankWindow({
                   />
                   <Button
                     size="xs"
-                    variant="outline"
-                    color={T.gold}
                     onClick={() => setQuantity(Math.min(selectedItem.quantity, quantity + 1))}
                   >
                     +
@@ -232,11 +228,6 @@ export function BankWindow({
               <Button
                 h="40px"
                 px="8"
-                bg={T.goldDim}
-                color="#000"
-                fontWeight="700"
-                letterSpacing="2px"
-                _hover={{ bg: T.gold, transform: "translateY(-2px)" }}
                 onClick={() => {
                   if (selectedItem.source === "inventory") {
                     onDeposit(selectedItem.itemId, quantity, selectedItem.slotIndex);

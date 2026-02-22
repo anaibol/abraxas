@@ -30,7 +30,14 @@ const GM_COMMANDS: { usage: string; desc: string }[] = [
   { usage: "/gm announce <msg>", desc: "Broadcast a server message" },
 ];
 
-type Channel = "all" | "global" | "group" | "guild" | "whisper" | "system" | "combat";
+type Channel =
+  | "all"
+  | "global"
+  | "group"
+  | "guild"
+  | "whisper"
+  | "system"
+  | "combat";
 
 const TABS: { id: Channel; icon: string; labelKey: string; color: string }[] = [
   { id: "all", icon: "💬", labelKey: "console.tab_all", color: "#ccc" },
@@ -59,7 +66,13 @@ const CHANNEL_PREFIXES: Record<string, string> = {
   combat: "Combat",
 };
 
-export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM }: ConsoleProps) {
+export function Console({
+  messages,
+  onSendChat,
+  isChatOpen,
+  prefillMessage,
+  isGM,
+}: ConsoleProps) {
   const { t } = useTranslation();
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -70,7 +83,9 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
   const gmHints = useMemo(() => {
     if (!isGM || !inputValue.startsWith("/gm")) return [];
     const sub = inputValue.slice(3).trimStart().split(" ")[0].toLowerCase();
-    return GM_COMMANDS.filter((c) => sub === "" || c.usage.split(" ")[1]?.startsWith(sub));
+    return GM_COMMANDS.filter(
+      (c) => sub === "" || c.usage.split(" ")[1]?.startsWith(sub),
+    );
   }, [isGM, inputValue]);
 
   useEffect(() => {
@@ -89,7 +104,9 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
   const filteredMessages = useMemo(() => {
     if (activeChannel === "all") return messages;
     return messages.filter(
-      (m) => m.channel === activeChannel || (activeChannel === "system" && !m.channel),
+      (m) =>
+        m.channel === activeChannel ||
+        (activeChannel === "system" && !m.channel),
     );
   }, [messages, activeChannel]);
 
@@ -98,7 +115,8 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
     const container = bottomRef.current?.parentElement;
     if (container) {
       const isVisible =
-        container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
+        container.scrollHeight - container.scrollTop <=
+        container.clientHeight + 100;
       if (isVisible) {
         bottomRef.current?.scrollIntoView({ behavior: "auto" });
       }
@@ -177,8 +195,9 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
         direction="column"
         gap="0"
         bg="rgba(0,0,0,0.3)"
-        borderBottom="1px solid rgba(255,255,255,0.06)"
+        borderRight="1px solid rgba(255,255,255,0.06)"
         overflow="hidden"
+        flexShrink={0}
       >
         {TABS.map((tab) => (
           <Box
@@ -188,8 +207,16 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
             cursor="pointer"
             fontSize={{ base: "14px", md: "16px" }}
             lineHeight="1"
-            bg={activeChannel === tab.id ? "rgba(255,255,255,0.08)" : "transparent"}
-            borderRight={activeChannel === tab.id ? `2px solid ${tab.color}` : "2px solid transparent"}
+            bg={
+              activeChannel === tab.id
+                ? "rgba(255,255,255,0.08)"
+                : "transparent"
+            }
+            borderRight={
+              activeChannel === tab.id
+                ? `2px solid ${tab.color}`
+                : "2px solid transparent"
+            }
             onClick={() => setActiveChannel(tab.id)}
             pointerEvents="auto"
             _hover={{ bg: "rgba(255,255,255,0.12)" }}
@@ -199,7 +226,11 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
             alignItems="center"
             justifyContent="center"
             opacity={activeChannel === tab.id ? 1 : 0.4}
-            filter={activeChannel === tab.id ? "drop-shadow(0 0 6px " + tab.color + "40)" : "grayscale(100%)"}
+            filter={
+              activeChannel === tab.id
+                ? "drop-shadow(0 0 6px " + tab.color + "40)"
+                : "grayscale(100%)"
+            }
             title={t(tab.labelKey)}
           >
             {tab.icon}
@@ -209,108 +240,134 @@ export function Console({ messages, onSendChat, isChatOpen, prefillMessage, isGM
 
       <Flex flex="1" direction="column" minW="0">
         <Box
-        flex="1"
-        overflowY="auto"
-        p="10px"
-        css={{
-          "&::-webkit-scrollbar": { width: "4px" },
-          "&::-webkit-scrollbar-thumb": { background: "rgba(255,255,255,0.2)" },
-        }}
-      >
-        {filteredMessages.map((msg) => {
-          const channelColor = msg.channel ? CHANNEL_COLORS[msg.channel] : undefined;
-          const prefix = msg.channel ? CHANNEL_PREFIXES[msg.channel] : undefined;
-          return (
-          <Text
-            key={msg.id}
-            color={msg.color || channelColor || "white"}
-            textStyle={T.bodyText}
-            mb={0.5}
-            lineHeight="1.2"
-            textShadow="1px 1px 0 #000"
-          >
-            <span style={{ opacity: 0.4, fontSize: "11px" }}>
-              [
-              {new Date(msg.timestamp).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-              ]
-            </span>{" "}
-            {prefix && (
-              <span style={{ color: channelColor, opacity: 0.7, fontSize: "11px", fontWeight: 700 }}>
-                [{prefix}]{" "}
-              </span>
-            )}
-            {msg.text}
-          </Text>
-          );
-        })}
-        <div ref={bottomRef} />
-      </Box>
-
-      {isChatOpen && gmHints.length > 0 && (
-        <Box
-          bg="rgba(8, 6, 18, 0.96)"
-          borderTop="1px solid rgba(255,255,255,0.06)"
-          px="10px"
-          py="4px"
+          flex="1"
+          overflowY="auto"
+          p="10px"
+          css={{
+            "&::-webkit-scrollbar": { width: "4px" },
+            "&::-webkit-scrollbar-thumb": {
+              background: "rgba(255,255,255,0.2)",
+            },
+          }}
         >
-          {gmHints.map((hint, i) => (
-            <HStack key={hint.usage} gap="2" py="1px">
+          {filteredMessages.map((msg) => {
+            const channelColor = msg.channel
+              ? CHANNEL_COLORS[msg.channel]
+              : undefined;
+            const prefix = msg.channel
+              ? CHANNEL_PREFIXES[msg.channel]
+              : undefined;
+            return (
               <Text
-                textStyle={T.statLabel}
-                fontWeight="700"
-                color={i === tabIndex ? "#ffaa33" : "#d4a843"}
-                fontFamily={T.mono}
-                flexShrink={0}
+                key={msg.id}
+                color={msg.color || channelColor || "white"}
+                textStyle={T.bodyText}
+                mb={0.5}
+                lineHeight="1.2"
+                textShadow="1px 1px 0 #000"
               >
-                {hint.usage}
+                <span style={{ opacity: 0.4, fontSize: "11px" }}>
+                  [
+                  {new Date(msg.timestamp).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                  ]
+                </span>{" "}
+                {prefix && (
+                  <span
+                    style={{
+                      color: channelColor,
+                      opacity: 0.7,
+                      fontSize: "11px",
+                      fontWeight: 700,
+                    }}
+                  >
+                    [{prefix}]{" "}
+                  </span>
+                )}
+                {msg.text}
               </Text>
-              <Text textStyle={T.statLabel} color="rgba(255,255,255,0.45)" lineClamp={1}>
-                {hint.desc}
-              </Text>
-            </HStack>
-          ))}
-          <Text textStyle={T.badgeText} color="rgba(255,255,255,0.25)" mt="2px">
-            Tab to cycle
-          </Text>
+            );
+          })}
+          <div ref={bottomRef} />
         </Box>
-      )}
-      <Box
-        h={isChatOpen ? "40px" : "0px"}
-        transition="height 0.1s"
-        overflow="hidden"
-        bg="rgba(0,0,0,0.5)"
-      >
-        <input
-          ref={inputRef}
-          type="text"
-          value={inputValue}
-          onChange={(e) => {
-            setInputValue(e.target.value);
-            setTabIndex(-1);
-          }}
-          onKeyDown={handleKeyDown}
-          style={{
-            width: "100%",
-            height: "100%",
-            lineHeight: "40px",
-            background: "transparent",
-            border: "none",
-            color: "white",
-            padding: "0 10px",
-            outline: "none",
-            fontSize: "13px",
-            fontFamily: "inherit",
-          }}
-          placeholder={
-            activeChannel === "group"
-              ? t("console.placeholder_group")
-              : t("console.placeholder_default")
+
+        {isChatOpen && gmHints.length > 0 && (
+          <Box
+            bg="rgba(8, 6, 18, 0.96)"
+            borderTop="1px solid rgba(255,255,255,0.06)"
+            px="10px"
+            py="4px"
+          >
+            {gmHints.map((hint, i) => (
+              <HStack key={hint.usage} gap="2" py="1px">
+                <Text
+                  textStyle={T.statLabel}
+                  fontWeight="700"
+                  color={i === tabIndex ? "#ffaa33" : "#d4a843"}
+                  fontFamily={T.mono}
+                  flexShrink={0}
+                >
+                  {hint.usage}
+                </Text>
+                <Text
+                  textStyle={T.statLabel}
+                  color="rgba(255,255,255,0.45)"
+                  lineClamp={1}
+                >
+                  {hint.desc}
+                </Text>
+              </HStack>
+            ))}
+            <Text
+              textStyle={T.badgeText}
+              color="rgba(255,255,255,0.25)"
+              mt="2px"
+            >
+              Tab to cycle
+            </Text>
+          </Box>
+        )}
+        <Box
+          h={isChatOpen ? "40px" : "0px"}
+          transition="all 0.15s ease-out"
+          overflow="hidden"
+          bg="rgba(0,0,0,0.5)"
+          borderTop={
+            isChatOpen
+              ? "1px solid rgba(255,255,255,0.06)"
+              : "0px solid transparent"
           }
-        />
-      </Box>
+        >
+          <input
+            ref={inputRef}
+            type="text"
+            value={inputValue}
+            onChange={(e) => {
+              setInputValue(e.target.value);
+              setTabIndex(-1);
+            }}
+            onKeyDown={handleKeyDown}
+            style={{
+              width: "100%",
+              height: "100%",
+              lineHeight: "40px",
+              background: "transparent",
+              border: "none",
+              color: "white",
+              padding: "0 10px",
+              outline: "none",
+              fontSize: "13px",
+              fontFamily: "inherit",
+            }}
+            placeholder={
+              activeChannel === "group"
+                ? t("console.placeholder_group")
+                : t("console.placeholder_default")
+            }
+          />
+        </Box>
       </Flex>
     </Box>
   );

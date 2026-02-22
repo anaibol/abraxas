@@ -219,10 +219,6 @@ export function MerchantShop({
             <Flex align="center" flex="1" minW="120px">
               <Button
                 size="sm"
-                variant="outline"
-                borderColor={T.goldDark}
-                color={T.gold}
-                _hover={{ bg: T.goldDark, color: "white" }}
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
               >
                 -
@@ -242,10 +238,6 @@ export function MerchantShop({
               />
               <Button
                 size="sm"
-                variant="outline"
-                borderColor={T.goldDark}
-                color={T.gold}
-                _hover={{ bg: T.goldDark, color: "white" }}
                 onClick={() => setQuantity(Math.min(999, quantity + 1))}
               >
                 +
@@ -268,13 +260,6 @@ export function MerchantShop({
           <Button
             w="100%"
             h="48px"
-            bg={T.goldDim}
-            color="#000"
-            textStyle={T.heading}
-            fontWeight="700"
-            letterSpacing="2px"
-            _hover={{ bg: T.gold, transform: "scale(1.02)" }}
-            _active={{ bg: T.goldDark, transform: "scale(0.98)" }}
             transition="all 0.2s"
             onClick={() => {
               playCoins?.();
