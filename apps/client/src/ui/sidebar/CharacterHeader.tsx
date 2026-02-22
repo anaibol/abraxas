@@ -87,19 +87,12 @@ export function CharacterHeader({ state, isRecording }: CharacterHeaderProps) {
               icon: "🏠",
               text: t("status.safe_zone", { defaultValue: "SAFE ZONE" }),
             };
-          } else if (!state.pvpEnabled) {
-            config = {
-              borderColor: "#6aabff",
-              color: "#6aabff",
-              icon: "🔵",
-              text: t("status.pvp_off", { defaultValue: "PvP OFF" }),
-            };
           } else {
             config = {
               borderColor: "#ff6b6b",
               color: "#ff6b6b",
               icon: "⚔",
-              text: t("status.pvp_on", { defaultValue: "PvP ON" }),
+              text: t("status.pvp_on", { defaultValue: "ATTACKABLE" }),
             };
           }
 

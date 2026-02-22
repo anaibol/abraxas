@@ -11,8 +11,6 @@ interface CharacterPortraitProps {
   stealthed?: boolean;
   meditating?: boolean;
   level: number;
-  pvpEnabled?: boolean;
-  onTogglePvP?: () => void;
 }
 
 const CLASS_PORTRAITS: Record<string, string> = {
@@ -39,8 +37,6 @@ export function CharacterPortrait({
   stealthed,
   meditating,
   level,
-  pvpEnabled,
-  onTogglePvP,
 }: CharacterPortraitProps) {
   const hpPct = maxHp > 0 ? hp / maxHp : 0;
   const isLowHp = hpPct < 0.25 && alive;
@@ -140,44 +136,6 @@ export function CharacterPortrait({
           ))}
         </Flex>
       )}
-
-      {/* PvP Toggle Button */}
-      <Flex
-        position="absolute"
-        bottom="-18px"
-        left="0"
-        w="100%"
-        justifyContent="center"
-        pointerEvents="auto"
-      >
-        <Flex
-          alignItems="center"
-          justifyContent="center"
-          gap="1"
-          bg={pvpEnabled ? "rgba(140,20,20,0.85)" : "rgba(10, 8, 6, 0.85)"}
-          border="1px solid"
-          borderColor={pvpEnabled ? "rgba(180,30,30,0.6)" : "rgba(180, 140, 50, 0.4)"}
-          borderRadius="10px"
-          px="2"
-          py="2px"
-          cursor="pointer"
-          transition="all 0.15s"
-          _hover={{
-            bg: pvpEnabled ? "rgba(160,30,30,0.95)" : "rgba(20, 16, 12, 0.95)",
-            borderColor: pvpEnabled ? "rgba(200,40,40,0.8)" : "rgba(180, 140, 50, 0.8)",
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-            onTogglePvP?.();
-          }}
-          title="Toggle PvP"
-        >
-          <Box w="6px" h="6px" borderRadius="50%" bg={pvpEnabled ? "#ff4444" : "#666"} />
-          <Text fontFamily={T.display} fontSize="8px" fontWeight="800" color={pvpEnabled ? "#ffcccc" : T.goldMuted} letterSpacing="0.5px">
-            PVP
-          </Text>
-        </Flex>
-      </Flex>
     </Box>
   );
 }

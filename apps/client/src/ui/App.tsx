@@ -777,8 +777,6 @@ function AppContent() {
                 stealthed={playerState.stealthed}
                 meditating={playerState.meditating}
                 level={playerState.level}
-                pvpEnabled={playerState.pvpEnabled}
-                onTogglePvP={() => networkRef.current?.sendTogglePvP()}
               />
 
               {/* Mobile sidebar toggle button */}

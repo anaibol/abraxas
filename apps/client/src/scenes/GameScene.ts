@@ -774,7 +774,6 @@ export class GameScene extends Phaser.Scene {
       level: player.level,
       xp: player.xp,
       maxXp: player.maxXp,
-      pvpEnabled: player.pvpEnabled,
       spawnProtection: player.spawnProtection,
       meditating: player.meditating,
       inSafeZone: MathUtils.isInSafeZone(player.tileX, player.tileY, this.welcome.safeZones),
